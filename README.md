@@ -1,16 +1,3 @@
-<p align="center">
-  <img src="assets/hero-banner.svg" alt="Ball Fight - Anime Physics Arena Banner" width="100%" />
-</p>
-
-<p align="center">
-  <a href="https://ballfight-alpha.vercel.app"><img src="https://img.shields.io/badge/LIVE%20DEMO-ballfight--alpha.vercel.app-ff4757?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo" /></a>
-  <img src="https://img.shields.io/badge/CANVAS-HTML5%202D-ffa502?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5 Canvas" />
-  <img src="https://img.shields.io/badge/JS-VANILLA%20ES6+-2ed573?style=for-the-badge&logo=javascript&logoColor=black" alt="Vanilla JS" />
-  <img src="https://img.shields.io/badge/DEPENDENCIES-ZERO-1e90ff?style=for-the-badge" alt="Zero Dependencies" />
-  <img src="https://img.shields.io/badge/FPS-60%20PHYSICS-9b59b6?style=for-the-badge" alt="60 FPS Physics" />
-</p>
-
----
 
 ## ⚡ Welcome to Ball Fight!
 
