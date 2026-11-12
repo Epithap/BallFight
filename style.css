@@ -26,18 +26,21 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='8' cy='8' r='3' fill='%23ffb703'/%3E%3Ccircle cx='24' cy='24' r='3' fill='%23ffb703'/%3E%3C/svg%3E");
   display: flex;
   justify-content: center;
-  padding: max(14px, env(safe-area-inset-top)) 14px max(20px, env(safe-area-inset-bottom));
+  align-items: flex-start;
+  min-height: 100dvh;
+  padding: max(8px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
 }
 
 .app {
   width: 100%;
-  max-width: 500px;
+  max-width: 480px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 /* ================= Header & Logo ================= */
@@ -121,6 +124,10 @@ body {
   flex-direction: column;
   gap: 12px;
   width: 100%;
+}
+
+.hidden {
+  display: none !important;
 }
 
 .screen.hidden {
@@ -723,6 +730,9 @@ body {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
+  max-height: min(440px, calc(100dvh - 210px));
+  max-width: min(440px, calc(100dvh - 210px));
+  margin: 0 auto;
   background: #a8e6cf;
   border: 5px solid var(--ink);
   border-radius: 24px;

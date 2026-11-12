@@ -9,7 +9,7 @@
   const KO_SLOWMO_DURATION = 0.8; // real seconds
   const KO_SLOWMO_SCALE = 0.25;
   const KO_ZOOM_SCALE = 1.38;
-  const CRIT_CHANCE = 1.0; // 100% FOR TESTING (original: 0.001 / 0.1%)
+  const CRIT_CHANCE = 0.07; // 7% crit chance
   const CRIT_DAMAGE = 25;
   const ULT_CHARGES_REQUIRED = 5;
 
@@ -2768,6 +2768,11 @@
     });
     const target = document.getElementById(targetId);
     if (target) target.classList.remove("hidden");
+
+    const appHeader = document.querySelector(".app-header");
+    if (appHeader) {
+      appHeader.classList.toggle("hidden", targetId === "screen-battle");
+    }
 
     const mainNav = document.getElementById("main-nav");
     if (mainNav) {
