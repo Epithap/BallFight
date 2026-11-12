@@ -608,6 +608,8 @@
     goku: {
       id: "goku",
       name: "GOKU",
+      title: "Saiyan of Earth • Ki Blaster",
+      role: "SAIYAN • KAMEHAMEHA BEAM",
       color: COLORS.orange,
       radius: 28,
       speed: 365,
@@ -617,11 +619,17 @@
       costume: "goku",
       weapon: "nyoibo",
       ult: "kaioken",
+      ultName: "KAIOKEN BURST",
+      ultDesc: "Enters crimson Kaioken state with glowing red aura! Speeds up and charges massive Kamehameha beams.",
+      skillName: "KAMEHAMEHA",
+      skillDesc: "Locks aim onto the rival ball, charging ki before unleashing a continuous energy beam.",
       skills: [SKILL_KAMEHAMEHA],
     },
     naruto: {
       id: "naruto",
       name: "NARUTO",
+      title: "Hero of Konoha • Wind Striker",
+      role: "NINJA • CHAKRA DASH",
       color: COLORS.narutoOrange,
       radius: 27,
       speed: 380,
@@ -631,11 +639,17 @@
       costume: "naruto",
       weapon: "kunai",
       ult: "rasenshuriken",
+      ultName: "RASENSHURIKEN",
+      ultDesc: "Forms a spinning wind-chakra disc with 4 blades, thrown towards rival with explosive vortex rings!",
+      skillName: "RASENGAN",
+      skillDesc: "Charges swirling chakra orb and dashes with explosive acceleration into the enemy.",
       skills: [SKILL_RASENGAN],
     },
     luffy: {
       id: "luffy",
       name: "LUFFY",
+      title: "Straw Hat Captain • Rubber Brawler",
+      role: "PIRATE • GUM-GUM ROCKET",
       color: COLORS.red,
       radius: 28,
       speed: 355,
@@ -645,11 +659,17 @@
       costume: "luffy",
       weapon: "gomu_fist",
       ult: "gear_4",
+      ultName: "GEAR 4 BOUNCE-MAN",
+      ultDesc: "Inflates muscles into gigantic Gear 4 form with Busoshoku Haki! Heavy knockback, massive shockwaves, and boosted HP.",
+      skillName: "GUM-GUM ROCKET",
+      skillDesc: "Stretches arms backward and slingshots himself at bullet speed with double impact damage.",
       skills: [SKILL_GUM_ROCKET],
     },
     ichigo: {
       id: "ichigo",
       name: "ICHIGO",
+      title: "Substitute Shinigami • Bankai Master",
+      role: "SHINIGAMI • GETSUGA TENSHO",
       color: COLORS.ichigoDark,
       radius: 28,
       speed: 370,
@@ -659,6 +679,10 @@
       costume: "ichigo",
       weapon: "tensa_zangetsu",
       ult: "hollow_mask",
+      ultName: "HOLLOW MASK BANKAI",
+      ultDesc: "Dons the iconic Hollow mask! Speeds up attacks and enlarges Getsuga Tensho into an ominous black-red crescent.",
+      skillName: "GETSUGA TENSHO",
+      skillDesc: "Swings Tensa Zangetsu to release a razor-sharp red crescent wave cutting across the arena.",
       skills: [SKILL_GETSUGA],
     },
   };
@@ -894,15 +918,61 @@
   const btnChangeChar = document.getElementById("btn-change-char");
   const btnFight = document.getElementById("btn-fight");
 
-  const selectScreen = document.getElementById("select-screen");
-  const previewP1 = document.getElementById("preview-p1");
-  const previewP2 = document.getElementById("preview-p2");
-  const previewName1 = document.getElementById("preview-name-1");
-  const previewName2 = document.getElementById("preview-name-2");
-  const skillDesc1 = document.getElementById("skill-desc-1");
-  const skillDesc2 = document.getElementById("skill-desc-2");
-  const pickerP1 = document.getElementById("picker-p1");
-  const pickerP2 = document.getElementById("picker-p2");
+  // Mobile Hub & Screens
+  const screenPlay = document.getElementById("screen-play");
+  const screenSetup = document.getElementById("screen-setup");
+  const screenBattle = document.getElementById("screen-battle");
+  const screenChars = document.getElementById("screen-chars");
+  const screenProfile = document.getElementById("screen-profile");
+  const screenShop = document.getElementById("screen-shop");
+
+  const btnOpenSandbox = document.getElementById("btn-open-sandbox");
+  const btnQuickFight = document.getElementById("btn-quick-fight");
+  const btnSetupBack = document.getElementById("btn-setup-back");
+  const btnStartBattle = document.getElementById("btn-start-battle");
+  const btnBackToHub = document.getElementById("btn-back-to-hub");
+  const btnBattleRec = document.getElementById("btn-battle-rec");
+
+  const tabP1 = document.getElementById("tab-p1");
+  const tabP2 = document.getElementById("tab-p2");
+  const activeSlotBanner = document.getElementById("active-slot-banner");
+  const previewActive = document.getElementById("preview-active");
+  const previewActiveName = document.getElementById("preview-active-name");
+  const previewActiveRole = document.getElementById("preview-active-role");
+  const unifiedCharGrid = document.getElementById("unified-char-grid");
+
+  const statValHp = document.getElementById("stat-val-hp");
+  const statValSpd = document.getElementById("stat-val-spd");
+  const statValMass = document.getElementById("stat-val-mass");
+  const statValDmg = document.getElementById("stat-val-dmg");
+  const matchupP1Tag = document.getElementById("matchup-p1-tag");
+  const matchupP2Tag = document.getElementById("matchup-p2-tag");
+
+  const homeP1Name = document.getElementById("home-p1-name");
+  const homeP2Name = document.getElementById("home-p2-name");
+
+  const rosterTabs = document.getElementById("roster-tabs");
+  const detailCanvas = document.getElementById("detail-canvas");
+  const detailName = document.getElementById("detail-name");
+  const detailTitle = document.getElementById("detail-title");
+  const detailHpFill = document.getElementById("detail-hp-fill");
+  const detailHpVal = document.getElementById("detail-hp-val");
+  const detailSpdFill = document.getElementById("detail-spd-fill");
+  const detailSpdVal = document.getElementById("detail-spd-val");
+  const detailAtkFill = document.getElementById("detail-atk-fill");
+  const detailAtkVal = document.getElementById("detail-atk-val");
+  const detailMassFill = document.getElementById("detail-mass-fill");
+  const detailMassVal = document.getElementById("detail-mass-val");
+  const detailSkillName = document.getElementById("detail-skill-name");
+  const detailSkillCd = document.getElementById("detail-skill-cd");
+  const detailSkillDesc = document.getElementById("detail-skill-desc");
+  const detailUltName = document.getElementById("detail-ult-name");
+  const detailUltDesc = document.getElementById("detail-ult-desc");
+
+  const profMatches = document.getElementById("prof-matches");
+  const profWins = document.getElementById("prof-wins");
+  const profWr = document.getElementById("prof-wr");
+  const profFav = document.getElementById("prof-fav");
 
   const name1 = document.getElementById("name-1");
   const name2 = document.getElementById("name-2");
@@ -943,6 +1013,16 @@
   let recMode = false;
   let speedMultiplier = 1;
   let hitCooldown = 0;
+
+  // Mobile Hub State
+  let currentScreen = "screen-play"; // default is Play screen
+  let activeSlot = 0; // 0 for P1, 1 for P2 in Sandbox Setup
+  let detailCharId = "goku";
+  const sessionStats = {
+    matches: 0,
+    wins: 0,
+    charsUsed: { goku: 1, naruto: 1 },
+  };
   let hitStop = 0;
   let shakeTime = 0;
   let shakeIntensity = 0;
@@ -1357,6 +1437,12 @@
     matchOver = isMatchEnd;
 
     if (isMatchEnd) {
+      sessionStats.matches += 1;
+      if (scores[0] > scores[1]) sessionStats.wins += 1;
+      sessionStats.charsUsed[BALL_CONFIGS[0].id] = (sessionStats.charsUsed[BALL_CONFIGS[0].id] || 0) + 1;
+      sessionStats.charsUsed[BALL_CONFIGS[1].id] = (sessionStats.charsUsed[BALL_CONFIGS[1].id] || 0) + 1;
+      updateProfileUI();
+
       if (overlayStamp) overlayStamp.textContent = "MATCH WINNER";
       btnRematch.textContent = "REMATCH";
     } else {
@@ -2416,16 +2502,16 @@
     const dt = Math.min(0.05, (now - lastTime) / 1000);
     lastTime = now;
 
-    if (selecting) {
-      renderIdlePreviews(now / 1000);
-    } else {
+    if (currentScreen === "screen-battle") {
       step(dt);
+      render();
+    } else {
+      renderIdlePreviews(now / 1000);
     }
-    render();
     requestAnimationFrame(loop);
   }
 
-  // Event listeners
+  // Event listeners & Navigation
   function handleAdvanceRoundOrMatch() {
     sound.unlock();
     if (matchOver) {
@@ -2479,44 +2565,141 @@
     });
   }
 
+  if (btnBattleRec) {
+    btnBattleRec.addEventListener("click", () => {
+      sound.unlock();
+      setRecMode(!recMode);
+    });
+  }
+
   if (btnRecExit) {
     btnRecExit.addEventListener("click", () => {
       setRecMode(false);
     });
   }
 
+  // Screen Switcher
+  function switchScreen(targetId) {
+    sound.unlock();
+    currentScreen = targetId;
+
+    document.querySelectorAll(".screen").forEach((s) => {
+      s.classList.add("hidden");
+    });
+    const target = document.getElementById(targetId);
+    if (target) target.classList.remove("hidden");
+
+    document.querySelectorAll(".bottom-nav .nav-item").forEach((item) => {
+      item.classList.toggle("active", item.getAttribute("data-target") === targetId);
+    });
+
+    if (targetId === "screen-battle") {
+      selecting = false;
+      running = true;
+      btnPlay.textContent = "PAUSE";
+      requestAnimationFrame(resizeCanvas);
+    } else {
+      selecting = true;
+      running = false;
+      btnPlay.textContent = "START";
+    }
+
+    if (targetId === "screen-play") {
+      updateHomeMatchupUI();
+    } else if (targetId === "screen-setup") {
+      updateUnifiedSetupUI();
+    } else if (targetId === "screen-chars") {
+      updateCharDetailUI();
+    } else if (targetId === "screen-profile") {
+      updateProfileUI();
+    }
+  }
+
+  // Navigation Event Handlers
+  document.querySelectorAll(".bottom-nav .nav-item").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.getAttribute("data-target");
+      if (targetId) switchScreen(targetId);
+    });
+  });
+
+  if (btnOpenSandbox) {
+    btnOpenSandbox.addEventListener("click", () => {
+      switchScreen("screen-setup");
+    });
+  }
+
+  if (btnQuickFight) {
+    btnQuickFight.addEventListener("click", () => {
+      switchScreen("screen-battle");
+      initMatch();
+    });
+  }
+
+  if (btnSetupBack) {
+    btnSetupBack.addEventListener("click", () => {
+      switchScreen("screen-play");
+    });
+  }
+
+  if (btnStartBattle) {
+    btnStartBattle.addEventListener("click", () => {
+      switchScreen("screen-battle");
+      initMatch();
+    });
+  }
+
+  if (btnBackToHub) {
+    btnBackToHub.addEventListener("click", () => {
+      switchScreen("screen-play");
+    });
+  }
+
   if (btnFight) {
     btnFight.addEventListener("click", () => {
-      sound.unlock();
-      selecting = false;
-      if (selectScreen) selectScreen.classList.add("hidden");
+      switchScreen("screen-battle");
       initMatch();
     });
   }
 
   if (btnChangeChar) {
     btnChangeChar.addEventListener("click", () => {
-      sound.unlock();
-      openSelectScreen();
+      switchScreen("screen-setup");
     });
   }
 
   if (btnRoster) {
     btnRoster.addEventListener("click", () => {
+      switchScreen("screen-setup");
+    });
+  }
+
+  // Single Central Card Setup Tabs (P1 vs P2)
+  if (tabP1) {
+    tabP1.addEventListener("click", () => {
       sound.unlock();
-      openSelectScreen();
+      activeSlot = 0;
+      updateUnifiedSetupUI();
+    });
+  }
+
+  if (tabP2) {
+    tabP2.addEventListener("click", () => {
+      sound.unlock();
+      activeSlot = 1;
+      updateUnifiedSetupUI();
     });
   }
 
   window.addEventListener("keydown", (e) => {
     if (e.code === "Space") {
       e.preventDefault();
-      if (selecting) {
-        if (btnFight) btnFight.click();
-      } else {
+      if (currentScreen === "screen-setup") {
+        if (btnStartBattle) btnStartBattle.click();
+      } else if (currentScreen === "screen-battle") {
         togglePlay();
       }
-    } else if ((e.key === "r" || e.key === "R") && !selecting) {
+    } else if ((e.key === "r" || e.key === "R") && currentScreen === "screen-battle") {
       sound.unlock();
       initMatch();
     } else if (e.key === "Escape" && recMode) {
@@ -2527,17 +2710,18 @@
   window.addEventListener("pointerdown", () => sound.unlock(), { once: true });
   window.addEventListener("resize", resizeCanvas);
 
+  // Character Previews (Unified Center Card & Character Detail Card)
   function renderIdlePreviews(t) {
-    const drawSide = (canvasEl, cfg, facingRight, phaseOffset) => {
-      if (!canvasEl) return;
+    const drawFighter = (canvasEl, cfg, facingRight, phaseOffset) => {
+      if (!canvasEl || !cfg) return;
       const pCtx = canvasEl.getContext("2d");
       pCtx.clearRect(0, 0, canvasEl.width, canvasEl.height);
 
-      const bob = Math.sin(t * 3.8 + phaseOffset) * 3.5;
+      const bob = Math.sin(t * 3.8 + phaseOffset) * 4;
       const previewBall = {
         x: canvasEl.width * 0.5,
-        y: canvasEl.height * 0.56 + bob,
-        radius: cfg.radius,
+        y: canvasEl.height * 0.54 + bob,
+        radius: cfg.radius * 1.15,
         color: cfg.color,
         costume: cfg.costume,
         weapon: cfg.weapon,
@@ -2552,69 +2736,164 @@
       drawBall(previewBall, pCtx, false);
     };
 
-    drawSide(previewP1, BALL_CONFIGS[0], true, 0);
-    drawSide(previewP2, BALL_CONFIGS[1], false, 1.4);
-  }
-
-  function updatePreviewInfo() {
-    const [c1, c2] = BALL_CONFIGS;
-    if (previewName1) previewName1.textContent = c1.name;
-    if (previewName2) previewName2.textContent = c2.name;
-    if (skillDesc1) {
-      const s1 = c1.skills[0];
-      skillDesc1.textContent = s1 ? `${s1.name.toUpperCase()} • CD ${s1.cooldown}S` : "NO SKILL";
-    }
-    if (skillDesc2) {
-      const s2 = c2.skills[0];
-      skillDesc2.textContent = s2 ? `${s2.name.toUpperCase()} • CD ${s2.cooldown}S` : "NO SKILL";
+    if (currentScreen === "screen-setup" && previewActive) {
+      drawFighter(previewActive, BALL_CONFIGS[activeSlot], activeSlot === 0, 0);
+    } else if (currentScreen === "screen-chars" && detailCanvas) {
+      drawFighter(detailCanvas, CHARACTER_ROSTER[detailCharId], true, 0);
     }
   }
 
-  function openSelectScreen() {
-    selecting = true;
-    running = false;
-    btnPlay.textContent = "START";
-    overlay.classList.add("hidden");
-    if (selectScreen) selectScreen.classList.remove("hidden");
-    updatePreviewInfo();
+  function updateHomeMatchupUI() {
+    if (homeP1Name) homeP1Name.textContent = BALL_CONFIGS[0].name;
+    if (homeP2Name) homeP2Name.textContent = BALL_CONFIGS[1].name;
   }
 
-  function setupRosterSelectors() {
+  function updateUnifiedSetupUI() {
+    const activeCfg = BALL_CONFIGS[activeSlot];
+    if (!activeCfg) return;
+
+    if (tabP1 && tabP2) {
+      tabP1.className = `slot-tab ${activeSlot === 0 ? "tab-active-p1" : ""}`;
+      tabP2.className = `slot-tab ${activeSlot === 1 ? "tab-active-p2" : ""}`;
+    }
+
+    if (activeSlotBanner) {
+      activeSlotBanner.className = `active-slot-banner banner-p${activeSlot + 1}`;
+      activeSlotBanner.textContent = activeSlot === 0 
+        ? "CONFIGURING PLAYER 1 (CRIMSON)" 
+        : "CONFIGURING PLAYER 2 (COBALT)";
+    }
+
+    if (previewActiveName) previewActiveName.textContent = activeCfg.name;
+    if (previewActiveRole) previewActiveRole.textContent = activeCfg.role || `${activeCfg.name} • FIGHTER`;
+
+    if (statValHp) statValHp.textContent = activeCfg.maxHp;
+    if (statValSpd) statValSpd.textContent = activeCfg.speed;
+    if (statValMass) statValMass.textContent = activeCfg.mass;
+    if (statValDmg) statValDmg.textContent = `${activeCfg.damage[0]}-${activeCfg.damage[1]}`;
+
+    if (unifiedCharGrid) {
+      unifiedCharGrid.querySelectorAll(".char-pick-tile").forEach((btn) => {
+        btn.classList.toggle("selected", btn.dataset.id === activeCfg.id);
+      });
+    }
+
+    if (matchupP1Tag) matchupP1Tag.textContent = `P1: ${BALL_CONFIGS[0].name}`;
+    if (matchupP2Tag) matchupP2Tag.textContent = `P2: ${BALL_CONFIGS[1].name}`;
+
+    updateHomeMatchupUI();
+  }
+
+  function updateCharDetailUI() {
+    const cfg = CHARACTER_ROSTER[detailCharId] || CHARACTER_ROSTER.goku;
+    if (!cfg) return;
+
+    if (rosterTabs) {
+      rosterTabs.querySelectorAll(".char-tab-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.id === cfg.id);
+      });
+    }
+
+    if (detailName) detailName.textContent = cfg.name;
+    if (detailTitle) detailTitle.textContent = cfg.title || "Anime Brawler";
+
+    if (detailHpFill) detailHpFill.style.width = `${Math.min(100, Math.round((cfg.maxHp / 400) * 100))}%`;
+    if (detailHpVal) detailHpVal.textContent = `${cfg.maxHp} HP`;
+
+    if (detailSpdFill) detailSpdFill.style.width = `${Math.min(100, Math.round((cfg.speed / 420) * 100))}%`;
+    if (detailSpdVal) detailSpdVal.textContent = `${cfg.speed}`;
+
+    if (detailAtkFill) detailAtkFill.style.width = `${Math.min(100, Math.round((cfg.damage[1] / 20) * 100))}%`;
+    if (detailAtkVal) detailAtkVal.textContent = `${cfg.damage[0]}-${cfg.damage[1]} DMG`;
+
+    if (detailMassFill) detailMassFill.style.width = `${Math.min(100, Math.round((cfg.mass / 1.5) * 100))}%`;
+    if (detailMassVal) detailMassVal.textContent = `${cfg.mass}`;
+
+    const s1 = cfg.skills[0];
+    if (detailSkillName) detailSkillName.textContent = cfg.skillName || (s1 ? s1.name.toUpperCase() : "SKILL");
+    if (detailSkillCd) detailSkillCd.textContent = s1 ? `CD: ${s1.cooldown}S` : "PASSIVE";
+    if (detailSkillDesc) detailSkillDesc.textContent = cfg.skillDesc || "Special character technique.";
+
+    if (detailUltName) detailUltName.textContent = cfg.ultName || "ULTIMATE POWER";
+    if (detailUltDesc) detailUltDesc.textContent = cfg.ultDesc || "5-Hit charged transformation with enhanced combat capabilities.";
+  }
+
+  function updateProfileUI() {
+    const baseMatches = 24;
+    const baseWins = 18;
+    const totalMatches = sessionStats.matches + baseMatches;
+    const totalWins = sessionStats.wins + baseWins;
+
+    if (profMatches) profMatches.textContent = totalMatches;
+    if (profWins) profWins.textContent = totalWins;
+    const wr = Math.round((totalWins / Math.max(1, totalMatches)) * 100);
+    if (profWr) profWr.textContent = `${wr}%`;
+
+    let bestChar = "goku";
+    let maxUsage = -1;
+    for (const [id, count] of Object.entries(sessionStats.charsUsed)) {
+      if (count > maxUsage) {
+        maxUsage = count;
+        bestChar = id;
+      }
+    }
+    if (profFav && CHARACTER_ROSTER[bestChar]) {
+      profFav.textContent = CHARACTER_ROSTER[bestChar].name;
+    }
+  }
+
+  function setupUnifiedSelectors() {
     const entries = Object.values(CHARACTER_ROSTER);
-    const buildPicker = (container, slotIndex) => {
-      if (!container) return;
-      container.innerHTML = "";
+
+    // 1. Unified Sandbox Character Selector Grid
+    if (unifiedCharGrid) {
+      unifiedCharGrid.innerHTML = "";
       for (const char of entries) {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "picker-btn";
+        btn.className = "char-pick-tile";
+        btn.dataset.id = char.id;
         btn.textContent = char.name;
-        if (BALL_CONFIGS[slotIndex].id === char.id) {
-          btn.classList.add("active");
-        }
         btn.addEventListener("click", () => {
           sound.unlock();
-          selectedRosterIds[slotIndex] = char.id;
-          BALL_CONFIGS[slotIndex] = CHARACTER_ROSTER[char.id];
-          container.querySelectorAll(".picker-btn").forEach((b) => b.classList.remove("active"));
-          btn.classList.add("active");
-          updatePreviewInfo();
+          selectedRosterIds[activeSlot] = char.id;
+          BALL_CONFIGS[activeSlot] = CHARACTER_ROSTER[char.id];
+          updateUnifiedSetupUI();
           syncFighterUI();
         });
-        container.appendChild(btn);
+        unifiedCharGrid.appendChild(btn);
       }
-    };
-    buildPicker(pickerP1, 0);
-    buildPicker(pickerP2, 1);
-    updatePreviewInfo();
+    }
+
+    // 2. Character Detail Screen Tabs
+    if (rosterTabs) {
+      rosterTabs.innerHTML = "";
+      for (const char of entries) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "char-tab-btn";
+        btn.dataset.id = char.id;
+        btn.textContent = char.name;
+        btn.addEventListener("click", () => {
+          sound.unlock();
+          detailCharId = char.id;
+          updateCharDetailUI();
+        });
+        rosterTabs.appendChild(btn);
+      }
+    }
+
+    updateUnifiedSetupUI();
+    updateCharDetailUI();
+    updateProfileUI();
   }
 
   // Boot
   if (document.fonts && document.fonts.load) document.fonts.load(`24px ${FONT}`).catch(() => {});
-  setupRosterSelectors();
+  setupUnifiedSelectors();
   resizeCanvas();
   initMatch();
-  openSelectScreen();
+  switchScreen("screen-play");
   requestAnimationFrame(loop);
 })();
 
