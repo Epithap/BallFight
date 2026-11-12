@@ -1,0 +1,252 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 340" width="100%" height="340">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Fredoka:wght@600;700&amp;display=swap');
+
+      .bg-rect { fill: #ffcc00; stroke: #2b1b3d; stroke-width: 6; rx: 24; }
+      .inner-border { fill: none; stroke: #2b1b3d; stroke-width: 3; stroke-dasharray: 8 6; rx: 18; }
+      .dots-pattern { fill: #f39c12; opacity: 0.28; }
+      
+      .title-shadow { font-family: 'Lilita One', cursive, sans-serif; font-size: 46px; fill: #2b1b3d; }
+      .title-main { font-family: 'Lilita One', cursive, sans-serif; font-size: 46px; fill: #ff4757; }
+      .subtitle { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 15px; fill: #2b1b3d; letter-spacing: 2px; }
+
+      /* Animations */
+      @keyframes ballLeft {
+        0%, 100% { transform: translate(190px, 195px) scale(1, 1); }
+        45% { transform: translate(250px, 190px) scale(1.12, 0.9); }
+        50% { transform: translate(265px, 190px) scale(0.85, 1.18); }
+        55% { transform: translate(245px, 190px) scale(1.1, 0.92); }
+      }
+
+      @keyframes ballRight {
+        0%, 100% { transform: translate(390px, 195px) scale(1, 1); }
+        45% { transform: translate(330px, 190px) scale(1.12, 0.9); }
+        50% { transform: translate(315px, 190px) scale(0.85, 1.18); }
+        55% { transform: translate(335px, 190px) scale(1.1, 0.92); }
+      }
+
+      @keyframes clashBurst {
+        0%, 42%, 62%, 100% { opacity: 0; transform: translate(290px, 190px) scale(0.2); }
+        48%, 56% { opacity: 1; transform: translate(290px, 190px) scale(1.15) rotate(12deg); }
+      }
+
+      @keyframes grannyBob {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-7px); }
+      }
+
+      @keyframes coinSwing {
+        0%, 100% { transform: rotate(-5deg); }
+        50% { transform: rotate(5deg); }
+      }
+
+      @keyframes earTwitch {
+        0%, 80%, 100% { transform: rotate(0deg); }
+        85% { transform: rotate(-6deg); }
+        90% { transform: rotate(4deg); }
+      }
+
+      @keyframes speechPop {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.03); }
+      }
+
+      @keyframes auraPulse {
+        0%, 100% { transform: scale(1); opacity: 0.65; }
+        50% { transform: scale(1.15); opacity: 0.95; }
+      }
+
+      .anim-ball-left { animation: ballLeft 2.4s ease-in-out infinite; transform-origin: center; }
+      .anim-ball-right { animation: ballRight 2.4s ease-in-out infinite; transform-origin: center; }
+      .anim-clash { animation: clashBurst 2.4s ease-in-out infinite; transform-origin: center; }
+      .anim-granny { animation: grannyBob 3.2s ease-in-out infinite; }
+      .anim-coin { animation: coinSwing 2.2s ease-in-out infinite; transform-origin: 0px -10px; }
+      .anim-ear { animation: earTwitch 3.5s ease-in-out infinite; transform-origin: center; }
+      .anim-speech { animation: speechPop 3.2s ease-in-out infinite; transform-origin: 700px 80px; }
+      .anim-pulse { animation: auraPulse 1.6s ease-in-out infinite; transform-origin: center; }
+    </style>
+  </defs>
+
+  <!-- Background Card -->
+  <rect x="8" y="8" width="864" height="324" class="bg-rect" />
+  <rect x="18" y="18" width="844" height="304" class="inner-border" />
+
+  <!-- Dots Background Grid -->
+  <g class="dots-pattern">
+    <circle cx="50" cy="50" r="4" /><circle cx="90" cy="50" r="4" /><circle cx="130" cy="50" r="4" /><circle cx="170" cy="50" r="4" />
+    <circle cx="50" cy="90" r="4" /><circle cx="90" cy="90" r="4" /><circle cx="130" cy="90" r="4" /><circle cx="170" cy="90" r="4" />
+    <circle cx="50" cy="130" r="4" /><circle cx="90" cy="130" r="4" /><circle cx="130" cy="130" r="4" /><circle cx="170" cy="130" r="4" />
+    <circle cx="50" cy="270" r="4" /><circle cx="90" cy="270" r="4" /><circle cx="130" cy="270" r="4" /><circle cx="170" cy="270" r="4" />
+    <circle cx="450" cy="50" r="4" /><circle cx="490" cy="50" r="4" /><circle cx="530" cy="50" r="4" />
+  </g>
+
+  <!-- Header Titles -->
+  <g transform="translate(50, 68)">
+    <!-- Shadow & Main 3D Text -->
+    <text x="3" y="3" class="title-shadow">BALL FIGHT : ANIME PHYSICS ARENA</text>
+    <text x="0" y="0" class="title-main">BALL FIGHT : ANIME PHYSICS ARENA</text>
+    <!-- Subtitle pill -->
+    <rect x="0" y="16" width="370" height="26" rx="13" fill="#2b1b3d" />
+    <text x="14" y="34" class="subtitle" fill="#ffffff">★ 100% PURE CANVAS • 60 FPS BRAWLER ★</text>
+  </g>
+
+  <!-- ================= BATTLE CLASH STAGE (LEFT) ================= -->
+  <!-- Arena Platform -->
+  <g transform="translate(70, 245)">
+    <ellipse cx="220" cy="30" rx="180" ry="24" fill="#2b1b3d" opacity="0.35" />
+    <rect x="40" y="18" width="360" height="12" rx="6" fill="#2b1b3d" />
+  </g>
+
+  <!-- Fighter 1: Goku (Strongest Alien) -->
+  <g class="anim-ball-left">
+    <!-- Charging Ki Aura -->
+    <circle cx="0" cy="0" r="42" fill="#ff4757" opacity="0.3" class="anim-pulse" />
+    <!-- Ball Body -->
+    <circle cx="0" cy="0" r="32" fill="#ff793f" stroke="#2b1b3d" stroke-width="4.5" />
+    <!-- Spiky Black Hair -->
+    <path d="M-28 -14 L-42 -32 L-22 -28 L-14 -44 L-2 -29 L16 -46 L18 -26 L36 -32 L26 -12 Z" fill="#2b1b3d" />
+    <!-- Big Anime Eyes -->
+    <ellipse cx="-10" cy="-2" rx="6" ry="8" fill="#ffffff" stroke="#2b1b3d" stroke-width="2.5" />
+    <circle cx="-9" cy="-1" r="3.5" fill="#2b1b3d" />
+    <ellipse cx="10" cy="-2" rx="6" ry="8" fill="#ffffff" stroke="#2b1b3d" stroke-width="2.5" />
+    <circle cx="11" cy="-1" r="3.5" fill="#2b1b3d" />
+    <!-- Cheerful Smirk -->
+    <path d="M-6 11 Q0 17 6 11" fill="none" stroke="#2b1b3d" stroke-width="3" stroke-linecap="round" />
+    <!-- Power Pole (Nyoibo) -->
+    <line x1="-38" y1="28" x2="-14" y2="4" stroke="#ff5252" stroke-width="6" stroke-linecap="round" />
+    <line x1="-38" y1="28" x2="-14" y2="4" stroke="#2b1b3d" stroke-width="1.8" stroke-linecap="round" />
+    <!-- Skill Pill Label -->
+    <rect x="-42" y="38" width="84" height="18" rx="9" fill="#2ed573" stroke="#2b1b3d" stroke-width="2.5" />
+    <text x="0" y="50" font-family="'Lilita One', sans-serif" font-size="10" fill="#ffffff" text-anchor="middle">KAMEHAMEHA</text>
+  </g>
+
+  <!-- Fighter 2: Naruto (Child of Prophecy) -->
+  <g class="anim-ball-right">
+    <!-- Swirling Chakra Ring -->
+    <circle cx="0" cy="0" r="42" fill="#70a1ff" opacity="0.35" class="anim-pulse" />
+    <!-- Ball Body -->
+    <circle cx="0" cy="0" r="32" fill="#ffa502" stroke="#2b1b3d" stroke-width="4.5" />
+    <!-- Spiky Blonde Hair -->
+    <path d="M-28 -14 L-38 -32 L-20 -28 L-12 -44 L0 -28 L14 -44 L18 -26 L36 -32 L26 -12 Z" fill="#ffda79" stroke="#2b1b3d" stroke-width="3" />
+    <!-- Black Headband -->
+    <path d="M-28 -8 Q0 -16 28 -8" fill="none" stroke="#2b1b3d" stroke-width="9" />
+    <rect x="-11" y="-17" width="22" height="10" rx="3" fill="#ced6e0" stroke="#2b1b3d" stroke-width="2" />
+    <circle cx="0" cy="-12" r="2.5" fill="#2b1b3d" />
+    <!-- Eyes -->
+    <ellipse cx="-10" cy="1" rx="6" ry="7" fill="#ffffff" stroke="#2b1b3d" stroke-width="2.5" />
+    <circle cx="-9" cy="2" r="3" fill="#1e90ff" />
+    <ellipse cx="10" cy="1" rx="6" ry="7" fill="#ffffff" stroke="#2b1b3d" stroke-width="2.5" />
+    <circle cx="11" cy="2" r="3" fill="#1e90ff" />
+    <!-- Whisker Marks -->
+    <line x1="-22" y1="2" x2="-14" y2="4" stroke="#2b1b3d" stroke-width="2" />
+    <line x1="-22" y1="7" x2="-14" y2="8" stroke="#2b1b3d" stroke-width="2" />
+    <line x1="14" y1="4" x2="22" y2="2" stroke="#2b1b3d" stroke-width="2" />
+    <line x1="14" y1="8" x2="22" y2="7" stroke="#2b1b3d" stroke-width="2" />
+    <!-- Confident Grin -->
+    <path d="M-7 13 Q0 19 7 13" fill="none" stroke="#2b1b3d" stroke-width="3" stroke-linecap="round" />
+    <!-- Skill Pill Label -->
+    <rect x="-38" y="38" width="76" height="18" rx="9" fill="#1e90ff" stroke="#2b1b3d" stroke-width="2.5" />
+    <text x="0" y="50" font-family="'Lilita One', sans-serif" font-size="10" fill="#ffffff" text-anchor="middle">RASENGAN</text>
+  </g>
+
+  <!-- Clash FX Center Starburst -->
+  <g class="anim-clash">
+    <!-- Comic Shockwave Star -->
+    <polygon points="0,-48 14,-16 48,-14 22,12 32,46 0,24 -32,46 -22,12 -48,-14 -14,-16" fill="#ff4757" stroke="#2b1b3d" stroke-width="4" />
+    <polygon points="0,-36 10,-12 36,-10 16,9 24,34 0,18 -24,34 -16,9 -36,-10 -10,-12" fill="#ffd32a" stroke="#2b1b3d" stroke-width="3" />
+    <!-- Impact Text -->
+    <text x="0" y="6" font-family="'Lilita One', cursive, sans-serif" font-size="20" fill="#2b1b3d" font-weight="900" text-anchor="middle">CRIT!</text>
+  </g>
+
+  <!-- ================= TURBO GRANNY MASCOT (RIGHT) ================= -->
+  <g transform="translate(680, 160)" class="anim-granny">
+    <!-- Mascot Stage Pedestal -->
+    <ellipse cx="0" cy="115" rx="95" ry="16" fill="#2b1b3d" opacity="0.3" />
+
+    <!-- SPEECH BUBBLE -->
+    <g transform="translate(-180, -115)" class="anim-speech">
+      <path d="M 0 0 L 160 0 Q 175 0 175 15 L 175 60 Q 175 75 160 75 L 45 75 L 20 95 L 25 75 L 0 75 Q -15 75 -15 60 L -15 15 Q -15 0 0 0 Z" fill="#ffffff" stroke="#2b1b3d" stroke-width="4" />
+      <text x="5" y="24" font-family="'Lilita One', sans-serif" font-size="14" fill="#ff4757">🐱 TURBO GRANNY :</text>
+      <text x="5" y="44" font-family="'Fredoka', sans-serif" font-weight="700" font-size="12" fill="#2b1b3d">"Ahihi! Oi gaki, shop is WIP!</text>
+      <text x="5" y="60" font-family="'Fredoka', sans-serif" font-weight="700" font-size="11" fill="#747d8c">Brawl in the arena, brat!"</text>
+    </g>
+
+    <!-- Pointed Cat Ears -->
+    <!-- Left Ear -->
+    <g class="anim-ear">
+      <polygon points="-28,-36 -46,-78 -8,-52" fill="#ffffff" stroke="#2b1b3d" stroke-width="5" stroke-linejoin="round" />
+      <polygon points="-26,-42 -40,-70 -12,-52" fill="#c91d24" stroke="#2b1b3d" stroke-width="3" stroke-linejoin="round" />
+    </g>
+    <!-- Right Ear -->
+    <polygon points="28,-36 46,-78 8,-52" fill="#ffffff" stroke="#2b1b3d" stroke-width="5" stroke-linejoin="round" />
+    <polygon points="26,-42 40,-70 12,-52" fill="#c91d24" stroke="#2b1b3d" stroke-width="3" stroke-linejoin="round" />
+
+    <!-- White Ball Head / Body -->
+    <circle cx="0" cy="0" r="54" fill="#ffffff" stroke="#2b1b3d" stroke-width="6" />
+
+    <!-- Iconic Red Forehead Patch (Dandadan) -->
+    <ellipse cx="0" cy="-48" rx="14" ry="8" fill="#99181e" stroke="#2b1b3d" stroke-width="3" />
+
+    <!-- Forehead Furrow Wrinkles -->
+    <line x1="-8" y1="-22" x2="-14" y2="-32" stroke="#2b1b3d" stroke-width="3.2" stroke-linecap="round" />
+    <line x1="8" y1="-22" x2="14" y2="-32" stroke="#2b1b3d" stroke-width="3.2" stroke-linecap="round" />
+
+    <!-- Turbo Granny Eyes (With 4 upper eyelashes each!) -->
+    <!-- Left Eye -->
+    <ellipse cx="-19" cy="0" rx="14" ry="11" fill="#ffffff" stroke="#2b1b3d" stroke-width="4.5" />
+    <ellipse cx="-18" cy="1" rx="9" ry="9" fill="#202028" />
+    <circle cx="-21" cy="-2" r="2.5" fill="#ffffff" />
+    <!-- Left Eyelashes -->
+    <line x1="-31" y1="-5" x2="-37" y2="-13" stroke="#2b1b3d" stroke-width="3.2" stroke-linecap="round" />
+    <line x1="-25" y1="-10" x2="-29" y2="-19" stroke="#2b1b3d" stroke-width="3.2" stroke-linecap="round" />
+    <line x1="-18" y1="-11" x2="-19" y2="-21" stroke="#2b1b3d" stroke-width="3.2" stroke-linecap="round" />
+    <line x1="-11" y1="-9" x2="-9" y2="-18" stroke="#2b1b3d" stroke-width="3.2" stroke-linecap="round" />
+
+    <!-- Right Eye -->
+    <ellipse cx="19" cy="0" rx="14" ry="11" fill="#ffffff" stroke="#2b1b3d" stroke-width="4.5" />
+    <ellipse cx="18" cy="1" rx="9" ry="9" fill="#202028" />
+    <circle cx="16" cy="-2" r="2.5" fill="#ffffff" />
+    <!-- Right Eyelashes -->
+    <line x1="11" y1="-9" x2="9" y2="-18" stroke="#2b1b3d" stroke-width="3.2" stroke-linecap="round" />
+    <line x1="18" y1="-11" x2="19" y2="-21" stroke="#2b1b3d" stroke-width="3.2" stroke-linecap="round" />
+    <line x1="25" y1="-10" x2="29" y2="-19" stroke="#2b1b3d" stroke-width="3.2" stroke-linecap="round" />
+    <line x1="31" y1="-5" x2="37" y2="-13" stroke="#2b1b3d" stroke-width="3.2" stroke-linecap="round" />
+
+    <!-- Whiskers (3 on each cheek) -->
+    <line x1="-26" y1="8" x2="-52" y2="4" stroke="#2b1b3d" stroke-width="3.5" stroke-linecap="round" />
+    <line x1="-26" y1="15" x2="-54" y2="16" stroke="#2b1b3d" stroke-width="3.5" stroke-linecap="round" />
+    <line x1="-26" y1="22" x2="-50" y2="28" stroke="#2b1b3d" stroke-width="3.5" stroke-linecap="round" />
+    <line x1="26" y1="8" x2="52" y2="4" stroke="#2b1b3d" stroke-width="3.5" stroke-linecap="round" />
+    <line x1="26" y1="15" x2="54" y2="16" stroke="#2b1b3d" stroke-width="3.5" stroke-linecap="round" />
+    <line x1="26" y1="22" x2="50" y2="28" stroke="#2b1b3d" stroke-width="3.5" stroke-linecap="round" />
+
+    <!-- Small Black Nose & Philtrum -->
+    <polygon points="0,15 -5,10 5,10" fill="#1b1b1f" stroke="#2b1b3d" stroke-width="1.5" />
+    <line x1="0" y1="15" x2="0" y2="21" stroke="#2b1b3d" stroke-width="3.5" stroke-linecap="round" />
+
+    <!-- Wavy Cat Mouth ('ω' smirk) -->
+    <path d="M-13 22 Q-6.5 28 0 22 Q6.5 28 13 22" fill="none" stroke="#2b1b3d" stroke-width="4" stroke-linecap="round" />
+    <path d="M-6 32 Q0 35 6 32" fill="none" stroke="#2b1b3d" stroke-width="3" stroke-linecap="round" />
+
+    <!-- Red Collar & Green Scalloped Bib -->
+    <path d="M-36 44 Q0 66 36 44" fill="none" stroke="#1b8a4f" stroke-width="12" stroke-linecap="round" />
+    <path d="M-30 42 Q0 60 30 42" fill="none" stroke="#c0292b" stroke-width="8" stroke-linecap="round" />
+
+    <!-- Golden Bell -->
+    <circle cx="0" cy="54" r="9" fill="#f5b041" stroke="#2b1b3d" stroke-width="3.5" />
+    <line x1="-7" y1="53" x2="7" y2="53" stroke="#2b1b3d" stroke-width="2.5" />
+    <circle cx="0" cy="57" r="2" fill="#2b1b3d" />
+
+    <!-- Swinging Golden Koban Medallion "千万" (Senman / 10 Million) -->
+    <g class="anim-coin" transform="translate(0, 68)">
+      <ellipse cx="0" cy="14" rx="16" ry="21" fill="#f39c12" stroke="#2b1b3d" stroke-width="4" />
+      <text x="0" y="9" font-family="'Lilita One', sans-serif" font-weight="900" font-size="14" fill="#1b1b1f" text-anchor="middle">千</text>
+      <text x="0" y="24" font-family="'Lilita One', sans-serif" font-weight="900" font-size="14" fill="#1b1b1f" text-anchor="middle">万</text>
+    </g>
+
+    <!-- Name Ribbon Badge -->
+    <rect x="-65" y="108" width="130" height="24" rx="12" fill="#ff4757" stroke="#2b1b3d" stroke-width="3" />
+    <text x="0" y="124" font-family="'Lilita One', sans-serif" font-size="12" fill="#ffffff" text-anchor="middle">TURBO GRANNY</text>
+  </g>
+</svg>

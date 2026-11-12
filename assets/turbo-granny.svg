@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="100%" height="320">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Fredoka:wght@600;700&amp;display=swap');
+
+      .bg-circle { fill: #fbf5e6; stroke: #2b1b3d; stroke-width: 8; }
+      
+      @keyframes floatGranny {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+      }
+
+      @keyframes coinSwing {
+        0%, 100% { transform: rotate(-7deg); }
+        50% { transform: rotate(7deg); }
+      }
+
+      @keyframes earTwitchLeft {
+        0%, 80%, 100% { transform: rotate(0deg); }
+        85% { transform: rotate(-8deg); }
+        90% { transform: rotate(5deg); }
+      }
+
+      @keyframes blinkEyes {
+        0%, 92%, 100% { transform: scaleY(1); }
+        95% { transform: scaleY(0.1); }
+      }
+
+      .anim-float { animation: floatGranny 3s ease-in-out infinite; }
+      .anim-coin { animation: coinSwing 2s ease-in-out infinite; transform-origin: 160px 225px; }
+      .anim-ear-l { animation: earTwitchLeft 3.6s ease-in-out infinite; transform-origin: 120px 80px; }
+      .anim-eyes { animation: blinkEyes 4s ease-in-out infinite; transform-origin: center; }
+    </style>
+  </defs>
+
+  <!-- Outer Circular Card -->
+  <circle cx="160" cy="160" r="150" class="bg-circle" />
+  <circle cx="160" cy="160" r="138" fill="none" stroke="#2b1b3d" stroke-width="3" stroke-dasharray="8 6" />
+
+  <g class="anim-float">
+    <!-- Pointed Cat Ears -->
+    <!-- Left Ear -->
+    <g class="anim-ear-l">
+      <polygon points="120,95 90,40 145,72" fill="#ffffff" stroke="#2b1b3d" stroke-width="6" stroke-linejoin="round" />
+      <polygon points="122,88 100,50 140,73" fill="#c91d24" stroke="#2b1b3d" stroke-width="3.5" stroke-linejoin="round" />
+    </g>
+    <!-- Right Ear -->
+    <g>
+      <polygon points="200,95 230,40 175,72" fill="#ffffff" stroke="#2b1b3d" stroke-width="6" stroke-linejoin="round" />
+      <polygon points="198,88 220,50 180,73" fill="#c91d24" stroke="#2b1b3d" stroke-width="3.5" stroke-linejoin="round" />
+    </g>
+
+    <!-- White Ball Head Body -->
+    <circle cx="160" cy="145" r="70" fill="#ffffff" stroke="#2b1b3d" stroke-width="7" />
+
+    <!-- Forehead Red Patch (Dandadan) -->
+    <ellipse cx="160" cy="82" rx="18" ry="10" fill="#99181e" stroke="#2b1b3d" stroke-width="3.5" />
+
+    <!-- Eyebrow Furrow Wrinkles -->
+    <line x1="148" y1="116" x2="140" y2="102" stroke="#2b1b3d" stroke-width="4" stroke-linecap="round" />
+    <line x1="172" y1="116" x2="180" y2="102" stroke="#2b1b3d" stroke-width="4" stroke-linecap="round" />
+
+    <!-- Turbo Granny Eyes -->
+    <g class="anim-eyes">
+      <!-- Left Eye -->
+      <ellipse cx="134" cy="144" rx="18" ry="14" fill="#ffffff" stroke="#2b1b3d" stroke-width="5" />
+      <ellipse cx="135" cy="145" rx="11" ry="11" fill="#202028" />
+      <circle cx="131" cy="141" r="3.2" fill="#ffffff" />
+      <!-- Left Eyelashes -->
+      <line x1="118" y1="138" x2="110" y2="128" stroke="#2b1b3d" stroke-width="3.8" stroke-linecap="round" />
+      <line x1="126" y1="132" x2="122" y2="120" stroke="#2b1b3d" stroke-width="3.8" stroke-linecap="round" />
+      <line x1="136" y1="130" x2="135" y2="118" stroke="#2b1b3d" stroke-width="3.8" stroke-linecap="round" />
+      <line x1="145" y1="133" x2="147" y2="121" stroke="#2b1b3d" stroke-width="3.8" stroke-linecap="round" />
+
+      <!-- Right Eye -->
+      <ellipse cx="186" cy="144" rx="18" ry="14" fill="#ffffff" stroke="#2b1b3d" stroke-width="5" />
+      <ellipse cx="185" cy="145" rx="11" ry="11" fill="#202028" />
+      <circle cx="182" cy="141" r="3.2" fill="#ffffff" />
+      <!-- Right Eyelashes -->
+      <line x1="175" y1="133" x2="173" y2="121" stroke="#2b1b3d" stroke-width="3.8" stroke-linecap="round" />
+      <line x1="184" y1="130" x2="185" y2="118" stroke="#2b1b3d" stroke-width="3.8" stroke-linecap="round" />
+      <line x1="194" y1="132" x2="198" y2="120" stroke="#2b1b3d" stroke-width="3.8" stroke-linecap="round" />
+      <line x1="202" y1="138" x2="210" y2="128" stroke="#2b1b3d" stroke-width="3.8" stroke-linecap="round" />
+    </g>
+
+    <!-- Whiskers -->
+    <line x1="125" y1="154" x2="90" y2="148" stroke="#2b1b3d" stroke-width="4.5" stroke-linecap="round" />
+    <line x1="125" y1="163" x2="88" y2="164" stroke="#2b1b3d" stroke-width="4.5" stroke-linecap="round" />
+    <line x1="125" y1="172" x2="92" y2="180" stroke="#2b1b3d" stroke-width="4.5" stroke-linecap="round" />
+    <line x1="195" y1="154" x2="230" y2="148" stroke="#2b1b3d" stroke-width="4.5" stroke-linecap="round" />
+    <line x1="195" y1="163" x2="232" y2="164" stroke="#2b1b3d" stroke-width="4.5" stroke-linecap="round" />
+    <line x1="195" y1="172" x2="228" y2="180" stroke="#2b1b3d" stroke-width="4.5" stroke-linecap="round" />
+
+    <!-- Nose & Philtrum -->
+    <polygon points="160,163 153,156 167,156" fill="#1b1b1f" stroke="#2b1b3d" stroke-width="2" />
+    <line x1="160" y1="163" x2="160" y2="171" stroke="#2b1b3d" stroke-width="4" stroke-linecap="round" />
+
+    <!-- Wavy 'ω' Smirk Mouth -->
+    <path d="M144 172 Q152 180 160 172 Q168 180 176 172" fill="none" stroke="#2b1b3d" stroke-width="4.5" stroke-linecap="round" />
+    <path d="M152 186 Q160 190 168 186" fill="none" stroke="#2b1b3d" stroke-width="3.5" stroke-linecap="round" />
+
+    <!-- Red Collar & Green Scalloped Bib -->
+    <path d="M112 201 Q160 230 208 201" fill="none" stroke="#1b8a4f" stroke-width="15" stroke-linecap="round" />
+    <path d="M120 198 Q160 222 200 198" fill="none" stroke="#c0292b" stroke-width="10" stroke-linecap="round" />
+
+    <!-- Golden Bell -->
+    <circle cx="160" cy="214" r="12" fill="#f5b041" stroke="#2b1b3d" stroke-width="4" />
+    <line x1="150" y1="213" x2="170" y2="213" stroke="#2b1b3d" stroke-width="3" />
+    <circle cx="160" cy="218" r="2.8" fill="#2b1b3d" />
+
+    <!-- Swinging Golden Koban Coin "千万" (Senman) -->
+    <g class="anim-coin">
+      <ellipse cx="160" cy="248" rx="22" ry="28" fill="#f39c12" stroke="#2b1b3d" stroke-width="5" />
+      <text x="160" y="242" font-family="'Lilita One', sans-serif" font-weight="900" font-size="18" fill="#1b1b1f" text-anchor="middle">千</text>
+      <text x="160" y="262" font-family="'Lilita One', sans-serif" font-weight="900" font-size="18" fill="#1b1b1f" text-anchor="middle">万</text>
+    </g>
+  </g>
+
+  <!-- Mascot Bottom Ribbon -->
+  <g transform="translate(160, 290)">
+    <rect x="-80" y="-14" width="160" height="28" rx="14" fill="#ff4757" stroke="#2b1b3d" stroke-width="4" />
+    <text x="0" y="5" font-family="'Lilita One', sans-serif" font-size="14" fill="#ffffff" text-anchor="middle">TURBO GRANNY</text>
+  </g>
+</svg>
