@@ -193,10 +193,16 @@ body {
   box-shadow: inset 0 2px 0 rgba(0,0,0,0.05);
 }
 
-.bubble-p1, .bubble-p2 {
+.bubble-fighter {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.home-ball-avatar {
+  width: 42px;
+  height: 42px;
+  display: block;
 }
 
 .bubble-tag {
@@ -214,13 +220,19 @@ body {
   color: var(--ink);
 }
 
-.bubble-vs {
-  font-size: 20px;
-  color: var(--red);
-  transform: rotate(-8deg);
-  -webkit-text-stroke: 4px var(--ink);
-  paint-order: stroke fill;
-  text-shadow: 0 2px 0 var(--ink);
+.bubble-vs-circle {
+  width: 36px;
+  height: 36px;
+  background: var(--red);
+  color: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  box-shadow: 0 3px 0 var(--ink);
+  transform: rotate(-6deg);
 }
 
 .card-btn-group {
@@ -231,7 +243,41 @@ body {
 
 .locked-card {
   background: #f1ede1;
-  opacity: 0.9;
+  opacity: 0.95;
+}
+
+/* Campaign Road Map Preview */
+.campaign-stages-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fdfaf0;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  padding: 10px 8px;
+  margin: 4px 0;
+}
+
+.stage-pip {
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  padding: 4px 8px;
+  box-shadow: 0 2px 0 var(--ink);
+}
+.stage-pip.cleared { background: var(--green); color: var(--white); }
+.stage-pip.locked { background: #dcd7ca; opacity: 0.6; }
+.stage-pip.boss-pip { background: var(--red); color: var(--white); }
+
+.stage-line {
+  flex: 1;
+  height: 4px;
+  background: var(--ink);
+  border-radius: 2px;
+  max-width: 24px;
 }
 
 /* ================= SINGLE-CARD CHARACTER SELECT (SETUP) ================= */
@@ -766,7 +812,46 @@ body {
 
 /* ================= CHAR DETAIL & ROSTER GALLERY ================= */
 .roster-gallery-card {
-  gap: 14px;
+  gap: 12px;
+}
+
+/* Category Filter Chips */
+.filter-chips-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 2px 2px 6px;
+  scrollbar-width: none;
+}
+.filter-chips-row::-webkit-scrollbar { display: none; }
+
+.filter-chip {
+  font-family: var(--font);
+  font-size: 11px;
+  color: var(--ink);
+  background: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  padding: 4px 12px;
+  box-shadow: 0 3px 0 var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.08s, box-shadow 0.08s, background-color 0.08s;
+}
+
+.filter-chip:hover {
+  background: #fff8df;
+}
+
+.filter-chip:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.filter-chip.active {
+  background: var(--sun);
+  box-shadow: 0 2px 0 var(--ink);
+  transform: translateY(1px);
 }
 
 .avatar-roster-grid {
@@ -839,12 +924,61 @@ body {
   border-radius: 999px;
 }
 
-/* Detail Card Topbar */
-.detail-card-topbar {
+/* ================= OVERLAY MODAL (FIGHTER DETAIL OVERLAY ✖) ================= */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 27, 61, 0.72);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  padding: 16px;
+  z-index: 999;
+}
+
+.modal-backdrop.hidden {
+  display: none !important;
+}
+
+.modal-detail-card {
   width: 100%;
+  max-width: 440px;
+  max-height: 88vh;
+  overflow-y: auto;
+  position: relative;
+  padding: 20px 14px 14px;
+  box-shadow: 0 10px 0 var(--ink);
+  animation: pop 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  background: var(--red);
+  color: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: 0 4px 0 var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.08s, box-shadow 0.08s;
+  z-index: 10;
+}
+
+.modal-close-btn:hover {
+  background: var(--red-dark);
+}
+
+.modal-close-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--ink);
 }
 
 .detail-hero-box {
@@ -965,50 +1099,87 @@ body {
   line-height: 1.35;
 }
 
-/* ================= PROFILE SCREEN ================= */
+/* ================= PROFILE SCREEN (PASSPORT STYLE) ================= */
 .profile-hero-bubble {
   display: flex;
   align-items: center;
   gap: 14px;
   background: #fdfaf0;
   border: 4px solid var(--ink);
-  border-radius: 18px;
-  padding: 12px;
+  border-radius: 20px;
+  padding: 12px 14px;
 }
 
-.profile-avatar {
-  width: 58px;
-  height: 58px;
+.profile-avatar-box {
+  position: relative;
+  width: 62px;
+  height: 62px;
   background: var(--sun);
   border: 4px solid var(--ink);
-  border-radius: 18px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 30px;
+  font-size: 32px;
   box-shadow: 0 4px 0 var(--ink);
 }
 
+.profile-lvl-badge {
+  position: absolute;
+  bottom: -6px;
+  background: var(--red);
+  color: var(--white);
+  font-size: 9px;
+  padding: 1px 7px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  letter-spacing: 0.05em;
+}
+
 .profile-meta {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+}
+
+.profile-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .profile-player-name {
-  font-size: 24px;
+  font-size: 22px;
   line-height: 1;
 }
 
 .profile-rank-badge {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--white);
   background: var(--red);
-  padding: 2px 10px;
+  padding: 2px 8px;
   border: 2px solid var(--ink);
   border-radius: 999px;
-  display: inline-block;
-  align-self: flex-start;
+}
+
+.profile-exp-bar {
+  height: 12px;
+  background: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.exp-fill-track {
+  height: 100%;
+  background: var(--green);
+}
+
+.exp-text-counter {
+  font-size: 10px;
+  opacity: 0.7;
 }
 
 .stats-quad-grid {
@@ -1055,27 +1226,93 @@ body {
 }
 
 .trophy-pill {
-  background: #f1eddf;
+  background: #fdfaf0;
   border: 3px solid var(--ink);
-  border-radius: 10px;
-  padding: 8px 2px;
+  border-radius: 12px;
+  padding: 8px 4px;
   text-align: center;
-  font-size: 11px;
-}
-
-/* ================= SHOP SCREEN ================= */
-.shop-card {
-  text-align: center;
-  padding: 30px 16px;
+  box-shadow: 0 3px 0 var(--ink);
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 2px;
 }
 
-.shop-big-icon {
-  font-size: 56px;
+.trophy-icon { font-size: 20px; }
+.trophy-title { font-size: 10px; color: var(--ink); }
+
+/* ================= SHOP SCREEN (ANIME BAZAAR) ================= */
+.shop-card {
+  gap: 12px;
 }
 
-.shop-title {
-  font-size: 24px;
+.merchant-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fdfaf0;
+  border: 4px solid var(--ink);
+  border-radius: 18px;
+  padding: 12px;
+}
+
+.merchant-avatar {
+  font-size: 38px;
+  background: var(--sun);
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 0 var(--ink);
+}
+
+.merchant-bubble {
+  flex: 1;
+  background: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  padding: 8px 10px;
+  position: relative;
+}
+
+.merchant-speech {
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.35;
+  font-style: italic;
+}
+
+.shop-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.shop-item-card {
+  background: #fdfaf0;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  padding: 10px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 3px 0 var(--ink);
+  text-align: center;
+}
+
+.shop-item-icon { font-size: 28px; }
+.shop-item-name { font-size: 11px; color: var(--ink); line-height: 1.1; }
+.shop-item-price { font-size: 11px; color: var(--red); }
+.shop-lock-tag {
+  font-size: 9px;
+  background: #3f4654;
+  color: var(--white);
+  padding: 1px 6px;
+  border-radius: 999px;
 }
 
 /* ================= REC MODE ================= */

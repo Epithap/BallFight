@@ -33,32 +33,46 @@
       <section id="screen-play" class="screen screen-play">
         <!-- Sandbox Mode Card -->
         <div class="cartoon-card mode-card">
-          <div class="stamp stamp-yellow">SANDBOX ARENA</div>
-          <p class="card-desc">Custom 1v1 anime brawl! Pick any fighters, test charged skills, and watch them clash!</p>
+          <div class="stamp stamp-yellow">SANDBOX 1V1</div>
+          <p class="card-desc">Custom anime physics clash! Pick any fighters, test charged skills, and watch the chaos!</p>
           
           <div class="matchup-preview-bubble">
-            <div class="bubble-p1">
+            <div class="bubble-fighter bubble-p1">
               <span class="bubble-tag tag-p1">P1</span>
+              <canvas id="home-p1-canvas" class="home-ball-avatar" width="46" height="46"></canvas>
               <span id="home-p1-name" class="bubble-name">GOKU</span>
             </div>
-            <span class="bubble-vs">VS</span>
-            <div class="bubble-p2">
+            <div class="bubble-vs-circle">VS</div>
+            <div class="bubble-fighter bubble-p2">
               <span id="home-p2-name" class="bubble-name">NARUTO</span>
+              <canvas id="home-p2-canvas" class="home-ball-avatar" width="46" height="46"></canvas>
               <span class="bubble-tag tag-p2">P2</span>
             </div>
           </div>
 
           <div class="card-btn-group">
-            <button id="btn-open-sandbox" class="btn btn-green btn-big" type="button">CHOOSE & FIGHT!</button>
+            <button id="btn-open-sandbox" class="btn btn-green btn-big" type="button">CHOOSE FIGHTERS</button>
             <button id="btn-quick-fight" class="btn btn-gold" type="button">QUICK START</button>
           </div>
         </div>
 
-        <!-- Campaign Mode Card (Locked) -->
+        <!-- Campaign Mode Card (Locked Story Ladder) -->
         <div class="cartoon-card mode-card locked-card">
           <div class="stamp stamp-gray">STORY SAGA</div>
-          <p class="card-desc">Fight tournament brackets, unlock hidden anime balls, and face multiverse bosses!</p>
-          <div class="stamp stamp-red stamp-center">🔒 COMING SOON</div>
+          <p class="card-desc">Multiverse Tournament ladder: fight through anime worlds and conquer legendary bosses!</p>
+          
+          <!-- Campaign Road Map Preview -->
+          <div class="campaign-stages-row">
+            <div class="stage-pip cleared">1</div>
+            <div class="stage-line"></div>
+            <div class="stage-pip locked">2</div>
+            <div class="stage-line"></div>
+            <div class="stage-pip locked">3</div>
+            <div class="stage-line"></div>
+            <div class="stage-pip boss-pip">👑 BOSS</div>
+          </div>
+
+          <div class="stamp stamp-red stamp-center">🔒 LOCKED • COMING SOON</div>
         </div>
       </section>
 
@@ -217,78 +231,22 @@
 
       <!-- ================= 4. CHAR DETAIL SCREEN ================= -->
       <section id="screen-chars" class="screen screen-chars hidden">
-        <!-- 4A. ROSTER GALLERY VIEW (Mini Avatar Grid) -->
-        <div id="roster-gallery-view" class="cartoon-card roster-gallery-card">
+        <div class="cartoon-card roster-gallery-card">
           <div class="stamp stamp-yellow">FIGHTER ROSTER</div>
-          <p class="card-desc">Tap any fighter to inspect their attributes, signature skills, and ultimate form!</p>
+          <p class="card-desc">Tap any fighter card to open their full power sheet and combat attributes!</p>
           
+          <!-- Category Filter Pills -->
+          <div class="filter-chips-row" id="roster-filter-chips">
+            <button class="filter-chip active" data-filter="all" type="button">ALL (4)</button>
+            <button class="filter-chip" data-filter="saiyan" type="button">SAIYAN</button>
+            <button class="filter-chip" data-filter="ninja" type="button">NINJA</button>
+            <button class="filter-chip" data-filter="pirate" type="button">PIRATE</button>
+            <button class="filter-chip" data-filter="shinigami" type="button">SHINIGAMI</button>
+          </div>
+
+          <!-- Scalable Avatar Grid -->
           <div class="avatar-roster-grid" id="roster-avatar-grid">
             <!-- Populated via JS with Mini Avatar Tiles -->
-          </div>
-        </div>
-
-        <!-- 4B. DETAIL MODAL/VIEW (Shown on click) -->
-        <div id="roster-detail-view" class="cartoon-card detail-card hidden">
-          <div class="detail-card-topbar">
-            <button id="btn-roster-back" class="btn btn-sm" type="button">◀ ROSTER</button>
-            <div class="stamp stamp-yellow">FIGHTER PROFILE</div>
-            <div style="width: 60px;"></div>
-          </div>
-
-          <div class="detail-hero-box">
-            <canvas id="detail-canvas" class="detail-canvas" width="140" height="140"></canvas>
-            <div class="detail-hero-info">
-              <h2 id="detail-name" class="detail-hero-name">GOKU</h2>
-              <p id="detail-title" class="detail-hero-title">Saiyan of Earth • Ki Blaster</p>
-            </div>
-          </div>
-
-          <!-- Chunky Stat Bars -->
-          <div class="stat-meters-block">
-            <div class="stat-row">
-              <span class="stat-name">HP</span>
-              <div class="stat-meter-track"><div id="detail-hp-fill" class="stat-meter-fill fill-hp" style="width: 85%"></div></div>
-              <span id="detail-hp-val" class="stat-val">340 HP</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-name">SPEED</span>
-              <div class="stat-meter-track"><div id="detail-spd-fill" class="stat-meter-fill fill-spd" style="width: 75%"></div></div>
-              <span id="detail-spd-val" class="stat-val">365</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-name">POWER</span>
-              <div class="stat-meter-track"><div id="detail-atk-fill" class="stat-meter-fill fill-atk" style="width: 80%"></div></div>
-              <span id="detail-atk-val" class="stat-val">9-15 DMG</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-name">MASS</span>
-              <div class="stat-meter-track"><div id="detail-mass-fill" class="stat-meter-fill fill-mass" style="width: 70%"></div></div>
-              <span id="detail-mass-val" class="stat-val">1.05</span>
-            </div>
-          </div>
-
-          <!-- Skill Callout -->
-          <div class="power-bubble skill-bubble">
-            <div class="power-header">
-              <span class="power-badge badge-blue">SIGNATURE SKILL</span>
-              <span id="detail-skill-cd" class="power-cd">CD: 3.6S</span>
-            </div>
-            <h3 id="detail-skill-name" class="power-title">KAMEHAMEHA</h3>
-            <p id="detail-skill-desc" class="power-desc">
-              Locks aim onto the rival ball, charging ki before unleashing a continuous energy beam.
-            </p>
-          </div>
-
-          <!-- Ultimate Callout -->
-          <div class="power-bubble ult-bubble">
-            <div class="power-header">
-              <span class="power-badge badge-red">ULTIMATE (5 HITS)</span>
-              <span class="power-cd">TRANSFORMATION</span>
-            </div>
-            <h3 id="detail-ult-name" class="power-title">KAIOKEN BURST</h3>
-            <p id="detail-ult-desc" class="power-desc">
-              Enters crimson Kaioken state with glowing red aura! Speeds up and charges massive Kamehameha beams.
-            </p>
           </div>
         </div>
       </section>
@@ -296,20 +254,31 @@
       <!-- ================= 5. PROFILE SCREEN ================= -->
       <section id="screen-profile" class="screen screen-profile hidden">
         <div class="cartoon-card profile-card">
-          <div class="stamp stamp-yellow">PLAYER RECORD</div>
+          <div class="stamp stamp-yellow">BRAWLER LICENSE</div>
 
+          <!-- Arcade Passport Banner -->
           <div class="profile-hero-bubble">
-            <div class="profile-avatar">🥋</div>
+            <div class="profile-avatar-box">
+              <span class="profile-avatar-emoji">🥋</span>
+              <span class="profile-lvl-badge">LV.12</span>
+            </div>
             <div class="profile-meta">
-              <h2 class="profile-player-name">BALL FIGHTER</h2>
-              <span class="profile-rank-badge">RANK: GRAND CHAMPION</span>
+              <div class="profile-name-row">
+                <h2 class="profile-player-name">EPITHAP</h2>
+                <span class="profile-rank-badge">👑 CHAMPION</span>
+              </div>
+              <div class="profile-exp-bar">
+                <div class="exp-fill-track" style="width: 74%;"></div>
+              </div>
+              <span class="exp-text-counter">EXP 1,840 / 2,500</span>
             </div>
           </div>
 
+          <!-- Stats 2x2 Grid -->
           <div class="stats-quad-grid">
             <div class="stat-quad-box">
               <span class="quad-num" id="prof-matches">24</span>
-              <span class="quad-lbl">MATCHES</span>
+              <span class="quad-lbl">BRAWLS</span>
             </div>
             <div class="stat-quad-box">
               <span class="quad-num" id="prof-wins">18</span>
@@ -321,17 +290,30 @@
             </div>
             <div class="stat-quad-box">
               <span class="quad-num" id="prof-fav">GOKU</span>
-              <span class="quad-lbl">FAVORITE</span>
+              <span class="quad-lbl">MOST USED</span>
             </div>
           </div>
 
+          <!-- Trophies Section -->
           <div class="trophies-block">
-            <h4 class="trophies-title">TROPHIES EARNED</h4>
+            <h4 class="trophies-title">BATTLE TROPHIES</h4>
             <div class="trophy-row">
-              <div class="trophy-pill">🥇 1st KO</div>
-              <div class="trophy-pill">🔥 5x Ult</div>
-              <div class="trophy-pill">⭐ Lucky Crit</div>
-              <div class="trophy-pill">👑 2-0 Sweep</div>
+              <div class="trophy-pill" title="First K.O. landed">
+                <span class="trophy-icon">🥇</span>
+                <span class="trophy-title">1st KO</span>
+              </div>
+              <div class="trophy-pill" title="5 Ult transformations">
+                <span class="trophy-icon">🔥</span>
+                <span class="trophy-title">5x Ult</span>
+              </div>
+              <div class="trophy-pill" title="0.1% Lucky Crit">
+                <span class="trophy-icon">⭐</span>
+                <span class="trophy-title">Lucky Crit</span>
+              </div>
+              <div class="trophy-pill" title="Flawless 2-0 Round Sweep">
+                <span class="trophy-icon">👑</span>
+                <span class="trophy-title">2-0 Sweep</span>
+              </div>
             </div>
           </div>
         </div>
@@ -340,16 +322,108 @@
       <!-- ================= 6. SHOP SCREEN ================= -->
       <section id="screen-shop" class="screen screen-shop hidden">
         <div class="cartoon-card shop-card">
-          <div class="stamp stamp-yellow">ANIME SHOP</div>
-          <div class="shop-big-icon">🛒</div>
-          <h2 class="shop-title">CLOSED FOR RESTOCK!</h2>
-          <p class="card-desc">Special skins, custom ball trails, and anime voice packs are in development for the next update!</p>
-          <div class="stamp stamp-red stamp-center">SEASON 2 ARRIVING SOON</div>
+          <div class="stamp stamp-yellow">ANIME BAZAAR</div>
+          
+          <!-- Merchant Speech Bubble -->
+          <div class="merchant-box">
+            <div class="merchant-avatar">🐱‍👤</div>
+            <div class="merchant-bubble">
+              <p class="merchant-speech">"Yo fighter! The weaponsmiths and aura enchanters are forging legendary anime cosmetics for Season 2!"</p>
+            </div>
+          </div>
+
+          <!-- Showcase Items Preview -->
+          <div class="shop-preview-grid">
+            <div class="shop-item-card">
+              <div class="shop-item-icon">🔮</div>
+              <h3 class="shop-item-name">KAIOKEN AURA</h3>
+              <span class="shop-item-price">🪙 5,000</span>
+              <span class="shop-lock-tag">🔒 LOCKED</span>
+            </div>
+            <div class="shop-item-card">
+              <div class="shop-item-icon">🌀</div>
+              <h3 class="shop-item-name">RASEN VORTEX</h3>
+              <span class="shop-item-price">🪙 3,500</span>
+              <span class="shop-lock-tag">🔒 LOCKED</span>
+            </div>
+            <div class="shop-item-card">
+              <div class="shop-item-icon">🏟️</div>
+              <h3 class="shop-item-name">TENKAICHI MAP</h3>
+              <span class="shop-item-price">💎 150</span>
+              <span class="shop-lock-tag">🔒 LOCKED</span>
+            </div>
+          </div>
+
+          <div class="stamp stamp-red stamp-center">RESTOCK IN: NEXT MAJOR UPDATE</div>
         </div>
       </section>
 
     </div>
   </main>
+
+  <!-- ================= FIGHTER DETAIL OVERLAY MODAL (DITIMPA DENGAN TOMBOL SILANG ✖) ================= -->
+  <div id="roster-modal" class="modal-backdrop hidden">
+    <div class="cartoon-card modal-detail-card">
+      <button id="btn-modal-close" class="modal-close-btn" type="button" aria-label="Close">✖</button>
+      <div class="stamp stamp-yellow">FIGHTER PROFILE</div>
+
+      <div class="detail-hero-box">
+        <canvas id="detail-canvas" class="detail-canvas" width="140" height="140"></canvas>
+        <div class="detail-hero-info">
+          <h2 id="detail-name" class="detail-hero-name">GOKU</h2>
+          <p id="detail-title" class="detail-hero-title">Saiyan of Earth • Ki Blaster</p>
+        </div>
+      </div>
+
+      <!-- Chunky Stat Bars -->
+      <div class="stat-meters-block">
+        <div class="stat-row">
+          <span class="stat-name">HP</span>
+          <div class="stat-meter-track"><div id="detail-hp-fill" class="stat-meter-fill fill-hp" style="width: 85%"></div></div>
+          <span id="detail-hp-val" class="stat-val">340 HP</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-name">SPEED</span>
+          <div class="stat-meter-track"><div id="detail-spd-fill" class="stat-meter-fill fill-spd" style="width: 75%"></div></div>
+          <span id="detail-spd-val" class="stat-val">365</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-name">POWER</span>
+          <div class="stat-meter-track"><div id="detail-atk-fill" class="stat-meter-fill fill-atk" style="width: 80%"></div></div>
+          <span id="detail-atk-val" class="stat-val">9-15 DMG</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-name">MASS</span>
+          <div class="stat-meter-track"><div id="detail-mass-fill" class="stat-meter-fill fill-mass" style="width: 70%"></div></div>
+          <span id="detail-mass-val" class="stat-val">1.05</span>
+        </div>
+      </div>
+
+      <!-- Skill Callout -->
+      <div class="power-bubble skill-bubble">
+        <div class="power-header">
+          <span class="power-badge badge-blue">SIGNATURE SKILL</span>
+          <span id="detail-skill-cd" class="power-cd">CD: 3.6S</span>
+        </div>
+        <h3 id="detail-skill-name" class="power-title">KAMEHAMEHA</h3>
+        <p id="detail-skill-desc" class="power-desc">
+          Locks aim onto the rival ball, charging ki before unleashing a continuous energy beam.
+        </p>
+      </div>
+
+      <!-- Ultimate Callout -->
+      <div class="power-bubble ult-bubble">
+        <div class="power-header">
+          <span class="power-badge badge-red">ULTIMATE (5 HITS)</span>
+          <span class="power-cd">TRANSFORMATION</span>
+        </div>
+        <h3 id="detail-ult-name" class="power-title">KAIOKEN BURST</h3>
+        <p id="detail-ult-desc" class="power-desc">
+          Enters crimson Kaioken state with glowing red aura! Speeds up and charges massive Kamehameha beams.
+        </p>
+      </div>
+    </div>
+  </div>
 
   <button id="btn-rec-exit" class="btn rec-exit-btn hidden" type="button">REC ● ESC</button>
 

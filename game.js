@@ -950,11 +950,13 @@
 
   const homeP1Name = document.getElementById("home-p1-name");
   const homeP2Name = document.getElementById("home-p2-name");
+  const homeP1Canvas = document.getElementById("home-p1-canvas");
+  const homeP2Canvas = document.getElementById("home-p2-canvas");
 
-  const rosterGalleryView = document.getElementById("roster-gallery-view");
-  const rosterDetailView = document.getElementById("roster-detail-view");
+  const rosterModal = document.getElementById("roster-modal");
+  const btnModalClose = document.getElementById("btn-modal-close");
   const rosterAvatarGrid = document.getElementById("roster-avatar-grid");
-  const btnRosterBack = document.getElementById("btn-roster-back");
+  const rosterFilterChips = document.getElementById("roster-filter-chips");
 
   const detailCanvas = document.getElementById("detail-canvas");
   const detailName = document.getElementById("detail-name");
@@ -2617,8 +2619,7 @@
     } else if (targetId === "screen-setup") {
       updateUnifiedSetupUI();
     } else if (targetId === "screen-chars") {
-      if (rosterGalleryView) rosterGalleryView.classList.remove("hidden");
-      if (rosterDetailView) rosterDetailView.classList.add("hidden");
+      if (rosterModal) rosterModal.classList.add("hidden");
       updateCharDetailUI();
     } else if (targetId === "screen-profile") {
       updateProfileUI();
@@ -2684,11 +2685,19 @@
     });
   }
 
-  if (btnRosterBack) {
-    btnRosterBack.addEventListener("click", () => {
+  if (btnModalClose) {
+    btnModalClose.addEventListener("click", () => {
       sound.unlock();
-      if (rosterGalleryView) rosterGalleryView.classList.remove("hidden");
-      if (rosterDetailView) rosterDetailView.classList.add("hidden");
+      if (rosterModal) rosterModal.classList.add("hidden");
+    });
+  }
+
+  if (rosterModal) {
+    rosterModal.addEventListener("click", (e) => {
+      if (e.target === rosterModal) {
+        sound.unlock();
+        rosterModal.classList.add("hidden");
+      }
     });
   }
 
@@ -2720,8 +2729,14 @@
     } else if ((e.key === "r" || e.key === "R") && currentScreen === "screen-battle") {
       sound.unlock();
       initMatch();
-    } else if (e.key === "Escape" && recMode) {
-      setRecMode(false);
+    } else if (e.key === "Escape") {
+      if (rosterModal && !rosterModal.classList.contains("hidden")) {
+        rosterModal.classList.add("hidden");
+        return;
+      }
+      if (recMode) {
+        setRecMode(false);
+      }
     }
   });
 
@@ -2756,7 +2771,7 @@
 
     if (currentScreen === "screen-setup" && previewActive) {
       drawFighter(previewActive, BALL_CONFIGS[activeSlot], activeSlot === 0, 0);
-    } else if (currentScreen === "screen-chars" && detailCanvas) {
+    } else if (rosterModal && !rosterModal.classList.contains("hidden") && detailCanvas) {
       drawFighter(detailCanvas, CHARACTER_ROSTER[detailCharId], true, 0);
     }
   }
@@ -2764,6 +2779,8 @@
   function updateHomeMatchupUI() {
     if (homeP1Name) homeP1Name.textContent = BALL_CONFIGS[0].name;
     if (homeP2Name) homeP2Name.textContent = BALL_CONFIGS[1].name;
+    if (homeP1Canvas) drawMiniAvatar(homeP1Canvas, BALL_CONFIGS[0]);
+    if (homeP2Canvas) drawMiniAvatar(homeP2Canvas, BALL_CONFIGS[1]);
   }
 
   function updateUnifiedSetupUI() {
@@ -2919,6 +2936,7 @@
         const card = document.createElement("div");
         card.className = "avatar-card";
         card.dataset.id = char.id;
+        card.dataset.series = (char.role || "").split("•")[0].trim().toLowerCase();
 
         const cvs = document.createElement("canvas");
         cvs.className = "avatar-canvas";
@@ -2941,13 +2959,35 @@
           sound.unlock();
           detailCharId = char.id;
           updateCharDetailUI();
-          if (rosterGalleryView) rosterGalleryView.classList.add("hidden");
-          if (rosterDetailView) rosterDetailView.classList.remove("hidden");
+          if (rosterModal) rosterModal.classList.remove("hidden");
         });
 
         rosterAvatarGrid.appendChild(card);
         drawMiniAvatar(cvs, char);
       }
+    }
+
+    // Category Filter Chips (Handles 50+ Fighters smoothly)
+    if (rosterFilterChips) {
+      rosterFilterChips.querySelectorAll(".filter-chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          sound.unlock();
+          rosterFilterChips.querySelectorAll(".filter-chip").forEach((c) => c.classList.remove("active"));
+          chip.classList.add("active");
+          const filter = (chip.dataset.filter || "all").toLowerCase();
+          if (rosterAvatarGrid) {
+            rosterAvatarGrid.querySelectorAll(".avatar-card").forEach((card) => {
+              const series = (card.dataset.series || "").toLowerCase();
+              const id = (card.dataset.id || "").toLowerCase();
+              if (filter === "all" || series.includes(filter) || id.includes(filter)) {
+                card.style.display = "";
+              } else {
+                card.style.display = "none";
+              }
+            });
+          }
+        });
+      });
     }
 
     updateUnifiedSetupUI();
