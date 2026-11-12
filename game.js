@@ -2589,9 +2589,13 @@
     const target = document.getElementById(targetId);
     if (target) target.classList.remove("hidden");
 
-    document.querySelectorAll(".bottom-nav .nav-item").forEach((item) => {
-      item.classList.toggle("active", item.getAttribute("data-target") === targetId);
-    });
+    const mainNav = document.getElementById("main-nav");
+    if (mainNav) {
+      mainNav.classList.toggle("hidden", targetId === "screen-battle");
+      mainNav.querySelectorAll(".nav-btn").forEach((item) => {
+        item.classList.toggle("active", item.getAttribute("data-target") === targetId);
+      });
+    }
 
     if (targetId === "screen-battle") {
       selecting = false;
@@ -2616,7 +2620,7 @@
   }
 
   // Navigation Event Handlers
-  document.querySelectorAll(".bottom-nav .nav-item").forEach((btn) => {
+  document.querySelectorAll(".cartoon-nav .nav-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const targetId = btn.getAttribute("data-target");
       if (targetId) switchScreen(targetId);
@@ -2753,15 +2757,15 @@
     if (!activeCfg) return;
 
     if (tabP1 && tabP2) {
-      tabP1.className = `slot-tab ${activeSlot === 0 ? "tab-active-p1" : ""}`;
-      tabP2.className = `slot-tab ${activeSlot === 1 ? "tab-active-p2" : ""}`;
+      tabP1.className = `slot-btn slot-btn-p1 ${activeSlot === 0 ? "active" : ""}`;
+      tabP2.className = `slot-btn slot-btn-p2 ${activeSlot === 1 ? "active" : ""}`;
     }
 
     if (activeSlotBanner) {
-      activeSlotBanner.className = `active-slot-banner banner-p${activeSlot + 1}`;
+      activeSlotBanner.className = `slot-banner banner-p${activeSlot + 1}`;
       activeSlotBanner.textContent = activeSlot === 0 
-        ? "CONFIGURING PLAYER 1 (CRIMSON)" 
-        : "CONFIGURING PLAYER 2 (COBALT)";
+        ? "EDITING: PLAYER 1 (RED)" 
+        : "EDITING: PLAYER 2 (BLUE)";
     }
 
     if (previewActiveName) previewActiveName.textContent = activeCfg.name;
@@ -2773,7 +2777,7 @@
     if (statValDmg) statValDmg.textContent = `${activeCfg.damage[0]}-${activeCfg.damage[1]}`;
 
     if (unifiedCharGrid) {
-      unifiedCharGrid.querySelectorAll(".char-pick-tile").forEach((btn) => {
+      unifiedCharGrid.querySelectorAll(".char-btn-tile").forEach((btn) => {
         btn.classList.toggle("selected", btn.dataset.id === activeCfg.id);
       });
     }
@@ -2789,7 +2793,7 @@
     if (!cfg) return;
 
     if (rosterTabs) {
-      rosterTabs.querySelectorAll(".char-tab-btn").forEach((btn) => {
+      rosterTabs.querySelectorAll(".roster-tab-btn").forEach((btn) => {
         btn.classList.toggle("active", btn.dataset.id === cfg.id);
       });
     }
@@ -2851,7 +2855,7 @@
       for (const char of entries) {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "char-pick-tile";
+        btn.className = "char-btn-tile";
         btn.dataset.id = char.id;
         btn.textContent = char.name;
         btn.addEventListener("click", () => {
@@ -2871,7 +2875,7 @@
       for (const char of entries) {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "char-tab-btn";
+        btn.className = "roster-tab-btn";
         btn.dataset.id = char.id;
         btn.textContent = char.name;
         btn.addEventListener("click", () => {

@@ -4,154 +4,125 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#ffc93c">
-  <title>Ball Fight — Mobile Anime Battler</title>
+  <title>Ball Fight — Anime Ball Physics Battler</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="mobile-frame">
-    <!-- Top Mobile Header / Status Bar -->
-    <header class="mobile-header">
-      <div class="user-pill">
-        <div class="user-avatar">⚡</div>
-        <div class="user-info">
-          <span class="user-name">FIGHTER_01</span>
-          <span class="user-level">LV. 12 • PRO</span>
-        </div>
-      </div>
-      <div class="currencies">
-        <div class="currency-badge"><span class="cur-icon">🪙</span> 2,450</div>
-        <div class="currency-badge gem"><span class="cur-icon">💎</span> 120</div>
-      </div>
+  <main class="app">
+    <!-- Cartoon Header Logo -->
+    <header class="app-header">
+      <h1 class="logo"><span class="logo-a">BALL</span><span class="logo-b">FIGHT</span></h1>
+      <p class="tagline">ANIME BALL PHYSICS ARENA</p>
     </header>
 
+    <!-- Top Cartoon Arcade Nav Bar (Hidden when in Battle) -->
+    <nav class="cartoon-nav" id="main-nav">
+      <button class="nav-btn active" data-target="screen-play" type="button">PLAY</button>
+      <button class="nav-btn" data-target="screen-chars" type="button">FIGHTERS</button>
+      <button class="nav-btn" data-target="screen-profile" type="button">PROFILE</button>
+      <button class="nav-btn" data-target="screen-shop" type="button">SHOP</button>
+    </nav>
+
     <!-- MAIN SCREENS CONTAINER -->
-    <main class="mobile-content">
+    <div class="screens-container">
 
       <!-- ================= 1. PLAY SCREEN ================= -->
-      <section id="screen-play" class="screen screen-play active">
-        <div class="brand-hero">
-          <h1 class="logo"><span class="logo-a">BALL</span><span class="logo-b">FIGHT</span></h1>
-          <p class="tagline">ANIME BALL PHYSICS ARENA</p>
-        </div>
-
-        <!-- Mode 1: Sandbox -->
-        <div class="mode-card mode-sandbox">
-          <div class="mode-header">
-            <span class="mode-tag tag-live">● ACTIVE</span>
-            <span class="mode-type">CUSTOM MODE</span>
-          </div>
-          <h2 class="mode-title">SANDBOX ARENA</h2>
-          <p class="mode-desc">Customize your 1v1 anime clash. Pick skills, test ultimates, and simulate unlimited battles!</p>
+      <section id="screen-play" class="screen screen-play">
+        <!-- Sandbox Mode Card -->
+        <div class="cartoon-card mode-card">
+          <div class="stamp stamp-yellow">SANDBOX ARENA</div>
+          <p class="card-desc">Custom 1v1 anime brawl! Pick any fighters, test charged skills, and watch them clash!</p>
           
-          <div class="sandbox-preview-matchup">
-            <div class="match-slot slot-p1">
-              <span class="slot-badge">P1</span>
-              <span id="home-p1-name" class="slot-name">GOKU</span>
+          <div class="matchup-preview-bubble">
+            <div class="bubble-p1">
+              <span class="bubble-tag tag-p1">P1</span>
+              <span id="home-p1-name" class="bubble-name">GOKU</span>
             </div>
-            <span class="match-vs">VS</span>
-            <div class="match-slot slot-p2">
-              <span class="slot-badge">P2</span>
-              <span id="home-p2-name" class="slot-name">NARUTO</span>
+            <span class="bubble-vs">VS</span>
+            <div class="bubble-p2">
+              <span id="home-p2-name" class="bubble-name">NARUTO</span>
+              <span class="bubble-tag tag-p2">P2</span>
             </div>
           </div>
 
-          <div class="mode-actions">
-            <button id="btn-open-sandbox" class="btn btn-green btn-hero" type="button">CHOOSE & FIGHT</button>
-            <button id="btn-quick-fight" class="btn btn-sub" type="button">QUICK START</button>
+          <div class="card-btn-group">
+            <button id="btn-open-sandbox" class="btn btn-green btn-big" type="button">CHOOSE & FIGHT!</button>
+            <button id="btn-quick-fight" class="btn btn-gold" type="button">QUICK START</button>
           </div>
         </div>
 
-        <!-- Mode 2: Campaign (Locked) -->
-        <div class="mode-card mode-campaign locked">
-          <div class="mode-header">
-            <span class="mode-tag tag-locked">🔒 LOCKED</span>
-            <span class="mode-type">STORY MODE</span>
-          </div>
-          <h2 class="mode-title">CAMPAIGN SAGA</h2>
-          <p class="mode-desc">Fight your way through tournament ladders, unlock hidden characters, and defeat multiverse bosses!</p>
-          <div class="locked-badge">CHAPTER 1: COMING SOON</div>
+        <!-- Campaign Mode Card (Locked) -->
+        <div class="cartoon-card mode-card locked-card">
+          <div class="stamp stamp-gray">STORY SAGA</div>
+          <p class="card-desc">Fight tournament brackets, unlock hidden anime balls, and face multiverse bosses!</p>
+          <div class="stamp stamp-red stamp-center">🔒 COMING SOON</div>
         </div>
       </section>
 
-      <!-- ================= 2. SANDBOX SETUP / CHAR SELECT SCREEN ================= -->
+      <!-- ================= 2. SANDBOX SETUP / SINGLE-CARD CHAR SELECT ================= -->
       <section id="screen-setup" class="screen screen-setup hidden">
-        <div class="screen-top-nav">
-          <button id="btn-setup-back" class="btn-icon" type="button">◀</button>
-          <h2 class="screen-title">SANDBOX SETUP</h2>
-          <div style="width: 38px;"></div>
-        </div>
+        <div class="cartoon-card setup-card">
+          <!-- Top Yellow Stamp just like the original popup -->
+          <div class="stamp stamp-yellow stamp-pop">CHOOSE FIGHTERS</div>
 
-        <!-- Single Centralized Selection Card -->
-        <div class="unified-select-card">
           <!-- P1 / P2 Switcher Tabs -->
-          <div class="slot-switch-bar">
-            <button id="tab-p1" class="slot-tab tab-active-p1" type="button">
-              <span class="tab-indicator p1-dot"></span> PLAYER 1
+          <div class="slot-toggle-bar">
+            <button id="tab-p1" class="slot-btn slot-btn-p1 active" type="button">
+              <span class="slot-indicator"></span> PLAYER 1
             </button>
-            <button id="tab-p2" class="slot-tab" type="button">
-              <span class="tab-indicator p2-dot"></span> PLAYER 2
+            <button id="tab-p2" class="slot-btn slot-btn-p2" type="button">
+              <span class="slot-indicator"></span> PLAYER 2
             </button>
           </div>
 
           <!-- Active Slot Banner -->
-          <div id="active-slot-banner" class="active-slot-banner banner-p1">
-            CONFIGURING PLAYER 1 (CRIMSON)
+          <div id="active-slot-banner" class="slot-banner banner-p1">
+            EDITING: PLAYER 1 (RED)
           </div>
 
-          <!-- Central Character Preview -->
-          <div class="preview-center">
-            <canvas id="preview-active" class="preview-canvas-lg" width="140" height="140"></canvas>
-            <h3 id="preview-active-name" class="preview-hero-name">GOKU</h3>
-            <p id="preview-active-role" class="preview-hero-role">SAIYAN • KAMEHAMEHA BEAM</p>
+          <!-- Central Character Preview Box -->
+          <div class="preview-box">
+            <canvas id="preview-active" class="preview-canvas-main" width="130" height="130"></canvas>
+            <h2 id="preview-active-name" class="preview-title">GOKU</h2>
+            <p id="preview-active-role" class="preview-subtitle">KAMEHAMEHA • BEAM</p>
           </div>
 
-          <!-- Character Selector Grid (1 Centered Grid) -->
-          <div class="character-grid-unified" id="unified-char-grid">
+          <!-- Character Selector Grid (Centered 4 Buttons) -->
+          <div class="char-grid-chunky" id="unified-char-grid">
             <!-- Populated via JS -->
           </div>
 
-          <!-- Active Fighter Stats Summary -->
-          <div class="mini-stats-panel">
-            <div class="mini-stat">
-              <span class="stat-lbl">HP</span>
-              <span id="stat-val-hp" class="stat-num">340</span>
-            </div>
-            <div class="mini-stat">
-              <span class="stat-lbl">SPEED</span>
-              <span id="stat-val-spd" class="stat-num">350</span>
-            </div>
-            <div class="mini-stat">
-              <span class="stat-lbl">MASS</span>
-              <span id="stat-val-mass" class="stat-num">1.05</span>
-            </div>
-            <div class="mini-stat">
-              <span class="stat-lbl">DMG</span>
-              <span id="stat-val-dmg" class="stat-num">8-15</span>
-            </div>
+          <!-- Mini Stats Row -->
+          <div class="stats-row-chunky">
+            <div class="stat-pill">HP: <span id="stat-val-hp">340</span></div>
+            <div class="stat-pill">SPD: <span id="stat-val-spd">365</span></div>
+            <div class="stat-pill">MASS: <span id="stat-val-mass">1.05</span></div>
+            <div class="stat-pill">DMG: <span id="stat-val-dmg">9-15</span></div>
           </div>
 
-          <!-- Matchup Bar -->
-          <div class="matchup-bar">
-            <span class="m-p1" id="matchup-p1-tag">P1: GOKU</span>
-            <span class="m-vs">VS</span>
-            <span class="m-p2" id="matchup-p2-tag">P2: NARUTO</span>
+          <!-- Matchup Summary -->
+          <div class="matchup-banner-footer">
+            <span class="mf-p1" id="matchup-p1-tag">P1: GOKU</span>
+            <span class="mf-vs">VS</span>
+            <span class="mf-p2" id="matchup-p2-tag">P2: NARUTO</span>
           </div>
 
-          <!-- Big Fight Button -->
-          <button id="btn-start-battle" class="btn btn-green btn-big btn-enter-fight" type="button">
-            START BATTLE!
-          </button>
+          <!-- Action Buttons -->
+          <div class="setup-actions">
+            <button id="btn-start-battle" class="btn btn-green btn-big btn-fight" type="button">FIGHT!</button>
+            <button id="btn-setup-back" class="btn btn-back" type="button">BACK</button>
+          </div>
         </div>
       </section>
 
       <!-- ================= 3. BATTLE ARENA SCREEN ================= -->
       <section id="screen-battle" class="screen screen-battle hidden">
-        <div class="battle-topbar">
-          <button id="btn-back-to-hub" class="btn btn-sm" type="button">◀ HUB</button>
-          <span class="battle-badge">SANDBOX 1V1</span>
+        <div class="battle-header-bar">
+          <button id="btn-back-to-hub" class="btn btn-sm" type="button">◀ MENU</button>
+          <span class="battle-mode-title">SANDBOX MATCH</span>
           <button id="btn-battle-rec" class="btn btn-sm" type="button">REC</button>
         </div>
 
@@ -223,7 +194,7 @@
               <p id="stats-text" class="overlay-stats">14 HITS • 12.4S</p>
               <div class="overlay-actions">
                 <button id="btn-rematch" class="btn btn-green" type="button">REMATCH</button>
-                <button id="btn-change-char" class="btn" type="button">SETUP</button>
+                <button id="btn-change-char" class="btn" type="button">CHAR</button>
               </div>
             </div>
           </div>
@@ -236,7 +207,7 @@
           <button id="btn-speed" class="btn" type="button">1X</button>
           <button id="btn-sound" class="btn" type="button">SFX: ON</button>
           <button id="btn-rec" class="btn" type="button">REC</button>
-          <button id="btn-roster" class="btn" type="button">SETUP</button>
+          <button id="btn-roster" class="btn" type="button">CHAR</button>
         </div>
 
         <footer class="seed-footer">
@@ -246,64 +217,67 @@
 
       <!-- ================= 4. CHAR DETAIL SCREEN ================= -->
       <section id="screen-chars" class="screen screen-chars hidden">
-        <h2 class="screen-heading">FIGHTER ROSTER</h2>
-        <div class="char-tabs" id="roster-tabs">
+        <!-- Roster Tabs at Top -->
+        <div class="roster-tabs-row" id="roster-tabs">
           <!-- Filled by JS -->
         </div>
 
-        <div class="char-detail-card">
-          <div class="char-hero-box">
-            <canvas id="detail-canvas" class="detail-canvas" width="160" height="160"></canvas>
-            <div class="char-hero-titles">
-              <h3 id="detail-name" class="char-title-name">GOKU</h3>
-              <p id="detail-title" class="char-title-sub">Super Saiyan • Ki Blaster</p>
+        <div class="cartoon-card detail-card">
+          <div class="stamp stamp-yellow">FIGHTER PROFILE</div>
+
+          <div class="detail-hero-box">
+            <canvas id="detail-canvas" class="detail-canvas" width="140" height="140"></canvas>
+            <div class="detail-hero-info">
+              <h2 id="detail-name" class="detail-hero-name">GOKU</h2>
+              <p id="detail-title" class="detail-hero-title">Saiyan of Earth • Ki Blaster</p>
             </div>
           </div>
 
-          <!-- Stat Meters -->
-          <div class="char-stat-bars">
-            <div class="stat-bar-row">
-              <span class="stat-name">HEALTH</span>
-              <div class="stat-track"><div id="detail-hp-fill" class="stat-fill fill-hp" style="width: 85%"></div></div>
-              <span id="detail-hp-val" class="stat-reading">340 HP</span>
+          <!-- Chunky Stat Bars -->
+          <div class="stat-meters-block">
+            <div class="stat-row">
+              <span class="stat-name">HP</span>
+              <div class="stat-meter-track"><div id="detail-hp-fill" class="stat-meter-fill fill-hp" style="width: 85%"></div></div>
+              <span id="detail-hp-val" class="stat-val">340 HP</span>
             </div>
-            <div class="stat-bar-row">
+            <div class="stat-row">
               <span class="stat-name">SPEED</span>
-              <div class="stat-track"><div id="detail-spd-fill" class="stat-fill fill-spd" style="width: 75%"></div></div>
-              <span id="detail-spd-val" class="stat-reading">350</span>
+              <div class="stat-meter-track"><div id="detail-spd-fill" class="stat-meter-fill fill-spd" style="width: 75%"></div></div>
+              <span id="detail-spd-val" class="stat-val">365</span>
             </div>
-            <div class="stat-bar-row">
+            <div class="stat-row">
               <span class="stat-name">POWER</span>
-              <div class="stat-track"><div id="detail-atk-fill" class="stat-fill fill-atk" style="width: 80%"></div></div>
-              <span id="detail-atk-val" class="stat-reading">8-15 DMG</span>
+              <div class="stat-meter-track"><div id="detail-atk-fill" class="stat-meter-fill fill-atk" style="width: 80%"></div></div>
+              <span id="detail-atk-val" class="stat-val">9-15 DMG</span>
             </div>
-            <div class="stat-bar-row">
+            <div class="stat-row">
               <span class="stat-name">MASS</span>
-              <div class="stat-track"><div id="detail-mass-fill" class="stat-fill fill-mass" style="width: 70%"></div></div>
-              <span id="detail-mass-val" class="stat-reading">1.05</span>
+              <div class="stat-meter-track"><div id="detail-mass-fill" class="stat-meter-fill fill-mass" style="width: 70%"></div></div>
+              <span id="detail-mass-val" class="stat-val">1.05</span>
             </div>
           </div>
 
-          <!-- Abilities Breakdown -->
-          <div class="ability-card">
-            <div class="ability-head">
-              <span class="ability-badge skill-tag">SIGNATURE SKILL</span>
-              <span id="detail-skill-cd" class="ability-cd">CD: 4.2S</span>
+          <!-- Skill Callout -->
+          <div class="power-bubble skill-bubble">
+            <div class="power-header">
+              <span class="power-badge badge-blue">SIGNATURE SKILL</span>
+              <span id="detail-skill-cd" class="power-cd">CD: 3.6S</span>
             </div>
-            <h4 id="detail-skill-name" class="ability-title">KAMEHAMEHA</h4>
-            <p id="detail-skill-desc" class="ability-desc">
-              Locks aim onto the rival ball, charging pure energy before blasting a devastating continuous energy beam.
+            <h3 id="detail-skill-name" class="power-title">KAMEHAMEHA</h3>
+            <p id="detail-skill-desc" class="power-desc">
+              Locks aim onto the rival ball, charging ki before unleashing a continuous energy beam.
             </p>
           </div>
 
-          <div class="ability-card ult-card">
-            <div class="ability-head">
-              <span class="ability-badge ult-tag-badge">ULTIMATE (5 HITS)</span>
-              <span class="ability-cd">STATUS TRANSFORMATION</span>
+          <!-- Ultimate Callout -->
+          <div class="power-bubble ult-bubble">
+            <div class="power-header">
+              <span class="power-badge badge-red">ULTIMATE (5 HITS)</span>
+              <span class="power-cd">TRANSFORMATION</span>
             </div>
-            <h4 id="detail-ult-name" class="ability-title">KAIOKEN BURST</h4>
-            <p id="detail-ult-desc" class="ability-desc">
-              Enters crimson Kaioken state with glowing red aura! Upgrades Kamehameha into a massive charged Super Beam that melts HP.
+            <h3 id="detail-ult-name" class="power-title">KAIOKEN BURST</h3>
+            <p id="detail-ult-desc" class="power-desc">
+              Enters crimson Kaioken state with glowing red aura! Speeds up and charges massive Kamehameha beams.
             </p>
           </div>
         </div>
@@ -311,85 +285,61 @@
 
       <!-- ================= 5. PROFILE SCREEN ================= -->
       <section id="screen-profile" class="screen screen-profile hidden">
-        <h2 class="screen-heading">PLAYER PROFILE</h2>
-        
-        <div class="profile-card">
-          <div class="profile-header">
+        <div class="cartoon-card profile-card">
+          <div class="stamp stamp-yellow">PLAYER RECORD</div>
+
+          <div class="profile-hero-bubble">
             <div class="profile-avatar">🥋</div>
-            <div class="profile-titles">
-              <h3 class="profile-name">BALL BRAWLER</h3>
-              <p class="profile-rank">RANK: GRAND CHAMPION</p>
-              <div class="exp-bar">
-                <div class="exp-fill" style="width: 72%;"></div>
-              </div>
-              <span class="exp-text">EXP 1,840 / 2,500 (LV 12)</span>
+            <div class="profile-meta">
+              <h2 class="profile-player-name">BALL FIGHTER</h2>
+              <span class="profile-rank-badge">RANK: GRAND CHAMPION</span>
             </div>
           </div>
 
-          <div class="profile-stats-grid">
-            <div class="prof-stat-box">
-              <span class="prof-val" id="prof-matches">24</span>
-              <span class="prof-lbl">MATCHES</span>
+          <div class="stats-quad-grid">
+            <div class="stat-quad-box">
+              <span class="quad-num" id="prof-matches">24</span>
+              <span class="quad-lbl">MATCHES</span>
             </div>
-            <div class="prof-stat-box">
-              <span class="prof-val" id="prof-wins">18</span>
-              <span class="prof-lbl">VICTORIES</span>
+            <div class="stat-quad-box">
+              <span class="quad-num" id="prof-wins">18</span>
+              <span class="quad-lbl">VICTORIES</span>
             </div>
-            <div class="prof-stat-box">
-              <span class="prof-val" id="prof-wr">75%</span>
-              <span class="prof-lbl">WIN RATE</span>
+            <div class="stat-quad-box">
+              <span class="quad-num" id="prof-wr">75%</span>
+              <span class="quad-lbl">WIN RATE</span>
             </div>
-            <div class="prof-stat-box">
-              <span class="prof-val" id="prof-fav">GOKU</span>
-              <span class="prof-lbl">MOST USED</span>
+            <div class="stat-quad-box">
+              <span class="quad-num" id="prof-fav">GOKU</span>
+              <span class="quad-lbl">FAVORITE</span>
             </div>
           </div>
 
-          <div class="badges-section">
-            <h4 class="badges-title">ACHIEVED TROPHIES</h4>
+          <div class="trophies-block">
+            <h4 class="trophies-title">TROPHIES EARNED</h4>
             <div class="trophy-row">
-              <div class="trophy-badge" title="First K.O.">🥇 <span>1st KO</span></div>
-              <div class="trophy-badge" title="5 Ult Hits">🔥 <span>Ult Master</span></div>
-              <div class="trophy-badge" title="0.1% Crit">⭐ <span>Lucky Crit</span></div>
-              <div class="trophy-badge" title="Flawless Round">👑 <span>Clean Win</span></div>
+              <div class="trophy-pill">🥇 1st KO</div>
+              <div class="trophy-pill">🔥 5x Ult</div>
+              <div class="trophy-pill">⭐ Lucky Crit</div>
+              <div class="trophy-pill">👑 2-0 Sweep</div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ================= 6. SHOP SCREEN (LOCKED) ================= -->
+      <!-- ================= 6. SHOP SCREEN ================= -->
       <section id="screen-shop" class="screen screen-shop hidden">
-        <h2 class="screen-heading">ANIME SHOP</h2>
-        <div class="shop-empty-card">
-          <div class="shop-icon">🛒</div>
-          <h3 class="shop-title">SHOP UNDER RENOVATION</h3>
-          <p class="shop-desc">Special skins, custom particle trails, and anime voice packs will arrive in the next major patch!</p>
-          <span class="shop-badge">COMING SOON</span>
+        <div class="cartoon-card shop-card">
+          <div class="stamp stamp-yellow">ANIME SHOP</div>
+          <div class="shop-big-icon">🛒</div>
+          <h2 class="shop-title">CLOSED FOR RESTOCK!</h2>
+          <p class="card-desc">Special skins, custom ball trails, and anime voice packs are in development for the next update!</p>
+          <div class="stamp stamp-red stamp-center">SEASON 2 ARRIVING SOON</div>
         </div>
       </section>
 
-    </main>
-
-    <!-- MOBILE BOTTOM NAVIGATION BAR -->
-    <nav class="bottom-nav">
-      <button class="nav-item active" data-target="screen-play" type="button">
-        <span class="nav-icon">⚔️</span>
-        <span class="nav-label">PLAY</span>
-      </button>
-      <button class="nav-item" data-target="screen-chars" type="button">
-        <span class="nav-icon">🥋</span>
-        <span class="nav-label">FIGHTERS</span>
-      </button>
-      <button class="nav-item" data-target="screen-profile" type="button">
-        <span class="nav-icon">👤</span>
-        <span class="nav-label">PROFILE</span>
-      </button>
-      <button class="nav-item" data-target="screen-shop" type="button">
-        <span class="nav-icon">🛒</span>
-        <span class="nav-label">SHOP</span>
-      </button>
-    </nav>
-  </div>
+    </div>
+  </main>
 
   <button id="btn-rec-exit" class="btn rec-exit-btn hidden" type="button">REC ● ESC</button>
 
