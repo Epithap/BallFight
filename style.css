@@ -369,15 +369,26 @@ body {
 
 .char-btn-tile {
   font-family: var(--font);
-  font-size: 13px;
+  font-size: 12px;
   color: var(--ink);
   background: var(--white);
   border: 4px solid var(--ink);
   border-radius: 14px;
-  padding: 10px 2px;
+  padding: 6px 2px 8px;
   box-shadow: 0 4px 0 var(--ink);
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   text-align: center;
+  transition: transform 0.08s, box-shadow 0.08s, background-color 0.08s;
+}
+
+.char-btn-tile .avatar-canvas {
+  width: 42px;
+  height: 42px;
+}
   transition: transform 0.08s, box-shadow 0.08s, background-color 0.08s;
 }
 
@@ -753,55 +764,87 @@ body {
   opacity: 0.75;
 }
 
-/* ================= CHAR DETAIL SCREEN ================= */
-.roster-tabs-row {
-  display: flex;
+/* ================= CHAR DETAIL & ROSTER GALLERY ================= */
+.roster-gallery-card {
+  gap: 14px;
+}
+
+.avatar-roster-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  overflow-x: auto;
-  padding: 2px 2px 8px;
-  -webkit-overflow-scrolling: touch;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 4px 2px 8px;
   scrollbar-width: thin;
   scrollbar-color: var(--sun) var(--ink);
 }
 
-.roster-tabs-row::-webkit-scrollbar {
-  height: 8px;
+.avatar-roster-grid::-webkit-scrollbar {
+  width: 6px;
 }
-.roster-tabs-row::-webkit-scrollbar-track {
+.avatar-roster-grid::-webkit-scrollbar-track {
   background: #f1eddf;
   border: 2px solid var(--ink);
   border-radius: 999px;
 }
-.roster-tabs-row::-webkit-scrollbar-thumb {
+.avatar-roster-grid::-webkit-scrollbar-thumb {
   background: var(--sun);
   border: 2px solid var(--ink);
   border-radius: 999px;
 }
 
-.roster-tab-btn {
-  flex: 1 0 auto;
-  min-width: 90px;
+.avatar-card {
   font-family: var(--font);
-  font-size: 15px;
-  color: var(--ink);
   background: var(--white);
   border: 4px solid var(--ink);
-  border-radius: 14px;
-  padding: 8px 12px 10px;
-  box-shadow: 0 4px 0 var(--ink);
+  border-radius: 18px;
+  padding: 8px 4px 6px;
+  box-shadow: 0 5px 0 var(--ink);
   cursor: pointer;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   transition: transform 0.08s, box-shadow 0.08s, background-color 0.08s;
-  white-space: nowrap;
+  text-align: center;
 }
 
-.roster-tab-btn:hover { background: #fff8df; }
-.roster-tab-btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--ink); }
+.avatar-card:hover {
+  background: #fff8df;
+}
 
-.roster-tab-btn.active {
-  background: var(--sun);
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 var(--ink);
+.avatar-card:active {
+  transform: translateY(5px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.avatar-canvas {
+  width: 52px;
+  height: 52px;
+  display: block;
+}
+
+.avatar-name {
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.avatar-tag {
+  font-size: 9px;
+  color: var(--white);
+  background: var(--ink);
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+/* Detail Card Topbar */
+.detail-card-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .detail-hero-box {

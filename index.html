@@ -217,13 +217,23 @@
 
       <!-- ================= 4. CHAR DETAIL SCREEN ================= -->
       <section id="screen-chars" class="screen screen-chars hidden">
-        <!-- Roster Tabs at Top -->
-        <div class="roster-tabs-row" id="roster-tabs">
-          <!-- Filled by JS -->
+        <!-- 4A. ROSTER GALLERY VIEW (Mini Avatar Grid) -->
+        <div id="roster-gallery-view" class="cartoon-card roster-gallery-card">
+          <div class="stamp stamp-yellow">FIGHTER ROSTER</div>
+          <p class="card-desc">Tap any fighter to inspect their attributes, signature skills, and ultimate form!</p>
+          
+          <div class="avatar-roster-grid" id="roster-avatar-grid">
+            <!-- Populated via JS with Mini Avatar Tiles -->
+          </div>
         </div>
 
-        <div class="cartoon-card detail-card">
-          <div class="stamp stamp-yellow">FIGHTER PROFILE</div>
+        <!-- 4B. DETAIL MODAL/VIEW (Shown on click) -->
+        <div id="roster-detail-view" class="cartoon-card detail-card hidden">
+          <div class="detail-card-topbar">
+            <button id="btn-roster-back" class="btn btn-sm" type="button">◀ ROSTER</button>
+            <div class="stamp stamp-yellow">FIGHTER PROFILE</div>
+            <div style="width: 60px;"></div>
+          </div>
 
           <div class="detail-hero-box">
             <canvas id="detail-canvas" class="detail-canvas" width="140" height="140"></canvas>

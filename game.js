@@ -951,7 +951,11 @@
   const homeP1Name = document.getElementById("home-p1-name");
   const homeP2Name = document.getElementById("home-p2-name");
 
-  const rosterTabs = document.getElementById("roster-tabs");
+  const rosterGalleryView = document.getElementById("roster-gallery-view");
+  const rosterDetailView = document.getElementById("roster-detail-view");
+  const rosterAvatarGrid = document.getElementById("roster-avatar-grid");
+  const btnRosterBack = document.getElementById("btn-roster-back");
+
   const detailCanvas = document.getElementById("detail-canvas");
   const detailName = document.getElementById("detail-name");
   const detailTitle = document.getElementById("detail-title");
@@ -2613,6 +2617,8 @@
     } else if (targetId === "screen-setup") {
       updateUnifiedSetupUI();
     } else if (targetId === "screen-chars") {
+      if (rosterGalleryView) rosterGalleryView.classList.remove("hidden");
+      if (rosterDetailView) rosterDetailView.classList.add("hidden");
       updateCharDetailUI();
     } else if (targetId === "screen-profile") {
       updateProfileUI();
@@ -2675,6 +2681,14 @@
   if (btnRoster) {
     btnRoster.addEventListener("click", () => {
       switchScreen("screen-setup");
+    });
+  }
+
+  if (btnRosterBack) {
+    btnRosterBack.addEventListener("click", () => {
+      sound.unlock();
+      if (rosterGalleryView) rosterGalleryView.classList.remove("hidden");
+      if (rosterDetailView) rosterDetailView.classList.add("hidden");
     });
   }
 
@@ -2792,12 +2806,6 @@
     const cfg = CHARACTER_ROSTER[detailCharId] || CHARACTER_ROSTER.goku;
     if (!cfg) return;
 
-    if (rosterTabs) {
-      rosterTabs.querySelectorAll(".roster-tab-btn").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.id === cfg.id);
-      });
-    }
-
     if (detailName) detailName.textContent = cfg.name;
     if (detailTitle) detailTitle.textContent = cfg.title || "Anime Brawler";
 
@@ -2846,10 +2854,33 @@
     }
   }
 
+  function drawMiniAvatar(canvasEl, cfg) {
+    if (!canvasEl || !cfg) return;
+    const pCtx = canvasEl.getContext("2d");
+    pCtx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+    const radius = Math.round(canvasEl.width * 0.38);
+    const avatarBall = {
+      x: canvasEl.width * 0.5,
+      y: canvasEl.height * 0.54,
+      radius: radius,
+      color: cfg.color,
+      costume: cfg.costume,
+      weapon: null,
+      weaponAngle: 0,
+      vx: 1,
+      vy: 0,
+      flashTimer: 0,
+      squash: 0,
+      skills: [],
+      effects: [],
+    };
+    drawBall(avatarBall, pCtx, false);
+  }
+
   function setupUnifiedSelectors() {
     const entries = Object.values(CHARACTER_ROSTER);
 
-    // 1. Unified Sandbox Character Selector Grid
+    // 1. Unified Sandbox Character Selector Grid (with Mini Avatars!)
     if (unifiedCharGrid) {
       unifiedCharGrid.innerHTML = "";
       for (const char of entries) {
@@ -2857,7 +2888,18 @@
         btn.type = "button";
         btn.className = "char-btn-tile";
         btn.dataset.id = char.id;
-        btn.textContent = char.name;
+
+        const cvs = document.createElement("canvas");
+        cvs.className = "avatar-canvas";
+        cvs.width = 44;
+        cvs.height = 44;
+
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = char.name;
+
+        btn.appendChild(cvs);
+        btn.appendChild(nameSpan);
+
         btn.addEventListener("click", () => {
           sound.unlock();
           selectedRosterIds[activeSlot] = char.id;
@@ -2866,24 +2908,45 @@
           syncFighterUI();
         });
         unifiedCharGrid.appendChild(btn);
+        drawMiniAvatar(cvs, char);
       }
     }
 
-    // 2. Character Detail Screen Tabs
-    if (rosterTabs) {
-      rosterTabs.innerHTML = "";
+    // 2. Fighters Gallery Avatar Grid (Scalable to 50+ Fighters!)
+    if (rosterAvatarGrid) {
+      rosterAvatarGrid.innerHTML = "";
       for (const char of entries) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "roster-tab-btn";
-        btn.dataset.id = char.id;
-        btn.textContent = char.name;
-        btn.addEventListener("click", () => {
+        const card = document.createElement("div");
+        card.className = "avatar-card";
+        card.dataset.id = char.id;
+
+        const cvs = document.createElement("canvas");
+        cvs.className = "avatar-canvas";
+        cvs.width = 54;
+        cvs.height = 54;
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "avatar-name";
+        nameSpan.textContent = char.name;
+
+        const tagSpan = document.createElement("span");
+        tagSpan.className = "avatar-tag";
+        tagSpan.textContent = (char.role ? char.role.split("•")[0].trim() : "FIGHTER");
+
+        card.appendChild(cvs);
+        card.appendChild(nameSpan);
+        card.appendChild(tagSpan);
+
+        card.addEventListener("click", () => {
           sound.unlock();
           detailCharId = char.id;
           updateCharDetailUI();
+          if (rosterGalleryView) rosterGalleryView.classList.add("hidden");
+          if (rosterDetailView) rosterDetailView.classList.remove("hidden");
         });
-        rosterTabs.appendChild(btn);
+
+        rosterAvatarGrid.appendChild(card);
+        drawMiniAvatar(cvs, char);
       }
     }
 
