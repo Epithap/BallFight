@@ -11,6 +11,7 @@
   const KO_ZOOM_SCALE = 1.38;
   const CRIT_CHANCE = 0.001; // 0.1%
   const CRIT_DAMAGE = 25;
+  const ULT_CHARGES_REQUIRED = 5;
 
   function mulberry32(seed) {
     let a = seed >>> 0;
@@ -70,10 +71,14 @@
       vy,
       radius,
       angle,
+      spin: 0,
       dead: false,
       update(dt, game) {
         this.x += this.vx * dt;
         this.y += this.vy * dt;
+        if (shape === "rasenshuriken") {
+          this.spin += dt * 18;
+        }
 
         // Out of arena bounds
         if (
@@ -91,30 +96,66 @@
         if (dist <= target.radius + this.radius) {
           this.dead = true;
           const dealt = game.applyDamage(target, damage);
-          target.flashTimer = 0.1;
-          target.squash = 0.8;
+          target.flashTimer = 0.12;
+          target.squash = 0.9;
           game.spawnSparks(this.x, this.y, color, target.color);
           game.spawnDamageText(target.x, target.y - target.radius * 0.5, dealt, color, false, label);
           game.sound.playBallHit();
-          if (onImpact) onImpact(target, game);
+          if (onImpact) onImpact(target, game, this);
         }
       },
       render(c) {
         c.save();
         c.translate(this.x, this.y);
-        c.rotate(this.angle);
+        c.rotate(shape === "rasenshuriken" ? this.spin : this.angle);
         c.strokeStyle = COLORS.ink;
         c.lineWidth = 3;
         c.fillStyle = color;
 
         if (shape === "crescent") {
-          // Getsuga Tensho crescent slash
+          // Getsuga Tensho crimson-black crescent slash
           c.beginPath();
-          c.arc(0, 0, this.radius * 1.4, -Math.PI * 0.45, Math.PI * 0.45);
-          c.quadraticCurveTo(this.radius * 0.35, 0, Math.cos(-Math.PI * 0.45) * this.radius * 1.4, Math.sin(-Math.PI * 0.45) * this.radius * 1.4);
+          c.arc(0, 0, this.radius * 1.45, -Math.PI * 0.48, Math.PI * 0.48);
+          c.quadraticCurveTo(
+            this.radius * 0.3,
+            0,
+            Math.cos(-Math.PI * 0.48) * this.radius * 1.45,
+            Math.sin(-Math.PI * 0.48) * this.radius * 1.45
+          );
           c.closePath();
           c.fill();
+          c.lineWidth = 4;
           c.stroke();
+          // Inner bright edge
+          c.strokeStyle = COLORS.white;
+          c.lineWidth = 2;
+          c.beginPath();
+          c.arc(0, 0, this.radius * 1.18, -Math.PI * 0.35, Math.PI * 0.35);
+          c.stroke();
+        } else if (shape === "rasenshuriken") {
+          // 4 spinning shuriken blades around Rasengan core
+          c.fillStyle = COLORS.white;
+          for (let i = 0; i < 4; i++) {
+            c.save();
+            c.rotate((Math.PI * 0.5) * i);
+            c.beginPath();
+            c.moveTo(0, -4);
+            c.lineTo(this.radius * 1.35, -this.radius * 0.38);
+            c.lineTo(this.radius * 0.95, 4);
+            c.closePath();
+            c.fill();
+            c.stroke();
+            c.restore();
+          }
+          c.fillStyle = COLORS.blue;
+          c.beginPath();
+          c.arc(0, 0, this.radius * 0.55, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+          c.fillStyle = COLORS.white;
+          c.beginPath();
+          c.arc(0, 0, this.radius * 0.24, 0, Math.PI * 2);
+          c.fill();
         } else {
           // Kamehameha energy blast
           c.beginPath();
@@ -131,26 +172,171 @@
     };
   }
 
+  function spawnKamehamehaBeam(owner, target) {
+    const dx = target.x - owner.x;
+    const dy = target.y - owner.y;
+    const angle = Math.atan2(dy, dx);
+    const length = WORLD_SIZE * 1.6;
+    const chargeDuration = 0.28;
+    const beamDuration = 0.82;
+
+    return {
+      x: owner.x,
+      y: owner.y,
+      angle,
+      timer: 0,
+      tickTimer: 0,
+      dead: false,
+      update(dt, game) {
+        if (!owner.alive) {
+          this.dead = true;
+          return;
+        }
+        this.timer += dt;
+        if (this.timer >= chargeDuration + beamDuration) {
+          this.dead = true;
+          return;
+        }
+        if (this.timer < chargeDuration || !target.alive) return;
+
+        this.tickTimer -= dt;
+        if (this.tickTimer <= 0) {
+          // Distance from target to beam ray
+          const ux = Math.cos(this.angle);
+          const uy = Math.sin(this.angle);
+          const relX = target.x - this.x;
+          const relY = target.y - this.y;
+          const proj = relX * ux + relY * uy;
+          if (proj > 0) {
+            const perp = Math.abs(relX * -uy + relY * ux);
+            if (perp <= target.radius + 20) {
+              this.tickTimer = 0.2;
+              const dealt = game.applyDamage(target, 9);
+              target.flashTimer = 0.08;
+              game.spawnSparks(target.x, target.y, COLORS.blue, COLORS.white);
+              game.spawnDamageText(target.x, target.y - target.radius, dealt, COLORS.blue, false, "KAMEHAMEHA!");
+              game.sound.playBallHit();
+            }
+          }
+        }
+      },
+      render(c) {
+        c.save();
+        c.translate(this.x, this.y);
+        c.rotate(this.angle);
+        if (this.timer < chargeDuration) {
+          // Aiming telegraph line
+          c.strokeStyle = COLORS.blue;
+          c.lineWidth = 4;
+          c.setLineDash([10, 8]);
+          c.beginPath();
+          c.moveTo(owner.radius, 0);
+          c.lineTo(length, 0);
+          c.stroke();
+          // Charging orb
+          c.setLineDash([]);
+          c.fillStyle = COLORS.blue;
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 3;
+          c.beginPath();
+          c.arc(owner.radius + 6, 0, 10 + (this.timer / chargeDuration) * 8, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+        } else {
+          // Full solid Kamehameha beam
+          const fade = Math.min(1, (chargeDuration + beamDuration - this.timer) * 5);
+          const halfW = 20 * fade;
+          c.fillStyle = COLORS.blue;
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 4;
+          c.beginPath();
+          c.rect(owner.radius, -halfW, length, halfW * 2);
+          c.fill();
+          c.stroke();
+          // White inner core
+          c.fillStyle = COLORS.white;
+          c.fillRect(owner.radius, -halfW * 0.45, length, halfW * 0.9);
+        }
+        c.restore();
+      },
+    };
+  }
+
+  function spawnRasenganVisual(x, y, maxR = 46) {
+    return {
+      x,
+      y,
+      r: 12,
+      spin: 0,
+      life: 0.34,
+      maxLife: 0.34,
+      dead: false,
+      update(dt) {
+        this.life -= dt;
+        this.spin += dt * 22;
+        const p = 1 - Math.max(0, this.life / this.maxLife);
+        this.r = 14 + (maxR - 14) * (1 - Math.pow(1 - p, 2));
+        if (this.life <= 0) this.dead = true;
+      },
+      render(c) {
+        const k = Math.max(0, this.life / this.maxLife);
+        c.save();
+        c.translate(this.x, this.y);
+        c.rotate(this.spin);
+        c.globalAlpha = k;
+        c.beginPath();
+        c.arc(0, 0, this.r, 0, Math.PI * 2);
+        c.fillStyle = COLORS.blue;
+        c.fill();
+        c.lineWidth = 4;
+        c.strokeStyle = COLORS.ink;
+        c.stroke();
+        // Spinning chakra spiral arcs
+        c.strokeStyle = COLORS.white;
+        c.lineWidth = 3;
+        for (let i = 0; i < 3; i++) {
+          const a = (Math.PI * 2 * i) / 3;
+          c.beginPath();
+          c.arc(0, 0, this.r * 0.65, a, a + Math.PI * 0.48);
+          c.stroke();
+        }
+        c.fillStyle = COLORS.white;
+        c.beginPath();
+        c.arc(0, 0, this.r * 0.25, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+      },
+    };
+  }
+
   const SKILL_KAMEHAMEHA = {
     name: "Kamehameha",
-    cooldown: 4.2,
+    cooldown: 3.6,
     onTick(ball, game) {
       const target = game.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
+      if (ball.ultTimer > 0) {
+        // Kaioken: stop and channel straight Super Kamehameha beam
+        ball.channelTimer = 1.1;
+        game.entities.push(spawnKamehamehaBeam(ball, target));
+        game.spawnDamageText(ball.x, ball.y - ball.radius, 0, COLORS.red, false, "KAIOKEN BEAM!");
+        return true;
+      }
       game.entities.push(
         spawnProjectile({
           owner: ball,
           target,
           x: ball.x,
           y: ball.y,
-          speed: 540,
+          speed: 520,
           radius: 13,
-          damage: 13,
+          damage: 14,
           color: COLORS.blue,
           label: "KAMEHAMEHA!",
           shape: "blast",
           onImpact(t, g) {
             g.addEffect(t, "slow", 0.7, { factor: 0.65 });
+            g.chargeUlt(ball);
           },
         })
       );
@@ -160,49 +346,33 @@
 
   const SKILL_RASENGAN = {
     name: "Rasengan",
-    cooldown: 3.4,
+    cooldown: 3.0,
     onHit(ball, other, game, info) {
       if (!other.alive) return false;
-      const bonus = game.applyDamage(other, 7);
-      game.addEffect(other, "stun", 0.55);
+      const bonus = game.applyDamage(other, 14);
+      game.addEffect(other, "stun", 0.5);
       game.spawnDamageText(other.x, other.y - other.radius - 12, bonus, COLORS.blue, false, "RASENGAN!");
-      game.entities.push({
-        x: info.midX,
-        y: info.midY,
-        r: 10,
-        life: 0.25,
-        maxLife: 0.25,
-        dead: false,
-        update(dt) {
-          this.life -= dt;
-          this.r += 160 * dt;
-          if (this.life <= 0) this.dead = true;
-        },
-        render(c) {
-          const k = Math.max(0, this.life / this.maxLife);
-          c.save();
-          c.globalAlpha = k;
-          c.beginPath();
-          c.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-          c.fillStyle = COLORS.blue;
-          c.fill();
-          c.lineWidth = 4;
-          c.strokeStyle = COLORS.ink;
-          c.stroke();
-          c.restore();
-        },
-      });
+      game.entities.push(spawnRasenganVisual(info.midX, info.midY, 48));
+      game.chargeUlt(ball);
       return true;
     },
   };
 
-  const SKILL_GEAR_SECOND = {
-    name: "Gear Second",
-    cooldown: 3.0,
-    onWallBounce(ball, game) {
-      game.addEffect(ball, "haste", 1.6, { factor: 1.38 });
-      game.addEffect(ball, "shield", 1.6, { reduction: 0.3 });
-      game.spawnDamageText(ball.x, ball.y - ball.radius, 0, COLORS.red, false, "GEAR 2!");
+  const SKILL_GUM_ROCKET = {
+    name: "Gum Rocket",
+    cooldown: 2.8,
+    onTick(ball, game) {
+      const target = game.balls.find((b) => b !== ball && b.alive);
+      if (!target) return false;
+      const dx = target.x - ball.x;
+      const dy = target.y - ball.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const dashSpeed = ball.baseSpeed * 2.05;
+      ball.vx = (dx / len) * dashSpeed;
+      ball.vy = (dy / len) * dashSpeed;
+      ball.rocketTimer = 0.45;
+      ball.rocketHit = false;
+      game.spawnDamageText(ball.x, ball.y - ball.radius, 0, COLORS.red, false, "GUM ROCKET!");
       game.spawnSparks(ball.x, ball.y, COLORS.white, COLORS.red);
       return true;
     },
@@ -210,24 +380,26 @@
 
   const SKILL_GETSUGA = {
     name: "Getsuga Tensho",
-    cooldown: 3.8,
+    cooldown: 3.4,
     onTick(ball, game) {
       const target = game.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
+      const hollow = ball.ultTimer > 0;
       game.entities.push(
         spawnProjectile({
           owner: ball,
           target,
           x: ball.x,
           y: ball.y,
-          speed: 520,
-          radius: 15,
-          damage: 12,
-          color: COLORS.blue,
-          label: "GETSUGA!",
+          speed: hollow ? 580 : 510,
+          radius: hollow ? 25 : 16,
+          damage: hollow ? 24 : 14,
+          color: COLORS.red,
+          label: hollow ? "HOLLOW GETSUGA!" : "GETSUGA!",
           shape: "crescent",
           onImpact(t, g) {
-            g.addEffect(t, "slow", 0.8, { factor: 0.7 });
+            g.addEffect(t, "slow", hollow ? 1.0 : 0.75, { factor: 0.65 });
+            if (!hollow) g.chargeUlt(ball);
           },
         })
       );
@@ -242,11 +414,12 @@
       color: COLORS.orange,
       radius: 28,
       speed: 365,
-      maxHp: 105,
+      maxHp: 340,
       damage: [9, 15],
       mass: 1.05,
       costume: "goku",
       weapon: "nyoibo",
+      ult: "kaioken",
       skills: [SKILL_KAMEHAMEHA],
     },
     naruto: {
@@ -255,11 +428,12 @@
       color: COLORS.narutoOrange,
       radius: 27,
       speed: 380,
-      maxHp: 100,
+      maxHp: 320,
       damage: [8, 14],
       mass: 0.95,
       costume: "naruto",
       weapon: "kunai",
+      ult: "rasenshuriken",
       skills: [SKILL_RASENGAN],
     },
     luffy: {
@@ -268,12 +442,13 @@
       color: COLORS.red,
       radius: 28,
       speed: 355,
-      maxHp: 115,
+      maxHp: 370,
       damage: [9, 16],
       mass: 1.1,
       costume: "luffy",
       weapon: "gomu_fist",
-      skills: [SKILL_GEAR_SECOND],
+      ult: "gear_4",
+      skills: [SKILL_GUM_ROCKET],
     },
     ichigo: {
       id: "ichigo",
@@ -281,11 +456,12 @@
       color: COLORS.ichigoDark,
       radius: 28,
       speed: 370,
-      maxHp: 100,
+      maxHp: 320,
       damage: [10, 16],
       mass: 1.0,
       costume: "ichigo",
-      weapon: "zangetsu",
+      weapon: "tensa_zangetsu",
+      ult: "hollow_mask",
       skills: [SKILL_GETSUGA],
     },
   };
@@ -399,6 +575,7 @@
       this.name = config.name;
       this.color = config.color;
       this.radius = config.radius;
+      this.baseRadius = config.radius;
       this.baseSpeed = config.speed;
       this.hp = config.maxHp;
       this.maxHp = config.maxHp;
@@ -406,6 +583,12 @@
       this.mass = config.mass;
       this.costume = config.costume || null;
       this.weapon = config.weapon || null;
+      this.ult = config.ult || null;
+      this.ultCharge = 0;
+      this.ultTimer = 0;
+      this.channelTimer = 0;
+      this.rocketTimer = 0;
+      this.rocketHit = false;
       this.weaponAngle = angle;
       this.skills = (config.skills || []).map((s) => ({ ...s, _cd: 0 }));
       this.effects = [];
@@ -510,6 +693,8 @@
   const dots2 = document.getElementById("dots-2");
   const skillHud1 = document.getElementById("skill-hud-1");
   const skillHud2 = document.getElementById("skill-hud-2");
+  const ultHud1 = document.getElementById("ult-hud-1");
+  const ultHud2 = document.getElementById("ult-hud-2");
 
   const overlay = document.getElementById("overlay");
   const overlayStamp = document.getElementById("overlay-stamp");
@@ -562,8 +747,64 @@
     spawnDamageText,
     applyDamage,
     addEffect,
+    chargeUlt,
     sound,
   };
+
+  function activateUltimate(ball) {
+    if (!ball.alive) return;
+    ball.ultCharge = 0;
+    sound.playCritHit();
+    spawnCritBurst(ball.x, ball.y);
+
+    if (ball.ult === "gear_4") {
+      ball.ultTimer = 7.5;
+      ball.radius = Math.round(ball.baseRadius * 1.18);
+      addEffect(ball, "shield", 7.5, { reduction: 0.35 });
+      spawnDamageText(ball.x, ball.y - ball.radius, 0, COLORS.red, false, "GEAR 4!");
+    } else if (ball.ult === "kaioken") {
+      ball.ultTimer = 8.0;
+      addEffect(ball, "haste", 8.0, { factor: 1.25 });
+      if (ball.skills[0]) ball.skills[0]._cd = Math.min(ball.skills[0]._cd, 0.3);
+      spawnDamageText(ball.x, ball.y - ball.radius, 0, COLORS.red, false, "KAIOKEN!");
+    } else if (ball.ult === "rasenshuriken") {
+      const target = balls.find((b) => b !== ball && b.alive);
+      if (!target) return;
+      spawnDamageText(ball.x, ball.y - ball.radius, 0, COLORS.blue, false, "RASENSHURIKEN!");
+      entities.push(
+        spawnProjectile({
+          owner: ball,
+          target,
+          x: ball.x,
+          y: ball.y,
+          speed: 490,
+          radius: 26,
+          damage: 30,
+          color: COLORS.blue,
+          label: "RASENSHURIKEN!",
+          shape: "rasenshuriken",
+          onImpact(t, g, proj) {
+            g.addEffect(t, "stun", 0.9);
+            g.entities.push(spawnRasenganVisual(proj.x, proj.y, 78));
+            g.spawnSparks(proj.x, proj.y, COLORS.white, COLORS.blue);
+          },
+        })
+      );
+    } else if (ball.ult === "hollow_mask") {
+      ball.ultTimer = 8.0;
+      addEffect(ball, "haste", 8.0, { factor: 1.28 });
+      if (ball.skills[0]) ball.skills[0]._cd = Math.min(ball.skills[0]._cd, 0.4);
+      spawnDamageText(ball.x, ball.y - ball.radius, 0, COLORS.red, false, "HOLLOW MASK!");
+    }
+  }
+
+  function chargeUlt(ball) {
+    if (!ball.alive || ball.ultTimer > 0) return;
+    ball.ultCharge = Math.min(ULT_CHARGES_REQUIRED, ball.ultCharge + 1);
+    if (ball.ultCharge >= ULT_CHARGES_REQUIRED) {
+      activateUltimate(ball);
+    }
+  }
 
   function addEffect(ball, type, duration, data = {}) {
     const existing = ball.getEffect(type);
@@ -593,7 +834,8 @@
     const ratio = maxImpact > 0 ? Math.min(1, Math.max(0, impactSpeed / maxImpact)) : 0.5;
     const base = minDmg + ratio * (maxDmg - minDmg);
     const variance = 1 + (rng() * 2 - 1) * DAMAGE_VARIATION;
-    return { amount: Math.max(1, Math.round(base * variance)), isCrit: false };
+    const ultBoost = attacker.ultTimer > 0 ? 1.35 : 1;
+    return { amount: Math.max(1, Math.round(base * variance * ultBoost)), isCrit: false };
   }
 
   function applyDamage(ball, rawAmount) {
@@ -807,6 +1049,20 @@
     }
   }
 
+  function updateUltHUD(el, ball) {
+    if (!el || !ball) return;
+    const active = ball.ultTimer > 0;
+    el.classList.toggle("active", active);
+    const pips = el.querySelectorAll(".ult-pip");
+    pips.forEach((pip, i) => {
+      pip.classList.toggle("charged", active || i < ball.ultCharge);
+    });
+    const tag = el.querySelector(".ult-tag");
+    if (tag) {
+      tag.textContent = active ? `ULT ${ball.ultTimer.toFixed(1)}S` : `ULT ${ball.ultCharge}/${ULT_CHARGES_REQUIRED}`;
+    }
+  }
+
   function updateHUD() {
     const [b1, b2] = balls;
     if (!b1 || !b2) return;
@@ -820,6 +1076,8 @@
 
     updateSkillPill(skillHud1, b1);
     updateSkillPill(skillHud2, b2);
+    updateUltHUD(ultHud1, b1);
+    updateUltHUD(ultHud2, b2);
 
     statusHits.textContent = `HITS: ${totalHits}`;
     statusTime.textContent = `TIME: ${elapsed.toFixed(1)}S`;
@@ -986,6 +1244,20 @@
       spawnDamageText(b1.x, b1.y - b1.radius * 0.5, dmgToB1, COLORS.white, hitB1.isCrit);
       spawnDamageText(b2.x, b2.y - b2.radius * 0.5, dmgToB2, COLORS.white, hitB2.isCrit);
 
+      // Gum-Gum Rocket impact bonus
+      const checkRocketImpact = (attacker, defender) => {
+        if (attacker.rocketTimer > 0 && !attacker.rocketHit) {
+          attacker.rocketHit = true;
+          const gear4 = attacker.ultTimer > 0;
+          const rocketDmg = applyDamage(defender, gear4 ? 26 : 16);
+          spawnSparks(midX, midY, COLORS.red, COLORS.white);
+          spawnDamageText(defender.x, defender.y - defender.radius - 14, rocketDmg, COLORS.red, false, gear4 ? "G4 ROCKET!" : "ROCKET!");
+          if (!gear4) chargeUlt(attacker);
+        }
+      };
+      checkRocketImpact(b1, b2);
+      checkRocketImpact(b2, b1);
+
       runSkillHook(b1, "onHit", b2, game, { damageDealt: dmgToB2, isCrit: hitB2.isCrit, impactSpeed, nx, ny, midX, midY });
       runSkillHook(b2, "onHit", b1, game, { damageDealt: dmgToB1, isCrit: hitB1.isCrit, impactSpeed, nx: -nx, ny: -ny, midX, midY });
 
@@ -1063,7 +1335,22 @@
         ball.squash = Math.max(0, ball.squash - dt * 5);
       }
       ball.weaponAngle += dt * 4.2;
+      if (ball.ultTimer > 0) {
+        ball.ultTimer = Math.max(0, ball.ultTimer - scaledDt);
+        if (ball.ultTimer <= 0) {
+          ball.radius = ball.baseRadius;
+        }
+      }
+      if (ball.rocketTimer > 0) {
+        ball.rocketTimer = Math.max(0, ball.rocketTimer - scaledDt);
+      }
       ball.updateEffects(scaledDt);
+
+      if (ball.channelTimer > 0) {
+        ball.channelTimer = Math.max(0, ball.channelTimer - scaledDt);
+        continue;
+      }
+
       for (const skill of ball.skills) {
         if (skill._cd > 0) skill._cd = Math.max(0, skill._cd - scaledDt);
       }
@@ -1073,7 +1360,9 @@
       if (speedFactor > 0) {
         ball.x += ball.vx * speedFactor * scaledDt;
         ball.y += ball.vy * speedFactor * scaledDt;
-        ball.normalizeSpeed();
+        if (ball.rocketTimer <= 0) {
+          ball.normalizeSpeed();
+        }
         handleWallCollisions(ball);
       }
     }
@@ -1163,31 +1452,35 @@
       c.arc(0, 15, 4, 0, Math.PI * 2);
       c.stroke();
     } else if (ball.weapon === "gomu_fist") {
-      // Luffy's Gomu-Gomu Fist
-      c.fillStyle = COLORS.skin;
+      // Luffy's Gomu-Gomu Fist (larger & Haki-darkened in Gear 4)
+      const g4 = ball.ultTimer > 0;
+      c.fillStyle = g4 ? COLORS.ichigoDark : COLORS.skin;
       c.beginPath();
-      c.arc(0, 0, 11, 0, Math.PI * 2);
+      c.arc(0, 0, g4 ? 14 : 11, 0, Math.PI * 2);
       c.fill();
       c.stroke();
       c.fillStyle = COLORS.red;
       c.fillRect(-6, 7, 12, 7);
       c.strokeRect(-6, 7, 12, 7);
-    } else if (ball.weapon === "zangetsu") {
-      // Ichigo's Zangetsu Cleaver
-      c.fillStyle = COLORS.silver;
+    } else if (ball.weapon === "tensa_zangetsu") {
+      // Ichigo's Bankai katana (Tensa Zangetsu): sleek black blade, cross guard, chain
+      c.fillStyle = COLORS.ichigoDark;
       c.beginPath();
-      c.moveTo(-4, 8);
-      c.lineTo(-4, -28);
-      c.lineTo(8, -18);
-      c.lineTo(5, 8);
+      c.moveTo(-2.5, 6);
+      c.lineTo(-2.5, -30);
+      c.lineTo(3, -24);
+      c.lineTo(3, 6);
       c.closePath();
       c.fill();
       c.stroke();
       c.fillStyle = COLORS.ink;
-      c.fillRect(-4, -24, 4, 32);
+      c.fillRect(-8, 5, 16, 4);
       c.fillStyle = COLORS.red;
-      c.fillRect(-3, 8, 6, 10);
-      c.strokeRect(-3, 8, 6, 10);
+      c.fillRect(-2.5, 9, 5, 11);
+      c.strokeRect(-2.5, 9, 5, 11);
+      c.beginPath();
+      c.arc(0, 23, 3, 0, Math.PI * 2);
+      c.stroke();
     }
     c.restore();
   }
@@ -1295,6 +1588,24 @@
         }
       }
     } else if (ball.costume === "luffy") {
+      // Gear 4 Haki rim & steam clouds when Ult active
+      if (ball.ultTimer > 0) {
+        c.save();
+        c.beginPath();
+        c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
+        c.clip();
+        c.fillStyle = COLORS.ichigoDark;
+        c.fillRect(-r, r * 0.42, r * 2, r * 0.65);
+        c.restore();
+        // Steam clouds
+        c.fillStyle = COLORS.white;
+        for (const side of [-1, 1]) {
+          c.beginPath();
+          c.arc(side * r * 1.02, -r * 0.1, 7, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+        }
+      }
       // Straw Hat on top
       c.fillStyle = COLORS.gold;
       c.beginPath();
@@ -1311,47 +1622,49 @@
       c.fillRect(-r * 0.6, -r * 0.94, r * 1.2, r * 0.14);
       c.strokeRect(-r * 0.6, -r * 0.94, r * 1.2, r * 0.14);
     } else if (ball.costume === "ichigo") {
-      // Peach face + Shinigami black robe with white V-collar (clipped to ball)
+      // Bankai robe (black coat + red inner lining + peach face)
       c.save();
       c.beginPath();
       c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
       c.clip();
       c.fillStyle = COLORS.skin;
-      c.fillRect(-r, -r, r * 2, r * 1.52);
+      c.fillRect(-r, -r, r * 2, r * 1.48);
 
-      // White Shinigami V-collar
-      c.fillStyle = COLORS.white;
+      // Red inner Bankai collar lining
+      c.fillStyle = COLORS.red;
       c.beginPath();
-      c.moveTo(-r * 0.7, r * 0.45);
-      c.lineTo(0, r * 0.82);
-      c.lineTo(r * 0.7, r * 0.45);
-      c.lineTo(r * 0.9, r * 0.65);
-      c.lineTo(0, r * 1.0);
-      c.lineTo(-r * 0.9, r * 0.65);
+      c.moveTo(-r * 0.75, r * 0.42);
+      c.lineTo(0, r * 0.84);
+      c.lineTo(r * 0.75, r * 0.42);
+      c.lineTo(r * 0.92, r * 0.65);
+      c.lineTo(0, r * 1.02);
+      c.lineTo(-r * 0.92, r * 0.65);
       c.closePath();
       c.fill();
       c.stroke();
 
-      // Half Hollow-mask fragment on left side with red stripes
-      c.fillStyle = COLORS.white;
-      c.beginPath();
-      c.moveTo(-r * 1.05, -r * 0.55);
-      c.lineTo(-r * 0.42, -r * 0.42);
-      c.lineTo(-r * 0.56, r * 0.05);
-      c.lineTo(-r * 0.42, r * 0.42);
-      c.lineTo(-r * 1.05, r * 0.55);
-      c.closePath();
-      c.fill();
-      c.stroke();
+      // Early Hollow Mask (covers left/upper face with red stripes when Ult active)
+      if (ball.ultTimer > 0) {
+        c.fillStyle = COLORS.white;
+        c.beginPath();
+        c.moveTo(-r * 1.05, -r * 0.65);
+        c.lineTo(-r * 0.05, -r * 0.48);
+        c.lineTo(-r * 0.2, r * 0.05);
+        c.lineTo(-r * 0.08, r * 0.48);
+        c.lineTo(-r * 1.05, r * 0.55);
+        c.closePath();
+        c.fill();
+        c.stroke();
 
-      c.strokeStyle = COLORS.red;
-      c.lineWidth = 3;
-      c.beginPath();
-      c.moveTo(-r * 0.88, -r * 0.34);
-      c.lineTo(-r * 0.58, -r * 0.24);
-      c.moveTo(-r * 0.9, r * 0.14);
-      c.lineTo(-r * 0.56, r * 0.22);
-      c.stroke();
+        c.strokeStyle = COLORS.red;
+        c.lineWidth = 3.5;
+        c.beginPath();
+        c.moveTo(-r * 0.9, -r * 0.36);
+        c.lineTo(-r * 0.3, -r * 0.22);
+        c.moveTo(-r * 0.9, r * 0.14);
+        c.lineTo(-r * 0.34, r * 0.24);
+        c.stroke();
+      }
       c.restore();
 
       // Wild spiky bright orange Ichigo hair
@@ -1398,7 +1711,47 @@
     c.restore();
   }
 
+  function drawKaiokenAura(ball, c) {
+    const r = ball.radius;
+    const spikes = 10;
+    const pulse = Math.sin(elapsed * 22) * 3;
+    c.save();
+    c.translate(ball.x, ball.y);
+    c.beginPath();
+    for (let i = 0; i < spikes * 2; i++) {
+      const a = (Math.PI * i) / spikes;
+      const rad = i % 2 === 0 ? r + 15 + pulse : r + 4;
+      const px = Math.cos(a) * rad;
+      const py = Math.sin(a) * rad;
+      if (i === 0) c.moveTo(px, py);
+      else c.lineTo(px, py);
+    }
+    c.closePath();
+    c.fillStyle = COLORS.red;
+    c.fill();
+    c.lineWidth = 3;
+    c.strokeStyle = COLORS.ink;
+    c.stroke();
+    c.restore();
+  }
+
   function drawBall(ball, c = ctx, showExtras = true) {
+    if (showExtras && ball.ult === "kaioken" && ball.ultTimer > 0) {
+      drawKaiokenAura(ball, c);
+    }
+    if (showExtras && ball.rocketTimer > 0) {
+      // Stretched rubber rocket trail behind Luffy
+      const ang = Math.atan2(ball.vy, ball.vx);
+      c.save();
+      c.translate(ball.x, ball.y);
+      c.rotate(ang);
+      c.fillStyle = COLORS.red;
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 3;
+      c.fillRect(-ball.radius * 2.1, -9, ball.radius * 1.5, 18);
+      c.strokeRect(-ball.radius * 2.1, -9, ball.radius * 1.5, 18);
+      c.restore();
+    }
     if (showExtras) drawSkillCooldownRing(ball, c);
     drawWeapon(ball, c);
     const r = ball.radius;

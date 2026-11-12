@@ -149,6 +149,46 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.ult-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding-inline: 2px;
+}
+.ult-row-right {
+  justify-content: flex-end;
+}
+
+.ult-tag {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+  opacity: 0.75;
+}
+
+.ult-pips {
+  display: flex;
+  gap: 3px;
+}
+
+.ult-pip {
+  width: 14px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--white);
+  border: 2px solid var(--ink);
+}
+.ult-pip.charged {
+  background: var(--sun);
+}
+.ult-row.active .ult-pip {
+  background: var(--red);
+}
+.ult-row.active .ult-tag {
+  color: var(--red);
+  opacity: 1;
+}
+
 .round-dot {
   width: 14px;
   height: 14px;
