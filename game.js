@@ -974,6 +974,27 @@
   const detailSkillDesc = document.getElementById("detail-skill-desc");
   const detailUltName = document.getElementById("detail-ult-name");
   const detailUltDesc = document.getElementById("detail-ult-desc");
+  const detailAuraStatus = document.getElementById("detail-aura-status");
+  const detailAuraRow = document.getElementById("detail-aura-row");
+
+  const shopCoinsDisplay = document.getElementById("shop-coins-display");
+  const shopGemsDisplay = document.getElementById("shop-gems-display");
+  const merchantCanvas = document.getElementById("merchant-canvas");
+  const merchantSpeechText = document.getElementById("merchant-speech-text");
+  const shopFilterChips = document.getElementById("shop-filter-chips");
+  const shopItemsGrid = document.getElementById("shop-items-grid");
+
+  const shopModal = document.getElementById("shop-modal");
+  const btnShopModalClose = document.getElementById("btn-shop-modal-close");
+  const shopModalCanvas = document.getElementById("shop-modal-canvas");
+  const shopModalType = document.getElementById("shop-modal-type");
+  const shopModalPrice = document.getElementById("shop-modal-price");
+  const shopModalTitle = document.getElementById("shop-modal-title");
+  const shopModalDesc = document.getElementById("shop-modal-desc");
+  const btnShopModalAction = document.getElementById("btn-shop-modal-action");
+
+  let activeShopFilter = "all";
+  let previewShopItemId = "aura_kaioken";
 
   const profMatches = document.getElementById("prof-matches");
   const profWins = document.getElementById("prof-wins");
@@ -1029,6 +1050,87 @@
     wins: 0,
     charsUsed: { goku: 1, naruto: 1 },
   };
+
+  const playerWallet = {
+    coins: 5000,
+    gems: 150,
+    unlockedItems: new Set(["aura_none"]),
+  };
+
+  const SHOP_CATALOG = [
+    {
+      id: "aura_kaioken",
+      name: "KAIOKEN AURA",
+      category: "aura",
+      badge: "AURA • EPIC",
+      badgeClass: "badge-aura",
+      icon: "🔥",
+      desc: "Radiates an intense crimson flame aura and fiery particle trail during movement.",
+      price: 2500,
+      currency: "coins",
+      auraKey: "kaioken",
+    },
+    {
+      id: "aura_rasen",
+      name: "RASEN VORTEX",
+      category: "aura",
+      badge: "AURA • RARE",
+      badgeClass: "badge-aura",
+      icon: "🌀",
+      desc: "Surrounds your ball with a swirling cyan wind cyclone with every bounce.",
+      price: 2000,
+      currency: "coins",
+      auraKey: "rasen",
+    },
+    {
+      id: "aura_thunder",
+      name: "THUNDER SPARKS",
+      category: "aura",
+      badge: "AURA • RARE",
+      badgeClass: "badge-aura",
+      icon: "⚡",
+      desc: "Crackles with golden electric sparks upon every wall bounce and rival clash.",
+      price: 1800,
+      currency: "coins",
+      auraKey: "thunder",
+    },
+    {
+      id: "arena_tenkaichi",
+      name: "TENKAICHI ARENA",
+      category: "arena",
+      badge: "ARENA • LEGENDARY",
+      badgeClass: "badge-arena",
+      icon: "🏟️",
+      desc: "Historic martial arts tournament stone ring with sacred yellow boundary lines.",
+      price: 50,
+      currency: "gems",
+      stageKey: "tenkaichi",
+    },
+    {
+      id: "arena_dojo",
+      name: "LEAF VILLAGE DOJO",
+      category: "arena",
+      badge: "ARENA • EPIC",
+      badgeClass: "badge-arena",
+      icon: "🍃",
+      desc: "Traditional wooden floor arena inscribed with the shinobi fire crest.",
+      price: 75,
+      currency: "gems",
+      stageKey: "dojo",
+    },
+    {
+      id: "hitfx_manga",
+      name: "MANGA HIT FX",
+      category: "hitfx",
+      badge: "HIT FX • SPECIAL",
+      badgeClass: "badge-hitfx",
+      icon: "💥",
+      desc: "Impact collisions trigger colorful comic sound effects (POW! BAM! CRACK!).",
+      price: 1200,
+      currency: "coins",
+      hitFxKey: "manga",
+    },
+  ];
   let hitStop = 0;
   let shakeTime = 0;
   let shakeIntensity = 0;
@@ -1444,10 +1546,16 @@
 
     if (isMatchEnd) {
       sessionStats.matches += 1;
-      if (scores[0] > scores[1]) sessionStats.wins += 1;
+      if (scores[0] > scores[1]) {
+        sessionStats.wins += 1;
+        playerWallet.coins += 150;
+      } else {
+        playerWallet.coins += 50;
+      }
       sessionStats.charsUsed[BALL_CONFIGS[0].id] = (sessionStats.charsUsed[BALL_CONFIGS[0].id] || 0) + 1;
       sessionStats.charsUsed[BALL_CONFIGS[1].id] = (sessionStats.charsUsed[BALL_CONFIGS[1].id] || 0) + 1;
       updateProfileUI();
+      updateShopUI();
 
       if (overlayStamp) overlayStamp.textContent = "MATCH WINNER";
       btnRematch.textContent = "REMATCH";
@@ -2226,6 +2334,64 @@
     c.restore();
   }
 
+  function drawBallAura(ball, c) {
+    const aura = ball.equippedAura;
+    if (!aura || aura === "none") return;
+    const r = ball.radius;
+    const t = elapsed;
+
+    if (aura === "kaioken") {
+      const spikes = 9;
+      const pulse = Math.sin(t * 18) * 2.5;
+      c.save();
+      c.translate(ball.x, ball.y);
+      c.beginPath();
+      for (let i = 0; i < spikes * 2; i++) {
+        const a = (Math.PI * i) / spikes;
+        const rad = i % 2 === 0 ? r + 13 + pulse : r + 4;
+        const px = Math.cos(a) * rad;
+        const py = Math.sin(a) * rad;
+        if (i === 0) c.moveTo(px, py);
+        else c.lineTo(px, py);
+      }
+      c.closePath();
+      c.fillStyle = COLORS.red;
+      c.fill();
+      c.lineWidth = 3;
+      c.strokeStyle = COLORS.ink;
+      c.stroke();
+      c.restore();
+    } else if (aura === "rasen") {
+      c.save();
+      c.translate(ball.x, ball.y);
+      c.rotate(t * 6);
+      c.lineWidth = 4;
+      c.strokeStyle = COLORS.blue;
+      for (let i = 0; i < 3; i++) {
+        c.beginPath();
+        c.arc(0, 0, r + 8 + Math.sin(t * 8 + i) * 2, (i * Math.PI * 2) / 3, (i * Math.PI * 2) / 3 + 1.2);
+        c.stroke();
+      }
+      c.restore();
+    } else if (aura === "thunder") {
+      c.save();
+      c.translate(ball.x, ball.y);
+      c.lineWidth = 3;
+      c.strokeStyle = COLORS.gold;
+      for (let i = 0; i < 4; i++) {
+        const a = (i * Math.PI * 0.5) + Math.sin(t * 15 + i) * 0.3;
+        const d1 = r + 4;
+        const d2 = r + 12 + Math.sin(t * 22 + i) * 3;
+        c.beginPath();
+        c.moveTo(Math.cos(a) * d1, Math.sin(a) * d1);
+        c.lineTo(Math.cos(a + 0.2) * (d1 + 5), Math.sin(a + 0.2) * (d1 + 5));
+        c.lineTo(Math.cos(a) * d2, Math.sin(a) * d2);
+        c.stroke();
+      }
+      c.restore();
+    }
+  }
+
   // Naruto holds a Rasengan that grows while the skill recharges (and surges ahead during dash)
   function drawHeldRasengan(ball, c) {
     const sk = ball.skills && ball.skills.find((x) => x.name === "Rasengan");
@@ -2255,8 +2421,12 @@
   }
 
   function drawBall(ball, c = ctx, showExtras = true) {
-    if (showExtras && ball.ult === "kaioken" && ball.ultTimer > 0) {
-      drawKaiokenAura(ball, c);
+    if (showExtras) {
+      if (ball.ult === "kaioken" && ball.ultTimer > 0) {
+        drawKaiokenAura(ball, c);
+      } else {
+        drawBallAura(ball, c);
+      }
     }
     if (showExtras && ball.rocketTimer > 0) {
       // Stretched rubber rocket trail behind Luffy
@@ -2623,6 +2793,8 @@
       updateCharDetailUI();
     } else if (targetId === "screen-profile") {
       updateProfileUI();
+    } else if (targetId === "screen-shop") {
+      updateShopUI();
     }
   }
 
@@ -2701,6 +2873,66 @@
     });
   }
 
+  if (btnShopModalClose) {
+    btnShopModalClose.addEventListener("click", () => {
+      sound.unlock();
+      if (shopModal) shopModal.classList.add("hidden");
+    });
+  }
+
+  if (shopModal) {
+    shopModal.addEventListener("click", (e) => {
+      if (e.target === shopModal) {
+        sound.unlock();
+        shopModal.classList.add("hidden");
+      }
+    });
+  }
+
+  if (btnShopModalAction) {
+    btnShopModalAction.addEventListener("click", () => {
+      sound.unlock();
+      const item = SHOP_CATALOG.find((x) => x.id === previewShopItemId);
+      if (!item) return;
+      const isOwned = playerWallet.unlockedItems.has(item.id);
+      if (isOwned) {
+        if (shopModal) shopModal.classList.add("hidden");
+        switchScreen("screen-chars");
+        return;
+      }
+
+      if (item.currency === "coins") {
+        if (playerWallet.coins < item.price) {
+          sound.play("hit");
+          if (merchantSpeechText) {
+            merchantSpeechText.textContent = `"Mreow! You need ${item.price - playerWallet.coins} more coins! Win some sandbox clashes to earn more!"`;
+          }
+          alert(`Not enough coins! You have ${playerWallet.coins} coins, but this item costs ${item.price}. Win more matches to earn coins!`);
+          return;
+        }
+        playerWallet.coins -= item.price;
+      } else {
+        if (playerWallet.gems < item.price) {
+          sound.play("hit");
+          if (merchantSpeechText) {
+            merchantSpeechText.textContent = `"Mreow! You need more tournament gems! Win more saga matches to get gems!"`;
+          }
+          alert(`Not enough gems!`);
+          return;
+        }
+        playerWallet.gems -= item.price;
+      }
+
+      playerWallet.unlockedItems.add(item.id);
+      sound.play("explosion");
+      if (merchantSpeechText) {
+        merchantSpeechText.textContent = `"Mreow! Fantastic choice! You unlocked ${item.name}! Go to FIGHTERS to equip it on your favorite ball!"`;
+      }
+      updateShopUI();
+      openShopInspectModal(item.id);
+    });
+  }
+
   // Single Central Card Setup Tabs (P1 vs P2)
   if (tabP1) {
     tabP1.addEventListener("click", () => {
@@ -2730,6 +2962,10 @@
       sound.unlock();
       initMatch();
     } else if (e.key === "Escape") {
+      if (shopModal && !shopModal.classList.contains("hidden")) {
+        shopModal.classList.add("hidden");
+        return;
+      }
       if (rosterModal && !rosterModal.classList.contains("hidden")) {
         rosterModal.classList.add("hidden");
         return;
@@ -2742,6 +2978,315 @@
 
   window.addEventListener("pointerdown", () => sound.unlock(), { once: true });
   window.addEventListener("resize", resizeCanvas);
+
+  // Ball-Styled Anime Talking Cat Mascot (Master Neko)
+  function drawMerchantCat(canvasEl, t) {
+    if (!canvasEl) return;
+    const ctx = canvasEl.getContext("2d");
+    const w = canvasEl.width;
+    const h = canvasEl.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const cx = w * 0.5;
+    const cy = h * 0.54 + Math.sin(t * 3.5) * 2.5; // gentle bobbing
+    const r = 24;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    // 1. Cat Ears
+    const earTwitch = Math.sin(t * 7) > 0.85 ? Math.sin(t * 25) * 0.15 : 0;
+    // Left ear
+    ctx.save();
+    ctx.translate(-r * 0.55, -r * 0.7);
+    ctx.rotate(-0.25 + earTwitch);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-10, -18);
+    ctx.lineTo(9, -7);
+    ctx.closePath();
+    ctx.fillStyle = "#fff8eb";
+    ctx.fill();
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = COLORS.ink;
+    ctx.stroke();
+    // Inner pink ear
+    ctx.beginPath();
+    ctx.moveTo(-1, -3);
+    ctx.lineTo(-7, -13);
+    ctx.lineTo(5, -6);
+    ctx.closePath();
+    ctx.fillStyle = "#ff8fa3";
+    ctx.fill();
+    ctx.restore();
+
+    // Right ear
+    ctx.save();
+    ctx.translate(r * 0.55, -r * 0.7);
+    ctx.rotate(0.25);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(10, -18);
+    ctx.lineTo(-9, -7);
+    ctx.closePath();
+    ctx.fillStyle = "#fff8eb";
+    ctx.fill();
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = COLORS.ink;
+    ctx.stroke();
+    // Inner pink ear
+    ctx.beginPath();
+    ctx.moveTo(1, -3);
+    ctx.lineTo(7, -13);
+    ctx.lineTo(-5, -6);
+    ctx.closePath();
+    ctx.fillStyle = "#ff8fa3";
+    ctx.fill();
+    ctx.restore();
+
+    // 2. Round Ball Cat Body
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fillStyle = "#fff8eb";
+    ctx.fill();
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = COLORS.ink;
+    ctx.stroke();
+
+    // 3. Ninja Headband with Golden Star Plate
+    ctx.beginPath();
+    ctx.arc(0, -4, r - 1, -Math.PI * 0.85, -Math.PI * 0.15);
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = "#2b1b3d";
+    ctx.stroke();
+
+    ctx.fillStyle = "#8b93a1";
+    ctx.strokeStyle = COLORS.ink;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.roundRect(-10, -r + 2, 20, 9, 3);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#ffd93d";
+    ctx.font = "bold 9px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("★", 0, -r + 7);
+
+    // 4. Manga Eyes (Periodic Cute Blink)
+    const isBlinking = (Math.floor(t * 1.5) % 4 === 0) && (t * 1.5 % 1 < 0.22);
+    const eyeY = -1;
+    const eyeSpacing = 8;
+
+    if (isBlinking) {
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = COLORS.ink;
+      ctx.beginPath();
+      ctx.arc(-eyeSpacing, eyeY, 4, Math.PI, 0);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(eyeSpacing, eyeY, 4, Math.PI, 0);
+      ctx.stroke();
+    } else {
+      [-eyeSpacing, eyeSpacing].forEach((ex) => {
+        ctx.beginPath();
+        ctx.arc(ex, eyeY, 5, 0, Math.PI * 2);
+        ctx.fillStyle = COLORS.white;
+        ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = COLORS.ink;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(ex + 0.5, eyeY, 3, 0, Math.PI * 2);
+        ctx.fillStyle = "#2b1b3d";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(ex - 1, eyeY - 1.5, 1.3, 0, Math.PI * 2);
+        ctx.fillStyle = COLORS.white;
+        ctx.fill();
+      });
+    }
+
+    // 5. Rosy Blush Cheeks
+    ctx.fillStyle = "rgba(255, 138, 158, 0.45)";
+    ctx.beginPath(); ctx.arc(-14, 4, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(14, 4, 4, 0, Math.PI * 2); ctx.fill();
+
+    // 6. Whiskers
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = COLORS.ink;
+    ctx.beginPath(); ctx.moveTo(-13, 2); ctx.lineTo(-21, 0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-13, 5); ctx.lineTo(-21, 6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(13, 2); ctx.lineTo(21, 0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(13, 5); ctx.lineTo(21, 6); ctx.stroke();
+
+    // 7. Cute Talking Cat Mouth (Mouth opens and closes in speech rhythm)
+    const talkCycle = Math.abs(Math.sin(t * 6));
+    const mouthOpen = talkCycle > 0.35 ? talkCycle * 4 : 0;
+
+    // Small pink nose
+    ctx.fillStyle = "#ff6b8b";
+    ctx.beginPath();
+    ctx.moveTo(0, 3);
+    ctx.lineTo(-2.5, 0.5);
+    ctx.lineTo(2.5, 0.5);
+    ctx.closePath();
+    ctx.fill();
+
+    if (mouthOpen > 1.2) {
+      ctx.beginPath();
+      ctx.ellipse(0, 7, 3.5, mouthOpen, 0, 0, Math.PI * 2);
+      ctx.fillStyle = "#e84a5f";
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = COLORS.ink;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(0, 7 + mouthOpen * 0.4, 2, 0, Math.PI);
+      ctx.fillStyle = "#ff8fa3";
+      ctx.fill();
+    } else {
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = COLORS.ink;
+      ctx.beginPath();
+      ctx.arc(-2.5, 4.5, 2.8, 0.1, Math.PI * 0.9);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(2.5, 4.5, 2.8, 0.1, Math.PI * 0.9);
+      ctx.stroke();
+    }
+
+    // 8. Tiny Red Collar & Jingle Bell
+    ctx.beginPath();
+    ctx.arc(0, r - 1, 6, 0, Math.PI);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = COLORS.red;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(0, r + 2, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffd93d";
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = COLORS.ink;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // Shop Inspect Modal Live Preview Renderer
+  function renderShopModalPreview(canvasEl, t) {
+    if (!canvasEl) return;
+    const pCtx = canvasEl.getContext("2d");
+    const w = canvasEl.width;
+    const h = canvasEl.height;
+    pCtx.clearRect(0, 0, w, h);
+
+    const item = SHOP_CATALOG.find((x) => x.id === previewShopItemId);
+    if (!item) return;
+
+    if (item.category === "aura") {
+      pCtx.fillStyle = "#1e132b";
+      pCtx.fillRect(0, 0, w, h);
+
+      pCtx.strokeStyle = "rgba(255,255,255,0.06)";
+      pCtx.lineWidth = 2;
+      for (let x = 20; x < w; x += 25) { pCtx.beginPath(); pCtx.moveTo(x, 0); pCtx.lineTo(x, h); pCtx.stroke(); }
+      for (let y = 20; y < h; y += 25) { pCtx.beginPath(); pCtx.moveTo(0, y); pCtx.lineTo(w, y); pCtx.stroke(); }
+
+      const bob = Math.sin(t * 4) * 5;
+      const demoBall = {
+        x: w * 0.5,
+        y: h * 0.52 + bob,
+        radius: 26,
+        color: COLORS.orange,
+        costume: "goku",
+        weapon: null,
+        weaponAngle: 0,
+        vx: 1,
+        vy: 0,
+        flashTimer: 0,
+        squash: Math.max(0, Math.sin(t * 8) * 0.12),
+        skills: [],
+        effects: [],
+        equippedAura: item.auraKey,
+      };
+      drawBall(demoBall, pCtx, true);
+    } else if (item.category === "arena") {
+      if (item.id === "arena_tenkaichi") {
+        pCtx.fillStyle = "#dcd6c8";
+        pCtx.fillRect(0, 0, w, h);
+        pCtx.strokeStyle = COLORS.gold;
+        pCtx.lineWidth = 8;
+        pCtx.strokeRect(12, 12, w - 24, h - 24);
+        pCtx.strokeStyle = COLORS.ink;
+        pCtx.lineWidth = 3;
+        pCtx.strokeRect(8, 8, w - 16, h - 16);
+        pCtx.strokeRect(16, 16, w - 32, h - 32);
+
+        pCtx.strokeStyle = "rgba(43,27,61,0.25)";
+        pCtx.lineWidth = 2;
+        pCtx.beginPath();
+        pCtx.moveTo(w * 0.5, 16); pCtx.lineTo(w * 0.5, h - 16);
+        pCtx.moveTo(16, h * 0.5); pCtx.lineTo(w - 16, h * 0.5);
+        pCtx.stroke();
+
+        pCtx.fillStyle = COLORS.white;
+        pCtx.beginPath(); pCtx.arc(w * 0.5, h * 0.5, 20, 0, Math.PI * 2); pCtx.fill();
+        pCtx.strokeStyle = COLORS.ink; pCtx.lineWidth = 3; pCtx.stroke();
+        pCtx.fillStyle = COLORS.red;
+        pCtx.font = "bold 16px 'Lilita One', sans-serif";
+        pCtx.textAlign = "center"; pCtx.textBaseline = "middle";
+        pCtx.fillText("武", w * 0.5, h * 0.5 + 1);
+      } else {
+        pCtx.fillStyle = "#c89b6d";
+        pCtx.fillRect(0, 0, w, h);
+        pCtx.strokeStyle = "rgba(43,27,61,0.3)";
+        pCtx.lineWidth = 2;
+        for (let y = 16; y < h; y += 18) {
+          pCtx.beginPath(); pCtx.moveTo(0, y); pCtx.lineTo(w, y); pCtx.stroke();
+        }
+
+        pCtx.fillStyle = COLORS.red;
+        pCtx.beginPath(); pCtx.arc(w * 0.5, h * 0.5, 22, 0, Math.PI * 2); pCtx.fill();
+        pCtx.strokeStyle = COLORS.ink; pCtx.lineWidth = 3; pCtx.stroke();
+        pCtx.fillStyle = COLORS.white;
+        pCtx.font = "bold 18px 'Lilita One', sans-serif";
+        pCtx.textAlign = "center"; pCtx.textBaseline = "middle";
+        pCtx.fillText("🍃", w * 0.5, h * 0.5);
+      }
+    } else {
+      pCtx.fillStyle = "#2b1b3d";
+      pCtx.fillRect(0, 0, w, h);
+      const s = 1 + Math.sin(t * 6) * 0.15;
+      pCtx.save();
+      pCtx.translate(w * 0.5, h * 0.5);
+      pCtx.scale(s, s);
+
+      pCtx.fillStyle = COLORS.sun;
+      pCtx.strokeStyle = COLORS.ink;
+      pCtx.lineWidth = 4;
+      pCtx.beginPath();
+      for (let i = 0; i < 16; i++) {
+        const a = (i * Math.PI) / 8;
+        const rad = i % 2 === 0 ? 44 : 22;
+        const px = Math.cos(a) * rad;
+        const py = Math.sin(a) * rad;
+        if (i === 0) pCtx.moveTo(px, py); else pCtx.lineTo(px, py);
+      }
+      pCtx.closePath();
+      pCtx.fill();
+      pCtx.stroke();
+      pCtx.fillStyle = COLORS.red;
+      pCtx.font = "bold 20px 'Lilita One', sans-serif";
+      pCtx.textAlign = "center"; pCtx.textBaseline = "middle";
+      pCtx.fillText("POW!", 0, 1);
+      pCtx.restore();
+    }
+  }
 
   // Character Previews (Unified Center Card & Character Detail Card)
   function renderIdlePreviews(t) {
@@ -2765,14 +3310,23 @@
         squash: Math.max(0, Math.sin(t * 7.6 + phaseOffset) * 0.14),
         skills: cfg.skills,
         effects: [],
+        equippedAura: cfg.equippedAura || "none",
       };
-      drawBall(previewBall, pCtx, false);
+      drawBall(previewBall, pCtx, true);
     };
 
     if (currentScreen === "screen-setup" && previewActive) {
       drawFighter(previewActive, BALL_CONFIGS[activeSlot], activeSlot === 0, 0);
     } else if (rosterModal && !rosterModal.classList.contains("hidden") && detailCanvas) {
       drawFighter(detailCanvas, CHARACTER_ROSTER[detailCharId], true, 0);
+    }
+
+    if (currentScreen === "screen-shop" && merchantCanvas) {
+      drawMerchantCat(merchantCanvas, t);
+    }
+
+    if (shopModal && !shopModal.classList.contains("hidden") && shopModalCanvas) {
+      renderShopModalPreview(shopModalCanvas, t);
     }
   }
 
@@ -2845,6 +3399,108 @@
 
     if (detailUltName) detailUltName.textContent = cfg.ultName || "ULTIMATE POWER";
     if (detailUltDesc) detailUltDesc.textContent = cfg.ultDesc || "5-Hit charged transformation with enhanced combat capabilities.";
+
+    // Combat Aura Equipment
+    const equippedAura = cfg.equippedAura || "none";
+    if (detailAuraStatus) {
+      detailAuraStatus.textContent = `EQUIPPED: ${equippedAura.toUpperCase()}`;
+    }
+    if (detailAuraRow) {
+      detailAuraRow.querySelectorAll(".aura-chip").forEach((chip) => {
+        const aKey = chip.dataset.aura;
+        chip.classList.toggle("active", aKey === equippedAura);
+        const itemId = `aura_${aKey}`;
+        const isUnlocked = aKey === "none" || playerWallet.unlockedItems.has(itemId);
+        chip.classList.toggle("locked", !isUnlocked);
+        if (!isUnlocked) {
+          chip.title = "Locked in Shop! Visit Anime Bazaar to unlock.";
+        } else {
+          chip.title = "Click to equip this aura";
+        }
+      });
+    }
+  }
+
+  function updateShopUI() {
+    if (shopCoinsDisplay) shopCoinsDisplay.textContent = playerWallet.coins.toLocaleString();
+    if (shopGemsDisplay) shopGemsDisplay.textContent = playerWallet.gems.toLocaleString();
+
+    if (!shopItemsGrid) return;
+    shopItemsGrid.innerHTML = "";
+
+    const filtered = SHOP_CATALOG.filter((item) => {
+      if (activeShopFilter === "all") return true;
+      return item.category === activeShopFilter;
+    });
+
+    for (const item of filtered) {
+      const isOwned = playerWallet.unlockedItems.has(item.id);
+      const card = document.createElement("div");
+      card.className = "shop-card-tile";
+
+      const badge = document.createElement("span");
+      badge.className = `shop-card-badge ${item.badgeClass}`;
+      badge.textContent = item.badge;
+
+      const icon = document.createElement("div");
+      icon.className = "shop-card-icon";
+      icon.textContent = item.icon;
+
+      const name = document.createElement("h3");
+      name.className = "shop-card-name";
+      name.textContent = item.name;
+
+      const price = document.createElement("span");
+      price.className = "shop-card-price";
+      price.textContent = isOwned ? "OWNED" : `${item.currency === "coins" ? "🪙" : "💎"} ${item.price.toLocaleString()}`;
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `btn btn-sm shop-card-btn ${isOwned ? "btn-owned" : "btn-green"}`;
+      btn.textContent = isOwned ? "INSPECT" : "BUY";
+
+      card.appendChild(badge);
+      card.appendChild(icon);
+      card.appendChild(name);
+      card.appendChild(price);
+      card.appendChild(btn);
+
+      card.addEventListener("click", () => {
+        sound.unlock();
+        openShopInspectModal(item.id);
+      });
+
+      shopItemsGrid.appendChild(card);
+    }
+  }
+
+  function openShopInspectModal(itemId) {
+    const item = SHOP_CATALOG.find((x) => x.id === itemId);
+    if (!item) return;
+    previewShopItemId = itemId;
+    const isOwned = playerWallet.unlockedItems.has(item.id);
+
+    if (shopModalTitle) shopModalTitle.textContent = item.name;
+    if (shopModalDesc) shopModalDesc.textContent = item.desc;
+    if (shopModalType) {
+      shopModalType.className = `power-badge ${item.badgeClass}`;
+      shopModalType.textContent = item.badge;
+    }
+    if (shopModalPrice) {
+      shopModalPrice.textContent = isOwned ? "OWNED" : `${item.currency === "coins" ? "🪙" : "💎"} ${item.price.toLocaleString()}`;
+    }
+
+    if (btnShopModalAction) {
+      if (isOwned) {
+        btnShopModalAction.className = "btn btn-gold btn-big";
+        btnShopModalAction.textContent = "OWNED • EQUIP IN CHAR DETAIL";
+      } else {
+        btnShopModalAction.className = "btn btn-green btn-big";
+        btnShopModalAction.textContent = `BUY FOR ${item.currency === "coins" ? "🪙" : "💎"} ${item.price.toLocaleString()}`;
+      }
+    }
+
+    if (shopModal) shopModal.classList.remove("hidden");
   }
 
   function updateProfileUI() {
@@ -2990,9 +3646,51 @@
       });
     }
 
+    // Aura Selector in Fighter Detail Modal
+    if (detailAuraRow) {
+      detailAuraRow.querySelectorAll(".aura-chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          sound.unlock();
+          const aKey = chip.dataset.aura;
+          const itemId = `aura_${aKey}`;
+          const isUnlocked = aKey === "none" || playerWallet.unlockedItems.has(itemId);
+          if (!isUnlocked) {
+            sound.play("hit");
+            if (merchantSpeechText) {
+              merchantSpeechText.textContent = `"Mreow! That ${chip.textContent.trim()} is locked! Visit the Anime Bazaar to unlock it with coins!"`;
+            }
+            alert(`This aura is locked in the Anime Bazaar! Go to the SHOP tab to unlock it for your fighter.`);
+            return;
+          }
+          const cfg = CHARACTER_ROSTER[detailCharId];
+          if (cfg) {
+            cfg.equippedAura = aKey;
+            BALL_CONFIGS.forEach((bc) => {
+              if (bc.id === cfg.id) bc.equippedAura = aKey;
+            });
+            updateCharDetailUI();
+          }
+        });
+      });
+    }
+
+    // Shop Category Filter Chips
+    if (shopFilterChips) {
+      shopFilterChips.querySelectorAll(".filter-chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          sound.unlock();
+          shopFilterChips.querySelectorAll(".filter-chip").forEach((c) => c.classList.remove("active"));
+          chip.classList.add("active");
+          activeShopFilter = (chip.dataset.filter || "all").toLowerCase();
+          updateShopUI();
+        });
+      });
+    }
+
     updateUnifiedSetupUI();
     updateCharDetailUI();
     updateProfileUI();
+    updateShopUI();
   }
 
   // Boot

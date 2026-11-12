@@ -322,39 +322,50 @@
       <!-- ================= 6. SHOP SCREEN ================= -->
       <section id="screen-shop" class="screen screen-shop hidden">
         <div class="cartoon-card shop-card">
+          <!-- Top Wallet Bar -->
+          <div class="shop-wallet-bar">
+            <div class="wallet-pill wallet-coins" title="Earn coins by winning battles!">
+              <span class="wallet-icon">🪙</span>
+              <span id="shop-coins-display" class="wallet-val">5,000</span>
+              <span class="wallet-lbl">COINS</span>
+            </div>
+            <div class="wallet-pill wallet-gems" title="Tournament Gems">
+              <span class="wallet-icon">💎</span>
+              <span id="shop-gems-display" class="wallet-val">150</span>
+              <span class="wallet-lbl">GEMS</span>
+            </div>
+          </div>
+
           <div class="stamp stamp-yellow">ANIME BAZAAR</div>
           
-          <!-- Merchant Speech Bubble -->
+          <!-- Ball-Styled Talking Cat Mascot Stage -->
           <div class="merchant-box">
-            <div class="merchant-avatar">🐱‍👤</div>
+            <div class="merchant-canvas-wrap">
+              <canvas id="merchant-canvas" class="merchant-cat-canvas" width="76" height="76"></canvas>
+            </div>
             <div class="merchant-bubble">
-              <p class="merchant-speech">"Yo fighter! The weaponsmiths and aura enchanters are forging legendary anime cosmetics for Season 2!"</p>
+              <div class="merchant-header-row">
+                <span class="merchant-name-tag">🐱 MASTER NEKO</span>
+                <span class="merchant-role-tag">BAZAAR MASTER</span>
+              </div>
+              <p id="merchant-speech-text" class="merchant-speech">
+                "Mreow! Welcome to the Anime Bazaar, challenger! Unlock blazing auras, arena stages, and manga hit sparks! You can equip your auras right in the Fighter Roster!"
+              </p>
             </div>
           </div>
 
-          <!-- Showcase Items Preview -->
-          <div class="shop-preview-grid">
-            <div class="shop-item-card">
-              <div class="shop-item-icon">🔮</div>
-              <h3 class="shop-item-name">KAIOKEN AURA</h3>
-              <span class="shop-item-price">🪙 5,000</span>
-              <span class="shop-lock-tag">🔒 LOCKED</span>
-            </div>
-            <div class="shop-item-card">
-              <div class="shop-item-icon">🌀</div>
-              <h3 class="shop-item-name">RASEN VORTEX</h3>
-              <span class="shop-item-price">🪙 3,500</span>
-              <span class="shop-lock-tag">🔒 LOCKED</span>
-            </div>
-            <div class="shop-item-card">
-              <div class="shop-item-icon">🏟️</div>
-              <h3 class="shop-item-name">TENKAICHI MAP</h3>
-              <span class="shop-item-price">💎 150</span>
-              <span class="shop-lock-tag">🔒 LOCKED</span>
-            </div>
+          <!-- Category Filter Chips -->
+          <div class="filter-chips-row shop-filter-chips" id="shop-filter-chips">
+            <button class="filter-chip active" data-filter="all" type="button">ALL (6)</button>
+            <button class="filter-chip" data-filter="aura" type="button">✨ AURAS</button>
+            <button class="filter-chip" data-filter="arena" type="button">🏟️ ARENAS</button>
+            <button class="filter-chip" data-filter="hitfx" type="button">💥 HIT SPARKS</button>
           </div>
 
-          <div class="stamp stamp-red stamp-center">RESTOCK IN: NEXT MAJOR UPDATE</div>
+          <!-- Showcase Items Grid -->
+          <div class="shop-items-grid" id="shop-items-grid">
+            <!-- Populated dynamically via JS with real purchase and unlock state -->
+          </div>
         </div>
       </section>
 
@@ -421,6 +432,50 @@
         <p id="detail-ult-desc" class="power-desc">
           Enters crimson Kaioken state with glowing red aura! Speeds up and charges massive Kamehameha beams.
         </p>
+      </div>
+
+      <!-- Aura Equipment Selector for this Fighter -->
+      <div class="power-bubble aura-equip-bubble">
+        <div class="power-header">
+          <span class="power-badge badge-gold">✨ COMBAT AURA & TRAIL</span>
+          <span id="detail-aura-status" class="power-cd">EQUIPPED: NONE</span>
+        </div>
+        <div class="aura-selector-row" id="detail-aura-row">
+          <button class="aura-chip active" data-aura="none" type="button">NONE</button>
+          <button class="aura-chip" data-aura="kaioken" type="button">🔥 KAIOKEN</button>
+          <button class="aura-chip" data-aura="rasen" type="button">🌀 RASEN</button>
+          <button class="aura-chip" data-aura="thunder" type="button">⚡ THUNDER</button>
+        </div>
+        <p id="detail-aura-desc" class="power-desc">
+          Equip special particle auras to radiate blazing anime power during movement! Unlock more auras in the Shop.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SHOP ITEM INSPECT & PREVIEW MODAL ================= -->
+  <div id="shop-modal" class="modal-backdrop hidden">
+    <div class="cartoon-card modal-detail-card shop-modal-card">
+      <button id="btn-shop-modal-close" class="modal-close-btn" type="button" aria-label="Close">✖</button>
+      <div class="stamp stamp-yellow" id="shop-modal-stamp">ITEM PREVIEW</div>
+
+      <div class="shop-modal-preview-box">
+        <canvas id="shop-modal-canvas" class="shop-modal-canvas" width="130" height="130"></canvas>
+      </div>
+
+      <div class="shop-modal-info">
+        <div class="shop-modal-tag-row">
+          <span id="shop-modal-type" class="power-badge badge-blue">AURA • EPIC</span>
+          <span id="shop-modal-price" class="shop-item-price-tag">🪙 2,500</span>
+        </div>
+        <h2 id="shop-modal-title" class="shop-modal-title">KAIOKEN AURA</h2>
+        <p id="shop-modal-desc" class="shop-modal-desc">
+          Radiates intense crimson flame aura and fiery trail during movement.
+        </p>
+      </div>
+
+      <div class="shop-modal-actions">
+        <button id="btn-shop-modal-action" class="btn btn-green btn-big" type="button">BUY ITEM</button>
       </div>
     </div>
   </div>
