@@ -111,14 +111,14 @@
     <!-- Swinging Golden Koban Coin "千万" (Senman) -->
     <g class="anim-coin">
       <ellipse cx="160" cy="248" rx="22" ry="28" fill="#f39c12" stroke="#2b1b3d" stroke-width="5" />
-      <text x="160" y="242" font-family="'Lilita One', sans-serif" font-weight="900" font-size="18" fill="#1b1b1f" text-anchor="middle">千</text>
-      <text x="160" y="262" font-family="'Lilita One', sans-serif" font-weight="900" font-size="18" fill="#1b1b1f" text-anchor="middle">万</text>
+      <text x="160" y="242" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="18" fill="#1b1b1f" text-anchor="middle">千</text>
+      <text x="160" y="262" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="18" fill="#1b1b1f" text-anchor="middle">万</text>
     </g>
   </g>
 
   <!-- Mascot Bottom Ribbon -->
   <g transform="translate(160, 290)">
     <rect x="-80" y="-14" width="160" height="28" rx="14" fill="#ff4757" stroke="#2b1b3d" stroke-width="4" />
-    <text x="0" y="5" font-family="'Lilita One', sans-serif" font-size="14" fill="#ffffff" text-anchor="middle">TURBO GRANNY</text>
+    <text x="0" y="5" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="13" fill="#ffffff" text-anchor="middle" letter-spacing="1">TURBO GRANNY</text>
   </g>
 </svg>
