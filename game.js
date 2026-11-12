@@ -608,6 +608,7 @@
     goku: {
       id: "goku",
       name: "STRONGEST ALIEN",
+      shortName: "ALIEN",
       title: "Earth's Protector • Legendary Ki Master",
       role: "ALIEN • DRAGON WAVE",
       color: COLORS.orange,
@@ -628,6 +629,7 @@
     naruto: {
       id: "naruto",
       name: "CHILD OF PROPHECY",
+      shortName: "PROPHECY",
       title: "Hero of the Leaf • Nine-Tails Vessel",
       role: "SHINOBI • SPIRAL DASH",
       color: COLORS.narutoOrange,
@@ -648,6 +650,7 @@
     luffy: {
       id: "luffy",
       name: "WARRIOR OF LIBERATION",
+      shortName: "LIBERATION",
       title: "Rubber Emperor • Drums of Joy",
       role: "PIRATE • RUBBER SLINGSHOT",
       color: COLORS.red,
@@ -668,6 +671,7 @@
     ichigo: {
       id: "ichigo",
       name: "SUBSTITUTE REAPER",
+      shortName: "REAPER",
       title: "Moon Blade Master • Hollow Hybrid",
       role: "REAPER • CRESCENT SLASH",
       color: COLORS.ichigoDark,
@@ -3568,7 +3572,7 @@
         cvs.height = 44;
 
         const nameSpan = document.createElement("span");
-        nameSpan.textContent = char.name;
+        nameSpan.textContent = char.shortName || char.name;
 
         btn.appendChild(cvs);
         btn.appendChild(nameSpan);
