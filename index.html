@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ffc93c">
+  <title>Ball Fight</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <h1 class="logo"><span class="logo-a">BALL</span><span class="logo-b">FIGHT</span></h1>
+
+    <section class="hud" aria-label="Fighters health">
+      <div class="fighter">
+        <span id="name-1" class="name name-red">GOKU</span>
+        <div class="hp">
+          <div class="hp-track"><div id="hp-bar-1" class="hp-fill hp-red" style="width:100%"></div></div>
+          <span id="hp-text-1" class="hp-text">105 / 105</span>
+        </div>
+        <div class="fighter-sub">
+          <div id="dots-1" class="round-dots" aria-label="Player 1 round wins">
+            <span class="round-dot"></span>
+            <span class="round-dot"></span>
+          </div>
+          <div id="skill-hud-1" class="skill-pill ready">
+            <div class="skill-fill" style="width:100%"></div>
+            <span class="skill-label">KAMEHAMEHA • READY</span>
+          </div>
+        </div>
+      </div>
+      <div class="vs">VS</div>
+      <div class="fighter fighter-right">
+        <span id="name-2" class="name name-blue">NARUTO</span>
+        <div class="hp">
+          <div class="hp-track"><div id="hp-bar-2" class="hp-fill hp-blue" style="width:100%"></div></div>
+          <span id="hp-text-2" class="hp-text">100 / 100</span>
+        </div>
+        <div class="fighter-sub fighter-sub-right">
+          <div id="skill-hud-2" class="skill-pill ready">
+            <div class="skill-fill" style="width:100%"></div>
+            <span class="skill-label">RASENGAN • READY</span>
+          </div>
+          <div id="dots-2" class="round-dots" aria-label="Player 2 round wins">
+            <span class="round-dot"></span>
+            <span class="round-dot"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="pills">
+      <span id="status-hits" class="pill">HITS: 0</span>
+      <span id="status-time" class="pill">TIME: 0.0S</span>
+    </div>
+
+    <section class="arena-wrap">
+      <canvas id="arena"></canvas>
+      <div id="overlay" class="overlay hidden">
+        <div class="overlay-card">
+          <p id="overlay-stamp" class="stamp">K.O.!</p>
+          <h2 id="winner-text" class="overlay-title">CRIMSON WINS!</h2>
+          <p id="stats-text" class="overlay-stats">14 HITS • 12.4S</p>
+          <div class="overlay-actions">
+            <button id="btn-rematch" class="btn btn-green" type="button">REMATCH</button>
+            <button id="btn-change-char" class="btn" type="button">FIGHTERS</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="controls">
+      <button id="btn-play" class="btn btn-green btn-big" type="button">PAUSE</button>
+      <button id="btn-reset" class="btn" type="button">RESET</button>
+      <button id="btn-speed" class="btn" type="button">1X</button>
+      <button id="btn-sound" class="btn" type="button">SFX: ON</button>
+      <button id="btn-rec" class="btn" type="button">REC</button>
+      <button id="btn-roster" class="btn" type="button">CHAR</button>
+    </div>
+
+    <footer class="seed-footer">
+      SEED: <span id="seed-display">-</span>
+    </footer>
+  </main>
+
+  <div id="select-screen" class="select-screen">
+    <div class="select-card">
+      <p class="stamp">CHOOSE FIGHTERS</p>
+      <div class="select-fighters">
+        <div class="select-side">
+          <span class="side-tag side-tag-1">P1</span>
+          <canvas id="preview-p1" class="preview-canvas" width="120" height="120"></canvas>
+          <p id="preview-name-1" class="preview-name">GOKU</p>
+          <p id="skill-desc-1" class="preview-skill">KAMEHAMEHA • CD 4.2S</p>
+          <div id="picker-p1" class="picker-grid"></div>
+        </div>
+
+        <div class="select-mid">VS</div>
+
+        <div class="select-side">
+          <span class="side-tag side-tag-2">P2</span>
+          <canvas id="preview-p2" class="preview-canvas" width="120" height="120"></canvas>
+          <p id="preview-name-2" class="preview-name">NARUTO</p>
+          <p id="skill-desc-2" class="preview-skill">RASENGAN • CD 3.4S</p>
+          <div id="picker-p2" class="picker-grid"></div>
+        </div>
+      </div>
+      <button id="btn-fight" class="btn btn-green btn-fight" type="button">FIGHT!</button>
+    </div>
+  </div>
+
+  <button id="btn-rec-exit" class="btn rec-exit-btn hidden" type="button">REC ● ESC</button>
+
+  <script src="game.js"></script>
+</body>
+</html>
