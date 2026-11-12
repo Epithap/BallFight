@@ -216,8 +216,10 @@ body {
 .tag-p2 { background: var(--blue); }
 
 .bubble-name {
-  font-size: 18px;
+  font-size: 14px;
   color: var(--ink);
+  line-height: 1.1;
+  max-width: 115px;
 }
 
 .bubble-vs-circle {
@@ -911,9 +913,11 @@ body {
 }
 
 .avatar-name {
-  font-size: 13px;
+  font-size: 11px;
   color: var(--ink);
-  line-height: 1;
+  line-height: 1.15;
+  text-align: center;
+  word-break: break-word;
 }
 
 .avatar-tag {

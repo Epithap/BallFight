@@ -40,11 +40,11 @@
             <div class="bubble-fighter bubble-p1">
               <span class="bubble-tag tag-p1">P1</span>
               <canvas id="home-p1-canvas" class="home-ball-avatar" width="46" height="46"></canvas>
-              <span id="home-p1-name" class="bubble-name">GOKU</span>
+              <span id="home-p1-name" class="bubble-name">STRONGEST ALIEN</span>
             </div>
             <div class="bubble-vs-circle">VS</div>
             <div class="bubble-fighter bubble-p2">
-              <span id="home-p2-name" class="bubble-name">NARUTO</span>
+              <span id="home-p2-name" class="bubble-name">CHILD OF PROPHECY</span>
               <canvas id="home-p2-canvas" class="home-ball-avatar" width="46" height="46"></canvas>
               <span class="bubble-tag tag-p2">P2</span>
             </div>
@@ -100,8 +100,8 @@
           <!-- Central Character Preview Box -->
           <div class="preview-box">
             <canvas id="preview-active" class="preview-canvas-main" width="130" height="130"></canvas>
-            <h2 id="preview-active-name" class="preview-title">GOKU</h2>
-            <p id="preview-active-role" class="preview-subtitle">KAMEHAMEHA • BEAM</p>
+            <h2 id="preview-active-name" class="preview-title">STRONGEST ALIEN</h2>
+            <p id="preview-active-role" class="preview-subtitle">ALIEN • DRAGON WAVE</p>
           </div>
 
           <!-- Character Selector Grid (Centered 4 Buttons) -->
@@ -143,7 +143,7 @@
         <!-- Fighter HUD -->
         <section class="hud" aria-label="Fighters health">
           <div class="fighter">
-            <span id="name-1" class="name name-red">GOKU</span>
+            <span id="name-1" class="name name-red">STRONGEST ALIEN</span>
             <div class="hp">
               <div class="hp-track"><div id="hp-bar-1" class="hp-fill hp-red" style="width:100%"></div></div>
               <span id="hp-text-1" class="hp-text">340 / 340</span>
@@ -155,7 +155,7 @@
               </div>
               <div id="skill-hud-1" class="skill-pill ready">
                 <div class="skill-fill" style="width:100%"></div>
-                <span class="skill-label">KAMEHAMEHA • READY</span>
+                <span class="skill-label">DRAGON WAVE • READY</span>
               </div>
             </div>
             <div id="ult-hud-1" class="ult-row">
@@ -169,7 +169,7 @@
           <div class="vs">VS</div>
 
           <div class="fighter fighter-right">
-            <span id="name-2" class="name name-blue">NARUTO</span>
+            <span id="name-2" class="name name-blue">CHILD OF PROPHECY</span>
             <div class="hp">
               <div class="hp-track"><div id="hp-bar-2" class="hp-fill hp-blue" style="width:100%"></div></div>
               <span id="hp-text-2" class="hp-text">320 / 320</span>
@@ -177,7 +177,7 @@
             <div class="fighter-sub fighter-sub-right">
               <div id="skill-hud-2" class="skill-pill ready">
                 <div class="skill-fill" style="width:100%"></div>
-                <span class="skill-label">RASENGAN • READY</span>
+                <span class="skill-label">SPIRAL SPHERE • READY</span>
               </div>
               <div id="dots-2" class="round-dots" aria-label="Player 2 round wins">
                 <span class="round-dot"></span>
@@ -238,10 +238,10 @@
           <!-- Category Filter Pills -->
           <div class="filter-chips-row" id="roster-filter-chips">
             <button class="filter-chip active" data-filter="all" type="button">ALL (4)</button>
-            <button class="filter-chip" data-filter="saiyan" type="button">SAIYAN</button>
-            <button class="filter-chip" data-filter="ninja" type="button">NINJA</button>
+            <button class="filter-chip" data-filter="alien" type="button">ALIEN</button>
+            <button class="filter-chip" data-filter="shinobi" type="button">SHINOBI</button>
             <button class="filter-chip" data-filter="pirate" type="button">PIRATE</button>
-            <button class="filter-chip" data-filter="shinigami" type="button">SHINIGAMI</button>
+            <button class="filter-chip" data-filter="reaper" type="button">REAPER</button>
           </div>
 
           <!-- Scalable Avatar Grid -->
@@ -289,7 +289,7 @@
               <span class="quad-lbl">WIN RATE</span>
             </div>
             <div class="stat-quad-box">
-              <span class="quad-num" id="prof-fav">GOKU</span>
+              <span class="quad-num" id="prof-fav">STRONGEST ALIEN</span>
               <span class="quad-lbl">MOST USED</span>
             </div>
           </div>
@@ -381,8 +381,8 @@
       <div class="detail-hero-box">
         <canvas id="detail-canvas" class="detail-canvas" width="140" height="140"></canvas>
         <div class="detail-hero-info">
-          <h2 id="detail-name" class="detail-hero-name">GOKU</h2>
-          <p id="detail-title" class="detail-hero-title">Saiyan of Earth • Ki Blaster</p>
+          <h2 id="detail-name" class="detail-hero-name">STRONGEST ALIEN</h2>
+          <p id="detail-title" class="detail-hero-title">Earth's Protector • Legendary Ki Master</p>
         </div>
       </div>
 
@@ -416,7 +416,7 @@
           <span class="power-badge badge-blue">SIGNATURE SKILL</span>
           <span id="detail-skill-cd" class="power-cd">CD: 3.6S</span>
         </div>
-        <h3 id="detail-skill-name" class="power-title">KAMEHAMEHA</h3>
+        <h3 id="detail-skill-name" class="power-title">DRAGON WAVE</h3>
         <p id="detail-skill-desc" class="power-desc">
           Locks aim onto the rival ball, charging ki before unleashing a continuous energy beam.
         </p>
@@ -428,9 +428,9 @@
           <span class="power-badge badge-red">ULTIMATE (5 HITS)</span>
           <span class="power-cd">TRANSFORMATION</span>
         </div>
-        <h3 id="detail-ult-name" class="power-title">KAIOKEN BURST</h3>
+        <h3 id="detail-ult-name" class="power-title">CRIMSON SURGE</h3>
         <p id="detail-ult-desc" class="power-desc">
-          Enters crimson Kaioken state with glowing red aura! Speeds up and charges massive Kamehameha beams.
+          Enters crimson state with glowing red aura! Speeds up and charges massive dragon energy beams.
         </p>
       </div>
 

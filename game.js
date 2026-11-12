@@ -485,13 +485,13 @@
   }
 
   const SKILL_KAMEHAMEHA = {
-    name: "Kamehameha",
+    name: "Dragon Wave",
     cooldown: 3.6,
     onTick(ball, game) {
       const target = game.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
       if (ball.ultTimer > 0) {
-        // Kaioken: charge & aim live like normal Kamehameha, then fire full beam immediately
+        // Crimson Surge: charge & aim live like normal Dragon Wave, then fire full beam immediately
         beginCast(ball, {
           kind: "orb", duration: 0.65, color: COLORS.red, maxR: 26,
           fire(b, g) {
@@ -499,7 +499,7 @@
             if (!t) return;
             b.channelTimer = 0.82;
             g.entities.push(spawnKamehamehaBeam(b, t, 0));
-            g.spawnDamageText(b.x, b.y - b.radius, 0, COLORS.red, false, "KAIOKEN BEAM!");
+            g.spawnDamageText(b.x, b.y - b.radius, 0, COLORS.red, false, "CRIMSON BEAM!");
           },
         });
         return true;
@@ -513,7 +513,7 @@
           g.entities.push(spawnShockRing(m.x, m.y, COLORS.blue, 55, 0.3));
           g.entities.push(spawnProjectile({
             owner: b, target: t, x: m.x, y: m.y, speed: 520, radius: 13, damage: 14,
-            color: COLORS.blue, label: "KAMEHAMEHA!", shape: "blast",
+            color: COLORS.blue, label: "DRAGON WAVE!", shape: "blast",
             onImpact(tt, gg) {
               gg.addEffect(tt, "slow", 0.7, { factor: 0.65 });
               gg.chargeUlt(b);
@@ -526,7 +526,7 @@
   };
 
   const SKILL_RASENGAN = {
-    name: "Rasengan",
+    name: "Spiral Sphere",
     cooldown: 3.0,
     onTick(ball, game) {
       const target = game.balls.find((b) => b !== ball && b.alive);
@@ -542,7 +542,7 @@
           b.vy = ((t.y - b.y) / len) * dashSpeed;
           b.rasenganTimer = 0.5;
           b.rasenganHit = false;
-          g.spawnDamageText(b.x, b.y - b.radius, 0, COLORS.blue, false, "RASENGAN!");
+          g.spawnDamageText(b.x, b.y - b.radius, 0, COLORS.blue, false, "SPIRAL SPHERE!");
           g.spawnSparks(b.x, b.y, COLORS.white, COLORS.blue);
         },
       });
@@ -551,7 +551,7 @@
   };
 
   const SKILL_GUM_ROCKET = {
-    name: "Gum Rocket",
+    name: "Rubber Slingshot",
     cooldown: 2.8,
     onTick(ball, game) {
       const target = game.balls.find((b) => b !== ball && b.alive);
@@ -567,7 +567,7 @@
           b.vy = ((t.y - b.y) / len) * dashSpeed;
           b.rocketTimer = 0.45;
           b.rocketHit = false;
-          g.spawnDamageText(b.x, b.y - b.radius, 0, COLORS.red, false, "GUM ROCKET!");
+          g.spawnDamageText(b.x, b.y - b.radius, 0, COLORS.red, false, "RUBBER ROCKET!");
           g.spawnSparks(b.x, b.y, COLORS.white, COLORS.red);
         },
       });
@@ -576,7 +576,7 @@
   };
 
   const SKILL_GETSUGA = {
-    name: "Getsuga Tensho",
+    name: "Crescent Slash",
     cooldown: 3.4,
     onTick(ball, game) {
       const target = game.balls.find((b) => b !== ball && b.alive);
@@ -592,7 +592,7 @@
           g.entities.push(spawnProjectile({
             owner: b, target: t, x: m.x, y: m.y,
             speed: hollow ? 580 : 510, radius: hollow ? 25 : 16, damage: hollow ? 24 : 14,
-            color: COLORS.red, label: hollow ? "HOLLOW GETSUGA!" : "GETSUGA!", shape: "crescent",
+            color: COLORS.red, label: hollow ? "HOLLOW SLASH!" : "CRESCENT SLASH!", shape: "crescent",
             onImpact(tt, gg) {
               gg.addEffect(tt, "slow", hollow ? 1.0 : 0.75, { factor: 0.65 });
               if (!hollow) gg.chargeUlt(b);
@@ -607,9 +607,9 @@
   const CHARACTER_ROSTER = {
     goku: {
       id: "goku",
-      name: "GOKU",
-      title: "Saiyan of Earth • Ki Blaster",
-      role: "SAIYAN • KAMEHAMEHA BEAM",
+      name: "STRONGEST ALIEN",
+      title: "Earth's Protector • Legendary Ki Master",
+      role: "ALIEN • DRAGON WAVE",
       color: COLORS.orange,
       radius: 28,
       speed: 365,
@@ -619,17 +619,17 @@
       costume: "goku",
       weapon: "nyoibo",
       ult: "kaioken",
-      ultName: "KAIOKEN BURST",
-      ultDesc: "Enters crimson Kaioken state with glowing red aura! Speeds up and charges massive Kamehameha beams.",
-      skillName: "KAMEHAMEHA",
+      ultName: "CRIMSON SURGE",
+      ultDesc: "Ignites blazing crimson aura! Speeds up movement and blasts continuous piercing dragon beams.",
+      skillName: "DRAGON WAVE",
       skillDesc: "Locks aim onto the rival ball, charging ki before unleashing a continuous energy beam.",
       skills: [SKILL_KAMEHAMEHA],
     },
     naruto: {
       id: "naruto",
-      name: "NARUTO",
-      title: "Hero of Konoha • Wind Striker",
-      role: "NINJA • CHAKRA DASH",
+      name: "CHILD OF PROPHECY",
+      title: "Hero of the Leaf • Nine-Tails Vessel",
+      role: "SHINOBI • SPIRAL DASH",
       color: COLORS.narutoOrange,
       radius: 27,
       speed: 380,
@@ -639,17 +639,17 @@
       costume: "naruto",
       weapon: "kunai",
       ult: "rasenshuriken",
-      ultName: "RASENSHURIKEN",
-      ultDesc: "Forms a spinning wind-chakra disc with 4 blades, thrown towards rival with explosive vortex rings!",
-      skillName: "RASENGAN",
+      ultName: "SPIRAL SHURIKEN",
+      ultDesc: "Forms a spinning wind-chakra disc with 4 blades, thrown towards rival with explosive vortex turbulence!",
+      skillName: "SPIRAL SPHERE",
       skillDesc: "Charges swirling chakra orb and dashes with explosive acceleration into the enemy.",
       skills: [SKILL_RASENGAN],
     },
     luffy: {
       id: "luffy",
-      name: "LUFFY",
-      title: "Straw Hat Captain • Rubber Brawler",
-      role: "PIRATE • GUM-GUM ROCKET",
+      name: "WARRIOR OF LIBERATION",
+      title: "Rubber Emperor • Drums of Joy",
+      role: "PIRATE • RUBBER SLINGSHOT",
       color: COLORS.red,
       radius: 28,
       speed: 355,
@@ -659,17 +659,17 @@
       costume: "luffy",
       weapon: "gomu_fist",
       ult: "gear_4",
-      ultName: "GEAR 4 BOUNCE-MAN",
-      ultDesc: "Inflates muscles into gigantic Gear 4 form with Busoshoku Haki! Heavy knockback, massive shockwaves, and boosted HP.",
-      skillName: "GUM-GUM ROCKET",
-      skillDesc: "Stretches arms backward and slingshots himself at bullet speed with double impact damage.",
+      ultName: "BOUNCE EMPEROR",
+      ultDesc: "Expands muscles with hardened Haki! Immense knockback, elastic ground shockwaves, and boosted maximum HP.",
+      skillName: "RUBBER SLINGSHOT",
+      skillDesc: "Stretches arms backward and catapults himself across the arena at bullet velocity with double impact.",
       skills: [SKILL_GUM_ROCKET],
     },
     ichigo: {
       id: "ichigo",
-      name: "ICHIGO",
-      title: "Substitute Shinigami • Bankai Master",
-      role: "SHINIGAMI • GETSUGA TENSHO",
+      name: "SUBSTITUTE REAPER",
+      title: "Moon Blade Master • Hollow Hybrid",
+      role: "REAPER • CRESCENT SLASH",
       color: COLORS.ichigoDark,
       radius: 28,
       speed: 370,
@@ -679,10 +679,10 @@
       costume: "ichigo",
       weapon: "tensa_zangetsu",
       ult: "hollow_mask",
-      ultName: "HOLLOW MASK BANKAI",
-      ultDesc: "Dons the iconic Hollow mask! Speeds up attacks and enlarges Getsuga Tensho into an ominous black-red crescent.",
-      skillName: "GETSUGA TENSHO",
-      skillDesc: "Swings Tensa Zangetsu to release a razor-sharp red crescent wave cutting across the arena.",
+      ultName: "HOLLOW MASK AWAKENING",
+      ultDesc: "Dons the demonic Hollow mask! Increases agility and enlarges slash waves into colossal dark-red arcs.",
+      skillName: "CRESCENT SLASH",
+      skillDesc: "Swings the black greatsword to unleash razor-sharp red crescent waves cutting across the arena.",
       skills: [SKILL_GETSUGA],
     },
   };
@@ -1060,7 +1060,7 @@
   const SHOP_CATALOG = [
     {
       id: "aura_kaioken",
-      name: "KAIOKEN AURA",
+      name: "CRIMSON SURGE AURA",
       category: "aura",
       badge: "AURA • EPIC",
       badgeClass: "badge-aura",
@@ -1072,7 +1072,7 @@
     },
     {
       id: "aura_rasen",
-      name: "RASEN VORTEX",
+      name: "VORTEX WIND TRAIL",
       category: "aura",
       badge: "AURA • RARE",
       badgeClass: "badge-aura",
@@ -1084,7 +1084,7 @@
     },
     {
       id: "aura_thunder",
-      name: "THUNDER SPARKS",
+      name: "THUNDER SPARK TRAIL",
       category: "aura",
       badge: "AURA • RARE",
       badgeClass: "badge-aura",
@@ -1096,7 +1096,7 @@
     },
     {
       id: "arena_tenkaichi",
-      name: "TENKAICHI ARENA",
+      name: "SACRED TOURNAMENT RING",
       category: "arena",
       badge: "ARENA • LEGENDARY",
       badgeClass: "badge-arena",
@@ -1108,7 +1108,7 @@
     },
     {
       id: "arena_dojo",
-      name: "LEAF VILLAGE DOJO",
+      name: "SHINOBI TRAINING DOJO",
       category: "arena",
       badge: "ARENA • EPIC",
       badgeClass: "badge-arena",
@@ -1120,7 +1120,7 @@
     },
     {
       id: "hitfx_manga",
-      name: "MANGA HIT FX",
+      name: "COMIC ACTION SPARKS",
       category: "hitfx",
       badge: "HIT FX • SPECIAL",
       badgeClass: "badge-hitfx",
@@ -1167,9 +1167,9 @@
     sound.playCritHit();
     spawnCritBurst(ball.x, ball.y);
     const fx = {
-      gear_4: ["GEAR 4!", COLORS.red],
-      kaioken: ["KAIOKEN!", COLORS.orange],
-      rasenshuriken: ["RASENSHURIKEN!", COLORS.blue],
+      gear_4: ["BOUNCE EMPEROR!", COLORS.red],
+      kaioken: ["CRIMSON SURGE!", COLORS.orange],
+      rasenshuriken: ["SPIRAL SHURIKEN!", COLORS.blue],
       hollow_mask: ["HOLLOW MASK!", COLORS.red],
     }[ball.ult];
     if (fx) {
