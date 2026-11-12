@@ -998,7 +998,7 @@
   const btnShopModalAction = document.getElementById("btn-shop-modal-action");
 
   let activeShopFilter = "all";
-  let previewShopItemId = "aura_kaioken";
+  let previewShopItemId = "skin_ssj_god";
 
   const profMatches = document.getElementById("prof-matches");
   const profWins = document.getElementById("prof-wins");
@@ -1062,77 +1062,106 @@
   };
 
   const SHOP_CATALOG = [
+    // --- EXCLUSIVE SKINS (WIP) ---
     {
-      id: "aura_kaioken",
-      name: "KAIOKEN AURA",
-      category: "aura",
-      badge: "AURA • EPIC",
-      badgeClass: "badge-aura",
+      id: "skin_ssj_god",
+      name: "SUPER SAIYAN GOD",
+      category: "skin",
+      targetChar: "STRONGEST ALIEN",
+      badge: "SKIN • WIP",
+      badgeClass: "badge-skin",
       icon: "🔥",
-      desc: "Radiates an intense crimson flame aura and fiery particle trail during movement.",
-      price: 2500,
+      desc: "Legendary crimson aura and radiant divine red hair. Grants a blazing mythic battle appearance. (Under development)",
+      price: 8000,
       currency: "coins",
-      auraKey: "kaioken",
+      status: "WIP",
+      previewCharId: "goku",
     },
     {
-      id: "aura_rasen",
-      name: "RASEN VORTEX",
-      category: "aura",
-      badge: "AURA • RARE",
-      badgeClass: "badge-aura",
-      icon: "🌀",
-      desc: "Surrounds your ball with a swirling cyan wind cyclone with every bounce.",
-      price: 2000,
+      id: "skin_sage_cloak",
+      name: "SAGE MODE CLOAK",
+      category: "skin",
+      targetChar: "CHILD OF PROPHECY",
+      badge: "SKIN • WIP",
+      badgeClass: "badge-skin",
+      icon: "🐸",
+      desc: "Toad mountain hermit cloak with iconic orange eye pigments and senjutsu chakra scroll. (Under development)",
+      price: 7500,
       currency: "coins",
-      auraKey: "rasen",
+      status: "WIP",
+      previewCharId: "naruto",
     },
     {
-      id: "aura_thunder",
-      name: "THUNDER SPARKS",
-      category: "aura",
-      badge: "AURA • RARE",
-      badgeClass: "badge-aura",
+      id: "skin_sun_god",
+      name: "SUN GOD NIKA",
+      category: "skin",
+      targetChar: "WARRIOR OF LIBERATION",
+      badge: "SKIN • WIP",
+      badgeClass: "badge-skin",
       icon: "⚡",
-      desc: "Crackles with golden electric sparks upon every wall bounce and rival clash.",
-      price: 1800,
+      desc: "Pure cloud-white hair and floating Hagoromo steam ribbon radiating absolute freedom. (Under development)",
+      price: 9000,
       currency: "coins",
-      auraKey: "thunder",
+      status: "WIP",
+      previewCharId: "luffy",
     },
     {
-      id: "arena_tenkaichi",
-      name: "TENKAICHI ARENA",
-      category: "arena",
-      badge: "ARENA • LEGENDARY",
-      badgeClass: "badge-arena",
-      icon: "🏟️",
-      desc: "Historic martial arts tournament stone ring with sacred yellow boundary lines.",
-      price: 50,
-      currency: "gems",
-      stageKey: "tenkaichi",
-    },
-    {
-      id: "arena_dojo",
-      name: "LEAF VILLAGE DOJO",
-      category: "arena",
-      badge: "ARENA • EPIC",
-      badgeClass: "badge-arena",
-      icon: "🍃",
-      desc: "Traditional wooden floor arena inscribed with the shinobi fire crest.",
-      price: 75,
-      currency: "gems",
-      stageKey: "dojo",
-    },
-    {
-      id: "hitfx_manga",
-      name: "MANGA HIT FX",
-      category: "hitfx",
-      badge: "HIT FX • SPECIAL",
-      badgeClass: "badge-hitfx",
-      icon: "💥",
-      desc: "Impact collisions trigger colorful comic sound effects (POW! BAM! CRACK!).",
-      price: 1200,
+      id: "skin_mugetsu",
+      name: "FINAL GETSUGA",
+      category: "skin",
+      targetChar: "SUBSTITUTE REAPER",
+      badge: "SKIN • WIP",
+      badgeClass: "badge-skin",
+      icon: "🌑",
+      desc: "Long pitch-black hair and dark reiatsu wraps across the face ready for Mugetsu. (Under development)",
+      price: 8500,
       currency: "coins",
-      hitFxKey: "manga",
+      status: "WIP",
+      previewCharId: "ichigo",
+    },
+
+    // --- SECRET FIGHTERS (WIP) ---
+    {
+      id: "fighter_honored",
+      name: "HONORED SORCERER",
+      category: "fighter",
+      targetChar: "NEW BRAWLER",
+      badge: "FIGHTER • WIP",
+      badgeClass: "badge-fighter",
+      icon: "🤞",
+      desc: "Six-Eyes prodigy wielding the Limitless Infinity repulsive barrier and Hollow Purple blast. (Under development)",
+      price: 150,
+      currency: "gems",
+      status: "WIP",
+      previewCharId: "goku",
+    },
+    {
+      id: "fighter_drill",
+      name: "DRILL PIERCER",
+      category: "fighter",
+      targetChar: "NEW BRAWLER",
+      badge: "FIGHTER • WIP",
+      badgeClass: "badge-fighter",
+      icon: "🌀",
+      desc: "Hot-blooded brawler with an expanding spiral core drill piercing through space and time. (Under development)",
+      price: 120,
+      currency: "gems",
+      status: "WIP",
+      previewCharId: "naruto",
+    },
+    {
+      id: "fighter_black_swordsman",
+      name: "HUNDRED-MAN SLAYER",
+      category: "fighter",
+      targetChar: "NEW BRAWLER",
+      badge: "FIGHTER • WIP",
+      badgeClass: "badge-fighter",
+      icon: "🗡️",
+      desc: "Armored berserker wielding a colossal raw iron slab with unstoppable crushing mass. (Under development)",
+      price: 140,
+      currency: "gems",
+      status: "WIP",
+      previewCharId: "ichigo",
     },
   ];
   let hitStop = 0;
@@ -2339,61 +2368,8 @@
   }
 
   function drawBallAura(ball, c) {
-    const aura = ball.equippedAura;
-    if (!aura || aura === "none") return;
-    const r = ball.radius;
-    const t = elapsed;
-
-    if (aura === "kaioken") {
-      const spikes = 9;
-      const pulse = Math.sin(t * 18) * 2.5;
-      c.save();
-      c.translate(ball.x, ball.y);
-      c.beginPath();
-      for (let i = 0; i < spikes * 2; i++) {
-        const a = (Math.PI * i) / spikes;
-        const rad = i % 2 === 0 ? r + 13 + pulse : r + 4;
-        const px = Math.cos(a) * rad;
-        const py = Math.sin(a) * rad;
-        if (i === 0) c.moveTo(px, py);
-        else c.lineTo(px, py);
-      }
-      c.closePath();
-      c.fillStyle = COLORS.red;
-      c.fill();
-      c.lineWidth = 3;
-      c.strokeStyle = COLORS.ink;
-      c.stroke();
-      c.restore();
-    } else if (aura === "rasen") {
-      c.save();
-      c.translate(ball.x, ball.y);
-      c.rotate(t * 6);
-      c.lineWidth = 4;
-      c.strokeStyle = COLORS.blue;
-      for (let i = 0; i < 3; i++) {
-        c.beginPath();
-        c.arc(0, 0, r + 8 + Math.sin(t * 8 + i) * 2, (i * Math.PI * 2) / 3, (i * Math.PI * 2) / 3 + 1.2);
-        c.stroke();
-      }
-      c.restore();
-    } else if (aura === "thunder") {
-      c.save();
-      c.translate(ball.x, ball.y);
-      c.lineWidth = 3;
-      c.strokeStyle = COLORS.gold;
-      for (let i = 0; i < 4; i++) {
-        const a = (i * Math.PI * 0.5) + Math.sin(t * 15 + i) * 0.3;
-        const d1 = r + 4;
-        const d2 = r + 12 + Math.sin(t * 22 + i) * 3;
-        c.beginPath();
-        c.moveTo(Math.cos(a) * d1, Math.sin(a) * d1);
-        c.lineTo(Math.cos(a + 0.2) * (d1 + 5), Math.sin(a + 0.2) * (d1 + 5));
-        c.lineTo(Math.cos(a) * d2, Math.sin(a) * d2);
-        c.stroke();
-      }
-      c.restore();
-    }
+    // Aura feature removed for now as requested
+    return;
   }
 
   // Naruto holds a Rasengan that grows while the skill recharges (and surges ahead during dash)
@@ -2901,44 +2877,12 @@
   if (btnShopModalAction) {
     btnShopModalAction.addEventListener("click", () => {
       sound.unlock();
+      sound.play("hit");
       const item = SHOP_CATALOG.find((x) => x.id === previewShopItemId);
-      if (!item) return;
-      const isOwned = playerWallet.unlockedItems.has(item.id);
-      if (isOwned) {
-        if (shopModal) shopModal.classList.add("hidden");
-        switchScreen("screen-chars");
-        return;
-      }
-
-      if (item.currency === "coins") {
-        if (playerWallet.coins < item.price) {
-          sound.play("hit");
-          if (merchantSpeechText) {
-            merchantSpeechText.textContent = `"Mreow! You need ${item.price - playerWallet.coins} more coins! Win some sandbox clashes to earn more!"`;
-          }
-          alert(`Not enough coins! You have ${playerWallet.coins} coins, but this item costs ${item.price}. Win more matches to earn coins!`);
-          return;
-        }
-        playerWallet.coins -= item.price;
-      } else {
-        if (playerWallet.gems < item.price) {
-          sound.play("hit");
-          if (merchantSpeechText) {
-            merchantSpeechText.textContent = `"Mreow! You need more tournament gems! Win more saga matches to get gems!"`;
-          }
-          alert(`Not enough gems!`);
-          return;
-        }
-        playerWallet.gems -= item.price;
-      }
-
-      playerWallet.unlockedItems.add(item.id);
-      sound.play("explosion");
+      const name = item ? item.name : "This item";
       if (merchantSpeechText) {
-        merchantSpeechText.textContent = `"Mreow! Fantastic choice! You unlocked ${item.name}! Go to FIGHTERS to equip it on your favorite ball!"`;
+        merchantSpeechText.textContent = `"Oi brat! I told you ${name} is WORK IN PROGRESS! Baa-san is still crafting it for future updates! Go fight in the arena!"`;
       }
-      updateShopUI();
-      openShopInspectModal(item.id);
     });
   }
 
@@ -2988,8 +2932,18 @@
   window.addEventListener("pointerdown", () => sound.unlock(), { once: true });
   window.addEventListener("resize", resizeCanvas);
 
-  // Ball-Styled Anime Talking Cat Mascot (Master Neko)
-  function drawMerchantCat(canvasEl, t) {
+  // Turbo Granny Mascot Quotes (Dandadan personality: sassy, grumpy, hilarious)
+  const TURBO_GRANNY_QUOTES = [
+    `"Oi gaki! (Hey brat!) Don't rush me! This shop is WORK IN PROGRESS! Soon I'll stock exclusive cursed skins and secret brawlers!"`,
+    `"Hmph! Looking for skins? Baa-san is still sewing them with cursed spirit thread! Come back in the next update, brat!"`,
+    `"千万両 (10 Million Ryo)! You better save up your coins and gems! Top-tier brawlers aren't gonna be cheap!"`,
+    `"Don't poke me, you insolent runt! Even with my 100 km/h sprint speed, good features take time to develop!"`,
+    `"WIP means Work In Progress, dimwit! Go practice your combos in Sandbox arena while I set up shop!"`,
+    `"What are you staring at?! You want me to steal your bananas? Go win some matches and earn your keep!"`,
+  ];
+
+  // Ball-Styled Turbo Granny Mascot from Dandadan (Maneki-Neko Cursed Doll form - 100% faithful to reference)
+  function drawTurboGranny(canvasEl, t) {
     if (!canvasEl) return;
     const ctx = canvasEl.getContext("2d");
     const w = canvasEl.width;
@@ -2997,196 +2951,301 @@
     ctx.clearRect(0, 0, w, h);
 
     const cx = w * 0.5;
-    const cy = h * 0.54 + Math.sin(t * 3.5) * 2.5; // gentle bobbing
-    const r = 24;
+    // Sassy rhythmic bobbing
+    const cy = h * 0.43 + Math.sin(t * 3.8) * 2.2;
+    const r = 24.5;
 
     ctx.save();
     ctx.translate(cx, cy);
 
-    // 1. Cat Ears
-    const earTwitch = Math.sin(t * 7) > 0.85 ? Math.sin(t * 25) * 0.15 : 0;
-    // Left ear
+    // 1. Pointed Cat Ears (White with Large Vermilion Red Inner Triangle)
+    const earTwitch = (Math.sin(t * 6.5) > 0.88) ? Math.sin(t * 28) * 0.12 : 0;
+
+    // Left Ear
     ctx.save();
-    ctx.translate(-r * 0.55, -r * 0.7);
-    ctx.rotate(-0.25 + earTwitch);
+    ctx.translate(-r * 0.62, -r * 0.65);
+    ctx.rotate(-0.28 + earTwitch);
+    // Outer white ear
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(-10, -18);
-    ctx.lineTo(9, -7);
+    ctx.moveTo(3, 4);
+    ctx.lineTo(-13, -22);
+    ctx.lineTo(13, -8);
     ctx.closePath();
-    ctx.fillStyle = "#fff8eb";
+    ctx.fillStyle = "#ffffff";
     ctx.fill();
     ctx.lineWidth = 3.5;
     ctx.strokeStyle = COLORS.ink;
     ctx.stroke();
-    // Inner pink ear
+    // Inner bold red ear patch (matches Dandadan reference)
     ctx.beginPath();
-    ctx.moveTo(-1, -3);
-    ctx.lineTo(-7, -13);
-    ctx.lineTo(5, -6);
+    ctx.moveTo(2, 0);
+    ctx.lineTo(-9, -17);
+    ctx.lineTo(8, -7);
     ctx.closePath();
-    ctx.fillStyle = "#ff8fa3";
+    ctx.fillStyle = "#c91d24";
     ctx.fill();
     ctx.restore();
 
-    // Right ear
+    // Right Ear
     ctx.save();
-    ctx.translate(r * 0.55, -r * 0.7);
-    ctx.rotate(0.25);
+    ctx.translate(r * 0.62, -r * 0.65);
+    ctx.rotate(0.28 - earTwitch);
+    // Outer white ear
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(10, -18);
-    ctx.lineTo(-9, -7);
+    ctx.moveTo(-3, 4);
+    ctx.lineTo(13, -22);
+    ctx.lineTo(-13, -8);
     ctx.closePath();
-    ctx.fillStyle = "#fff8eb";
+    ctx.fillStyle = "#ffffff";
     ctx.fill();
     ctx.lineWidth = 3.5;
     ctx.strokeStyle = COLORS.ink;
     ctx.stroke();
-    // Inner pink ear
+    // Inner bold red ear patch
     ctx.beginPath();
-    ctx.moveTo(1, -3);
-    ctx.lineTo(7, -13);
-    ctx.lineTo(-5, -6);
+    ctx.moveTo(-2, 0);
+    ctx.lineTo(9, -17);
+    ctx.lineTo(-8, -7);
     ctx.closePath();
-    ctx.fillStyle = "#ff8fa3";
+    ctx.fillStyle = "#c91d24";
     ctx.fill();
     ctx.restore();
 
-    // 2. Round Ball Cat Body
+    // 2. White Ball Head / Body
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.fillStyle = "#fff8eb";
+    ctx.fillStyle = "#ffffff";
     ctx.fill();
     ctx.lineWidth = 3.5;
     ctx.strokeStyle = COLORS.ink;
     ctx.stroke();
 
-    // 3. Ninja Headband with Golden Star Plate
+    // 3. Iconic Red Forehead Spot / Patch (Dandadan signature)
     ctx.beginPath();
-    ctx.arc(0, -4, r - 1, -Math.PI * 0.85, -Math.PI * 0.15);
-    ctx.lineWidth = 8;
-    ctx.strokeStyle = "#2b1b3d";
-    ctx.stroke();
-
-    ctx.fillStyle = "#8b93a1";
-    ctx.strokeStyle = COLORS.ink;
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.roundRect(-10, -r + 2, 20, 9, 3);
+    ctx.ellipse(0, -r + 2.5, 6.8, 4, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "#99181e";
     ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = COLORS.ink;
     ctx.stroke();
 
-    ctx.fillStyle = "#ffd93d";
-    ctx.font = "bold 9px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("★", 0, -r + 7);
+    // 4. Forehead Wrinkle Lines (Grumpy old lady furrow / frown)
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = COLORS.ink;
+    // Left eyebrow furrow
+    ctx.beginPath();
+    ctx.moveTo(-3.5, -9);
+    ctx.lineTo(-6, -13);
+    ctx.stroke();
+    // Right eyebrow furrow
+    ctx.beginPath();
+    ctx.moveTo(3.5, -9);
+    ctx.lineTo(6, -13);
+    ctx.stroke();
 
-    // 4. Manga Eyes (Periodic Cute Blink)
-    const isBlinking = (Math.floor(t * 1.5) % 4 === 0) && (t * 1.5 % 1 < 0.22);
-    const eyeY = -1;
-    const eyeSpacing = 8;
+    // 5. Turbo Granny Eyes (Almond shape with upper eyelashes & big dark unhinged stare)
+    const isBlinking = (Math.floor(t * 1.3) % 5 === 0) && (t * 1.3 % 1 < 0.18);
+    const eyeY = 0.5;
+    const eyeSpacing = 8.5;
 
     if (isBlinking) {
-      ctx.lineWidth = 3;
+      // Snarky closed eye slit
+      ctx.lineWidth = 3.2;
       ctx.strokeStyle = COLORS.ink;
       ctx.beginPath();
-      ctx.arc(-eyeSpacing, eyeY, 4, Math.PI, 0);
+      ctx.arc(-eyeSpacing, eyeY, 5, Math.PI * 0.1, Math.PI * 0.9);
       ctx.stroke();
       ctx.beginPath();
-      ctx.arc(eyeSpacing, eyeY, 4, Math.PI, 0);
+      ctx.arc(eyeSpacing, eyeY, 5, Math.PI * 0.1, Math.PI * 0.9);
       ctx.stroke();
     } else {
-      [-eyeSpacing, eyeSpacing].forEach((ex) => {
+      // Draw left & right eyes
+      [-1, 1].forEach((dir) => {
+        const ex = dir * eyeSpacing;
+
+        ctx.save();
+        ctx.translate(ex, eyeY);
+        // Slight outward tilt
+        ctx.rotate(dir * 0.12);
+
+        // White eye shape
         ctx.beginPath();
-        ctx.arc(ex, eyeY, 5, 0, Math.PI * 2);
-        ctx.fillStyle = COLORS.white;
+        ctx.ellipse(0, 0, 6.8, 5.2, 0, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff";
         ctx.fill();
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 2.4;
         ctx.strokeStyle = COLORS.ink;
         ctx.stroke();
 
+        // Large dark charcoal pupil (signature vacant Turbo Granny gaze)
         ctx.beginPath();
-        ctx.arc(ex + 0.5, eyeY, 3, 0, Math.PI * 2);
-        ctx.fillStyle = "#2b1b3d";
+        ctx.ellipse(dir * 0.6, 0.2, 4.4, 4.4, 0, 0, Math.PI * 2);
+        ctx.fillStyle = "#202028";
         ctx.fill();
 
+        // Tiny white light reflection dot
         ctx.beginPath();
-        ctx.arc(ex - 1, eyeY - 1.5, 1.3, 0, Math.PI * 2);
-        ctx.fillStyle = COLORS.white;
+        ctx.arc(dir * 0.2 - 1.2, -1.2, 1.1, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff";
         ctx.fill();
+
+        // Thick upper eyeliner line
+        ctx.lineWidth = 2.8;
+        ctx.strokeStyle = COLORS.ink;
+        ctx.beginPath();
+        ctx.arc(0, -0.6, 6.4, Math.PI * 1.05, Math.PI * 1.95);
+        ctx.stroke();
+
+        // Distinct upper eyelashes (4 fine curved lashes on upper lid from reference!)
+        ctx.lineWidth = 1.4;
+        ctx.strokeStyle = COLORS.ink;
+        const lashAngles = [-2.4, -2.0, -1.6, -1.2];
+        lashAngles.forEach((ang) => {
+          const lx = Math.cos(ang) * 6.5;
+          const ly = Math.sin(ang) * 5.2;
+          ctx.beginPath();
+          ctx.moveTo(lx, ly);
+          ctx.lineTo(lx + Math.cos(ang) * 3.8, ly + Math.sin(ang) * 3.8);
+          ctx.stroke();
+        });
+
+        ctx.restore();
       });
     }
 
-    // 5. Rosy Blush Cheeks
-    ctx.fillStyle = "rgba(255, 138, 158, 0.45)";
-    ctx.beginPath(); ctx.arc(-14, 4, 4, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(14, 4, 4, 0, Math.PI * 2); ctx.fill();
-
-    // 6. Whiskers
+    // 6. Whiskers (3 sharp black lines on each cheek)
     ctx.lineWidth = 2;
     ctx.strokeStyle = COLORS.ink;
-    ctx.beginPath(); ctx.moveTo(-13, 2); ctx.lineTo(-21, 0); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-13, 5); ctx.lineTo(-21, 6); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(13, 2); ctx.lineTo(21, 0); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(13, 5); ctx.lineTo(21, 6); ctx.stroke();
+    // Left cheek whiskers
+    ctx.beginPath(); ctx.moveTo(-12, 4); ctx.lineTo(-24, 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-12, 7.5); ctx.lineTo(-25, 8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-12, 11); ctx.lineTo(-23, 14); ctx.stroke();
+    // Right cheek whiskers
+    ctx.beginPath(); ctx.moveTo(12, 4); ctx.lineTo(24, 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(12, 7.5); ctx.lineTo(25, 8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(12, 11); ctx.lineTo(23, 14); ctx.stroke();
 
-    // 7. Cute Talking Cat Mouth (Mouth opens and closes in speech rhythm)
-    const talkCycle = Math.abs(Math.sin(t * 6));
-    const mouthOpen = talkCycle > 0.35 ? talkCycle * 4 : 0;
-
-    // Small pink nose
-    ctx.fillStyle = "#ff6b8b";
+    // 7. Small Black Nose & Vertical Philtrum
+    ctx.fillStyle = "#1b1b1f";
     ctx.beginPath();
-    ctx.moveTo(0, 3);
-    ctx.lineTo(-2.5, 0.5);
-    ctx.lineTo(2.5, 0.5);
+    ctx.moveTo(0, 7);
+    ctx.lineTo(-2.6, 4.2);
+    ctx.lineTo(2.6, 4.2);
     ctx.closePath();
     ctx.fill();
 
+    // Philtrum vertical line
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = COLORS.ink;
+    ctx.beginPath();
+    ctx.moveTo(0, 7);
+    ctx.lineTo(0, 10);
+    ctx.stroke();
+
+    // 8. Cheek Dimples / Creases (near mouth corners)
+    ctx.beginPath();
+    ctx.arc(-8, 10.5, 2.2, Math.PI * 0.7, Math.PI * 1.3);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(8, 10.5, 2.2, -Math.PI * 0.3, Math.PI * 0.3);
+    ctx.stroke();
+
+    // 9. Mouth (Talking Rhythm vs Iconic Wavy 'ω' Cat Smirk)
+    const talkCycle = Math.abs(Math.sin(t * 6));
+    const mouthOpen = talkCycle > 0.4 ? talkCycle * 3.8 : 0;
+
     if (mouthOpen > 1.2) {
+      // Talking / yelling snarl
       ctx.beginPath();
-      ctx.ellipse(0, 7, 3.5, mouthOpen, 0, 0, Math.PI * 2);
-      ctx.fillStyle = "#e84a5f";
+      ctx.ellipse(0, 12, 3.8, mouthOpen, 0, 0, Math.PI * 2);
+      ctx.fillStyle = "#7a1a2b";
       ctx.fill();
       ctx.lineWidth = 2;
       ctx.strokeStyle = COLORS.ink;
       ctx.stroke();
+
+      // Pink tongue
       ctx.beginPath();
-      ctx.arc(0, 7 + mouthOpen * 0.4, 2, 0, Math.PI);
-      ctx.fillStyle = "#ff8fa3";
+      ctx.arc(0, 12 + mouthOpen * 0.35, 2.2, 0, Math.PI);
+      ctx.fillStyle = "#ff6b8b";
       ctx.fill();
     } else {
-      ctx.lineWidth = 2;
+      // Classic Dandadan Maneki-Neko wavy cat mouth
+      ctx.lineWidth = 2.2;
       ctx.strokeStyle = COLORS.ink;
       ctx.beginPath();
-      ctx.arc(-2.5, 4.5, 2.8, 0.1, Math.PI * 0.9);
+      ctx.arc(-3, 10.2, 3.2, 0.15, Math.PI * 0.9);
       ctx.stroke();
       ctx.beginPath();
-      ctx.arc(2.5, 4.5, 2.8, 0.1, Math.PI * 0.9);
+      ctx.arc(3, 10.2, 3.2, 0.1, Math.PI * 0.85);
+      ctx.stroke();
+
+      // Small chin line underneath
+      ctx.beginPath();
+      ctx.arc(0, 15, 3.2, Math.PI * 0.2, Math.PI * 0.8);
       ctx.stroke();
     }
 
-    // 8. Tiny Red Collar & Jingle Bell
+    // 10. Red Collar with Green Scalloped Bib Underneath
+    // Green bib under collar
     ctx.beginPath();
-    ctx.arc(0, r - 1, 6, 0, Math.PI);
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = COLORS.red;
+    ctx.arc(0, r - 3, 13, 0.25, Math.PI - 0.25);
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "#1b8a4f"; // vivid Dandadan green bib
     ctx.stroke();
 
+    // Red Collar strip
     ctx.beginPath();
-    ctx.arc(0, r + 2, 3.5, 0, Math.PI * 2);
-    ctx.fillStyle = "#ffd93d";
+    ctx.arc(0, r - 4, 10, 0.2, Math.PI - 0.2);
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "#c0292b"; // red collar
+    ctx.stroke();
+
+    // 11. Golden Bell
+    const bellY = r + 1;
+    ctx.beginPath();
+    ctx.arc(0, bellY, 4.2, 0, Math.PI * 2);
+    ctx.fillStyle = "#f5b041";
     ctx.fill();
     ctx.lineWidth = 2;
     ctx.strokeStyle = COLORS.ink;
     ctx.stroke();
+    // Bell slit & hole
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(-3, bellY + 0.5);
+    ctx.lineTo(3, bellY + 0.5);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(0, bellY + 2, 0.9, 0, Math.PI * 2);
+    ctx.fillStyle = COLORS.ink;
+    ctx.fill();
+
+    // 12. Golden Koban Medallion with "千万" (Senman / 10 Million) Kanji!
+    const coinY = bellY + 11;
+    ctx.save();
+    ctx.beginPath();
+    // Oval Koban coin shape
+    ctx.ellipse(0, coinY, 8.5, 11, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "#f39c12";
+    ctx.fill();
+    ctx.lineWidth = 2.2;
+    ctx.strokeStyle = COLORS.ink;
+    ctx.stroke();
+
+    // Kanji "千万" (Senman) written in bold black calligraphy
+    ctx.fillStyle = "#1b1b1f";
+    ctx.font = "900 7.5px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("千", 0, coinY - 4.5);
+    ctx.fillText("万", 0, coinY + 4.5);
+    ctx.restore();
 
     ctx.restore();
   }
 
-  // Shop Inspect Modal Live Preview Renderer
+  // Shop Inspect Modal Live Preview Renderer (WIP Preview Stage)
   function renderShopModalPreview(canvasEl, t) {
     if (!canvasEl) return;
     const pCtx = canvasEl.getContext("2d");
@@ -3197,103 +3256,106 @@
     const item = SHOP_CATALOG.find((x) => x.id === previewShopItemId);
     if (!item) return;
 
-    if (item.category === "aura") {
-      pCtx.fillStyle = "#1e132b";
-      pCtx.fillRect(0, 0, w, h);
+    // Dark sleek anime showcase background
+    pCtx.fillStyle = "#201533";
+    pCtx.fillRect(0, 0, w, h);
 
-      pCtx.strokeStyle = "rgba(255,255,255,0.06)";
-      pCtx.lineWidth = 2;
-      for (let x = 20; x < w; x += 25) { pCtx.beginPath(); pCtx.moveTo(x, 0); pCtx.lineTo(x, h); pCtx.stroke(); }
-      for (let y = 20; y < h; y += 25) { pCtx.beginPath(); pCtx.moveTo(0, y); pCtx.lineTo(w, y); pCtx.stroke(); }
+    // Subtle background grid
+    pCtx.strokeStyle = "rgba(255, 255, 255, 0.06)";
+    pCtx.lineWidth = 2;
+    for (let x = 20; x < w; x += 22) { pCtx.beginPath(); pCtx.moveTo(x, 0); pCtx.lineTo(x, h); pCtx.stroke(); }
+    for (let y = 20; y < h; y += 22) { pCtx.beginPath(); pCtx.moveTo(0, y); pCtx.lineTo(w, y); pCtx.stroke(); }
 
-      const bob = Math.sin(t * 4) * 5;
+    if (item.category === "skin") {
+      const bob = Math.sin(t * 4) * 4;
+      const baseChar = CHARACTER_ROSTER[item.previewCharId] || CHARACTER_ROSTER.goku;
       const demoBall = {
         x: w * 0.5,
-        y: h * 0.52 + bob,
+        y: h * 0.48 + bob,
         radius: 26,
-        color: COLORS.orange,
-        costume: "goku",
-        weapon: null,
-        weaponAngle: 0,
+        color: baseChar.color,
+        costume: baseChar.costume,
+        weapon: baseChar.weapon,
+        weaponAngle: t * 2,
         vx: 1,
         vy: 0,
         flashTimer: 0,
         squash: Math.max(0, Math.sin(t * 8) * 0.12),
         skills: [],
         effects: [],
-        equippedAura: item.auraKey,
+        equippedAura: "none",
       };
       drawBall(demoBall, pCtx, true);
-    } else if (item.category === "arena") {
-      if (item.id === "arena_tenkaichi") {
-        pCtx.fillStyle = "#dcd6c8";
-        pCtx.fillRect(0, 0, w, h);
-        pCtx.strokeStyle = COLORS.gold;
-        pCtx.lineWidth = 8;
-        pCtx.strokeRect(12, 12, w - 24, h - 24);
-        pCtx.strokeStyle = COLORS.ink;
-        pCtx.lineWidth = 3;
-        pCtx.strokeRect(8, 8, w - 16, h - 16);
-        pCtx.strokeRect(16, 16, w - 32, h - 32);
 
-        pCtx.strokeStyle = "rgba(43,27,61,0.25)";
-        pCtx.lineWidth = 2;
+      // Rotating sparkles around skin
+      for (let i = 0; i < 4; i++) {
+        const ang = t * 3 + (i * Math.PI) / 2;
+        const sx = demoBall.x + Math.cos(ang) * 36;
+        const sy = demoBall.y + Math.sin(ang) * 36;
+        pCtx.fillStyle = (i % 2 === 0) ? COLORS.gold : COLORS.white;
         pCtx.beginPath();
-        pCtx.moveTo(w * 0.5, 16); pCtx.lineTo(w * 0.5, h - 16);
-        pCtx.moveTo(16, h * 0.5); pCtx.lineTo(w - 16, h * 0.5);
-        pCtx.stroke();
-
-        pCtx.fillStyle = COLORS.white;
-        pCtx.beginPath(); pCtx.arc(w * 0.5, h * 0.5, 20, 0, Math.PI * 2); pCtx.fill();
-        pCtx.strokeStyle = COLORS.ink; pCtx.lineWidth = 3; pCtx.stroke();
-        pCtx.fillStyle = COLORS.red;
-        pCtx.font = "bold 16px 'Lilita One', sans-serif";
-        pCtx.textAlign = "center"; pCtx.textBaseline = "middle";
-        pCtx.fillText("武", w * 0.5, h * 0.5 + 1);
-      } else {
-        pCtx.fillStyle = "#c89b6d";
-        pCtx.fillRect(0, 0, w, h);
-        pCtx.strokeStyle = "rgba(43,27,61,0.3)";
-        pCtx.lineWidth = 2;
-        for (let y = 16; y < h; y += 18) {
-          pCtx.beginPath(); pCtx.moveTo(0, y); pCtx.lineTo(w, y); pCtx.stroke();
-        }
-
-        pCtx.fillStyle = COLORS.red;
-        pCtx.beginPath(); pCtx.arc(w * 0.5, h * 0.5, 22, 0, Math.PI * 2); pCtx.fill();
-        pCtx.strokeStyle = COLORS.ink; pCtx.lineWidth = 3; pCtx.stroke();
-        pCtx.fillStyle = COLORS.white;
-        pCtx.font = "bold 18px 'Lilita One', sans-serif";
-        pCtx.textAlign = "center"; pCtx.textBaseline = "middle";
-        pCtx.fillText("🍃", w * 0.5, h * 0.5);
+        pCtx.arc(sx, sy, 2.5 + Math.sin(t * 8 + i) * 1, 0, Math.PI * 2);
+        pCtx.fill();
       }
+
+      // WIP Stamp Ribbon on bottom
+      pCtx.fillStyle = "rgba(43, 27, 61, 0.85)";
+      pCtx.fillRect(0, h - 26, w, 26);
+      pCtx.strokeStyle = COLORS.gold;
+      pCtx.lineWidth = 2;
+      pCtx.strokeRect(4, h - 24, w - 8, 22);
+
+      pCtx.fillStyle = COLORS.gold;
+      pCtx.font = "bold 11px 'Lilita One', sans-serif";
+      pCtx.textAlign = "center";
+      pCtx.textBaseline = "middle";
+      pCtx.fillText("🔒 COMING SOON", w * 0.5, h - 13);
     } else {
-      pCtx.fillStyle = "#2b1b3d";
-      pCtx.fillRect(0, 0, w, h);
-      const s = 1 + Math.sin(t * 6) * 0.15;
-      pCtx.save();
-      pCtx.translate(w * 0.5, h * 0.5);
-      pCtx.scale(s, s);
+      // Secret Fighter silhouette preview
+      const bob = Math.sin(t * 3.5) * 4;
+      const bx = w * 0.5;
+      const by = h * 0.46 + bob;
+      const br = 26;
 
-      pCtx.fillStyle = COLORS.sun;
-      pCtx.strokeStyle = COLORS.ink;
-      pCtx.lineWidth = 4;
+      // Dark mystery silhouette ball
       pCtx.beginPath();
-      for (let i = 0; i < 16; i++) {
-        const a = (i * Math.PI) / 8;
-        const rad = i % 2 === 0 ? 44 : 22;
-        const px = Math.cos(a) * rad;
-        const py = Math.sin(a) * rad;
-        if (i === 0) pCtx.moveTo(px, py); else pCtx.lineTo(px, py);
-      }
-      pCtx.closePath();
+      pCtx.arc(bx, by, br, 0, Math.PI * 2);
+      pCtx.fillStyle = "#2d1b4e";
       pCtx.fill();
+      pCtx.lineWidth = 3.5;
+      pCtx.strokeStyle = COLORS.gold;
       pCtx.stroke();
+
+      // Glowing question mark inside
+      pCtx.fillStyle = COLORS.gold;
+      pCtx.font = "bold 26px 'Lilita One', sans-serif";
+      pCtx.textAlign = "center";
+      pCtx.textBaseline = "middle";
+      pCtx.fillText("?", bx, by + 1);
+
+      // Swirling mystery particles
+      for (let i = 0; i < 5; i++) {
+        const ang = -t * 2.5 + (i * Math.PI * 2) / 5;
+        const px = bx + Math.cos(ang) * 38;
+        const py = by + Math.sin(ang) * 38;
+        pCtx.fillStyle = COLORS.gold;
+        pCtx.beginPath();
+        pCtx.arc(px, py, 2 + Math.sin(t * 6 + i), 0, Math.PI * 2);
+        pCtx.fill();
+      }
+
+      // WIP Ribbon
+      pCtx.fillStyle = "rgba(43, 27, 61, 0.85)";
+      pCtx.fillRect(0, h - 26, w, 26);
+      pCtx.strokeStyle = COLORS.red;
+      pCtx.lineWidth = 2;
+      pCtx.strokeRect(4, h - 24, w - 8, 22);
+
       pCtx.fillStyle = COLORS.red;
-      pCtx.font = "bold 20px 'Lilita One', sans-serif";
-      pCtx.textAlign = "center"; pCtx.textBaseline = "middle";
-      pCtx.fillText("POW!", 0, 1);
-      pCtx.restore();
+      pCtx.font = "bold 11px 'Lilita One', sans-serif";
+      pCtx.textAlign = "center";
+      pCtx.textBaseline = "middle";
+      pCtx.fillText("🔒 SECRET BRAWLER", w * 0.5, h - 13);
     }
   }
 
@@ -3331,7 +3393,7 @@
     }
 
     if (currentScreen === "screen-shop" && merchantCanvas) {
-      drawMerchantCat(merchantCanvas, t);
+      drawTurboGranny(merchantCanvas, t);
     }
 
     if (shopModal && !shopModal.classList.contains("hidden") && shopModalCanvas) {
@@ -3408,26 +3470,6 @@
 
     if (detailUltName) detailUltName.textContent = cfg.ultName || "ULTIMATE POWER";
     if (detailUltDesc) detailUltDesc.textContent = cfg.ultDesc || "5-Hit charged transformation with enhanced combat capabilities.";
-
-    // Combat Aura Equipment
-    const equippedAura = cfg.equippedAura || "none";
-    if (detailAuraStatus) {
-      detailAuraStatus.textContent = `EQUIPPED: ${equippedAura.toUpperCase()}`;
-    }
-    if (detailAuraRow) {
-      detailAuraRow.querySelectorAll(".aura-chip").forEach((chip) => {
-        const aKey = chip.dataset.aura;
-        chip.classList.toggle("active", aKey === equippedAura);
-        const itemId = `aura_${aKey}`;
-        const isUnlocked = aKey === "none" || playerWallet.unlockedItems.has(itemId);
-        chip.classList.toggle("locked", !isUnlocked);
-        if (!isUnlocked) {
-          chip.title = "Locked in Shop! Visit Anime Bazaar to unlock.";
-        } else {
-          chip.title = "Click to equip this aura";
-        }
-      });
-    }
   }
 
   function updateShopUI() {
@@ -3443,9 +3485,8 @@
     });
 
     for (const item of filtered) {
-      const isOwned = playerWallet.unlockedItems.has(item.id);
       const card = document.createElement("div");
-      card.className = "shop-card-tile";
+      card.className = "shop-card-tile tile-wip";
 
       const badge = document.createElement("span");
       badge.className = `shop-card-badge ${item.badgeClass}`;
@@ -3459,23 +3500,29 @@
       name.className = "shop-card-name";
       name.textContent = item.name;
 
-      const price = document.createElement("span");
-      price.className = "shop-card-price";
-      price.textContent = isOwned ? "OWNED" : `${item.currency === "coins" ? "🪙" : "💎"} ${item.price.toLocaleString()}`;
+      const snippet = document.createElement("p");
+      snippet.className = "shop-card-desc-snippet";
+      snippet.textContent = item.targetChar || "UPCOMING";
+
+      const pill = document.createElement("span");
+      pill.className = "shop-card-wip-pill";
+      pill.textContent = "🔒 WIP";
 
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = `btn btn-sm shop-card-btn ${isOwned ? "btn-owned" : "btn-green"}`;
-      btn.textContent = isOwned ? "INSPECT" : "BUY";
+      btn.className = "btn btn-sm btn-wip shop-card-btn";
+      btn.textContent = "PREVIEW";
 
       card.appendChild(badge);
       card.appendChild(icon);
       card.appendChild(name);
-      card.appendChild(price);
+      card.appendChild(snippet);
+      card.appendChild(pill);
       card.appendChild(btn);
 
       card.addEventListener("click", () => {
         sound.unlock();
+        sound.play("hit");
         openShopInspectModal(item.id);
       });
 
@@ -3487,7 +3534,6 @@
     const item = SHOP_CATALOG.find((x) => x.id === itemId);
     if (!item) return;
     previewShopItemId = itemId;
-    const isOwned = playerWallet.unlockedItems.has(item.id);
 
     if (shopModalTitle) shopModalTitle.textContent = item.name;
     if (shopModalDesc) shopModalDesc.textContent = item.desc;
@@ -3496,17 +3542,17 @@
       shopModalType.textContent = item.badge;
     }
     if (shopModalPrice) {
-      shopModalPrice.textContent = isOwned ? "OWNED" : `${item.currency === "coins" ? "🪙" : "💎"} ${item.price.toLocaleString()}`;
+      shopModalPrice.textContent = "🔒 UNDER DEVELOPMENT (WIP)";
     }
 
     if (btnShopModalAction) {
-      if (isOwned) {
-        btnShopModalAction.className = "btn btn-gold btn-big";
-        btnShopModalAction.textContent = "OWNED • EQUIP IN CHAR DETAIL";
-      } else {
-        btnShopModalAction.className = "btn btn-green btn-big";
-        btnShopModalAction.textContent = `BUY FOR ${item.currency === "coins" ? "🪙" : "💎"} ${item.price.toLocaleString()}`;
-      }
+      btnShopModalAction.className = "btn btn-wip btn-big";
+      btnShopModalAction.textContent = "🔒 UNDER CONSTRUCTION";
+      btnShopModalAction.disabled = true;
+    }
+
+    if (merchantSpeechText) {
+      merchantSpeechText.textContent = `"Oi brat! That ${item.name} is WORK IN PROGRESS! Baa-san is still preparing it for future updates!"`;
     }
 
     if (shopModal) shopModal.classList.remove("hidden");
@@ -3655,33 +3701,20 @@
       });
     }
 
-    // Aura Selector in Fighter Detail Modal
-    if (detailAuraRow) {
-      detailAuraRow.querySelectorAll(".aura-chip").forEach((chip) => {
-        chip.addEventListener("click", () => {
-          sound.unlock();
-          const aKey = chip.dataset.aura;
-          const itemId = `aura_${aKey}`;
-          const isUnlocked = aKey === "none" || playerWallet.unlockedItems.has(itemId);
-          if (!isUnlocked) {
-            sound.play("hit");
-            if (merchantSpeechText) {
-              merchantSpeechText.textContent = `"Mreow! That ${chip.textContent.trim()} is locked! Visit the Anime Bazaar to unlock it with coins!"`;
-            }
-            alert(`This aura is locked in the Anime Bazaar! Go to the SHOP tab to unlock it for your fighter.`);
-            return;
-          }
-          const cfg = CHARACTER_ROSTER[detailCharId];
-          if (cfg) {
-            cfg.equippedAura = aKey;
-            BALL_CONFIGS.forEach((bc) => {
-              if (bc.id === cfg.id) bc.equippedAura = aKey;
-            });
-            updateCharDetailUI();
-          }
-        });
-      });
-    }
+    // Interactive Turbo Granny Mascot Clicks (Triggers hilarious Dandadan voice lines!)
+    const merchantBox = document.getElementById("merchant-box-interactive");
+    const merchantWrap = document.getElementById("merchant-avatar-wrap");
+    const triggerGrannyTalk = () => {
+      sound.unlock();
+      sound.play("hit");
+      const quote = TURBO_GRANNY_QUOTES[Math.floor(Math.random() * TURBO_GRANNY_QUOTES.length)];
+      if (merchantSpeechText) {
+        merchantSpeechText.textContent = quote;
+      }
+    };
+    if (merchantCanvas) merchantCanvas.addEventListener("click", triggerGrannyTalk);
+    if (merchantWrap) merchantWrap.addEventListener("click", triggerGrannyTalk);
+    if (merchantBox) merchantBox.addEventListener("click", triggerGrannyTalk);
 
     // Shop Category Filter Chips
     if (shopFilterChips) {

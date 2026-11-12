@@ -1374,22 +1374,28 @@ body {
 }
 
 .merchant-canvas-wrap {
-  width: 76px;
-  height: 76px;
+  width: 84px;
+  height: 84px;
   flex-shrink: 0;
-  background: var(--sun);
-  border: 3px solid var(--ink);
-  border-radius: 20px;
+  background: #fbf5e6;
+  border: 3.5px solid var(--ink);
+  border-radius: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 0 var(--ink);
   overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.merchant-canvas-wrap:hover {
+  transform: scale(1.05);
 }
 
 .merchant-cat-canvas {
-  width: 76px;
-  height: 76px;
+  width: 84px;
+  height: 84px;
   display: block;
 }
 
@@ -1486,6 +1492,40 @@ body {
 .badge-aura { background: var(--blue); }
 .badge-arena { background: var(--green); }
 .badge-hitfx { background: var(--red); }
+.badge-skin { background: #9b59b6; }
+.badge-fighter { background: var(--red); }
+
+.shop-card-wip-pill {
+  font-size: 11px;
+  color: var(--ink);
+  background: #ffd93d;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.shop-card-desc-snippet {
+  font-size: 10px;
+  color: #576574;
+  line-height: 1.25;
+  text-align: center;
+  margin: 2px 0;
+}
+
+.btn-wip,
+.btn.btn-wip {
+  background: #e2ded4;
+  color: #636e72;
+  border-color: var(--ink);
+  cursor: pointer;
+}
+
+.btn-wip:hover,
+.btn.btn-wip:hover {
+  background: #d5d0c5;
+}
 
 .shop-card-icon {
   font-size: 32px;
