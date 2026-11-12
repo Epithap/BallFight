@@ -783,6 +783,8 @@ body {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
+  max-height: 52vh;
+  margin: 0 auto;
   background: #a8e6cf;
   border: 5px solid var(--ink);
   border-radius: 20px;
