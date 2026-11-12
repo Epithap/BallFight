@@ -76,6 +76,11 @@
       update(dt, game) {
         this.x += this.vx * dt;
         this.y += this.vy * dt;
+        this.trail = (this.trail || 0) - dt;
+        if (this.trail <= 0) {
+          this.trail = 0.035;
+          particles.push({ x: this.x, y: this.y, vx: 0, vy: 0, size: this.radius * 0.55, life: 0.2, maxLife: 0.2, color });
+        }
         if (shape === "rasenshuriken") {
           this.spin += dt * 18;
         }
@@ -172,12 +177,177 @@
     };
   }
 
-  function spawnKamehamehaBeam(owner, target) {
+
+  function easeOut(p) { return 1 - Math.pow(1 - p, 3); }
+
+  function spawnShockRing(x, y, color, maxR = 90, life = 0.45) {
+    return {
+      x, y, life, maxLife: life, dead: false,
+      update(dt) { this.life -= dt; if (this.life <= 0) this.dead = true; },
+      render(c) {
+        const p = 1 - Math.max(0, this.life / this.maxLife);
+        c.beginPath();
+        c.arc(this.x, this.y, maxR * easeOut(p), 0, Math.PI * 2);
+        c.lineWidth = 11 * (1 - p) + 2;
+        c.strokeStyle = COLORS.ink;
+        c.stroke();
+        c.lineWidth = 5 * (1 - p) + 1;
+        c.strokeStyle = color;
+        c.stroke();
+      },
+    };
+  }
+
+  // Comic banner that slides across the arena when an ultimate starts
+  function spawnBanner(text, color) {
+    const dur = 1.0;
+    return {
+      life: dur, dead: false,
+      update(dt) { this.life -= dt; if (this.life <= 0) this.dead = true; },
+      render(c) {
+        const t = 1 - this.life / dur;
+        const slide = t < 0.15 ? easeOut(t / 0.15) : t > 0.8 ? 1 - easeOut((t - 0.8) / 0.2) : 1;
+        const h = 56, y = WORLD_SIZE * 0.5 - h / 2, w = WORLD_SIZE * slide;
+        c.save();
+        c.beginPath();
+        c.moveTo(-10, y); c.lineTo(w + 18, y); c.lineTo(w - 6, y + h); c.lineTo(-10, y + h);
+        c.closePath();
+        c.fillStyle = color; c.fill();
+        c.lineWidth = 5; c.strokeStyle = COLORS.ink; c.lineJoin = "round"; c.stroke();
+        c.globalAlpha = slide;
+        c.translate(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5);
+        c.rotate(-0.04);
+        c.font = `36px ${FONT}`;
+        c.textAlign = "center"; c.textBaseline = "middle";
+        c.lineWidth = 8; c.strokeText(text, 0, 2);
+        c.fillStyle = COLORS.white; c.fillText(text, 0, 2);
+        c.restore();
+      },
+    };
+  }
+
+  // Charge-up: ball freezes, a visual builds, then fire() runs.
+  function beginCast(ball, { kind, duration, color, maxR = 22, blades = false, fire }) {
+    ball.cast = { kind, duration, color, maxR, blades, fire, t: 0 };
+    ball.channelTimer = duration;
+    sound.playCharge(duration);
+  }
+
+  function drawCast(ball, c) {
+    const k = ball.cast;
+    if (!k) return;
+    const p = Math.min(1, k.t / k.duration);
+    const tg = balls.find((b) => b !== ball && b.alive);
+    const ang = tg ? Math.atan2(tg.y - ball.y, tg.x - ball.x) : 0;
+    const ux = Math.cos(ang), uy = Math.sin(ang);
+    c.save();
+    c.lineJoin = "round"; c.lineCap = "round";
+
+    // progress ring around the caster
+    c.beginPath();
+    c.arc(ball.x, ball.y, ball.radius + 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p);
+    c.lineWidth = 7; c.strokeStyle = COLORS.ink; c.stroke();
+    c.lineWidth = 3.5; c.strokeStyle = k.color; c.stroke();
+
+    if (k.kind === "orb") {
+      const R = k.maxR * (0.25 + 0.75 * easeOut(p));
+      const ox = ball.x + ux * (ball.radius + R * 0.5 + 8);
+      const oy = ball.y + uy * (ball.radius + R * 0.5 + 8);
+
+      if (tg && p > 0.35) {
+        c.save();
+        c.setLineDash([10, 8]); c.lineWidth = 4; c.strokeStyle = k.color; c.globalAlpha = 0.7;
+        c.beginPath(); c.moveTo(ox, oy); c.lineTo(tg.x, tg.y); c.stroke();
+        c.restore();
+      }
+      // energy streaks flowing into the orb
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI * 2 * i) / 8 + p * 2.5;
+        const f = (p * 2.2 + i / 8) % 1;
+        const d1 = R + 12 + (1 - f) * R * 1.6, d0 = d1 + 10;
+        c.beginPath();
+        c.moveTo(ox + Math.cos(a) * d0, oy + Math.sin(a) * d0);
+        c.lineTo(ox + Math.cos(a) * d1, oy + Math.sin(a) * d1);
+        c.lineWidth = 5; c.strokeStyle = COLORS.ink; c.stroke();
+        c.lineWidth = 2; c.strokeStyle = COLORS.white; c.stroke();
+      }
+      c.save();
+      c.translate(ox, oy);
+      c.rotate(p * p * 36);
+      if (k.blades) {
+        const bp = Math.max(0, Math.min(1, (p - 0.4) / 0.6));
+        c.fillStyle = COLORS.white; c.strokeStyle = COLORS.ink; c.lineWidth = 3;
+        for (let i = 0; i < 4; i++) {
+          c.save(); c.rotate((Math.PI / 2) * i);
+          c.beginPath();
+          c.moveTo(0, -4); c.lineTo(R * 1.35 * bp, -R * 0.38 * bp); c.lineTo(R * 0.95 * bp, 4);
+          c.closePath(); c.fill(); c.stroke(); c.restore();
+        }
+      }
+      const cr = R * (k.blades ? 0.55 : 1);
+      c.beginPath(); c.arc(0, 0, cr, 0, Math.PI * 2);
+      c.fillStyle = k.color; c.fill();
+      c.lineWidth = 4; c.strokeStyle = COLORS.ink; c.stroke();
+      c.strokeStyle = COLORS.white; c.lineWidth = 3;
+      for (let i = 0; i < 3; i++) {
+        const a = (Math.PI * 2 * i) / 3;
+        c.beginPath(); c.arc(0, 0, cr * 0.62, a, a + Math.PI * 0.48); c.stroke();
+      }
+      c.fillStyle = COLORS.white;
+      c.beginPath(); c.arc(0, 0, cr * 0.25, 0, Math.PI * 2); c.fill();
+      c.restore();
+    } else if (k.kind === "slash") {
+      const e = easeOut(p), R = k.maxR * (0.3 + 0.7 * e);
+      c.save();
+      c.translate(ball.x + ux * (ball.radius + 8 + R * 0.6), ball.y + uy * (ball.radius + 8 + R * 0.6));
+      c.rotate(ang - (1 - e) * 0.9);   // blade swings into place
+      c.beginPath();
+      c.arc(0, 0, R * 1.45, -Math.PI * 0.48, Math.PI * 0.48);
+      c.quadraticCurveTo(R * 0.3, 0, Math.cos(-Math.PI * 0.48) * R * 1.45, Math.sin(-Math.PI * 0.48) * R * 1.45);
+      c.closePath();
+      c.fillStyle = k.color; c.fill();
+      c.lineWidth = 4; c.strokeStyle = COLORS.ink; c.stroke();
+      c.strokeStyle = COLORS.white; c.lineWidth = 2;
+      c.beginPath(); c.arc(0, 0, R * 1.18, -Math.PI * 0.35, Math.PI * 0.35); c.stroke();
+      c.restore();
+    } else if (k.kind === "inflate" || k.kind === "powerup") {
+      for (let i = 0; i < 7; i++) {
+        const a = (Math.PI * 2 * i) / 7 + p * 2;
+        const f = (p * 2.2 + i / 7) % 1;
+        const d = ball.radius * (0.85 + f * 1.1);
+        c.globalAlpha = 1 - f;
+        c.beginPath();
+        c.arc(ball.x + Math.cos(a) * d, ball.y + Math.sin(a) * d - f * 12, 5 + f * 9, 0, Math.PI * 2);
+        c.fillStyle = k.kind === "inflate" ? COLORS.white : k.color;
+        c.fill();
+        c.lineWidth = 3; c.strokeStyle = COLORS.ink; c.stroke();
+      }
+      c.globalAlpha = 1;
+    } else if (k.kind === "dash" && tg) {
+      const sx = ball.x + ux * (ball.radius + 10), sy = ball.y + uy * (ball.radius + 10);
+      const len = 70 + 90 * p, ex = sx + ux * len, ey = sy + uy * len;
+      c.beginPath(); c.moveTo(sx, sy); c.lineTo(ex, ey);
+      c.lineWidth = 10; c.strokeStyle = COLORS.ink; c.stroke();
+      c.lineWidth = 4; c.strokeStyle = k.color; c.stroke();
+      c.beginPath();
+      c.moveTo(ex + ux * 14, ey + uy * 14);
+      c.lineTo(ex - uy * 10, ey + ux * 10);
+      c.lineTo(ex + uy * 10, ey - ux * 10);
+      c.closePath();
+      c.fillStyle = k.color; c.fill(); c.lineWidth = 3; c.strokeStyle = COLORS.ink; c.stroke();
+    }
+    c.restore();
+  }
+
+  function castMuzzle(b, a, extra) {
+    return { x: b.x + Math.cos(a) * (b.radius + extra), y: b.y + Math.sin(a) * (b.radius + extra) };
+  }
+
+  function spawnKamehamehaBeam(owner, target, chargeDuration = 0) {
     const dx = target.x - owner.x;
     const dy = target.y - owner.y;
     const angle = Math.atan2(dy, dx);
     const length = WORLD_SIZE * 1.6;
-    const chargeDuration = 0.28;
     const beamDuration = 0.82;
 
     return {
@@ -196,6 +366,11 @@
         if (this.timer >= chargeDuration + beamDuration) {
           this.dead = true;
           return;
+        }
+        if (this.timer >= chargeDuration && !this.fired) {
+          this.fired = true;
+          game.entities.push(spawnShockRing(owner.x + Math.cos(this.angle) * 40, owner.y + Math.sin(this.angle) * 40, COLORS.blue, 100, 0.4));
+          shakeTime = 0.3; shakeIntensity = 6;
         }
         if (this.timer < chargeDuration || !target.alive) return;
 
@@ -239,7 +414,7 @@
           c.strokeStyle = COLORS.ink;
           c.lineWidth = 3;
           c.beginPath();
-          c.arc(owner.radius + 6, 0, 10 + (this.timer / chargeDuration) * 8, 0, Math.PI * 2);
+          c.arc(owner.radius + 10, 0, 8 + (this.timer / chargeDuration) * 24, 0, Math.PI * 2);
           c.fill();
           c.stroke();
         } else {
@@ -316,30 +491,36 @@
       const target = game.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
       if (ball.ultTimer > 0) {
-        // Kaioken: stop and channel straight Super Kamehameha beam
-        ball.channelTimer = 1.1;
-        game.entities.push(spawnKamehamehaBeam(ball, target));
-        game.spawnDamageText(ball.x, ball.y - ball.radius, 0, COLORS.red, false, "KAIOKEN BEAM!");
+        // Kaioken: charge & aim live like normal Kamehameha, then fire full beam immediately
+        beginCast(ball, {
+          kind: "orb", duration: 0.65, color: COLORS.red, maxR: 26,
+          fire(b, g) {
+            const t = g.balls.find((x) => x !== b && x.alive);
+            if (!t) return;
+            b.channelTimer = 0.82;
+            g.entities.push(spawnKamehamehaBeam(b, t, 0));
+            g.spawnDamageText(b.x, b.y - b.radius, 0, COLORS.red, false, "KAIOKEN BEAM!");
+          },
+        });
         return true;
       }
-      game.entities.push(
-        spawnProjectile({
-          owner: ball,
-          target,
-          x: ball.x,
-          y: ball.y,
-          speed: 520,
-          radius: 13,
-          damage: 14,
-          color: COLORS.blue,
-          label: "KAMEHAMEHA!",
-          shape: "blast",
-          onImpact(t, g) {
-            g.addEffect(t, "slow", 0.7, { factor: 0.65 });
-            g.chargeUlt(ball);
-          },
-        })
-      );
+      beginCast(ball, {
+        kind: "orb", duration: 0.5, color: COLORS.blue, maxR: 20,
+        fire(b, g) {
+          const t = g.balls.find((x) => x !== b && x.alive);
+          if (!t) return;
+          const m = castMuzzle(b, Math.atan2(t.y - b.y, t.x - b.x), 16);
+          g.entities.push(spawnShockRing(m.x, m.y, COLORS.blue, 55, 0.3));
+          g.entities.push(spawnProjectile({
+            owner: b, target: t, x: m.x, y: m.y, speed: 520, radius: 13, damage: 14,
+            color: COLORS.blue, label: "KAMEHAMEHA!", shape: "blast",
+            onImpact(tt, gg) {
+              gg.addEffect(tt, "slow", 0.7, { factor: 0.65 });
+              gg.chargeUlt(b);
+            },
+          }));
+        },
+      });
       return true;
     },
   };
@@ -347,13 +528,24 @@
   const SKILL_RASENGAN = {
     name: "Rasengan",
     cooldown: 3.0,
-    onHit(ball, other, game, info) {
-      if (!other.alive) return false;
-      const bonus = game.applyDamage(other, 14);
-      game.addEffect(other, "stun", 0.5);
-      game.spawnDamageText(other.x, other.y - other.radius - 12, bonus, COLORS.blue, false, "RASENGAN!");
-      game.entities.push(spawnRasenganVisual(info.midX, info.midY, 48));
-      game.chargeUlt(ball);
+    onTick(ball, game) {
+      const target = game.balls.find((b) => b !== ball && b.alive);
+      if (!target) return false;
+      beginCast(ball, {
+        kind: "orb", duration: 0.45, color: COLORS.blue, maxR: 17,
+        fire(b, g) {
+          const t = g.balls.find((x) => x !== b && x.alive);
+          if (!t) return;
+          const len = Math.hypot(t.x - b.x, t.y - b.y) || 1;
+          const dashSpeed = b.baseSpeed * 1.95;
+          b.vx = ((t.x - b.x) / len) * dashSpeed;
+          b.vy = ((t.y - b.y) / len) * dashSpeed;
+          b.rasenganTimer = 0.5;
+          b.rasenganHit = false;
+          g.spawnDamageText(b.x, b.y - b.radius, 0, COLORS.blue, false, "RASENGAN!");
+          g.spawnSparks(b.x, b.y, COLORS.white, COLORS.blue);
+        },
+      });
       return true;
     },
   };
@@ -364,16 +556,21 @@
     onTick(ball, game) {
       const target = game.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
-      const dx = target.x - ball.x;
-      const dy = target.y - ball.y;
-      const len = Math.hypot(dx, dy) || 1;
-      const dashSpeed = ball.baseSpeed * 2.05;
-      ball.vx = (dx / len) * dashSpeed;
-      ball.vy = (dy / len) * dashSpeed;
-      ball.rocketTimer = 0.45;
-      ball.rocketHit = false;
-      game.spawnDamageText(ball.x, ball.y - ball.radius, 0, COLORS.red, false, "GUM ROCKET!");
-      game.spawnSparks(ball.x, ball.y, COLORS.white, COLORS.red);
+      beginCast(ball, {
+        kind: "dash", duration: 0.4, color: COLORS.red,
+        fire(b, g) {
+          const t = g.balls.find((x) => x !== b && x.alive);
+          if (!t) return;
+          const len = Math.hypot(t.x - b.x, t.y - b.y) || 1;
+          const dashSpeed = b.baseSpeed * 2.05;
+          b.vx = ((t.x - b.x) / len) * dashSpeed;
+          b.vy = ((t.y - b.y) / len) * dashSpeed;
+          b.rocketTimer = 0.45;
+          b.rocketHit = false;
+          g.spawnDamageText(b.x, b.y - b.radius, 0, COLORS.red, false, "GUM ROCKET!");
+          g.spawnSparks(b.x, b.y, COLORS.white, COLORS.red);
+        },
+      });
       return true;
     },
   };
@@ -385,24 +582,24 @@
       const target = game.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
       const hollow = ball.ultTimer > 0;
-      game.entities.push(
-        spawnProjectile({
-          owner: ball,
-          target,
-          x: ball.x,
-          y: ball.y,
-          speed: hollow ? 580 : 510,
-          radius: hollow ? 25 : 16,
-          damage: hollow ? 24 : 14,
-          color: COLORS.red,
-          label: hollow ? "HOLLOW GETSUGA!" : "GETSUGA!",
-          shape: "crescent",
-          onImpact(t, g) {
-            g.addEffect(t, "slow", hollow ? 1.0 : 0.75, { factor: 0.65 });
-            if (!hollow) g.chargeUlt(ball);
-          },
-        })
-      );
+      beginCast(ball, {
+        kind: "slash", duration: hollow ? 0.3 : 0.42, color: COLORS.red, maxR: hollow ? 25 : 16,
+        fire(b, g) {
+          const t = g.balls.find((x) => x !== b && x.alive);
+          if (!t) return;
+          const m = castMuzzle(b, Math.atan2(t.y - b.y, t.x - b.x), 14);
+          g.entities.push(spawnShockRing(m.x, m.y, COLORS.red, hollow ? 80 : 55, 0.3));
+          g.entities.push(spawnProjectile({
+            owner: b, target: t, x: m.x, y: m.y,
+            speed: hollow ? 580 : 510, radius: hollow ? 25 : 16, damage: hollow ? 24 : 14,
+            color: COLORS.red, label: hollow ? "HOLLOW GETSUGA!" : "GETSUGA!", shape: "crescent",
+            onImpact(tt, gg) {
+              gg.addEffect(tt, "slow", hollow ? 1.0 : 0.75, { factor: 0.65 });
+              if (!hollow) gg.chargeUlt(b);
+            },
+          }));
+        },
+      });
       return true;
     },
   };
@@ -488,6 +685,23 @@
       if (this.ctx && this.ctx.state === "suspended") {
         this.ctx.resume().catch(() => {});
       }
+    }
+
+    playCharge(duration = 0.5) {
+      if (!this.enabled || !this.ctx || this.ctx.state !== "running") return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.exponentialRampToValueAtTime(520, now + duration);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.08, now + duration * 0.9);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration + 0.04);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + duration + 0.05);
     }
 
     playWallBounce() {
@@ -587,10 +801,17 @@
       this.ultCharge = 0;
       this.ultTimer = 0;
       this.channelTimer = 0;
+      this.cast = null;
       this.rocketTimer = 0;
       this.rocketHit = false;
+      this.rasenganTimer = 0;
+      this.rasenganHit = false;
       this.weaponAngle = angle;
-      this.skills = (config.skills || []).map((s) => ({ ...s, _cd: 0 }));
+      // Start with partial cooldown so fighters clash first before casting skills
+      this.skills = (config.skills || []).map((s) => ({
+        ...s,
+        _cd: s.cooldown ? s.cooldown * (0.55 + rng() * 0.3) : 0,
+      }));
       this.effects = [];
 
       this.x = x;
@@ -733,10 +954,11 @@
   let cameraY = WORLD_SIZE * 0.5;
   let lastTime = performance.now();
 
-  function randomStartAngle(facingRight) {
-    const spread = (rng() - 0.5) * 1.1; // +/- ~31 deg
-    const verticalOffset = (rng() > 0.5 ? 1 : -1) * (0.35 + rng() * 0.45);
-    return (facingRight ? 0 : Math.PI) + spread + verticalOffset;
+  function randomStartAngle() {
+    // Full 360-degree random direction, avoiding near-horizontal/vertical axis lock
+    const quadrant = Math.floor(rng() * 4);
+    const offset = 0.28 + rng() * (Math.PI * 0.5 - 0.56);
+    return quadrant * (Math.PI * 0.5) + offset;
   }
 
   const game = {
@@ -756,45 +978,71 @@
     ball.ultCharge = 0;
     sound.playCritHit();
     spawnCritBurst(ball.x, ball.y);
+    const fx = {
+      gear_4: ["GEAR 4!", COLORS.red],
+      kaioken: ["KAIOKEN!", COLORS.orange],
+      rasenshuriken: ["RASENSHURIKEN!", COLORS.blue],
+      hollow_mask: ["HOLLOW MASK!", COLORS.red],
+    }[ball.ult];
+    if (fx) {
+      entities.push(spawnShockRing(ball.x, ball.y, fx[1], 120, 0.55));
+      entities.push(spawnBanner(fx[0], fx[1]));
+      shakeTime = 0.3; shakeIntensity = 7; hitStop = 0.09;
+    }
 
     if (ball.ult === "gear_4") {
-      ball.ultTimer = 7.5;
-      ball.radius = Math.round(ball.baseRadius * 1.18);
-      addEffect(ball, "shield", 7.5, { reduction: 0.35 });
-      spawnDamageText(ball.x, ball.y - ball.radius, 0, COLORS.red, false, "GEAR 4!");
+      beginCast(ball, {
+        kind: "inflate", duration: 0.75, color: COLORS.red,
+        fire(b) {
+          b.ultTimer = 7.5;
+          b.radius = Math.round(b.baseRadius * 1.18);
+          addEffect(b, "shield", 7.5, { reduction: 0.35 });
+          entities.push(spawnShockRing(b.x, b.y, COLORS.white, 100, 0.4));
+        },
+      });
     } else if (ball.ult === "kaioken") {
-      ball.ultTimer = 8.0;
-      addEffect(ball, "haste", 8.0, { factor: 1.25 });
-      if (ball.skills[0]) ball.skills[0]._cd = Math.min(ball.skills[0]._cd, 0.3);
-      spawnDamageText(ball.x, ball.y - ball.radius, 0, COLORS.red, false, "KAIOKEN!");
+      beginCast(ball, {
+        kind: "powerup", duration: 0.45, color: COLORS.orange,
+        fire(b) {
+          b.ultTimer = 8.0;
+          addEffect(b, "haste", 8.0, { factor: 1.25 });
+          if (b.skills[0]) b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.3);
+          entities.push(spawnShockRing(b.x, b.y, COLORS.red, 100, 0.4));
+        },
+      });
     } else if (ball.ult === "rasenshuriken") {
-      const target = balls.find((b) => b !== ball && b.alive);
-      if (!target) return;
-      spawnDamageText(ball.x, ball.y - ball.radius, 0, COLORS.blue, false, "RASENSHURIKEN!");
-      entities.push(
-        spawnProjectile({
-          owner: ball,
-          target,
-          x: ball.x,
-          y: ball.y,
-          speed: 490,
-          radius: 26,
-          damage: 30,
-          color: COLORS.blue,
-          label: "RASENSHURIKEN!",
-          shape: "rasenshuriken",
-          onImpact(t, g, proj) {
-            g.addEffect(t, "stun", 0.9);
-            g.entities.push(spawnRasenganVisual(proj.x, proj.y, 78));
-            g.spawnSparks(proj.x, proj.y, COLORS.white, COLORS.blue);
-          },
-        })
-      );
+      if (!balls.find((x) => x !== ball && x.alive)) return;
+      beginCast(ball, {
+        kind: "orb", blades: true, duration: 1.15, color: COLORS.blue, maxR: 30,
+        fire(b, g) {
+          const t = g.balls.find((x) => x !== b && x.alive);
+          if (!t) return;
+          const m = castMuzzle(b, Math.atan2(t.y - b.y, t.x - b.x), 20);
+          g.entities.push(spawnShockRing(m.x, m.y, COLORS.blue, 90, 0.4));
+          shakeTime = 0.2; shakeIntensity = 5;
+          g.entities.push(spawnProjectile({
+            owner: b, target: t, x: m.x, y: m.y, speed: 520, radius: 26, damage: 30,
+            color: COLORS.blue, label: "RASENSHURIKEN!", shape: "rasenshuriken",
+            onImpact(tt, gg, proj) {
+              gg.addEffect(tt, "stun", 0.9);
+              gg.entities.push(spawnRasenganVisual(proj.x, proj.y, 78));
+              gg.entities.push(spawnShockRing(proj.x, proj.y, COLORS.white, 120, 0.5));
+              gg.spawnSparks(proj.x, proj.y, COLORS.white, COLORS.blue);
+              shakeTime = 0.35; shakeIntensity = 8;
+            },
+          }));
+        },
+      });
     } else if (ball.ult === "hollow_mask") {
-      ball.ultTimer = 8.0;
-      addEffect(ball, "haste", 8.0, { factor: 1.28 });
-      if (ball.skills[0]) ball.skills[0]._cd = Math.min(ball.skills[0]._cd, 0.4);
-      spawnDamageText(ball.x, ball.y - ball.radius, 0, COLORS.red, false, "HOLLOW MASK!");
+      beginCast(ball, {
+        kind: "powerup", duration: 0.45, color: COLORS.red,
+        fire(b) {
+          b.ultTimer = 8.0;
+          addEffect(b, "haste", 8.0, { factor: 1.28 });
+          if (b.skills[0]) b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.4);
+          entities.push(spawnShockRing(b.x, b.y, COLORS.white, 100, 0.4));
+        },
+      });
     }
   }
 
@@ -879,14 +1127,13 @@
 
   function initRound() {
     balls = BALL_CONFIGS.map((cfg, index) => {
-      const facingRight = index % 2 === 0;
       const xRatio = BALL_CONFIGS.length === 2
-        ? (index === 0 ? 0.25 : 0.75)
+        ? (index === 0 ? 0.2 + rng() * 0.16 : 0.64 + rng() * 0.16)
         : (index + 1) / (BALL_CONFIGS.length + 1);
       return new Ball(cfg, {
         x: WORLD_SIZE * xRatio,
-        y: WORLD_SIZE * (0.35 + rng() * 0.3),
-        angle: randomStartAngle(facingRight),
+        y: WORLD_SIZE * (0.22 + rng() * 0.56),
+        angle: randomStartAngle(),
       });
     });
 
@@ -1244,8 +1491,8 @@
       spawnDamageText(b1.x, b1.y - b1.radius * 0.5, dmgToB1, COLORS.white, hitB1.isCrit);
       spawnDamageText(b2.x, b2.y - b2.radius * 0.5, dmgToB2, COLORS.white, hitB2.isCrit);
 
-      // Gum-Gum Rocket impact bonus
-      const checkRocketImpact = (attacker, defender) => {
+      // Gum-Gum Rocket & Rasengan dash impact bonuses
+      const checkDashImpact = (attacker, defender) => {
         if (attacker.rocketTimer > 0 && !attacker.rocketHit) {
           attacker.rocketHit = true;
           const gear4 = attacker.ultTimer > 0;
@@ -1254,9 +1501,19 @@
           spawnDamageText(defender.x, defender.y - defender.radius - 14, rocketDmg, COLORS.red, false, gear4 ? "G4 ROCKET!" : "ROCKET!");
           if (!gear4) chargeUlt(attacker);
         }
+        if (attacker.rasenganTimer > 0 && !attacker.rasenganHit) {
+          attacker.rasenganHit = true;
+          const rasDmg = applyDamage(defender, 14);
+          addEffect(defender, "stun", 0.5);
+          spawnDamageText(defender.x, defender.y - defender.radius - 14, rasDmg, COLORS.blue, false, "RASENGAN!");
+          entities.push(spawnRasenganVisual(midX, midY, 48));
+          entities.push(spawnShockRing(midX, midY, COLORS.blue, 75, 0.35));
+          shakeTime = 0.2; shakeIntensity = 5;
+          chargeUlt(attacker);
+        }
       };
-      checkRocketImpact(b1, b2);
-      checkRocketImpact(b2, b1);
+      checkDashImpact(b1, b2);
+      checkDashImpact(b2, b1);
 
       runSkillHook(b1, "onHit", b2, game, { damageDealt: dmgToB2, isCrit: hitB2.isCrit, impactSpeed, nx, ny, midX, midY });
       runSkillHook(b2, "onHit", b1, game, { damageDealt: dmgToB1, isCrit: hitB1.isCrit, impactSpeed, nx: -nx, ny: -ny, midX, midY });
@@ -1344,10 +1601,27 @@
       if (ball.rocketTimer > 0) {
         ball.rocketTimer = Math.max(0, ball.rocketTimer - scaledDt);
       }
+      if (ball.rasenganTimer > 0) {
+        ball.rasenganTimer = Math.max(0, ball.rasenganTimer - scaledDt);
+      }
       ball.updateEffects(scaledDt);
 
       if (ball.channelTimer > 0) {
         ball.channelTimer = Math.max(0, ball.channelTimer - scaledDt);
+        if (ball.cast) {
+          ball.cast.t += scaledDt;
+          if (ball.cast.kind === "inflate") {
+            const q = Math.min(1, ball.cast.t / ball.cast.duration);
+            ball.radius = Math.round(ball.baseRadius * (1 + 0.18 * q * (0.8 + 0.2 * Math.abs(Math.sin(q * Math.PI * 6)))));
+          }
+          if (ball.channelTimer <= 0) {
+            const cst = ball.cast;
+            ball.cast = null;
+            cst.fire(ball, game);
+            shakeTime = Math.max(shakeTime, 0.12);
+            shakeIntensity = Math.max(shakeIntensity, 3);
+          }
+        }
         continue;
       }
 
@@ -1360,7 +1634,7 @@
       if (speedFactor > 0) {
         ball.x += ball.vx * speedFactor * scaledDt;
         ball.y += ball.vy * speedFactor * scaledDt;
-        if (ball.rocketTimer <= 0) {
+        if (ball.rocketTimer <= 0 && ball.rasenganTimer <= 0) {
           ball.normalizeSpeed();
         }
         handleWallCollisions(ball);
@@ -1490,21 +1764,65 @@
     c.lineWidth = 3;
     c.lineJoin = "round";
 
-    if (ball.costume === "goku") {
-      // Blue undershirt V-collar & belt at bottom (clipped to ball)
+    // Skin-toned face above the clothing line (Goku, Naruto, Luffy)
+    if (ball.costume === "goku" || ball.costume === "naruto" || ball.costume === "luffy") {
       c.save();
       c.beginPath();
       c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
       c.clip();
+      c.fillStyle = ball.flashTimer > 0 ? COLORS.white : COLORS.skin;
+      c.beginPath();
+      c.moveTo(-r, -r);
+      c.lineTo(r, -r);
+      c.lineTo(r, r * 0.5);
+      c.quadraticCurveTo(0, r * 0.78, -r, r * 0.5);
+      c.closePath();
+      c.fill();
+      c.restore();
+    }
+
+    if (ball.costume === "goku") {
+      // Orange Gi with blue undershirt V-neck & white kanji chest badge
+      c.save();
+      c.beginPath();
+      c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
+      c.clip();
+      // Blue undershirt V-collar
       c.fillStyle = COLORS.blue;
       c.beginPath();
-      c.moveTo(-r * 0.95, r * 0.52);
-      c.lineTo(0, r * 0.72);
-      c.lineTo(r * 0.95, r * 0.52);
+      c.moveTo(-r * 0.48, r * 0.52);
+      c.lineTo(0, r * 0.84);
+      c.lineTo(r * 0.48, r * 0.52);
+      c.lineTo(r * 0.95, r * 0.56);
       c.lineTo(r, r * 1.1);
       c.lineTo(-r, r * 1.1);
       c.closePath();
       c.fill();
+      c.stroke();
+      // Orange Gi lapels
+      c.fillStyle = COLORS.orange;
+      c.beginPath();
+      c.moveTo(-r, r * 0.54);
+      c.lineTo(-r * 0.38, r * 0.56);
+      c.lineTo(-r * 0.05, r * 1.05);
+      c.lineTo(-r, r * 1.05);
+      c.closePath();
+      c.fill();
+      c.stroke();
+      c.beginPath();
+      c.moveTo(r, r * 0.54);
+      c.lineTo(r * 0.38, r * 0.56);
+      c.lineTo(r * 0.05, r * 1.05);
+      c.lineTo(r, r * 1.05);
+      c.closePath();
+      c.fill();
+      c.stroke();
+      // White Turtle/Go chest emblem
+      c.fillStyle = COLORS.white;
+      c.beginPath();
+      c.arc(-r * 0.44, r * 0.78, r * 0.14, 0, Math.PI * 2);
+      c.fill();
+      c.lineWidth = 2;
       c.stroke();
       c.restore();
 
@@ -1532,15 +1850,34 @@
       c.lineTo(-r * 0.55, -r * 0.48);
       c.closePath();
       c.fill();
+      c.strokeStyle = COLORS.ichigoDark;
+      c.lineWidth = 2.5;
+      c.beginPath();
+      c.moveTo(-r * 0.5, -r * 1.1); c.lineTo(-r * 0.38, -r * 0.82);
+      c.moveTo(r * 0.3, -r * 1.2); c.lineTo(r * 0.4, -r * 0.88);
+      c.moveTo(r * 0.98, -r * 0.98); c.lineTo(r * 0.82, -r * 0.7);
+      c.stroke();
+      c.strokeStyle = COLORS.ink;
     } else if (ball.costume === "naruto") {
-      // Shippuden black/navy collar at bottom
+      // Shippuden orange-and-navy jacket with white zipper
       c.save();
       c.beginPath();
       c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
       c.clip();
       c.fillStyle = COLORS.ichigoDark;
-      c.fillRect(-r, r * 0.55, r * 2, r * 0.5);
-      c.strokeRect(-r, r * 0.55, r * 2, r * 0.5);
+      c.fillRect(-r, r * 0.54, r * 2, r * 0.52);
+      c.strokeRect(-r, r * 0.54, r * 2, r * 0.52);
+      // Orange jacket center
+      c.fillStyle = COLORS.narutoOrange;
+      c.fillRect(-r * 0.45, r * 0.58, r * 0.9, r * 0.48);
+      c.strokeRect(-r * 0.45, r * 0.58, r * 0.9, r * 0.48);
+      // White zipper line
+      c.strokeStyle = COLORS.white;
+      c.lineWidth = 2.5;
+      c.beginPath();
+      c.moveTo(0, r * 0.6);
+      c.lineTo(0, r);
+      c.stroke();
       c.restore();
 
       // Spiky blonde hair bursting above & around headband
@@ -1588,15 +1925,44 @@
         }
       }
     } else if (ball.costume === "luffy") {
-      // Gear 4 Haki rim & steam clouds when Ult active
+      // Open red pirate vest with gold buttons (and Gear 4 Haki rim when Ult active)
+      c.save();
+      c.beginPath();
+      c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
+      c.clip();
+      c.fillStyle = ball.ultTimer > 0 ? COLORS.ichigoDark : COLORS.red;
+      c.fillRect(-r, r * 0.54, r * 2, r * 0.52);
+      c.strokeRect(-r, r * 0.54, r * 2, r * 0.52);
+      // Open chest V showing skin
+      c.fillStyle = ball.flashTimer > 0 ? COLORS.white : COLORS.skin;
+      c.beginPath();
+      c.moveTo(-r * 0.34, r * 0.52);
+      c.lineTo(0, r * 0.98);
+      c.lineTo(r * 0.34, r * 0.52);
+      c.closePath();
+      c.fill();
+      c.stroke();
+      // Gold vest buttons
+      c.fillStyle = COLORS.gold;
+      c.beginPath();
+      c.arc(-r * 0.42, r * 0.74, 3, 0, Math.PI * 2);
+      c.arc(r * 0.42, r * 0.74, 3, 0, Math.PI * 2);
+      c.fill();
+      c.restore();
+
+      // Luffy's stitched scar under left eye
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(-r * 0.44, r * 0.18);
+      c.lineTo(-r * 0.22, r * 0.22);
+      c.moveTo(-r * 0.37, r * 0.14);
+      c.lineTo(-r * 0.37, r * 0.25);
+      c.moveTo(-r * 0.29, r * 0.15);
+      c.lineTo(-r * 0.29, r * 0.26);
+      c.stroke();
+      c.lineWidth = 3;
+
       if (ball.ultTimer > 0) {
-        c.save();
-        c.beginPath();
-        c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
-        c.clip();
-        c.fillStyle = COLORS.ichigoDark;
-        c.fillRect(-r, r * 0.42, r * 2, r * 0.65);
-        c.restore();
         // Steam clouds
         c.fillStyle = COLORS.white;
         for (const side of [-1, 1]) {
@@ -1605,6 +1971,18 @@
           c.fill();
           c.stroke();
         }
+      }
+      // Messy black hair peeking out under the hat
+      c.fillStyle = COLORS.ink;
+      for (const side of [-1, 1]) {
+        c.beginPath();
+        c.moveTo(side * r * 0.62, -r * 0.7);
+        c.lineTo(side * r * 1.02, -r * 0.42);
+        c.lineTo(side * r * 0.84, -r * 0.3);
+        c.lineTo(side * r * 0.96, -r * 0.08);
+        c.lineTo(side * r * 0.7, -r * 0.2);
+        c.closePath();
+        c.fill();
       }
       // Straw Hat on top
       c.fillStyle = COLORS.gold;
@@ -1691,6 +2069,27 @@
       c.fill();
       c.stroke();
     }
+
+    // Expressive brows and Luffy's scar under the left eye
+    const tilt = { luffy: -0.02, ichigo: 0.12 }[ball.costume];
+    if (tilt !== undefined) {
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 3.5;
+      c.lineCap = "round";
+      c.beginPath();
+      for (const side of [-1, 1]) {
+        c.moveTo(side * r * 0.6, -r * (0.5 + tilt));
+        c.lineTo(side * r * 0.12, -r * (0.5 - tilt));
+      }
+      c.stroke();
+    }
+    if (ball.costume === "luffy") {
+      c.lineWidth = 2.5;
+      c.beginPath();
+      c.moveTo(r * 0.32, r * 0.2); c.lineTo(r * 0.32, r * 0.42);
+      c.moveTo(r * 0.24, r * 0.27); c.lineTo(r * 0.4, r * 0.27);
+      c.stroke();
+    }
   }
 
   function drawSkillCooldownRing(ball, c = ctx) {
@@ -1735,6 +2134,34 @@
     c.restore();
   }
 
+  // Naruto holds a Rasengan that grows while the skill recharges (and surges ahead during dash)
+  function drawHeldRasengan(ball, c) {
+    const sk = ball.skills && ball.skills.find((x) => x.name === "Rasengan");
+    if (!sk) return;
+    const dashing = ball.rasenganTimer > 0;
+    const prog = dashing ? 1 : (sk._cd <= 0.01 ? 1 : Math.max(0, 1 - sk._cd / sk.cooldown));
+    const a = dashing ? Math.atan2(ball.vy, ball.vx) : ball.weaponAngle + Math.PI;
+    const R = dashing ? 18 : 5 + 11 * easeOut(prog);
+    c.save();
+    c.translate(ball.x + Math.cos(a) * (ball.radius + 14), ball.y + Math.sin(a) * (ball.radius + 14));
+    c.rotate(elapsed * (8 + prog * 20));
+    if (prog >= 1) {
+      c.beginPath();
+      c.arc(0, 0, R + 5 + Math.sin(elapsed * 14) * 2, 0, Math.PI * 2);
+      c.lineWidth = 6; c.strokeStyle = COLORS.ink; c.stroke();
+      c.lineWidth = 2; c.strokeStyle = COLORS.white; c.stroke();
+    }
+    c.beginPath(); c.arc(0, 0, R, 0, Math.PI * 2);
+    c.fillStyle = COLORS.blue; c.fill();
+    c.lineWidth = 3.5; c.strokeStyle = COLORS.ink; c.stroke();
+    c.strokeStyle = COLORS.white; c.lineWidth = 2.5;
+    for (let i = 0; i < 3; i++) {
+      const t = (Math.PI * 2 * i) / 3;
+      c.beginPath(); c.arc(0, 0, R * 0.6, t, t + Math.PI * 0.5); c.stroke();
+    }
+    c.restore();
+  }
+
   function drawBall(ball, c = ctx, showExtras = true) {
     if (showExtras && ball.ult === "kaioken" && ball.ultTimer > 0) {
       drawKaiokenAura(ball, c);
@@ -1754,6 +2181,7 @@
     }
     if (showExtras) drawSkillCooldownRing(ball, c);
     drawWeapon(ball, c);
+    if (showExtras) drawHeldRasengan(ball, c);
     const r = ball.radius;
     const hurt = ball.flashTimer > 0;
     const ang = Math.atan2(ball.vy, ball.vx);
@@ -1951,6 +2379,9 @@
 
     for (const ball of balls) {
       if (ball.alive) drawBall(ball);
+    }
+    for (const ball of balls) {
+      if (ball.alive) drawCast(ball, ctx);
     }
 
     // Damage numbers
