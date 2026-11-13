@@ -1,18 +1,3 @@
-<p align="center">
-  <img src="assets/hero-banner.svg" alt="Ball Fight v1.2 Banner" width="100%" />
-</p>
-
-<h1 align="center">⚡ BALL FIGHT — v1.2</h1>
-<p align="center">
-  <strong>2D Anime Ball Physics Auto-Battler • Built from scratch with HTML5 Canvas &amp; Vanilla JS</strong><br/>
-  No frameworks, no engines, zero external dependencies — pure collision kinematics, fighter evolutions, mythic skins, gacha, and explosive 5-hit anime Ultimates!
-</p>
-
-<p align="center">
-  <a href="https://ballfight-alpha.vercel.app"><strong>🎮 Play Live: ballfight-alpha.vercel.app</strong></a>
-</p>
-
----
 
 ## 🐱 Official Shop Mascot: Turbo Granny (*Dandadan* — v1.2 Model)
 
