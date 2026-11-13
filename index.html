@@ -11,73 +11,88 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.4"/><circle cx="12" cy="12" r="5.2" fill="none" stroke="#2b1b3d" stroke-width="1.8"/><path d="M8 7.5l2-1.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></symbol>
+      <symbol id="i-gem" viewBox="0 0 24 24"><path d="M6 4h12l4 6-10 11L2 10z" fill="#3da5ff" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round"/><path d="M2 10h20M9 4l-2 6 5 11 5-11-2-6" fill="none" stroke="#2b1b3d" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2l2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6z" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5l13 7.5-13 7.5z" fill="#3ddc84" stroke="#2b1b3d" stroke-width="2.4" stroke-linejoin="round"/></symbol>
+      <symbol id="i-ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="#ff5a5f" stroke="#2b1b3d" stroke-width="2.4"/><circle cx="8.8" cy="11" r="2.4" fill="#fff" stroke="#2b1b3d" stroke-width="1.4"/><circle cx="15.2" cy="11" r="2.4" fill="#fff" stroke="#2b1b3d" stroke-width="1.4"/><circle cx="9.3" cy="11.3" r="1" fill="#2b1b3d"/><circle cx="15.7" cy="11.3" r="1" fill="#2b1b3d"/><path d="M8.5 16q3.5 2.6 7 0" fill="none" stroke="#2b1b3d" stroke-width="1.8" stroke-linecap="round"/></symbol>
+      <symbol id="i-user" viewBox="0 0 24 24"><path d="M3.5 22c0-5.2 3.6-8.5 8.5-8.5s8.5 3.3 8.5 8.5z" fill="#3da5ff" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round"/><circle cx="12" cy="8" r="4.4" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.2"/></symbol>
+      <symbol id="i-bag" viewBox="0 0 24 24"><path d="M9 8V6.5a3 3 0 0 1 6 0V8" fill="none" stroke="#2b1b3d" stroke-width="2.2" stroke-linecap="round"/><path d="M4.5 8h15l1.4 13h-17.8z" fill="#ff5a5f" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round"/><circle cx="9" cy="12.5" r="1.1" fill="#fff"/><circle cx="15" cy="12.5" r="1.1" fill="#fff"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><path d="M7.5 10.5V8a4.5 4.5 0 0 1 9 0v2.5" fill="none" stroke="#2b1b3d" stroke-width="2.4" stroke-linecap="round"/><rect x="4.5" y="10.5" width="15" height="11" rx="3" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.4"/><circle cx="12" cy="16" r="1.6" fill="#2b1b3d"/></symbol>
+      <symbol id="i-crown" viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round"/><circle cx="12" cy="5" r="1.4" fill="#ff5a5f" stroke="#2b1b3d" stroke-width="1.2"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="#2b1b3d" stroke-width="3.6" stroke-linecap="round"/></symbol>
+      <symbol id="i-medal" viewBox="0 0 24 24"><path d="M7 2h4l1 6H6zM17 2h-4l-1 6h6z" fill="#ff5a5f" stroke="#2b1b3d" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="15" r="7" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.4"/><path d="M12 11.5l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z" fill="#2b1b3d"/></symbol>
+      <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-4 2-7 2 1 3 2 4-5z" fill="#ff7b29" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 12c1 2 3 3 3 5a3 3 0 0 1-6 0c0-2 2-3 3-5z" fill="#ffc93c" stroke="#2b1b3d" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13.5 2L5 13.5h5.5L9.5 22 19 9.5h-5.8z" fill="#3da5ff" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round"/></symbol>
+    </defs>
+  </svg>
   <main class="app">
     <!-- Cartoon Header Logo -->
     <header class="app-header">
       <h1 class="logo"><span class="logo-a">BALL</span><span class="logo-b">FIGHT</span></h1>
-      <p class="tagline">ANIME BALL PHYSICS ARENA</p>
-      <button id="btn-whats-new" class="btn-version-pill" type="button">✨ v1.1 WHAT'S NEW</button>
+      <div class="header-right">
+        <div class="wallet">
+          <div class="wallet-chip"><svg><use href="#i-coin"/></svg><span id="home-coins-display">0</span></div>
+          <div class="wallet-chip"><svg><use href="#i-gem"/></svg><span id="home-gems-display">0</span></div>
+        </div>
+        <button id="btn-whats-new" class="news-btn" type="button" aria-label="What's new in v1.2">
+          <svg><use href="#i-spark"/></svg><span class="news-dot"></span>
+        </button>
+      </div>
     </header>
 
-    <!-- Top Cartoon Arcade Nav Bar (Hidden when in Battle) -->
     <nav class="cartoon-nav" id="main-nav">
-      <button class="nav-btn active" data-target="screen-play" type="button">PLAY</button>
-      <button class="nav-btn" data-target="screen-chars" type="button">FIGHTERS</button>
-      <button class="nav-btn" data-target="screen-profile" type="button">PROFILE</button>
-      <button class="nav-btn" data-target="screen-shop" type="button">SHOP</button>
+      <button class="nav-btn active" data-target="screen-play" type="button"><svg><use href="#i-play"/></svg>PLAY</button>
+      <button class="nav-btn" data-target="screen-chars" type="button"><svg><use href="#i-ball"/></svg>FIGHTERS</button>
+      <button class="nav-btn" data-target="screen-profile" type="button"><svg><use href="#i-user"/></svg>PROFILE</button>
+      <button class="nav-btn" data-target="screen-shop" type="button"><svg><use href="#i-bag"/></svg>SHOP</button>
     </nav>
 
-    <!-- MAIN SCREENS CONTAINER -->
     <div class="screens-container">
 
       <!-- ================= 1. PLAY SCREEN ================= -->
       <section id="screen-play" class="screen screen-play">
-        <!-- Sandbox Mode Card -->
-        <div class="cartoon-card mode-card">
+        <div class="lobby-stage">
           <div class="stamp stamp-yellow">SANDBOX 1V1</div>
-          <p class="card-desc">Custom anime physics clash! Pick any fighters, test charged skills, and watch the chaos!</p>
-          
-          <div class="matchup-preview-bubble">
-            <div class="bubble-fighter-col bubble-p1">
-              <div class="bubble-top-row">
-                <span class="bubble-tag tag-p1">P1</span>
-                <canvas id="home-p1-canvas" class="home-ball-avatar" width="46" height="46"></canvas>
-              </div>
-              <span id="home-p1-name" class="bubble-name">STRONGEST ALIEN</span>
+
+          <div class="matchup">
+            <div class="contender">
+              <span class="seat seat-1">P1</span>
+              <div class="avatar-wrap"><canvas id="home-p1-canvas" class="home-ball-avatar" width="168" height="168"></canvas></div>
+              <span id="home-p1-name" class="plate">STRONGEST ALIEN</span>
             </div>
-            <div class="bubble-vs-circle">VS</div>
-            <div class="bubble-fighter-col bubble-p2">
-              <div class="bubble-top-row">
-                <canvas id="home-p2-canvas" class="home-ball-avatar" width="46" height="46"></canvas>
-                <span class="bubble-tag tag-p2">P2</span>
-              </div>
-              <span id="home-p2-name" class="bubble-name">CHILD OF PROPHECY</span>
+            <svg class="vs-burst" viewBox="0 0 64 64" aria-hidden="true"><polygon points="32.0,2.0 37.7,10.7 47.0,6.0 47.6,16.4 58.0,17.0 53.3,26.3 62.0,32.0 53.3,37.7 58.0,47.0 47.6,47.6 47.0,58.0 37.7,53.3 32.0,62.0 26.3,53.3 17.0,58.0 16.4,47.6 6.0,47.0 10.7,37.7 2.0,32.0 10.7,26.3 6.0,17.0 16.4,16.4 17.0,6.0 26.3,10.7"/><text x="32" y="40" text-anchor="middle">VS</text></svg>
+            <div class="contender">
+              <span class="seat seat-2">P2</span>
+              <div class="avatar-wrap avatar-wrap-b"><canvas id="home-p2-canvas" class="home-ball-avatar" width="168" height="168"></canvas></div>
+              <span id="home-p2-name" class="plate">CHILD OF PROPHECY</span>
             </div>
           </div>
 
-          <div class="card-btn-group">
-            <button id="btn-open-sandbox" class="btn btn-green btn-big" type="button">CHOOSE FIGHTERS</button>
-            <button id="btn-quick-fight" class="btn btn-gold" type="button">QUICK START</button>
+          <div class="lobby-actions">
+            <button id="btn-quick-fight" class="btn btn-green btn-big" type="button">QUICK FIGHT</button>
+            <button id="btn-open-sandbox" class="btn btn-wide" type="button">CHOOSE FIGHTERS</button>
           </div>
         </div>
 
-        <!-- Campaign Mode Card (Locked Story Ladder) -->
-        <div class="cartoon-card mode-card locked-card">
-          <div class="stamp stamp-gray">STORY SAGA</div>
-          <p class="card-desc">Multiverse Tournament ladder: fight through anime worlds and conquer legendary bosses!</p>
-          
-          <!-- Campaign Road Map Preview -->
-          <div class="campaign-stages-row">
-            <div class="stage-pip cleared">1</div>
-            <div class="stage-line"></div>
-            <div class="stage-pip locked">2</div>
-            <div class="stage-line"></div>
-            <div class="stage-pip locked">3</div>
-            <div class="stage-line"></div>
-            <div class="stage-pip boss-pip">👑 BOSS</div>
+        <div class="saga">
+          <div class="saga-head">
+            <div class="stamp stamp-gray">STORY SAGA</div>
+            <span class="ribbon"><svg><use href="#i-lock"/></svg>COMING SOON</span>
           </div>
-
-          <div class="stamp stamp-red stamp-center">🔒 LOCKED • COMING SOON</div>
+          <p class="card-desc">Climb the multiverse tournament ladder and beat a legendary boss at the top.</p>
+          <div class="route" aria-hidden="true">
+            <span class="node cleared"><svg><use href="#i-check"/></svg></span>
+            <span class="route-line"></span>
+            <span class="node locked"><svg><use href="#i-lock"/></svg></span>
+            <span class="route-line"></span>
+            <span class="node locked"><svg><use href="#i-lock"/></svg></span>
+            <span class="route-line"></span>
+            <span class="node boss"><svg><use href="#i-crown"/></svg></span>
+          </div>
         </div>
       </section>
 
@@ -107,6 +122,7 @@
             <canvas id="preview-active" class="preview-canvas-main" width="130" height="130"></canvas>
             <h2 id="preview-active-name" class="preview-title">STRONGEST ALIEN</h2>
             <p id="preview-active-role" class="preview-subtitle">ALIEN • KAMEHAMEHA BEAM</p>
+            <div id="setup-evo-bar" class="evo-bar hidden"></div>
           </div>
 
           <!-- Character Selector Grid (Centered 4 Buttons) -->
@@ -116,7 +132,7 @@
 
           <!-- Mini Stats Row -->
           <div class="stats-row-chunky">
-            <div class="stat-pill">HP: <span id="stat-val-hp">340</span></div>
+            <div class="stat-pill">HP: <span id="stat-val-hp">560</span></div>
             <div class="stat-pill">SPD: <span id="stat-val-spd">365</span></div>
             <div class="stat-pill">MASS: <span id="stat-val-mass">1.05</span></div>
             <div class="stat-pill">DMG: <span id="stat-val-dmg">9-15</span></div>
@@ -140,7 +156,7 @@
       <!-- ================= 3. BATTLE ARENA SCREEN ================= -->
       <section id="screen-battle" class="screen screen-battle hidden">
         <div class="battle-header-bar">
-          <button id="btn-back-to-hub" class="btn btn-sm" type="button">◀ MENU</button>
+          <button id="btn-back-to-hub" class="btn btn-sm" type="button">MENU</button>
           <span class="battle-mode-title">SANDBOX MATCH</span>
           <button id="btn-battle-rec" class="btn btn-sm" type="button">REC</button>
         </div>
@@ -151,7 +167,7 @@
             <span id="name-1" class="name name-red">STRONGEST ALIEN</span>
             <div class="hp">
               <div class="hp-track"><div id="hp-bar-1" class="hp-fill hp-red" style="width:100%"></div></div>
-              <span id="hp-text-1" class="hp-text">340 / 340</span>
+              <span id="hp-text-1" class="hp-text">560 / 560</span>
             </div>
             <div class="fighter-sub">
               <div id="dots-1" class="round-dots" aria-label="Player 1 round wins">
@@ -177,7 +193,7 @@
             <span id="name-2" class="name name-blue">CHILD OF PROPHECY</span>
             <div class="hp">
               <div class="hp-track"><div id="hp-bar-2" class="hp-fill hp-blue" style="width:100%"></div></div>
-              <span id="hp-text-2" class="hp-text">320 / 320</span>
+              <span id="hp-text-2" class="hp-text">525 / 525</span>
             </div>
             <div class="fighter-sub fighter-sub-right">
               <div id="skill-hud-2" class="skill-pill ready">
@@ -234,15 +250,16 @@
         </footer>
       </section>
 
-      <!-- ================= 4. CHAR DETAIL SCREEN ================= -->
+      <!-- ================= 4. FIGHTERS ================= -->
       <section id="screen-chars" class="screen screen-chars hidden">
-        <div class="cartoon-card roster-gallery-card">
-          <div class="stamp stamp-yellow">FIGHTER ROSTER</div>
-          <p class="card-desc">Tap any fighter card to open their full power sheet and combat attributes!</p>
-          
-          <!-- Category Filter Pills -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="stamp stamp-yellow">FIGHTER ROSTER</div>
+            <span id="roster-count" class="count-chip">0 / 0</span>
+          </div>
+          <p class="card-desc">Tap a fighter to see every form, stat and skill.</p>
           <div class="filter-chips-row" id="roster-filter-chips">
-            <button class="filter-chip active" data-filter="all" type="button">ALL (8)</button>
+            <button class="filter-chip active" data-filter="all" type="button">ALL</button>
             <button class="filter-chip" data-filter="alien" type="button">ALIEN</button>
             <button class="filter-chip" data-filter="shinobi" type="button">SHINOBI</button>
             <button class="filter-chip" data-filter="pirate" type="button">PIRATE</button>
@@ -251,126 +268,95 @@
             <button class="filter-chip" data-filter="berserker" type="button">BERSERKER</button>
             <button class="filter-chip" data-filter="sorcerer" type="button">SORCERER</button>
           </div>
-
-          <!-- Scalable Avatar Grid -->
-          <div class="avatar-roster-grid" id="roster-avatar-grid">
-            <!-- Populated via JS with Mini Avatar Tiles -->
-          </div>
+          <div class="avatar-roster-grid" id="roster-avatar-grid"></div>
         </div>
       </section>
 
-      <!-- ================= 5. PROFILE SCREEN ================= -->
+      <!-- ================= 5. PROFILE ================= -->
       <section id="screen-profile" class="screen screen-profile hidden">
-        <div class="cartoon-card profile-card">
+        <div class="panel">
           <div class="stamp stamp-yellow">BRAWLER LICENSE</div>
-
-          <!-- Arcade Passport Banner -->
-          <div class="profile-hero-bubble">
-            <div class="profile-avatar-box">
-              <span class="profile-avatar-emoji">🥋</span>
-              <span class="profile-lvl-badge">LV.12</span>
+          <div class="license">
+            <div class="lic-photo">
+              <canvas id="profile-avatar" width="168" height="168"></canvas>
+              <span id="profile-lvl" class="lvl-badge">LV.1</span>
             </div>
-            <div class="profile-meta">
-              <div class="profile-name-row">
-                <h2 class="profile-player-name">EPITHAP</h2>
-                <span class="profile-rank-badge">👑 CHAMPION</span>
-              </div>
-              <div class="profile-exp-bar">
-                <div class="exp-fill-track" style="width: 74%;"></div>
-              </div>
-              <span class="exp-text-counter">EXP 1,840 / 2,500</span>
+            <div class="lic-info">
+              <h2 class="lic-name">EPITHAP</h2>
+              <span id="profile-rank" class="rank-chip">ROOKIE</span>
+              <div class="exp-bar"><div id="profile-exp-fill" class="exp-fill" style="width:0%"></div></div>
+              <span id="profile-exp-text" class="exp-text">EXP 0 / 500</span>
             </div>
           </div>
-
-          <!-- Stats 2x2 Grid -->
-          <div class="stats-quad-grid">
-            <div class="stat-quad-box">
-              <span class="quad-num" id="prof-matches">24</span>
-              <span class="quad-lbl">BRAWLS</span>
-            </div>
-            <div class="stat-quad-box">
-              <span class="quad-num" id="prof-wins">18</span>
-              <span class="quad-lbl">VICTORIES</span>
-            </div>
-            <div class="stat-quad-box">
-              <span class="quad-num" id="prof-wr">75%</span>
-              <span class="quad-lbl">WIN RATE</span>
-            </div>
-            <div class="stat-quad-box">
-              <span class="quad-num" id="prof-fav">STRONGEST ALIEN</span>
-              <span class="quad-lbl">MOST USED</span>
-            </div>
+          <div class="stat-grid">
+            <div class="stat-box"><span class="quad-num" id="prof-matches">0</span><span class="quad-lbl">BRAWLS</span></div>
+            <div class="stat-box"><span class="quad-num" id="prof-wins">0</span><span class="quad-lbl">VICTORIES</span></div>
+            <div class="stat-box"><span class="quad-num" id="prof-wr">0%</span><span class="quad-lbl">WIN RATE</span></div>
+            <div class="stat-box"><span class="quad-num quad-small" id="prof-fav">-</span><span class="quad-lbl">MOST USED</span></div>
           </div>
-
-          <!-- Trophies Section -->
-          <div class="trophies-block">
-            <h4 class="trophies-title">BATTLE TROPHIES</h4>
-            <div class="trophy-row">
-              <div class="trophy-pill" title="First K.O. landed">
-                <span class="trophy-icon">🥇</span>
-                <span class="trophy-title">1st KO</span>
-              </div>
-              <div class="trophy-pill" title="5 Ult transformations">
-                <span class="trophy-icon">🔥</span>
-                <span class="trophy-title">5x Ult</span>
-              </div>
-              <div class="trophy-pill" title="0.1% Lucky Crit">
-                <span class="trophy-icon">⭐</span>
-                <span class="trophy-title">Lucky Crit</span>
-              </div>
-              <div class="trophy-pill" title="Flawless 2-0 Round Sweep">
-                <span class="trophy-icon">👑</span>
-                <span class="trophy-title">2-0 Sweep</span>
-              </div>
-            </div>
+          <div class="trophy-block">
+            <div class="col-head"><h4>TROPHIES</h4><span id="trophy-count" class="count-chip">0 / 0</span></div>
+            <div id="trophy-row" class="trophy-grid"></div>
           </div>
         </div>
       </section>
 
-      <!-- ================= 6. SHOP SCREEN ================= -->
+      <!-- ================= 6. SHOP / GACHA ================= -->
       <section id="screen-shop" class="screen screen-shop hidden">
-        <div class="cartoon-card shop-card">
-          <!-- Top Wallet Bar -->
+        <div class="panel">
           <div class="shop-wallet-bar">
-            <div class="wallet-pill wallet-coins" title="Earn coins by winning battles!">
-              <span class="wallet-icon">🪙</span>
-              <span id="shop-coins-display" class="wallet-val">5,000</span>
-              <span class="wallet-lbl">COINS</span>
-            </div>
-            <div class="wallet-pill wallet-gems" title="Tournament Gems">
-              <span class="wallet-icon">💎</span>
-              <span id="shop-gems-display" class="wallet-val">150</span>
-              <span class="wallet-lbl">GEMS</span>
-            </div>
+            <div class="wallet-chip"><svg><use href="#i-coin"/></svg><span id="shop-coins-display">0</span></div>
+            <div class="wallet-chip"><svg><use href="#i-gem"/></svg><span id="shop-gems-display">0</span></div>
           </div>
 
-          <div class="stamp stamp-yellow">ANIME BAZAAR</div>
-          
-          <!-- Ball-Styled Talking Cat Mascot Stage (Turbo Granny from Dandadan) -->
-          <div class="merchant-box" id="merchant-box-interactive" title="Click Turbo Granny for sassy advice!">
+          <div class="merchant-box" id="merchant-box-interactive">
             <div class="merchant-canvas-wrap" id="merchant-avatar-wrap">
-              <canvas id="merchant-canvas" class="merchant-cat-canvas" width="84" height="84"></canvas>
+              <canvas id="merchant-canvas" class="merchant-cat-canvas" width="200" height="200"></canvas>
             </div>
             <div class="merchant-bubble">
-              <div class="merchant-header-row">
-                <span class="merchant-name-tag">🐱 TURBO GRANNY</span>
-                <span class="merchant-role-tag">DANDADAN SPIRIT</span>
-              </div>
-              <p id="merchant-speech-text" class="merchant-speech">
-                "Oi brat! Check out the fighters in stock! Win matches in the arena to earn coins and unlock 'em!"
-              </p>
+              <span class="merchant-name-tag">TURBO GRANNY</span>
+              <p id="merchant-speech-text" class="merchant-speech">"Oi brat! New fighters come out of my machine now. Pull and pray!"</p>
             </div>
           </div>
 
-          <!-- Category Filter Chips -->
-          <div class="filter-chips-row shop-filter-chips" id="shop-filter-chips">
-            <button class="filter-chip active" data-filter="all" type="button">ALL</button>
-            <button class="filter-chip" data-filter="fighter" type="button">🥊 FIGHTERS</button>
+          <div class="banner">
+            <div class="banner-head">
+              <div class="stamp stamp-red">FIGHTER GACHA</div>
+              <span class="banner-sub">Unlock new brawlers</span>
+            </div>
+            <div id="banner-feat" class="banner-feat"></div>
+            <div class="pity">
+              <span class="pity-label">PITY</span>
+              <div class="pity-track"><div id="gacha-pity-fill" class="pity-fill" style="width:0%"></div></div>
+              <span id="gacha-pity-text" class="pity-text">0 / 10</span>
+            </div>
+            <p class="rates">LEGEND 7% • EPIC 18% • RARE 24% • a new fighter is guaranteed within 10 pulls • duplicates give 30 gems</p>
+            <div class="pull-row">
+              <button id="btn-pull-1" class="btn btn-pull" type="button"><span>PULL x1</span><b><svg><use href="#i-coin"/></svg>160</b></button>
+              <button id="btn-pull-10" class="btn btn-green btn-pull" type="button"><span>PULL x10</span><b><svg><use href="#i-coin"/></svg>1,500</b></button>
+              <button id="btn-pull-gem" class="btn btn-pull" type="button"><span>GEM PULL</span><b><svg><use href="#i-gem"/></svg>50</b></button>
+            </div>
           </div>
 
-          <!-- Showcase Items Grid -->
-          <div class="shop-items-grid" id="shop-items-grid">
-            <!-- Populated dynamically via JS with real purchase and unlock state -->
+          <div class="collection skin-shop-section">
+            <div class="col-head">
+              <div class="skin-shop-title-wrap">
+                <div class="stamp stamp-purple">DIAMOND SKIN VAULT</div>
+                <h4>MYTHIC SKINS</h4>
+              </div>
+              <span id="skin-shop-count" class="count-chip">0 / 3</span>
+            </div>
+            <div class="filter-bar skin-filter-bar" id="skin-filter-chips">
+              <button type="button" class="filter-chip active" data-skin-char="all">ALL HEROES</button>
+              <button type="button" class="filter-chip" data-skin-char="naruto">NARUTO</button>
+              <button type="button" class="filter-chip" data-skin-char="ichigo">ICHIGO</button>
+            </div>
+            <div class="skin-shop-grid" id="skin-shop-grid"></div>
+          </div>
+
+          <div class="collection">
+            <div class="col-head"><h4>COLLECTION</h4><span id="collection-count" class="count-chip">0 / 0</span></div>
+            <div class="col-grid" id="shop-items-grid"></div>
           </div>
         </div>
       </section>
@@ -378,178 +364,166 @@
     </div>
   </main>
 
-  <!-- ================= FIGHTER DETAIL OVERLAY MODAL (DITIMPA DENGAN TOMBOL SILANG ✖) ================= -->
+  <!-- ================= FIGHTER SHEET MODAL ================= -->
   <div id="roster-modal" class="modal-backdrop hidden">
-    <div class="cartoon-card modal-detail-card">
-      <button id="btn-modal-close" class="modal-close-btn" type="button" aria-label="Close">✖</button>
-      <div class="stamp stamp-yellow">FIGHTER PROFILE</div>
+    <div class="cartoon-card modal-detail-card sheet">
+      <button id="btn-modal-close" class="modal-close-btn" type="button" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+      <div class="sheet-top">
+        <span id="detail-series" class="series-chip">SERIES</span>
+        <span id="detail-rarity" class="rar-chip">STARTER</span>
+      </div>
 
       <div id="detail-hero-box" class="detail-hero-box">
-        <canvas id="detail-canvas" class="detail-canvas" width="160" height="160"></canvas>
-        <div class="detail-hero-info">
-          <h2 id="detail-name" class="detail-hero-name">STRONGEST ALIEN</h2>
-          <p id="detail-title" class="detail-hero-title">Earth's Protector • Legendary Ki Master</p>
-          <div id="detail-form-toggle" class="detail-form-toggle hidden">
-            <button id="btn-form-base" class="form-toggle-btn active" type="button">BASE</button>
-            <button id="btn-form-ult" class="form-toggle-btn form-toggle-ult" type="button">🔥 ULT FORM</button>
-          </div>
-        </div>
+        <div class="hero-stage"><canvas id="detail-canvas" class="detail-canvas" width="240" height="240"></canvas></div>
+        <h2 id="detail-name" class="detail-hero-name">STRONGEST ALIEN</h2>
+        <p id="detail-title" class="detail-hero-title"></p>
       </div>
 
-      <!-- Chunky Stat Bars -->
+      <div class="form-block">
+        <p class="block-label">FORMS</p>
+        <div id="detail-stage-list" class="stage-list hidden"></div>
+        <div id="detail-form-list" class="form-list"></div>
+        <p id="detail-form-desc" class="form-desc"></p>
+      </div>
+
+      <div id="detail-evo-box" class="power-bubble evo-bubble hidden"></div>
+      <div id="detail-skin-box" class="power-bubble skin-bubble hidden"></div>
+
       <div class="stat-meters-block">
-        <div class="stat-row">
-          <span class="stat-name">HP</span>
-          <div class="stat-meter-track"><div id="detail-hp-fill" class="stat-meter-fill fill-hp" style="width: 85%"></div></div>
-          <span id="detail-hp-val" class="stat-val">340 HP</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-name">SPEED</span>
-          <div class="stat-meter-track"><div id="detail-spd-fill" class="stat-meter-fill fill-spd" style="width: 75%"></div></div>
-          <span id="detail-spd-val" class="stat-val">365</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-name">POWER</span>
-          <div class="stat-meter-track"><div id="detail-atk-fill" class="stat-meter-fill fill-atk" style="width: 80%"></div></div>
-          <span id="detail-atk-val" class="stat-val">9-15 DMG</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-name">MASS</span>
-          <div class="stat-meter-track"><div id="detail-mass-fill" class="stat-meter-fill fill-mass" style="width: 70%"></div></div>
-          <span id="detail-mass-val" class="stat-val">1.05</span>
-        </div>
+        <div class="stat-row"><span class="stat-name">HP</span><div class="stat-meter-track"><div id="detail-hp-fill" class="stat-meter-fill fill-hp"></div></div><span id="detail-hp-val" class="stat-val"></span></div>
+        <div class="stat-row"><span class="stat-name">SPEED</span><div class="stat-meter-track"><div id="detail-spd-fill" class="stat-meter-fill fill-spd"></div></div><span id="detail-spd-val" class="stat-val"></span></div>
+        <div class="stat-row"><span class="stat-name">POWER</span><div class="stat-meter-track"><div id="detail-atk-fill" class="stat-meter-fill fill-atk"></div></div><span id="detail-atk-val" class="stat-val"></span></div>
+        <div class="stat-row"><span class="stat-name">MASS</span><div class="stat-meter-track"><div id="detail-mass-fill" class="stat-meter-fill fill-mass"></div></div><span id="detail-mass-val" class="stat-val"></span></div>
       </div>
 
-      <!-- Skill Callout -->
       <div class="power-bubble skill-bubble">
-        <div class="power-header">
-          <span class="power-badge badge-blue">SIGNATURE SKILL</span>
-          <span id="detail-skill-cd" class="power-cd">CD: 3.6S</span>
-        </div>
-        <h3 id="detail-skill-name" class="power-title">KAMEHAMEHA</h3>
-        <p id="detail-skill-desc" class="power-desc">
-          Locks aim onto the rival ball, charging ki before unleashing a continuous energy beam.
-        </p>
+        <div class="power-header"><span class="power-badge badge-blue">SIGNATURE SKILL</span><span id="detail-skill-cd" class="power-cd"></span></div>
+        <h3 id="detail-skill-name" class="power-title"></h3>
+        <p id="detail-skill-desc" class="power-desc"></p>
       </div>
 
-      <!-- Ultimate Callout -->
       <div class="power-bubble ult-bubble">
-        <div class="power-header">
-          <span class="power-badge badge-red">ULTIMATE (5 HITS)</span>
-          <span class="power-cd">TRANSFORMATION</span>
-        </div>
-        <h3 id="detail-ult-name" class="power-title">KAIOKEN BURST</h3>
-        <p id="detail-ult-desc" class="power-desc">
-          Enters crimson state with glowing red aura! Speeds up and charges massive Kamehameha energy beams.
-        </p>
+        <div class="power-header"><span class="power-badge badge-red">ULTIMATE (5 HITS)</span><span class="power-cd">TRANSFORMATION</span></div>
+        <h3 id="detail-ult-name" class="power-title"></h3>
+        <p id="detail-ult-desc" class="power-desc"></p>
       </div>
 
-      <!-- Empowered Skill Callout (Shown for Transformable Fighters) -->
       <div id="detail-empowered-box" class="power-bubble empowered-bubble hidden">
-        <div class="power-header">
-          <span class="power-badge badge-purple">EMPOWERED SKILL (ULT)</span>
-          <span id="detail-emp-cd" class="power-cd">CD: 1.25S</span>
-        </div>
-        <h3 id="detail-emp-name" class="power-title">SAVAGE RAMPAGE x2</h3>
+        <div class="power-header"><span class="power-badge badge-purple">EMPOWERED SKILL (ULT)</span><span id="detail-emp-cd" class="power-cd"></span></div>
+        <h3 id="detail-emp-name" class="power-title"></h3>
         <p id="detail-emp-desc" class="power-desc"></p>
       </div>
+
+      <p id="detail-lock-note" class="lock-note hidden">LOCKED. Pull this fighter in the Shop.</p>
     </div>
   </div>
 
-  <!-- ================= SHOP ITEM INSPECT & PREVIEW MODAL ================= -->
-  <div id="shop-modal" class="modal-backdrop hidden">
-    <div class="cartoon-card modal-detail-card shop-modal-card">
-      <button id="btn-shop-modal-close" class="modal-close-btn" type="button" aria-label="Close">✖</button>
-      <div class="stamp stamp-yellow" id="shop-modal-stamp">WIP PREVIEW</div>
+  <div id="gacha-overlay" class="gacha-overlay hidden"></div>
 
-      <div class="shop-modal-preview-box">
-        <canvas id="shop-modal-canvas" class="shop-modal-canvas" width="130" height="130"></canvas>
+  <!-- ================= SECRET ADMIN CONTROL PANEL ================= -->
+  <div id="admin-modal" class="modal-backdrop hidden">
+    <div class="cartoon-card modal-detail-card admin-modal-card">
+      <button id="btn-admin-close" class="modal-close-btn" type="button" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+      <div class="stamp stamp-yellow">SECRET ADMIN</div>
+      <h2 class="changelog-heading">ADMIN CONTROL PANEL</h2>
+      <p class="changelog-sub">Unlocked by clicking Profile 10x! Adjust Gold &amp; Gems freely.</p>
+
+      <div class="shop-wallet-bar admin-wallet-bar">
+        <div class="wallet-chip"><svg><use href="#i-coin"/></svg><span id="admin-coins-display">0</span></div>
+        <div class="wallet-chip"><svg><use href="#i-gem"/></svg><span id="admin-gems-display">0</span></div>
       </div>
 
-      <div class="shop-modal-info">
-        <div class="shop-modal-tag-row">
-          <span id="shop-modal-type" class="power-badge badge-fighter">FIGHTER</span>
-          <span id="shop-modal-price" class="shop-item-price-tag">🪙 100 COINS</span>
+      <div class="admin-section">
+        <p class="block-label">GOLD (COINS)</p>
+        <div class="admin-btn-row">
+          <button type="button" class="btn btn-sm admin-add-btn" data-curr="coins" data-amt="1000">+1,000</button>
+          <button type="button" class="btn btn-sm admin-add-btn" data-curr="coins" data-amt="10000">+10,000</button>
+          <button type="button" class="btn btn-sm admin-add-btn" data-curr="coins" data-amt="100000">+100,000</button>
         </div>
-        <h2 id="shop-modal-title" class="shop-modal-title">ARROGANT VAMPIRE</h2>
-        <p id="shop-modal-desc" class="shop-modal-desc">
-          Wields The World! Rapid Stand Barrage, Time Stop (ZA WARUDO), and frozen throwing knives.
-        </p>
+        <div class="admin-input-row">
+          <input id="admin-coins-input" class="admin-input" type="number" min="0" placeholder="Custom Gold..." />
+          <button id="btn-admin-add-coins" type="button" class="btn btn-sm btn-green">ADD</button>
+          <button id="btn-admin-set-coins" type="button" class="btn btn-sm btn-play">SET</button>
+        </div>
       </div>
 
-      <div class="shop-modal-actions">
-        <button id="btn-shop-modal-action" class="btn btn-wip btn-big" type="button" disabled>🔒 UNDER CONSTRUCTION</button>
+      <div class="admin-section">
+        <p class="block-label">GEMS</p>
+        <div class="admin-btn-row">
+          <button type="button" class="btn btn-sm admin-add-btn" data-curr="gems" data-amt="100">+100</button>
+          <button type="button" class="btn btn-sm admin-add-btn" data-curr="gems" data-amt="1000">+1,000</button>
+          <button type="button" class="btn btn-sm admin-add-btn" data-curr="gems" data-amt="10000">+10,000</button>
+        </div>
+        <div class="admin-input-row">
+          <input id="admin-gems-input" class="admin-input" type="number" min="0" placeholder="Custom Gems..." />
+          <button id="btn-admin-add-gems" type="button" class="btn btn-sm btn-green">ADD</button>
+          <button id="btn-admin-set-gems" type="button" class="btn btn-sm btn-play">SET</button>
+        </div>
+      </div>
+
+      <div class="admin-btn-row admin-footer-row">
+        <button id="btn-admin-unlock-all" type="button" class="btn btn-sm btn-play">UNLOCK ALL FIGHTERS</button>
+        <button id="btn-admin-reset-wallet" type="button" class="btn btn-sm btn-back">RESET 0</button>
       </div>
     </div>
   </div>
 
-  <!-- ================= v1.1 UPDATE NOTES MODAL ================= -->
+  <!-- ================= v1.2 UPDATE NOTES MODAL ================= -->
   <div id="changelog-modal" class="modal-backdrop hidden">
     <div class="cartoon-card modal-detail-card changelog-modal-card">
-      <button id="btn-changelog-close" class="modal-close-btn" type="button" aria-label="Close">✖</button>
-      <div class="stamp stamp-yellow">UPDATE v1.1</div>
+      <button id="btn-changelog-close" class="modal-close-btn" type="button" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+      <div class="stamp stamp-yellow">UPDATE v1.2</div>
 
-      <h2 class="changelog-heading">WHAT'S NEW FROM v1.0</h2>
-      <p class="changelog-sub">v1.1: Stand Users, Shop, Gojo &amp; Guts, plus Goku &amp; Luffy Revamps!</p>
+      <h2 class="changelog-heading">WHAT'S NEW IN v1.2</h2>
+      <p class="changelog-sub">Evolution System, Mythic Skins, Sukuna, Gacha &amp; Complete Anime UI Revamp!</p>
 
       <div class="changelog-list">
+        <div class="power-bubble evo-bubble">
+          <div class="power-header">
+            <span class="power-badge badge-gold">NEW SYSTEM • 10K GOLD</span>
+            <span class="power-cd">P1 vs P2 READY</span>
+          </div>
+          <h3 class="power-title">FIGHTER EVOLUTION &amp; FORM SWITCHER</h3>
+          <p class="power-desc">
+            • <strong>Evolve Fighter (10,000 Gold)</strong>: Buka potensi penuh <strong>Naruto (Sage Mode + Four-Tails)</strong> &amp; <strong>Ichigo (Bankai + Hollow Mask + Vasto Lorde)</strong>!<br>
+            • <strong>Independent P1 vs P2</strong>: Pilih <strong>Starter</strong> atau <strong>Evolved</strong> secara terpisah di Battle Setup &amp; Fighter Detail untuk duel <em>Base vs Evolve</em>!
+          </p>
+        </div>
+
+        <div class="power-bubble skin-bubble">
+          <div class="power-header">
+            <span class="power-badge badge-purple">DIAMOND SKIN VAULT</span>
+            <span class="power-cd">3 MYTHIC SKINS</span>
+          </div>
+          <h3 class="power-title">EVO &amp; MYTHIC SKINS + FILTER</h3>
+          <p class="power-desc">
+            • <strong>Six-Tails Skeletal Kyuubi (Naruto)</strong>: Wujud tulang belulang Kyuubi ekor 6!<br>
+            • <strong>Arrancar Arc: Ulquiorra Duel (Ichigo)</strong>: Skin 2-in-1 (jubah Bankai compang-camping + Half-Shattered Dark-Crimson Hollow Mask).<br>
+            • <strong>Awakened Vasto: Long-Hair Half-Mask (Ichigo)</strong>: Rambut panjang oranye, tanduk Vasto tunggal &amp; pecahan topeng melayang!
+          </p>
+        </div>
+
         <div class="power-bubble skill-bubble">
           <div class="power-header">
-            <span class="power-badge badge-gold">REVAMP • ALIEN &amp; PIRATE</span>
-            <span class="power-cd">v1.1</span>
+            <span class="power-badge badge-blue">REVAMP • NARUTO &amp; ICHIGO</span>
+            <span class="power-cd">HP 500+ BALANCE</span>
           </div>
-          <h3 class="power-title">GOKU &amp; LUFFY REVAMP</h3>
+          <h3 class="power-title">NARUTO &amp; ICHIGO REWORK</h3>
           <p class="power-desc">
-            • <strong>Goku (Kamehameha ↔ Dragon Rush)</strong>: Skill bergantian Kamehameha &amp; Dragon Rush lurus (3x Dragon Kick + lemparan). Saat Ulti &amp; HP &le; 100, berubah jadi <strong>Great Ape (Oozaru)</strong> membabi buta dengan <strong>35% Damage Reduction</strong>!<br>
-            • <strong>Luffy (Rocket → Pistol)</strong>: Cooldown awal 2.5s → Gomu Rocket → delay 0.2s Gomu Pistol (knockback) → CD akhir 4.5s. <strong>Gear 4</strong>: HP Ganjil = <strong>Bounceman</strong> (AoE besar), HP Genap = <strong>Snakeman</strong> (pukulan memantul tembok).
+            • <strong>Naruto</strong>: Rasengan Dash tebasan 1x, <strong>Rasenshuriken</strong> meninggalkan pusaran angin yang menarik lawan, serta <strong>Four-Tails (HP &le; 200)</strong> dengan ledakan <strong>Bijuudama</strong>!<br>
+            • <strong>Ichigo</strong>: Starter memakai <strong>Shikai Zangetsu</strong>, Ulti <strong>Bankai</strong>, dan diambil alih <strong>Inner Demon</strong> saat HP &le; 100. Evolved langsung memakai <strong>Bankai</strong>, Ulti <strong>Hollow Mask</strong>, dan <strong>Vasto Lorde</strong> saat HP &le; 200!
           </p>
         </div>
 
         <div class="power-bubble ult-bubble">
           <div class="power-header">
-            <span class="power-badge badge-purple">NEW FIGHTERS • SORCERER &amp; BERSERKER</span>
-            <span class="power-cd">SHOP UNLOCK</span>
+            <span class="power-badge badge-red">LEGEND FIGHTER • JJK</span>
+            <span class="power-cd">DOMAIN CLASH</span>
           </div>
-          <h3 class="power-title">GOJO &amp; GUTS + FIGHTER SHOP</h3>
+          <h3 class="power-title">SUKUNA (KING OF CURSES) &amp; GACHA</h3>
           <p class="power-desc">
-            • <strong>Honored Sorcerer (Gojo)</strong>: Limitless bergantian <strong>Red</strong> (knockback) &amp; <strong>Blue</strong> (vortex tarik, 2 dmg) dengan CD 2.5s, <strong>Hollow Purple</strong> (AoE luas), serta <strong>Six Eyes</strong> 13s Infinity + <strong>Unlimited Void</strong> freeze 6s.<br>
-            • <strong>Hundred-Man Slayer (Guts)</strong>: Dragonslayer berat (0 collision dmg, tebasan besar) &amp; <strong>Berserker Armor</strong> (2x Savage Rampage).<br>
-            • <strong>Fighter Shop</strong>: Mulai dengan <strong>2000 Koin</strong> (+100 koin tiap ronde Sandbox) untuk membuka fighter baru!
-          </p>
-        </div>
-        <div class="power-bubble skill-bubble">
-          <div class="power-header">
-            <span class="power-badge badge-gold">NEW FIGHTER • STAND</span>
-            <span class="power-cd">THE WORLD</span>
-          </div>
-          <h3 class="power-title">ARROGANT VAMPIRE</h3>
-          <p class="power-desc">
-            • <strong>Stand Barrage</strong>: Meluncur lurus ke depan (non-homing, 2.3s CD) dengan damage ramping (1→5) + mini-slow. Minimal 2 hit untuk mengisi Ulti!<br>
-            • <strong>Pasif Vampir</strong>: 2.5% chance heal 2–4 HP per hit fisik, 5% teleport ke belakang musuh &amp; 12% teleport acak saat terkena serangan.<br>
-            • <strong>Ulti ZA WARUDO!</strong>: Layar menjadi grayscale, melempar pisau beku (6 dmg), dan Stand Barrage menjadi auto-aim penuh!
-          </p>
-        </div>
-
-        <div class="power-bubble ult-bubble">
-          <div class="power-header">
-            <span class="power-badge badge-purple">NEW FIGHTER • STAND</span>
-            <span class="power-cd">STAR PLATINUM</span>
-          </div>
-          <h3 class="power-title">STAR DELINQUENT</h3>
-          <p class="power-desc">
-            • <strong>ORA Barrage</strong>: Star Platinum meluncur ke depan dengan rentetan pukulan ORA! ramping + mini-slow.<br>
-            • <strong>Ulti STAR PLATINUM: THE WORLD!</strong>: Time Stop 4 detik dengan layar grayscale &amp; pukulan HEAVY ORA! auto-aim.
-          </p>
-        </div>
-
-        <div class="power-bubble clash-bubble">
-          <div class="power-header">
-            <span class="power-badge badge-red">NEW MECHANIC</span>
-            <span class="power-cd">2.2S TUG-OF-WAR</span>
-          </div>
-          <h3 class="power-title">ANIME STAND CLASH!</h3>
-          <p class="power-desc">
-            Saat dua Stand bertemu di tengah serangan, kedua petarung membeku sementara dan muncul <strong>Clash Meter</strong> probabilitas menang! Pemenang 50/50 mendapat <strong>+1 stack Ulti</strong>, sedangkan yang kalah terkena damage besar &amp; terpental jauh!
+            • <strong>Sukuna</strong>: Wajah 4 mata, Dismantle/Cleave, Fuga, serta <strong>Malevolent Shrine</strong> yang memicu <strong>Domain Clash</strong> melawan Unlimited Void Gojo!<br>
+            • <strong>Fighter Gacha &amp; Turbo Granny</strong>: Pull karakter via Gacha dengan sistem pity, maskot baru Turbo Granny, ekspresi wajah anime dinamis, HP/Nama ber-outline, dan <strong>Secret Admin Panel</strong> (tap Profile 10x)!
           </p>
         </div>
       </div>
@@ -560,7 +534,12 @@
 
   <script src="js/constants.js"></script>
   <script src="js/sound.js"></script>
+  <script src="js/sfx.js"></script>
   <script src="js/shop.js"></script>
+  <script src="js/forms.js"></script>
+  <script src="js/faces.js"></script>
+  <script src="js/granny.js"></script>
+  <script src="js/gacha.js"></script>
   <script src="js/characters/goku.js"></script>
   <script src="js/characters/naruto.js"></script>
   <script src="js/characters/luffy.js"></script>

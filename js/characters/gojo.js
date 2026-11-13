@@ -191,6 +191,97 @@
     g.sound.playCritHit();
   }
 
+  function drawUnlimitedVoidBackdrop(c, cx, cy, scale = 1, p = 0, fade = 1) {
+    c.save();
+    c.translate(cx, cy);
+    c.scale(scale, scale);
+
+    // Infinite cosmos speed streaks / starlight threads radiating from the void
+    c.globalAlpha = 0.65 * fade;
+    c.lineCap = "round";
+    for (let i = 0; i < 16; i++) {
+      const a = (i / 16) * Math.PI * 2 + p * 0.8;
+      const r0 = 76 + (i % 3) * 14;
+      const r1 = 135 + (i % 4) * 28;
+      c.strokeStyle = i % 2 === 0 ? "#bae6fd" : "#38bdf8";
+      c.lineWidth = i % 3 === 0 ? 3 : 1.8;
+      c.beginPath();
+      c.moveTo(Math.cos(a) * r0, Math.sin(a) * r0);
+      c.lineTo(Math.cos(a) * r1, Math.sin(a) * r1);
+      c.stroke();
+    }
+
+    // Cosmic accretion rings
+    c.globalAlpha = 0.82 * fade;
+    const spin = p * Math.PI * 5;
+    for (let i = 0; i < 6; i++) {
+      const rr = 64 + i * 16;
+      c.strokeStyle = i % 2 === 0 ? "rgba(186, 230, 253, 0.62)" : "rgba(56, 189, 248, 0.42)";
+      c.lineWidth = 4.2 - i * 0.4;
+      c.beginPath();
+      c.arc(0, 0, rr, spin + i * 0.9, spin + i * 0.9 + Math.PI * 1.45);
+      c.stroke();
+    }
+
+    // Solid layered corona rings around the Singularity (1.2 style)
+    c.globalAlpha = 0.22 * fade;
+    c.fillStyle = "#38bdf8";
+    c.beginPath();
+    c.arc(0, 0, 102, 0, Math.PI * 2);
+    c.fill();
+
+    c.globalAlpha = 0.36 * fade;
+    c.fillStyle = "#7dd3fc";
+    c.beginPath();
+    c.arc(0, 0, 78, 0, Math.PI * 2);
+    c.fill();
+
+    c.globalAlpha = 0.72 * fade;
+    c.fillStyle = "#e0f2fe";
+    c.beginPath();
+    c.arc(0, 0, 58, 0, Math.PI * 2);
+    c.fill();
+
+    // Tilted relativistic photon ring
+    c.globalAlpha = 0.9 * fade;
+    c.strokeStyle = "#ffffff";
+    c.lineWidth = 3.2;
+    c.beginPath();
+    c.ellipse(0, 0, 96, 26, -0.24 + Math.sin(p * 6) * 0.05, 0, Math.PI * 2);
+    c.stroke();
+    c.strokeStyle = "#38bdf8";
+    c.lineWidth = 2;
+    c.beginPath();
+    c.ellipse(0, 0, 108, 32, -0.24 + Math.sin(p * 6) * 0.05, 0, Math.PI * 2);
+    c.stroke();
+
+    // Central Pitch-Black Singularity Sphere
+    c.globalAlpha = 0.98 * fade;
+    c.fillStyle = "#000000";
+    c.strokeStyle = "#ffffff";
+    c.lineWidth = 3.5;
+    c.beginPath();
+    c.arc(0, 0, 48, 0, Math.PI * 2);
+    c.fill();
+    c.stroke();
+
+    // Black ink splatters tearing off the event horizon
+    c.fillStyle = "#000000";
+    const inkSplatters = [
+      [-56, -12, 13], [-70, 6, 10], [-44, 18, 9],
+      [54, 14, 15], [70, -4, 11], [42, -22, 8],
+    ];
+    for (const [ox, oy, sr] of inkSplatters) {
+      c.beginPath();
+      c.arc(ox, oy, sr, 0, Math.PI * 2);
+      c.fill();
+    }
+
+    c.restore();
+  }
+
+  BF.drawUnlimitedVoidBackdrop = drawUnlimitedVoidBackdrop;
+
   function spawnUnlimitedVoidDomain({ owner, duration = 6.0 }) {
     return {
       isDomain: true,
@@ -212,48 +303,11 @@
         const cy = WORLD_SIZE * 0.5;
         c.save();
 
-        c.globalAlpha = 0.72 * fade;
+        c.globalAlpha = 0.76 * fade;
         c.fillStyle = "#02060f";
         c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
-        c.globalAlpha = 0.75 * fade;
-        const spin = p * Math.PI * 5;
-        for (let i = 0; i < 6; i++) {
-          const rr = 68 + i * 18;
-          c.strokeStyle = i % 2 === 0 ? "rgba(186, 226, 255, 0.52)" : "rgba(120, 185, 235, 0.35)";
-          c.lineWidth = 4 - i * 0.4;
-          c.beginPath();
-          c.arc(cx, cy, rr, spin + i * 0.9, spin + i * 0.9 + Math.PI * 1.45);
-          c.stroke();
-        }
-
-        const corona = c.createRadialGradient(cx, cy, 42, cx, cy, 98);
-        corona.addColorStop(0, "rgba(180, 225, 255, 0.75)");
-        corona.addColorStop(0.5, "rgba(110, 175, 225, 0.25)");
-        corona.addColorStop(1, "rgba(2, 6, 15, 0)");
-        c.fillStyle = corona;
-        c.beginPath();
-        c.arc(cx, cy, 98, 0, Math.PI * 2);
-        c.fill();
-
-        c.fillStyle = "#000000";
-        c.strokeStyle = "rgba(195, 230, 255, 0.75)";
-        c.lineWidth = 2.5;
-        c.beginPath();
-        c.arc(cx, cy, 48, 0, Math.PI * 2);
-        c.fill();
-        c.stroke();
-
-        c.fillStyle = "#000000";
-        const inkSplatters = [
-          [-56, -12, 13], [-70, 6, 10], [-44, 18, 9],
-          [54, 14, 15], [70, -4, 11], [42, -22, 8],
-        ];
-        for (const [ox, oy, sr] of inkSplatters) {
-          c.beginPath();
-          c.arc(cx + ox, cy + oy, sr, 0, Math.PI * 2);
-          c.fill();
-        }
+        drawUnlimitedVoidBackdrop(c, cx, cy, 1.08, p, fade);
 
         c.globalAlpha = 0.88 * fade;
         c.fillStyle = "#ffffff";
@@ -279,6 +333,8 @@
       },
     };
   }
+
+  BF.spawnUnlimitedVoidDomain = spawnUnlimitedVoidDomain;
 
   const SKILL_LIMITLESS_ALTERNATE = {
     name: "Limitless: Red / Blue",
@@ -308,6 +364,7 @@
             rt.addShake(0.35, 8);
           },
         }, g);
+        if (ball.domainClashTimer > 0) return true;
       }
 
       const mode = ball.limitlessNext === "blue" ? "blue" : "red";
@@ -366,7 +423,7 @@
     color: "#1b1d2b",
     radius: 28,
     speed: 375,
-    maxHp: 345,
+    maxHp: 565,
     damage: [7, 13],
     mass: 1.0,
     costume: "gojo",
@@ -446,40 +503,15 @@
       c.moveTo(-r * 0.8, -r * 0.24);
       c.lineTo(r * 0.8, -r * 0.16);
       c.stroke();
-    } else {
-      for (const side of [-1, 1]) {
-        c.fillStyle = COLORS.white;
-        c.strokeStyle = COLORS.ink;
-        c.lineWidth = 2;
-        c.beginPath();
-        c.ellipse(side * r * 0.32, -r * 0.08, r * 0.22, r * 0.16, 0, 0, Math.PI * 2);
-        c.fill();
-        c.stroke();
 
-        c.fillStyle = "#38e8ff";
-        c.beginPath();
-        c.arc(side * r * 0.32, -r * 0.08, r * 0.12, 0, Math.PI * 2);
-        c.fill();
-
-        c.fillStyle = "#0b2e4f";
-        c.beginPath();
-        c.arc(side * r * 0.32, -r * 0.08, r * 0.05, 0, Math.PI * 2);
-        c.fill();
-
-        c.fillStyle = COLORS.white;
-        c.beginPath();
-        c.arc(side * r * 0.36, -r * 0.12, r * 0.035, 0, Math.PI * 2);
-        c.fill();
-      }
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 2.6;
+      c.lineCap = "round";
+      c.beginPath();
+      c.moveTo(-r * 0.16, r * 0.22);
+      c.quadraticCurveTo(r * 0.06, r * 0.3, r * 0.26, r * 0.16);
+      c.stroke();
     }
-
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.6;
-    c.lineCap = "round";
-    c.beginPath();
-    c.moveTo(-r * 0.16, r * 0.22);
-    c.quadraticCurveTo(r * 0.06, r * 0.3, r * 0.26, r * 0.16);
-    c.stroke();
     c.restore();
 
     c.fillStyle = "#f4f7ff";

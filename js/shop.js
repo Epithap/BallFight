@@ -7,9 +7,81 @@
 
   const playerWallet = {
     coins: 2000,
-    gems: 0,
+    gems: 100,
     unlockedItems: new Set(["aura_none"]),
     unlockedFighters: new Set(DEFAULT_UNLOCKED_FIGHTERS),
+    evolvedFighters: new Set(),
+    equippedEvolutions: {},
+    unlockedSkins: new Set(),
+    equippedSkins: {},
+  };
+
+  const SKIN_CATALOG = [
+    {
+      id: "naruto_six_tails_bone",
+      charId: "naruto",
+      name: "SIX-TAILS SKELETAL KYUUBI",
+      shortLabel: "SKELETAL 6-TAILS",
+      rarity: "legend",
+      price: 150,
+      currency: "gems",
+      desc: "Transforms Naruto's Nine-Tails mode into the Six-Tails Skeletal Kyuubi (Bone Fox Skull, Vertebrae Spine, Bone Pauldrons & 6 Crimson Chakra Tails)!",
+      previewFormId: "kyuubi",
+      previewFlags: { ult: true, evolved: true, kyuubiMode: true, skin: "naruto_six_tails_bone" },
+    },
+    {
+      id: "ichigo_arrancar_arc",
+      charId: "ichigo",
+      name: "ARRANCAR ARC: ULQUIORRA DUEL",
+      shortLabel: "ARRANCAR ARC",
+      rarity: "epic",
+      price: 120,
+      currency: "gems",
+      desc: "2-in-1 Evolve Skin: Battle-tattered Las Noches Bankai outfit + Half-Shattered Dark-Crimson Hollow Mask from the Ulquiorra fight!",
+      previewFormId: "hollow",
+      previewFlags: { ult: true, evolved: true, vastoLordeMode: false, skin: "ichigo_arrancar_arc" },
+    },
+    {
+      id: "ichigo_vasto_half_mask",
+      charId: "ichigo",
+      name: "AWAKENED VASTO: LONG-HAIR HALF-MASK",
+      shortLabel: "HALF-VASTO MYTHIC",
+      rarity: "legend",
+      price: 180,
+      currency: "gems",
+      desc: "Mythic Vasto Lorde Skin: Long flowing orange mane, pale awakened face, single broken Vasto horn & floating skull shards!",
+      previewFormId: "vasto",
+      previewFlags: { ult: true, evolved: true, vastoLordeMode: true, skin: "ichigo_vasto_half_mask" },
+    },
+  ];
+
+  const EVOLUTION_SPECS = {
+    naruto: {
+      charId: "naruto",
+      evolvedName: "CHILD OF PROPHECY (SAGE)",
+      evolvedRole: "TOAD SAGE • SENJUTSU & NINE-TAILS",
+      starterLabel: "STARTER (BASE)",
+      evolvedLabel: "EVOLVED (SAGE MODE)",
+      cost: 10000,
+      currency: "coins",
+      requirementText: "10,000 GOLD",
+      desc: "Transforms Naruto into Toad Sage Mode (Red Sage Cloak, Giant Summoning Scroll & Senjutsu Eyes) and UNLOCKS the permanent Four-Tails Nine-Tails form (at HP <= 200) with Kyuubi Claw Slash & Bijuudama!",
+      bonusHp: 25,
+      bonusSpeed: 10,
+    },
+    ichigo: {
+      charId: "ichigo",
+      evolvedName: "SUBSTITUTE REAPER (BANKAI)",
+      evolvedRole: "BANKAI REAPER • HOLLOW MASK & VASTO LORDE",
+      starterLabel: "STARTER (SHIKAI)",
+      evolvedLabel: "EVOLVED (BANKAI)",
+      cost: 10000,
+      currency: "coins",
+      requirementText: "10,000 GOLD",
+      desc: "Before Evolve: Shikai Base, Bankai Ult & Inner Demon takeover at HP <= 100. After Evolve (10k Gold): Starts in Bankai, Hollow Mask Ult & UNLOCKS permanent Vasto Lorde at HP <= 200!",
+      bonusHp: 25,
+      bonusSpeed: 10,
+    },
   };
 
   function loadWallet() {
@@ -23,6 +95,18 @@
       if (Array.isArray(parsed.unlockedFighters)) {
         playerWallet.unlockedFighters = new Set([...DEFAULT_UNLOCKED_FIGHTERS, ...parsed.unlockedFighters]);
       }
+      if (Array.isArray(parsed.evolvedFighters)) {
+        playerWallet.evolvedFighters = new Set(parsed.evolvedFighters);
+      }
+      if (parsed.equippedEvolutions && typeof parsed.equippedEvolutions === "object") {
+        playerWallet.equippedEvolutions = { ...parsed.equippedEvolutions };
+      }
+      if (Array.isArray(parsed.unlockedSkins)) {
+        playerWallet.unlockedSkins = new Set(parsed.unlockedSkins);
+      }
+      if (parsed.equippedSkins && typeof parsed.equippedSkins === "object") {
+        playerWallet.equippedSkins = { ...parsed.equippedSkins };
+      }
     } catch (_) {}
   }
 
@@ -33,12 +117,104 @@
         coins: playerWallet.coins,
         gems: playerWallet.gems,
         unlockedFighters: Array.from(playerWallet.unlockedFighters),
+        evolvedFighters: Array.from(playerWallet.evolvedFighters),
+        equippedEvolutions: playerWallet.equippedEvolutions,
+        unlockedSkins: Array.from(playerWallet.unlockedSkins),
+        equippedSkins: playerWallet.equippedSkins,
       }));
     } catch (_) {}
   }
 
   function isFighterUnlocked(charId) {
     return DEFAULT_UNLOCKED_FIGHTERS.has(charId) || playerWallet.unlockedFighters.has(charId);
+  }
+
+  function isFighterEvolved(charId) {
+    return playerWallet.evolvedFighters.has(charId);
+  }
+
+  function isEvolutionEquipped(charId) {
+    return Boolean(isFighterEvolved(charId) && playerWallet.equippedEvolutions[charId] !== false);
+  }
+
+  function setEvolutionEquipped(charId, enabled) {
+    if (!isFighterEvolved(charId)) return false;
+    playerWallet.equippedEvolutions[charId] = Boolean(enabled);
+    saveWallet();
+    return true;
+  }
+
+  function evolveFighter(charId) {
+    const spec = EVOLUTION_SPECS[charId];
+    if (!spec) return { ok: false, reason: "NO_EVO" };
+    if (isFighterEvolved(charId)) return { ok: true, already: true };
+    if (playerWallet.coins < spec.cost) return { ok: false, reason: "INSUFFICIENT_COINS", needed: spec.cost };
+    playerWallet.coins -= spec.cost;
+    playerWallet.evolvedFighters.add(charId);
+    playerWallet.equippedEvolutions[charId] = true;
+    saveWallet();
+    return { ok: true };
+  }
+
+  function isSkinUnlocked(skinId) {
+    return playerWallet.unlockedSkins.has(skinId);
+  }
+
+  function getEquippedSkinsForChar(charId) {
+    const val = playerWallet.equippedSkins[charId];
+    if (!val) return [];
+    const arr = Array.isArray(val) ? val : [val];
+    return arr.filter((id) => id && isSkinUnlocked(id));
+  }
+
+  function isSkinEquipped(skinId) {
+    const skin = SKIN_CATALOG.find((s) => s.id === skinId);
+    if (!skin || !isSkinUnlocked(skinId)) return false;
+    return getEquippedSkinsForChar(skin.charId).includes(skinId);
+  }
+
+  function setSkinEquipped(skinId, enabled) {
+    const skin = SKIN_CATALOG.find((s) => s.id === skinId);
+    if (!skin || !isSkinUnlocked(skinId)) return false;
+    const cur = new Set(getEquippedSkinsForChar(skin.charId));
+    if (enabled) cur.add(skinId);
+    else cur.delete(skinId);
+    playerWallet.equippedSkins[skin.charId] = Array.from(cur);
+    saveWallet();
+    return true;
+  }
+
+  function getEquippedSkin(charId) {
+    const list = getEquippedSkinsForChar(charId);
+    return list.length ? list[list.length - 1] : null;
+  }
+
+  function setEquippedSkin(charId, skinId) {
+    if (!skinId) {
+      playerWallet.equippedSkins[charId] = [];
+      saveWallet();
+      return true;
+    }
+    if (!isSkinUnlocked(skinId)) return false;
+    const cur = new Set(getEquippedSkinsForChar(charId));
+    cur.add(skinId);
+    playerWallet.equippedSkins[charId] = Array.from(cur);
+    saveWallet();
+    return true;
+  }
+
+  function buySkin(skinId) {
+    const skin = SKIN_CATALOG.find((s) => s.id === skinId);
+    if (!skin) return { ok: false, reason: "NO_SKIN" };
+    if (isSkinUnlocked(skinId)) return { ok: true, already: true, skin };
+    if (playerWallet.gems < skin.price) return { ok: false, reason: "INSUFFICIENT_GEMS", needed: skin.price };
+    playerWallet.gems -= skin.price;
+    playerWallet.unlockedSkins.add(skinId);
+    const cur = new Set(getEquippedSkinsForChar(skin.charId));
+    cur.add(skinId);
+    playerWallet.equippedSkins[skin.charId] = Array.from(cur);
+    saveWallet();
+    return { ok: true, skin };
   }
 
   loadWallet();
@@ -105,21 +281,6 @@
       unlockCharId: "gojo",
       previewCharId: "gojo",
     },
-    {
-      id: "fighter_sukuna",
-      name: "KING OF CURSES",
-      category: "fighter",
-      targetChar: "SORCERER • SUKUNA",
-      badge: "FIGHTER",
-      badgeClass: "badge-fighter",
-      icon: "⛩️",
-      desc: "Ryomen Sukuna! Alternates Cleave & Dismantle slashes, Divine Flame (FUGA) ultimate, and Malevolent Shrine Domain Clash!",
-      price: 450,
-      currency: "coins",
-      status: "AVAILABLE",
-      unlockCharId: "sukuna",
-      previewCharId: "sukuna",
-    },
 
     // --- SECRET FIGHTERS (WIP) ---
     {
@@ -145,6 +306,8 @@
     `"千万両 (10 Million Ryo)! You better save up your coins and gems! Top-tier brawlers aren't gonna be cheap!"`,
     `"Don't poke me, you insolent runt! Even with my 100 km/h sprint speed, good features take time to develop!"`,
     `"Go practice your combos in Sandbox arena while I count my coins!"`,
+    `"New fighters come out of my machine now, brat. Ten pulls and a fighter is guaranteed!"`,
+    `"Duplicates? Hmph! Baa-san pays you 30 gems for the trouble. Don't say I'm not generous!"`,
     `"What are you staring at?! You want me to steal your bananas? Go win some matches and earn your keep!"`,
   ];
 
@@ -428,6 +591,19 @@
   BF.loadWallet = loadWallet;
   BF.saveWallet = saveWallet;
   BF.isFighterUnlocked = isFighterUnlocked;
+  BF.EVOLUTION_SPECS = EVOLUTION_SPECS;
+  BF.isFighterEvolved = isFighterEvolved;
+  BF.isEvolutionEquipped = isEvolutionEquipped;
+  BF.setEvolutionEquipped = setEvolutionEquipped;
+  BF.evolveFighter = evolveFighter;
+  BF.SKIN_CATALOG = SKIN_CATALOG;
+  BF.isSkinUnlocked = isSkinUnlocked;
+  BF.isSkinEquipped = isSkinEquipped;
+  BF.setSkinEquipped = setSkinEquipped;
+  BF.getEquippedSkinsForChar = getEquippedSkinsForChar;
+  BF.getEquippedSkin = getEquippedSkin;
+  BF.setEquippedSkin = setEquippedSkin;
+  BF.buySkin = buySkin;
   BF.SHOP_CATALOG = SHOP_CATALOG;
   BF.TURBO_GRANNY_QUOTES = TURBO_GRANNY_QUOTES;
   BF.drawTurboGranny = drawTurboGranny;

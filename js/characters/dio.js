@@ -590,7 +590,7 @@
     color: COLORS.dioYellow,
     radius: 28,
     speed: 370,
-    maxHp: 330,
+    maxHp: 540,
     damage: [3, 6],
     mass: 1.0,
     costume: "dio",

@@ -72,16 +72,15 @@
         c.translate(this.x, this.y);
         c.globalAlpha = alpha;
 
-        // Scorched outer blast + blazing inferno core
-        const grad = c.createRadialGradient(0, 0, rad * 0.1, 0, 0, rad);
-        grad.addColorStop(0, "rgba(254, 249, 195, 0.92)");
-        grad.addColorStop(0.38, "rgba(249, 115, 22, 0.72)");
-        grad.addColorStop(0.75, "rgba(220, 38, 38, 0.42)");
-        grad.addColorStop(1, "rgba(127, 29, 29, 0)");
-        c.fillStyle = grad;
-        c.beginPath();
-        c.arc(0, 0, rad, 0, Math.PI * 2);
-        c.fill();
+        // Scorched blast: solid layered rings from dark red outer to white-hot core
+        c.fillStyle = "rgba(127, 29, 29, 0.38)";
+        c.beginPath(); c.arc(0, 0, rad, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "rgba(220, 38, 38, 0.5)";
+        c.beginPath(); c.arc(0, 0, rad * 0.8, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "rgba(249, 115, 22, 0.72)";
+        c.beginPath(); c.arc(0, 0, rad * 0.56, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "rgba(254, 249, 195, 0.95)";
+        c.beginPath(); c.arc(0, 0, rad * 0.3, 0, Math.PI * 2); c.fill();
 
         // Swirling flame tongues
         for (let i = 0; i < 8; i++) {
@@ -145,6 +144,208 @@
     g.sound.playCritHit();
   }
 
+  function drawMalevolentShrineBackdrop(c, cx, cy, scale = 1, p = 0, fade = 1) {
+    c.save();
+    c.translate(cx, cy);
+    c.scale(scale, scale);
+
+    // Concentric blood-red shock rings radiating from the shrine
+    c.globalAlpha = 0.55 * fade;
+    c.strokeStyle = "#7f1d1d";
+    c.lineWidth = 8;
+    for (let i = 1; i <= 4; i++) {
+      c.beginPath();
+      c.arc(0, 0, 58 * i + Math.sin(p * 18 + i) * 5, 0, Math.PI * 2);
+      c.stroke();
+    }
+
+    // Giant ominous blood moon / cursed halo behind the shrine
+    c.globalAlpha = 0.78 * fade;
+    c.fillStyle = "#450a0a";
+    c.beginPath();
+    c.arc(0, -18, 92, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = "#7f1d1d";
+    c.beginPath();
+    c.arc(0, -18, 72, 0, Math.PI * 2);
+    c.fill();
+    c.strokeStyle = "#ef4444";
+    c.lineWidth = 2.5;
+    c.beginPath();
+    c.arc(0, -18, 92, 0, Math.PI * 2);
+    c.stroke();
+
+    // Rising dark crimson cursed energy pillars in background
+    c.globalAlpha = 0.45 * fade;
+    c.fillStyle = "#991b1b";
+    for (const px of [-105, -68, 68, 105]) {
+      const h = 110 + Math.sin(p * 24 + px) * 18;
+      c.fillRect(px - 6, 65 - h, 12, h);
+    }
+
+    c.globalAlpha = 0.94 * fade;
+    c.lineJoin = "round";
+    c.lineCap = "round";
+
+    // Tiered stone altar base steps
+    c.fillStyle = "#180407";
+    c.strokeStyle = "#dc2626";
+    c.lineWidth = 3;
+    c.beginPath();
+    c.moveTo(-112, 74);
+    c.lineTo(112, 74);
+    c.lineTo(96, 52);
+    c.lineTo(-96, 52);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    c.fillStyle = "#26070c";
+    c.beginPath();
+    c.moveTo(-88, 52);
+    c.lineTo(88, 52);
+    c.lineTo(76, 36);
+    c.lineTo(-76, 36);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    // Horned cursed skulls mound along the shrine base
+    for (const [sx, sy, sr] of [[-78, 62, 11], [-38, 64, 12], [0, 65, 13], [38, 64, 12], [78, 62, 11]]) {
+      // Curved bull/demon horns on skull
+      c.strokeStyle = "#d6d3d1";
+      c.lineWidth = 3;
+      c.beginPath();
+      c.moveTo(sx - sr * 0.6, sy - sr * 0.4);
+      c.quadraticCurveTo(sx - sr * 1.5, sy - sr * 1.3, sx - sr * 1.1, sy - sr * 1.8);
+      c.moveTo(sx + sr * 0.6, sy - sr * 0.4);
+      c.quadraticCurveTo(sx + sr * 1.5, sy - sr * 1.3, sx + sr * 1.1, sy - sr * 1.8);
+      c.stroke();
+
+      c.fillStyle = "#e7e5e4";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 2.2;
+      c.beginPath();
+      c.arc(sx, sy, sr, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
+
+      // Glowing red eye sockets
+      c.fillStyle = "#dc2626";
+      c.beginPath();
+      c.arc(sx - sr * 0.36, sy - 1, 2.6, 0, Math.PI * 2);
+      c.arc(sx + sr * 0.36, sy - 1, 2.6, 0, Math.PI * 2);
+      c.fill();
+    }
+
+    // Dark interior shrine chamber (gaping demonic mouth)
+    c.fillStyle = "#080103";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 3;
+    c.fillRect(-58, -22, 116, 58);
+    c.strokeRect(-58, -22, 116, 58);
+
+    // Demonic fangs inside the shrine chamber lintel & floor
+    c.fillStyle = "#fef2f2";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2;
+    for (let x = -44; x <= 44; x += 14) {
+      // Upper fangs
+      c.beginPath();
+      c.moveTo(x - 5, -20);
+      c.lineTo(x, -7);
+      c.lineTo(x + 5, -20);
+      c.closePath();
+      c.fill();
+      c.stroke();
+      // Lower fangs
+      c.beginPath();
+      c.moveTo(x - 5, 36);
+      c.lineTo(x, 24);
+      c.lineTo(x + 5, 36);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    }
+
+    // Glowing inner shrine eyes
+    c.fillStyle = "#ef4444";
+    c.beginPath();
+    c.ellipse(-18, 4, 8, 3.5, 0.18, 0, Math.PI * 2);
+    c.ellipse(18, 4, 8, 3.5, -0.18, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = "#fef08a";
+    c.beginPath();
+    c.arc(-18, 4, 2.2, 0, Math.PI * 2);
+    c.arc(18, 4, 2.2, 0, Math.PI * 2);
+    c.fill();
+
+    // 4 Crimson-black wooden shrine pillars
+    for (const px of [-64, -38, 26, 52]) {
+      c.fillStyle = "#450a0a";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 3;
+      c.fillRect(px, -24, 12, 60);
+      c.strokeRect(px, -24, 12, 60);
+      c.fillStyle = "#dc2626";
+      c.fillRect(px + 2, -20, 8, 6);
+      c.fillRect(px + 2, 26, 8, 6);
+    }
+
+    // Lower curved pagoda eave
+    c.fillStyle = "#160307";
+    c.strokeStyle = "#dc2626";
+    c.lineWidth = 3;
+    c.beginPath();
+    c.moveTo(-118, -22);
+    c.quadraticCurveTo(-60, -18, 0, -34);
+    c.quadraticCurveTo(60, -18, 118, -22);
+    c.lineTo(94, -10);
+    c.quadraticCurveTo(0, -24, -94, -10);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    // Upper shrine tier wall
+    c.fillStyle = "#280509";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 3;
+    c.fillRect(-46, -54, 92, 26);
+    c.strokeRect(-46, -54, 92, 26);
+
+    // Main sweeping upturned roof with demon horn tips
+    c.fillStyle = "#110205";
+    c.strokeStyle = "#ef4444";
+    c.lineWidth = 3.2;
+    c.beginPath();
+    c.moveTo(-132, -52);
+    c.quadraticCurveTo(-68, -42, 0, -86);
+    c.quadraticCurveTo(68, -42, 132, -52);
+    c.lineTo(104, -34);
+    c.quadraticCurveTo(0, -62, -104, -34);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    // Giant curved demon horns crowning the roof peak
+    c.fillStyle = "#fca5a5";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2.6;
+    for (const dir of [-1, 1]) {
+      c.beginPath();
+      c.moveTo(dir * 6, -78);
+      c.quadraticCurveTo(dir * 34, -84, dir * 48, -112);
+      c.quadraticCurveTo(dir * 24, -74, dir * 14, -68);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    }
+
+    c.restore();
+  }
+
+  BF.drawMalevolentShrineBackdrop = drawMalevolentShrineBackdrop;
+
   function spawnMalevolentShrineDomain({ owner, duration = 6.0 }) {
     const slashes = [];
     return {
@@ -163,12 +364,12 @@
           this.dead = true;
           return;
         }
-        if (g.rng() < 0.8) {
+        if (g.rng() < 0.85) {
           slashes.push({
             x: 35 + g.rng() * (WORLD_SIZE - 70),
             y: 35 + g.rng() * (WORLD_SIZE - 70),
             ang: (g.rng() - 0.5) * Math.PI,
-            len: 28 + g.rng() * 48,
+            len: 32 + g.rng() * 54,
             life: 0.22,
           });
         }
@@ -199,39 +400,11 @@
         const cy = WORLD_SIZE * 0.5;
         c.save();
 
-        c.globalAlpha = 0.64 * fade;
-        const bgGrad = c.createRadialGradient(cx, cy, 40, cx, cy, WORLD_SIZE * 0.75);
-        bgGrad.addColorStop(0, "#450a0a");
-        bgGrad.addColorStop(0.65, "#1f0408");
-        bgGrad.addColorStop(1, "#090103");
-        c.fillStyle = bgGrad;
+        c.globalAlpha = 0.72 * fade;
+        c.fillStyle = "#160205";
         c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
-        // Malevolent Shrine silhouette in background center
-        c.globalAlpha = 0.52 * fade;
-        c.fillStyle = "#110205";
-        c.strokeStyle = "#dc2626";
-        c.lineWidth = 2.5;
-        c.beginPath();
-        c.moveTo(cx - 86, cy + 56);
-        c.lineTo(cx + 86, cy + 56);
-        c.lineTo(cx + 68, cy + 36);
-        c.lineTo(cx - 68, cy + 36);
-        c.closePath();
-        c.fill();
-        c.stroke();
-
-        // Shrine pillars & curved roof
-        c.fillRect(cx - 42, cy - 16, 12, 54);
-        c.fillRect(cx + 30, cy - 16, 12, 54);
-        c.beginPath();
-        c.moveTo(cx - 95, cy - 20);
-        c.quadraticCurveTo(cx, cy - 66, cx + 95, cy - 20);
-        c.lineTo(cx + 72, cy - 8);
-        c.quadraticCurveTo(cx, cy - 36, cx - 72, cy - 8);
-        c.closePath();
-        c.fill();
-        c.stroke();
+        drawMalevolentShrineBackdrop(c, cx, cy + 8, 1.15, p, fade);
 
         // Ambient arena slash cuts
         c.lineCap = "round";
@@ -239,7 +412,13 @@
           c.save();
           c.translate(s.x, s.y);
           c.rotate(s.ang);
-          c.globalAlpha = (s.life / 0.22) * 0.85 * fade;
+          c.globalAlpha = (s.life / 0.22) * 0.9 * fade;
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 6;
+          c.beginPath();
+          c.moveTo(-s.len, 0);
+          c.lineTo(s.len, 0);
+          c.stroke();
           c.strokeStyle = "#ef4444";
           c.lineWidth = 3.5;
           c.beginPath();
@@ -247,13 +426,55 @@
           c.lineTo(s.len, 0);
           c.stroke();
           c.strokeStyle = "#ffffff";
-          c.lineWidth = 1.2;
+          c.lineWidth = 1.4;
           c.beginPath();
-          c.moveTo(-s.len * 0.7, 0);
-          c.lineTo(s.len * 0.7, 0);
+          c.moveTo(-s.len * 0.75, 0);
+          c.lineTo(s.len * 0.75, 0);
           c.stroke();
           c.restore();
         }
+        c.restore();
+      },
+    };
+  }
+
+  BF.spawnMalevolentShrineDomain = spawnMalevolentShrineDomain;
+
+  function spawnDismantleMuzzleFlash(x, y, ang, tilt = 0) {
+    return {
+      x,
+      y,
+      ang: ang + tilt,
+      life: 0.14,
+      maxLife: 0.14,
+      dead: false,
+      update(dt) {
+        this.life -= dt;
+        if (this.life <= 0) this.dead = true;
+      },
+      render(c) {
+        const p = 1 - Math.max(0, this.life / this.maxLife);
+        const R = 24 + p * 12;
+        c.save();
+        c.translate(this.x, this.y);
+        c.rotate(this.ang);
+        c.globalAlpha = Math.max(0, 1 - p);
+        c.lineCap = "round";
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 7 * (1 - p * 0.4);
+        c.beginPath();
+        c.arc(-R * 0.25, 0, R, -Math.PI * 0.42, Math.PI * 0.42);
+        c.stroke();
+        c.strokeStyle = "#ef4444";
+        c.lineWidth = 4 * (1 - p * 0.4);
+        c.beginPath();
+        c.arc(-R * 0.25, 0, R, -Math.PI * 0.42, Math.PI * 0.42);
+        c.stroke();
+        c.strokeStyle = "#ffffff";
+        c.lineWidth = 1.8;
+        c.beginPath();
+        c.arc(-R * 0.22, 0, R * 0.94, -Math.PI * 0.3, Math.PI * 0.3);
+        c.stroke();
         c.restore();
       },
     };
@@ -281,6 +502,7 @@
             rt.addShake(0.38, 9);
           },
         }, g);
+        if (ball.domainClashTimer > 0) return true;
       }
 
       const mode = ball.shrineNext === "cleave" ? "cleave" : "dismantle";
@@ -288,7 +510,7 @@
 
       rt.beginCast(ball, {
         kind: "shrine_slash",
-        duration: mode === "dismantle" ? 0.16 : 0.34,
+        duration: mode === "dismantle" ? 0.14 : 0.34,
         color: mode === "dismantle" ? "#ef4444" : "#dc2626",
         maxR: mode === "dismantle" ? 20 : 24,
         fire(b, gg) {
@@ -296,29 +518,44 @@
           if (!t) return;
           const baseAng = Math.atan2(t.y - b.y, t.x - b.x);
           if (mode === "dismantle") {
-            // Fires 3 wide-spread razor-sharp flying slash waves forward (4 dmg each)
-            const angles = [baseAng - 0.36, baseAng, baseAng + 0.36];
-            for (let i = 0; i < angles.length; i++) {
-              const ang = angles[i];
-              const m = rt.castMuzzle(b, ang, 16);
-              gg.entities.push(rt.spawnProjectile({
+            // Fires 3 sequential straight-flying curved crescent slashes one by one (4 dmg each)
+            const tilts = [-0.08, 0.08, 0];
+            let ultCharged = false;
+            const launchSlash = (idx, gNow) => {
+              if (!b.alive || b.domainClashTimer > 0) return;
+              const liveTarget = gNow.balls.find((x) => x !== b && x.alive);
+              if (!liveTarget) return;
+              const aimAng = Math.atan2(liveTarget.y - b.y, liveTarget.x - b.x);
+              const m = rt.castMuzzle(b, aimAng, 16);
+              gNow.entities.push(spawnDismantleMuzzleFlash(m.x, m.y, aimAng, tilts[idx]));
+              if (idx > 0 && gNow.sound && gNow.sound.playSkill) {
+                gNow.sound.playSkill("dismantle");
+              }
+              gNow.entities.push(rt.spawnProjectile({
                 owner: b,
-                target: t,
+                target: liveTarget,
                 x: m.x,
                 y: m.y,
-                speed: 680,
-                radius: 22,
+                speed: 720,
+                radius: 23,
                 damage: 4,
                 color: "#ef4444",
                 label: "DISMANTLE!",
                 shape: "dismantle_slash",
+                slashTilt: tilts[idx],
                 onImpact(tt, g2) {
-                  g2.entities.push(spawnCleaveSlashEffect(tt.x + (g2.rng() - 0.5) * 14, tt.y + (g2.rng() - 0.5) * 14, 34));
+                  g2.entities.push(spawnCleaveSlashEffect(tt.x + (g2.rng() - 0.5) * 14, tt.y + (g2.rng() - 0.5) * 14, 36));
                   g2.addEffect(tt, "slow", 0.4, { factor: 0.72 });
-                  if (i === 0) g2.chargeUlt(b);
+                  if (!ultCharged) {
+                    ultCharged = true;
+                    g2.chargeUlt(b);
+                  }
                 },
               }));
-            }
+            };
+            launchSlash(0, gg);
+            gg.entities.push(rt.spawnDelayedAction(0.13, (gNow) => launchSlash(1, gNow)));
+            gg.entities.push(rt.spawnDelayedAction(0.26, (gNow) => launchSlash(2, gNow)));
             gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#ef4444", false, "DISMANTLE x3!");
           } else {
             // Cleave: high-speed slash dash toward enemy; deals 15 dmg + slash VFX on hit!
@@ -345,7 +582,7 @@
     color: "#dc2626",
     radius: 28,
     speed: 370,
-    maxHp: 350,
+    maxHp: 580,
     damage: [10, 15],
     mass: 1.05,
     costume: "sukuna",
@@ -409,98 +646,59 @@
     c.fillRect(-r * 0.35, r * 0.78, r * 0.7, r * 0.35);
     c.restore();
 
-    // Bold black Sukuna cursed markings (forehead, nose, cheeks, chin)
+    // Bold black Sukuna cursed markings (forehead, nose, outer cheeks)
     c.strokeStyle = "#09090b";
-    c.lineWidth = 2.6;
+    c.lineWidth = 2.5;
     c.lineCap = "round";
     c.beginPath();
-    // Forehead double-bar + center curve
-    c.moveTo(-r * 0.3, -r * 0.46); c.lineTo(r * 0.3, -r * 0.46);
-    c.moveTo(-r * 0.2, -r * 0.34); c.lineTo(r * 0.2, -r * 0.34);
+    // Forehead double-bar above brows
+    c.moveTo(-r * 0.28, -r * 0.5); c.lineTo(r * 0.28, -r * 0.5);
+    c.moveTo(-r * 0.18, -r * 0.4); c.lineTo(r * 0.18, -r * 0.4);
     // Nose bridge bar
-    c.moveTo(-r * 0.14, -r * 0.06); c.lineTo(r * 0.14, -r * 0.06);
-    // Cheek & temple curved tattoos
-    c.moveTo(-r * 0.78, -r * 0.02); c.quadraticCurveTo(-r * 0.62, r * 0.14, -r * 0.44, r * 0.18);
-    c.moveTo(r * 0.78, -r * 0.02); c.quadraticCurveTo(r * 0.62, r * 0.14, r * 0.44, r * 0.18);
-    c.moveTo(-r * 0.68, r * 0.26); c.lineTo(-r * 0.46, r * 0.32);
-    c.moveTo(r * 0.68, r * 0.26); c.lineTo(r * 0.46, r * 0.32);
+    c.moveTo(-r * 0.1, -r * 0.03); c.lineTo(r * 0.1, -r * 0.03);
+    // Outer cheek twin stripes (framing the face cleanly without touching the 4 eyes or mouth)
+    c.moveTo(-r * 0.84, r * 0.14); c.lineTo(-r * 0.58, r * 0.2);
+    c.moveTo(r * 0.84, r * 0.14); c.lineTo(r * 0.58, r * 0.2);
+    c.moveTo(-r * 0.78, r * 0.26); c.lineTo(-r * 0.54, r * 0.31);
+    c.moveTo(r * 0.78, r * 0.26); c.lineTo(r * 0.54, r * 0.31);
     c.stroke();
 
-    // 4 fierce crimson eyes + sharp angry eyebrows
-    for (const side of [-1, 1]) {
-      // Main upper eye (dark sclera + glowing red iris + gold pupil)
-      c.fillStyle = "#18181b";
-      c.strokeStyle = COLORS.ink;
-      c.lineWidth = 1.8;
-      c.beginPath();
-      c.ellipse(side * r * 0.34, -r * 0.13, r * 0.17, r * 0.1, side * -0.24, 0, Math.PI * 2);
-      c.fill();
-      c.stroke();
-
-      c.fillStyle = "#ef4444";
-      c.beginPath();
-      c.arc(side * r * 0.34, -r * 0.13, r * 0.075, 0, Math.PI * 2);
-      c.fill();
-
-      c.fillStyle = "#fef08a";
-      c.beginPath();
-      c.arc(side * r * 0.34, -r * 0.13, r * 0.026, 0, Math.PI * 2);
-      c.fill();
-
-      // Lower cursed eye
-      c.fillStyle = "#dc2626";
-      c.strokeStyle = "#09090b";
-      c.lineWidth = 1.6;
-      c.beginPath();
-      c.ellipse(side * r * 0.4, r * 0.06, r * 0.11, r * 0.055, side * 0.14, 0, Math.PI * 2);
-      c.fill();
-      c.stroke();
-
-      // Sharp furrowed brow
-      c.strokeStyle = "#09090b";
-      c.lineWidth = 2.8;
-      c.beginPath();
-      c.moveTo(side * r * 0.54, -r * 0.28);
-      c.lineTo(side * r * 0.16, -r * 0.18);
-      c.stroke();
+    // Eyes and mouth are drawn by BF.FACE_DRAWERS.sukuna (js/faces.js)
+    // King of Curses aura: crimson cursed energy flames & extra collar tattoos while Ult is active
+    if (ball.ultTimer > 0) {
+      c.strokeStyle = "#dc2626";
+      c.lineWidth = 3;
+      for (const side of [-1, 1]) {
+        c.beginPath();
+        c.arc(0, 0, r * 1.12, side > 0 ? -0.45 : Math.PI - 0.55, side > 0 ? 0.55 : Math.PI + 0.45);
+        c.stroke();
+      }
     }
 
-    // Menacing fanged grin
-    c.fillStyle = "#ffffff";
-    c.strokeStyle = "#09090b";
-    c.lineWidth = 2.2;
-    c.beginPath();
-    c.moveTo(-r * 0.28, r * 0.24);
-    c.quadraticCurveTo(0, r * 0.42, r * 0.3, r * 0.21);
-    c.quadraticCurveTo(0, r * 0.31, -r * 0.28, r * 0.24);
-    c.closePath();
-    c.fill();
-    c.stroke();
-
-    // Fierce spiky salmon-pink hair with dark undercut
+    // Fierce spiky salmon-pink hair with dark undercut (raised hairline so forehead tattoos show clearly)
     c.fillStyle = "#18181b";
     c.beginPath();
-    c.arc(0, -r * 0.35, r * 0.92, Math.PI * 1.05, Math.PI * 1.95);
+    c.arc(0, -r * 0.42, r * 0.88, Math.PI * 1.08, Math.PI * 1.92);
     c.fill();
 
     c.fillStyle = "#fb7185";
     c.strokeStyle = COLORS.ink;
     c.lineWidth = 2.6;
     c.beginPath();
-    c.moveTo(-r * 0.96, -r * 0.2);
-    c.lineTo(-r * 1.28, -r * 0.56);
-    c.lineTo(-r * 0.86, -r * 0.6);
-    c.lineTo(-r * 1.06, -r * 1.1);
-    c.lineTo(-r * 0.52, -r * 0.86);
-    c.lineTo(-r * 0.26, -r * 1.32);
-    c.lineTo(0, -r * 0.9);
-    c.lineTo(r * 0.28, -r * 1.32);
-    c.lineTo(r * 0.54, -r * 0.86);
-    c.lineTo(r * 1.06, -r * 1.08);
-    c.lineTo(r * 0.86, -r * 0.58);
-    c.lineTo(r * 1.28, -r * 0.54);
-    c.lineTo(r * 0.96, -r * 0.2);
-    c.quadraticCurveTo(0, -r * 0.64, -r * 0.96, -r * 0.2);
+    c.moveTo(-r * 0.94, -r * 0.3);
+    c.lineTo(-r * 1.24, -r * 0.62);
+    c.lineTo(-r * 0.84, -r * 0.66);
+    c.lineTo(-r * 1.04, -r * 1.12);
+    c.lineTo(-r * 0.5, -r * 0.88);
+    c.lineTo(-r * 0.24, -r * 1.32);
+    c.lineTo(0, -r * 0.92);
+    c.lineTo(r * 0.26, -r * 1.32);
+    c.lineTo(r * 0.52, -r * 0.88);
+    c.lineTo(r * 1.04, -r * 1.1);
+    c.lineTo(r * 0.84, -r * 0.64);
+    c.lineTo(r * 1.24, -r * 0.6);
+    c.lineTo(r * 0.94, -r * 0.3);
+    c.quadraticCurveTo(0, -r * 0.72, -r * 0.94, -r * 0.3);
     c.closePath();
     c.fill();
     c.stroke();

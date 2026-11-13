@@ -1,62 +1,66 @@
+<p align="center">
+  <img src="assets/hero-banner.svg" alt="Ball Fight v1.2 Banner" width="100%" />
+</p>
 
-## ⚡ Welcome to Ball Fight!
+<h1 align="center">⚡ BALL FIGHT — v1.2</h1>
+<p align="center">
+  <strong>2D Anime Ball Physics Auto-Battler • Built from scratch with HTML5 Canvas &amp; Vanilla JS</strong><br/>
+  No frameworks, no engines, zero external dependencies — pure collision kinematics, fighter evolutions, mythic skins, gacha, and explosive 5-hit anime Ultimates!
+</p>
 
-**Ball Fight** is a high-octane, MUGEN-inspired **2D Anime Ball Physics Auto-Battler** built entirely from scratch with **HTML5 Canvas** and **vanilla JavaScript**. 
-
-No bloated frameworks, no game engines, zero external dependencies. Just pure math, elastic collision kinematics, telegraphed signature abilities, and explosive 5-hit anime Ultimates!
-
-> 🎮 **Play Live in Your Browser**: **[ballfight-alpha.vercel.app](https://ballfight-alpha.vercel.app)**
+<p align="center">
+  <a href="https://ballfight-alpha.vercel.app"><strong>🎮 Play Live: ballfight-alpha.vercel.app</strong></a>
+</p>
 
 ---
 
-## 🐱 Official Shop Mascot: Turbo Granny (*Dandadan*)
+## 🐱 Official Shop Mascot: Turbo Granny (*Dandadan* — v1.2 Model)
 
 <table>
   <tr>
     <td width="260" align="center" valign="middle">
-      <img src="assets/turbo-granny.svg" alt="Turbo Granny Mascot" width="220" />
+      <img src="assets/turbo-granny.svg" alt="Turbo Granny Mascot v1.2" width="220" />
     </td>
     <td valign="middle">
       <h3>🐱 TURBO GRANNY / ターボババア</h3>
-      <p><em>Cursed Maneki-Neko Spirit • 100 km/h Sprint Demon • Bazaar Master</em></p>
+      <p><em>Cursed Maneki-Neko Spirit • 100 km/h Sprint Demon • Gacha &amp; Skin Vault Keeper</em></p>
       <blockquote>
-        <strong>"Ahihi! Oi gaki! (Hey brat!) Don't rush me! This shop is WORK IN PROGRESS! Soon I'll be stocking exclusive cursed skins and secret brawlers! Go brawl in the arena while I finish setting up, or I'll steal your bananas!"</strong>
+        <strong>"Ahihi! Oi brat! Got coins or gems? Pull fighters from my Gacha Capsule or grab cursed Mythic Skins from the Diamond Skin Vault — or I'll steal your bananas!"</strong>
       </blockquote>
-      <p>Featuring a 100% faithful recreation of her iconic <em>Dandadan</em> lucky cat doll form: white ball body, sharp pointed ears with vermilion lining, crimson forehead patch, furrowed brow glare, almond eyes with upper eyelashes, red collar with green scalloped bib, golden jingle bell, and a swinging golden Koban medallion inscribed with <strong>"千万" (10,000,000 Ryo)</strong>!</p>
+      <p>Redesigned in <strong>v1.2</strong> (`js/granny.js` &amp; `assets/turbo-granny.svg`) with sharp furrowed brows, golden almond slit-pupil eyes with upper lashes, rosy blushing cheeks, crimson forehead patch, 5-scallop green bib over a vermilion collar, swinging golden jingle bell, and a swaying <strong>"千万" (10,000,000 Ryo)</strong> Koban medallion!</p>
     </td>
   </tr>
 </table>
 
 ---
 
-## 🥊 Current Fighters Roster
+## 🥊 Fighters Roster (9 Playable Brawlers)
 
-Fighters sport hype battleground epithets while unleashing their **authentic, beloved anime moves**:
-
-| Fighter Title | Inspired Series | Weapon | Signature Skill | 5-Hit Ultimate Form |
+| Fighter | Series | Weapon | Signature Skill | Ultimate &amp; Evolution / Passive |
 | :--- | :--- | :--- | :--- | :--- |
-| **STRONGEST ALIEN** | *Dragon Ball* | Power Pole (*Nyoibo*) | **Kamehameha / Dragon Rush** (`3.4s` CD)<br>Alternates Ki blast and straight-line **Dragon Rush** (chains **3x Dragon Kicks** + heavy knockback). | **KAIOKEN BURST / GREAT APE**<br>Empowers Kamehameha & Dragon Rush! At **HP ≤ 100** in Ult, transforms into berserk **Great Ape (Oozaru)** with erratic movement & **35% DMG reduction**! |
-| **CHILD OF PROPHECY** | *Naruto* | Kunai | **Rasengan** (`3.0s` CD)<br>Charges a swirling chakra sphere & rockets forward in a high-speed dash (`14` dmg + `stun`). | **RASENSHURIKEN**<br>Throws an explosive 4-bladed vortex disc that violently shreds opponents (`30` dmg + `0.9s stun`)! |
-| **WARRIOR OF LIBERATION** | *One Piece* | Gomu-Gomu Fist | **Gomu Rocket → Pistol** (`2.5s` init / `4.5s` total CD)<br>Launches **Gomu Rocket**, then after `0.2s` fires **Gomu Pistol** (`7–10` dmg + knockback). | **GEAR 4 (BOUNCEMAN / SNAKEMAN)**<br>**Odd HP**: Bounceman (wide AoE smash + 35% shield). **Even HP**: Snakeman (+32% speed + wall-bouncing punches)! |
-| **SUBSTITUTE REAPER** | *Bleach* | *Tensa Zangetsu* | **Getsuga Tensho** (`3.4s` CD)<br>Swings the dark greatsword to release a razor-sharp red crescent wave across the arena (`14` dmg + `slow`). | **HOLLOW MASK BANKAI**<br>Dons the demonic bone mask, boosting agility and enlarging slashes into ominous black-red **Hollow Getsuga** arcs! |
-| **ARROGANT VAMPIRE** | *JoJo's Bizarre Adventure* | Throwing Knives | **Stand Barrage** (`2.3s` CD)<br>The World dashes forward and unleashes a ramping Punch Barrage (`1→5` dmg per hit + mini-slow). | **ZA WARUDO (TIME STOP)**<br>Freezes time across the arena! Suspends a deadly ring of knives in mid-air and unleashes auto-aimed Stand attacks before time moves again! |
-| **STAR DELINQUENT** | *JoJo's Bizarre Adventure* | *Star Platinum* | **Ora Barrage** (`2.4s` CD)<br>Star Platinum dashes forward and unleashes a ramping ORA Barrage (`1→5` dmg per hit + mini-slow). | **STAR PLATINUM: THE WORLD!**<br>Freezes time across the arena for 4s and locks onto the rival with auto-aimed heavy ORA barrages! |
-| **HUNDRED-MAN SLAYER** | *Berserk* | *Dragonslayer* Greatsword | **Dragonslayer Cleave** (`2.1s` CD)<br>Zero collision dmg, but swings his colossal iron sword in a wide AoE arc (`22–28` dmg + knockback). | **BERSERKER ARMOR**<br>Dons the cursed black Berserker Armor! Surges with rage speed and replaces Cleave with 2x **Savage Rampage** (`28–35` dmg)! |
-| **HONORED SORCERER** | *Jujutsu Kaisen* | Limitless | **Red / Blue** (`2.5s` CD)<br>Alternates **Reversal Red** (`13–16` dmg + knockback) and **Lapse Blue** (`2` dmg gravitational pull). | **HOLLOW PURPLE & SIX EYES**<br>Fires a huge **Hollow Purple** void (`26–32` dmg), grants **13s Six Eyes Infinity**, and triggers **Unlimited Void** (`6s` freeze)! |
+| **STRONGEST ALIEN** | *Dragon Ball* | Power Pole (*Nyoibo*) | **Kamehameha / Dragon Rush**<br>Alternates Ki blast &amp; 3x Dragon Kick rush. | **KAIOKEN BURST / GREAT APE**<br>At **HP ≤ 200** during Ult, transforms into berserk **Great Ape (Oozaru)** with **35% DMG reduction**! |
+| **CHILD OF PROPHECY** | *Naruto* | Kunai | **Rasengan Dash**<br>Dashes forward with a single Rasengan slash. | **RASENSHURIKEN / SAGE EVO (10k Gold)**<br>Starter Ult throws **Rasenshuriken** (pulling Wind Vortex). **Evolve** to unlock **Sage Mode** &amp; **Four-Tails** at **HP ≤ 200** (**Bijuudama**)! |
+| **WARRIOR OF LIBERATION** | *One Piece* | Gomu-Gomu Fist | **Gomu Rocket → Pistol**<br>Launches Rocket then snaps Gomu Pistol knockback. | **GEAR 4: BOUNCEMAN / SNAKEMAN**<br>**Odd HP**: Bounceman (Kong Smash + 35% shield). **Even HP**: Snakeman (wall-bouncing Black Mamba)! |
+| **SUBSTITUTE REAPER** | *Bleach* | *Zangetsu / Tensa Zangetsu* | **Getsuga Tensho / Shunpo Slash**<br>Alternates Getsuga wave &amp; flash-step slash. | **SHIKAI → BANKAI EVO (10k Gold)**<br>Starter: **Shikai**, **Bankai Ult**, **Inner Demon** at **HP ≤ 100**. **Evolve**: Starts in **Bankai**, **Hollow Mask Ult**, &amp; **Vasto Lorde** at **HP ≤ 200**! |
+| **ARROGANT VAMPIRE** | *JoJo's Bizarre Adventure* | *The World* &amp; Knives | **Stand Barrage**<br>Ramping punch barrage (`1→5` dmg) + vampire lifesteal/teleport. | **ZA WARUDO (TIME STOP)**<br>Freezes time, suspends frozen knives, and locks on with auto-aimed Stand barrages! |
+| **STAR DELINQUENT** | *JoJo's Bizarre Adventure* | *Star Platinum* | **ORA Barrage**<br>High-speed Stand rush with ramping ORA hits + mini-slow. | **STAR PLATINUM: THE WORLD!**<br>4s Time Stop with grayscale arena &amp; heavy auto-aimed ORA barrages! |
+| **HUNDRED-MAN SLAYER** | *Berserk* | *Dragonslayer* | **Dragonslayer Cleave**<br>Zero collision dmg, colossal sweeping AoE sword arc. | **BERSERKER ARMOR**<br>Dons cursed armor, surges speed, and unleashes 2x **Savage Rampage**! |
+| **HONORED SORCERER** | *Jujutsu Kaisen* | Limitless | **Reversal Red / Lapse Blue**<br>Alternates knockback Red &amp; gravitational vortex Blue. | **HOLLOW PURPLE &amp; UNLIMITED VOID**<br>Fires **Hollow Purple**, activates **13s Six Eyes Infinity**, and freezes foes in **Unlimited Void**! |
+| **KING OF CURSES** | *Jujutsu Kaisen* | Dismantle &amp; Cleave | **Dismantle / Cleave**<br>Slashes enemies from afar or dashes through with Cleave. | **MALEVOLENT SHRINE &amp; FUGA**<br>Opens **Malevolent Shrine** (triggers **Domain Clash** vs Gojo!) &amp; unleashes **Fuga** flame arrow! |
 
 ---
 
-## 🔥 Key Features
+## ✨ What's New in v1.2
 
-- 💥 **Tactile Physics & Hit-Stop**: Elastic ball kinematics with mass weighting, velocity-based collision damage, dynamic squash-and-stretch, screen shake, and visceral micro-freezes (*hit-stop*).
-- ⚡ **Telegraphed Skill Casting**: Balls visually telegraph their moves—charging ki spheres, forming rotating Rasengans, aiming dashed angles, and swinging weapon arcs before firing.
-- 👑 **5-Hit Ultimate Gauge**: Landing signature skills charges the `ULT` meter (`0/5` ➔ `5/5`). Filling it triggers an explosive comic banner, screen shockwaves, and instant anime transformation!
-- 🎲 **7% Critical Hit System**: Balanced `7%` crit chance that prospers in intense clashes with oversized confetti bursts, comic text callouts, and heavy bonus damage.
-- 📱 **9:16 Vertical Recording Mode (`REC`)**: One-click vertical framing mode optimized for TikTok, Instagram Reels, and YouTube Shorts without disturbing underlying physics.
-- 🎲 **Deterministic RNG Seeds (`mulberry32`)**: Every match is perfectly reproducible. Share seeds via URL queries (e.g. `?seed=999`).
-- 🔊 **Procedural Web Audio SFX**: 100% synthesized audio engine generates charges, clashes, wall bounces, crits, and K.O. sounds on the fly with zero external `.mp3` files!
-- 🗂️ **Overlay Modal Roster**: Clean, scroll-free UI with overlay modal sheets (`✖`), engineered to comfortably scale up to 50+ fighters without cluttering the screen.
-- 🛍️ **Anime Bazaar Shop (WIP)**: Managed by Turbo Granny! Future updates will feature **Exclusive Skins** (*Super Saiyan God*, *Sage Cloak*, *Sun God Nika*, *Final Getsuga*) and **Secret Brawlers** (*The Honored Sorcerer*, *Drill Piercer*, *Hundred-Man Slayer*).
+- 🌟 **Fighter Evolution System (`10,000 Gold`)**: Evolve **Naruto** (*Sage Mode + Four-Tails*) and **Ichigo** (*Bankai + Hollow Mask + Vasto Lorde*). Freely toggle **Starter vs Evolved** independently for **P1 &amp; P2** to run *Base vs Evolved* matchups!
+- 💀 **Diamond Skin Vault (Gems)**: Buy &amp; equip **Evo / Mythic Skins** with per-hero filters &amp; horizontal swipe carousel:
+  - **Six-Tails Skeletal Kyuubi** (*Naruto*, `150 Gems`)
+  - **Arrancar Arc: Ulquiorra Duel** (*Ichigo*, `120 Gems` — 2-in-1 tattered Bankai + Half-Shattered Dark-Crimson Mask)
+  - **Awakened Vasto: Long-Hair Half-Mask** (*Ichigo*, `180 Gems` — Mythic long orange mane &amp; single broken Vasto horn)
+- 🎰 **Fighter Gacha &amp; Pity System**: Pull rare, epic, and legend fighters (`Gojo`, `Sukuna`, `Guts`, `DIO`, `Jotaro`) using Gold or Gems with guaranteed pity.
+- ⚔️ **Domain Clash &amp; Stand Clash**: **Gojo vs Sukuna** clash in an epic Domain Expansion tug-of-war, while **DIO vs Jotaro** trigger Stand Clashes!
+- 🎨 **Solid Cartoon UI, Dynamic Anime Faces &amp; 500+ HP Balance**: Bold ink outlines on names/HP bars, character-specific animated eyes/expressions (`js/faces.js`), and procedural Web Audio SFX (`js/sfx.js`) with zero external audio files.
+- 📱 **9:16 Vertical Recording Mode (`REC`)**: One-click vertical framing for TikTok, Reels, and Shorts.
 
 ---
 
@@ -70,46 +74,48 @@ Fighters sport hype battleground epithets while unleashing their **authentic, be
 | `1X / 2X` | Toggle simulation speed (Normal / Turbo) |
 | `SFX: ON / OFF` | Toggle procedural sound effects |
 | `REC` | Toggle 9:16 social-media recording viewport |
-| `CHAR / MENU` | Return to character roster & match setup |
+| `Profile x10` | Secret Admin Control Panel (adjust Gold, Gems &amp; unlocks) |
 
 ---
 
 ## 🚀 Run Locally
-
-Clone the repository and run it with any lightweight local server (or open `index.html` directly in your browser):
 
 ```bash
 # Clone the repository
 git clone https://github.com/Epithap/BallFight.git
 cd BallFight
 
-# Serve locally with npx
+# Serve locally with npx (or open index.html directly)
 npx serve .
 ```
 
-Replay a specific seed:
+Replay a deterministic seed:
 ```text
 http://localhost:3000/?seed=777
 ```
 
 ---
 
-## 📋 Update Notes
-
-Lihat riwayat lengkap perubahan, karakter baru (*Stand Users*), mekanisme *Stand Clash*, dan penyesuaian *balance* sejak awal clone di **[CHANGELOG.md](CHANGELOG.md)**.
-
----
-
 ## 🛠️ Architecture
 
-```
+```text
 ball/
-├── index.html        # Semantic HTML5 layout, cartoon cards, & overlay modals
-├── style.css         # Comic-book styling, chunky borders, & responsive constraints
-├── game.js           # 60 FPS physics loop, fighter state machine, & Web Audio SFX
-└── assets/
-    ├── hero-banner.svg   # Animated arena clash banner with Turbo Granny & anime balls
-    └── turbo-granny.svg  # Animated standalone Dandadan mascot avatar
+├── index.html            # Screens, overlay modals, SVG icon sprites & script order
+├── style.css             # Solid comic-book theme, horizontal carousels & responsive UI
+├── game.js               # 60 FPS physics loop, evolution overrides, UI & battle engine
+├── assets/
+│   ├── hero-banner.svg   # Animated arena clash banner
+│   └── turbo-granny.svg  # Redesigned v1.2 Turbo Granny mascot SVG
+└── js/
+    ├── constants.js      # Shared BallFight namespace (BF), palette & constants
+    ├── sound.js          # Core Web Audio synthesizer
+    ├── sfx.js            # Character skill, ult, UI & gacha procedural SFX
+    ├── shop.js           # Wallet persistence, Evolution specs & Diamond Skin Vault
+    ├── forms.js          # 2-tier evolution stages & previewable character forms
+    ├── faces.js          # Dynamic anime eyes, brows & expressions per fighter
+    ├── granny.js         # v1.2 animated Turbo Granny canvas renderer
+    ├── gacha.js          # Capsule gacha pulls, pity counter & collection tracker
+    └── characters/       # Modular fighter definitions, skills, costumes & weapons
 ```
 
 ---

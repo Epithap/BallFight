@@ -209,7 +209,7 @@
     color: "#1c1d24",
     radius: 29,
     speed: 355,
-    maxHp: 375,
+    maxHp: 620,
     damage: [0, 0],
     mass: 1.15,
     costume: "guts",

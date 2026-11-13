@@ -242,7 +242,7 @@
     color: "#6c5ce7",
     radius: 28,
     speed: 365,
-    maxHp: 350,
+    maxHp: 575,
     damage: [6, 10],
     mass: 1.05,
     costume: "jotaro",

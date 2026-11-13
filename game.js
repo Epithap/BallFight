@@ -27,6 +27,19 @@
     loadWallet,
     saveWallet,
     isFighterUnlocked,
+    EVOLUTION_SPECS,
+    isFighterEvolved,
+    isEvolutionEquipped,
+    setEvolutionEquipped,
+    evolveFighter,
+    SKIN_CATALOG,
+    isSkinUnlocked,
+    isSkinEquipped,
+    setSkinEquipped,
+    getEquippedSkinsForChar,
+    getEquippedSkin,
+    setEquippedSkin,
+    buySkin,
     SHOP_CATALOG,
     TURBO_GRANNY_QUOTES,
     drawTurboGranny,
@@ -45,7 +58,7 @@
   }
 
   // Helper to spawn a solid-outlined projectile entity aimed at the opponent
-  function spawnProjectile({ owner, target, x, y, speed, radius, damage, color, label, shape, onImpact, onOutOfBounds }) {
+  function spawnProjectile({ owner, target, x, y, speed, radius, damage, color, label, shape, slashTilt = 0, onImpact, onOutOfBounds }) {
     const dx = target.x - x;
     const dy = target.y - y;
     const len = Math.hypot(dx, dy) || 1;
@@ -60,6 +73,8 @@
       vy,
       radius,
       angle,
+      shape,
+      slashTilt,
       spin: 0,
       infinityHoldTimer: 0,
       infinityTagged: false,
@@ -84,8 +99,20 @@
           this.trail = 0.035;
           particles.push({ x: this.x, y: this.y, vx: 0, vy: 0, size: this.radius * 0.55, life: 0.2, maxLife: 0.2, color });
         }
-        if (shape === "rasenshuriken" || shape === "limitless_red" || shape === "hollow_purple" || shape === "fuga_arrow") {
-          this.spin += dt * 18 * Math.max(0.2, infFactor);
+        if (shape === "rasenshuriken" || shape === "bijuudama" || shape === "gran_rey_cero" || shape === "limitless_red" || shape === "hollow_purple" || shape === "fuga_arrow") {
+          this.spin += dt * (shape === "rasenshuriken" ? 28 : 18) * Math.max(0.2, infFactor);
+        }
+
+        // Rasenshuriken wind suction while flying toward target
+        if (shape === "rasenshuriken" && target && target.alive) {
+          const pdx = this.x - target.x;
+          const pdy = this.y - target.y;
+          const pDist = Math.hypot(pdx, pdy) || 1;
+          if (pDist < 140) {
+            const pull = 360 * (1 - pDist / 140);
+            target.vx += (pdx / pDist) * pull * dt;
+            target.vy += (pdy / pDist) * pull * dt;
+          }
         }
 
         // Out of arena bounds
@@ -142,29 +169,107 @@
           c.arc(0, 0, this.radius * 1.18, -Math.PI * 0.35, Math.PI * 0.35);
           c.stroke();
         } else if (shape === "rasenshuriken") {
-          // 4 spinning shuriken blades around Rasengan core
-          c.fillStyle = COLORS.white;
-          for (let i = 0; i < 4; i++) {
-            c.save();
-            c.rotate((Math.PI * 0.5) * i);
-            c.beginPath();
-            c.moveTo(0, -4);
-            c.lineTo(this.radius * 1.35, -this.radius * 0.38);
-            c.lineTo(this.radius * 0.95, 4);
-            c.closePath();
-            c.fill();
-            c.stroke();
-            c.restore();
+          if (BF.drawRasenshurikenDisc) {
+            BF.drawRasenshurikenDisc(c, this.radius, this.spin, 1);
           }
-          c.fillStyle = COLORS.blue;
+        } else if (this.shape === "black_getsuga") {
+          // Black Getsuga Tensho: pitch-black Bankai crescent with crimson-red spiritual pressure edge
+          c.fillStyle = "rgba(220, 38, 38, 0.34)";
           c.beginPath();
-          c.arc(0, 0, this.radius * 0.55, 0, Math.PI * 2);
+          c.arc(0, 0, this.radius * 1.62, -Math.PI * 0.52, Math.PI * 0.52);
+          c.quadraticCurveTo(
+            this.radius * 0.18,
+            0,
+            Math.cos(-Math.PI * 0.52) * this.radius * 1.62,
+            Math.sin(-Math.PI * 0.52) * this.radius * 1.62
+          );
+          c.closePath();
+          c.fill();
+
+          c.fillStyle = "#090205";
+          c.strokeStyle = "#ef4444";
+          c.lineWidth = 4;
+          c.beginPath();
+          c.arc(0, 0, this.radius * 1.48, -Math.PI * 0.5, Math.PI * 0.5);
+          c.quadraticCurveTo(
+            this.radius * 0.28,
+            0,
+            Math.cos(-Math.PI * 0.5) * this.radius * 1.48,
+            Math.sin(-Math.PI * 0.5) * this.radius * 1.48
+          );
+          c.closePath();
           c.fill();
           c.stroke();
-          c.fillStyle = COLORS.white;
+
+          c.strokeStyle = "#fecaca";
+          c.lineWidth = 2.2;
           c.beginPath();
-          c.arc(0, 0, this.radius * 0.24, 0, Math.PI * 2);
+          c.arc(0, 0, this.radius * 1.22, -Math.PI * 0.36, Math.PI * 0.36);
+          c.stroke();
+        } else if (this.shape === "gran_rey_cero") {
+          // Gran Rey Cero: crimson-black spatial distortion sphere
+          const pulse = 1 + 0.09 * Math.sin(this.spin * 2.4);
+          c.fillStyle = "rgba(220, 38, 38, 0.32)";
+          c.beginPath();
+          c.arc(0, 0, this.radius * 1.68 * pulse, 0, Math.PI * 2);
           c.fill();
+          c.strokeStyle = "#ef4444";
+          c.lineWidth = 2.6;
+          c.beginPath();
+          c.ellipse(0, 0, this.radius * 1.5, this.radius * 0.54, this.spin * 0.75, 0, Math.PI * 2);
+          c.stroke();
+          c.strokeStyle = "#090205";
+          c.beginPath();
+          c.ellipse(0, 0, this.radius * 1.5, this.radius * 0.54, -this.spin * 0.75, 0, Math.PI * 2);
+          c.stroke();
+          c.fillStyle = "#dc2626";
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 3.5;
+          c.beginPath();
+          c.arc(0, 0, this.radius, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+          c.fillStyle = "#090205";
+          c.beginPath();
+          c.arc(0, 0, this.radius * 0.68, 0, Math.PI * 2);
+          c.fill();
+          c.strokeStyle = COLORS.white;
+          c.lineWidth = 2.2;
+          c.beginPath();
+          c.arc(0, 0, this.radius * 0.7, 0, Math.PI * 2);
+          c.stroke();
+        } else if (this.shape === "bijuudama") {
+          // Dense compressed Bijuudama (Tailed Beast Bomb) sphere
+          const pulse = 1 + 0.09 * Math.sin(this.spin * 2.2);
+          c.fillStyle = "rgba(220, 38, 38, 0.28)";
+          c.beginPath();
+          c.arc(0, 0, this.radius * 1.65 * pulse, 0, Math.PI * 2);
+          c.fill();
+          c.strokeStyle = "#ef4444";
+          c.lineWidth = 2.6;
+          c.beginPath();
+          c.ellipse(0, 0, this.radius * 1.48, this.radius * 0.56, this.spin * 0.7, 0, Math.PI * 2);
+          c.stroke();
+          c.strokeStyle = "#c084fc";
+          c.beginPath();
+          c.ellipse(0, 0, this.radius * 1.48, this.radius * 0.56, -this.spin * 0.7, 0, Math.PI * 2);
+          c.stroke();
+          c.fillStyle = "#581c87";
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 3.5;
+          c.beginPath();
+          c.arc(0, 0, this.radius, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+          c.fillStyle = "#0f0206";
+          c.beginPath();
+          c.arc(0, 0, this.radius * 0.74, 0, Math.PI * 2);
+          c.fill();
+          c.strokeStyle = "#fecaca";
+          c.lineWidth = 2.2;
+          c.beginPath();
+          c.arc(0, 0, this.radius * 0.76, 0, Math.PI * 2);
+          c.stroke();
         } else if (this.shape === "limitless_red") {
           // Elegant Reversal Red cursed energy orb
           c.fillStyle = "rgba(255, 30, 66, 0.28)";
@@ -219,24 +324,52 @@
           c.arc(0, 0, this.radius * 0.68, 0, Math.PI * 2);
           c.stroke();
         } else if (this.shape === "dismantle_slash") {
-          // Bold curved crescent slash blade (tapered sharp tips)
-          const R = this.radius * 1.45;
+          // Sleek, razor-sharp curved crescent slash wave slicing straight forward
+          const R = this.radius * 2.35;
+          const cx0 = -R * 0.86;
+          const aSpan = 0.56;
+          const tx = cx0 + Math.cos(-aSpan) * R;
+          const ty = Math.sin(-aSpan) * R;
+          c.save();
+          if (this.slashTilt) c.rotate(this.slashTilt);
+          c.lineCap = "round";
+          c.lineJoin = "round";
+
+          // Straight wind-cut trails behind the curved slash
+          c.strokeStyle = "rgba(239, 68, 68, 0.55)";
+          c.lineWidth = 2.2;
+          for (const wy of [-ty * 0.65, 0, ty * 0.65]) {
+            c.beginPath();
+            c.moveTo(-22, wy);
+            c.lineTo(4, wy);
+            c.stroke();
+          }
+
+          // Trailing ghost slash arc behind main blade
+          c.strokeStyle = "rgba(185, 28, 28, 0.52)";
+          c.lineWidth = 3.5;
+          c.beginPath();
+          c.arc(cx0 - 9, 0, R, -aSpan * 0.88, aSpan * 0.88);
+          c.stroke();
+
+          // Sleek tapered curved crescent slash body
           c.fillStyle = "#dc2626";
           c.strokeStyle = COLORS.ink;
-          c.lineWidth = 3;
+          c.lineWidth = 3.2;
           c.beginPath();
-          c.arc(-R * 0.25, 0, R, -Math.PI * 0.42, Math.PI * 0.42);
-          c.quadraticCurveTo(R * 0.38, 0, -R * 0.25 + Math.cos(-Math.PI * 0.42) * R, Math.sin(-Math.PI * 0.42) * R);
+          c.arc(cx0, 0, R, -aSpan, aSpan);
+          c.quadraticCurveTo(cx0 + R * 0.89, 0, tx, ty);
           c.closePath();
           c.fill();
           c.stroke();
 
-          c.strokeStyle = "#fecaca";
-          c.lineWidth = 2.4;
-          c.lineCap = "round";
+          // Razor white-hot leading edge along the curve
+          c.strokeStyle = "#fff1f2";
+          c.lineWidth = 2.2;
           c.beginPath();
-          c.arc(-R * 0.2, 0, R * 0.88, -Math.PI * 0.3, Math.PI * 0.3);
+          c.arc(cx0 - 1.5, 0, R, -aSpan * 0.78, aSpan * 0.78);
           c.stroke();
+          c.restore();
         } else if (this.shape === "fuga_arrow") {
           // Blazing Divine Flame: Open (Fuga) Fire Arrow with multi-layer inferno aura
           const pulse = 1 + 0.12 * Math.sin(this.spin * 2.2);
@@ -394,29 +527,107 @@
       }
       c.save();
       c.translate(ox, oy);
-      c.rotate(p * p * 36);
-      if (k.blades) {
-        const bp = Math.max(0, Math.min(1, (p - 0.4) / 0.6));
-        c.fillStyle = COLORS.white; c.strokeStyle = COLORS.ink; c.lineWidth = 3;
-        for (let i = 0; i < 4; i++) {
-          c.save(); c.rotate((Math.PI / 2) * i);
-          c.beginPath();
-          c.moveTo(0, -4); c.lineTo(R * 1.35 * bp, -R * 0.38 * bp); c.lineTo(R * 0.95 * bp, 4);
-          c.closePath(); c.fill(); c.stroke(); c.restore();
+      c.rotate(p * p * 40);
+      if (k.blades && BF.drawRasenshurikenDisc) {
+        const bp = Math.max(0, Math.min(1, (p - 0.25) / 0.75));
+        BF.drawRasenshurikenDisc(c, R, p * p * 40, bp);
+      } else {
+        const cr = R;
+        c.beginPath(); c.arc(0, 0, cr, 0, Math.PI * 2);
+        c.fillStyle = k.color; c.fill();
+        c.lineWidth = 4; c.strokeStyle = COLORS.ink; c.stroke();
+        c.strokeStyle = COLORS.white; c.lineWidth = 3;
+        for (let i = 0; i < 3; i++) {
+          const a = (Math.PI * 2 * i) / 3;
+          c.beginPath(); c.arc(0, 0, cr * 0.62, a, a + Math.PI * 0.48); c.stroke();
         }
+        c.fillStyle = COLORS.white;
+        c.beginPath(); c.arc(0, 0, cr * 0.25, 0, Math.PI * 2); c.fill();
       }
-      const cr = R * (k.blades ? 0.55 : 1);
-      c.beginPath(); c.arc(0, 0, cr, 0, Math.PI * 2);
-      c.fillStyle = k.color; c.fill();
-      c.lineWidth = 4; c.strokeStyle = COLORS.ink; c.stroke();
-      c.strokeStyle = COLORS.white; c.lineWidth = 3;
-      for (let i = 0; i < 3; i++) {
-        const a = (Math.PI * 2 * i) / 3;
-        c.beginPath(); c.arc(0, 0, cr * 0.62, a, a + Math.PI * 0.48); c.stroke();
-      }
-      c.fillStyle = COLORS.white;
-      c.beginPath(); c.arc(0, 0, cr * 0.25, 0, Math.PI * 2); c.fill();
       c.restore();
+    } else if (k.kind === "bijuudama") {
+      const cx = ball.x + ux * (ball.radius + 26);
+      const cy = ball.y + uy * (ball.radius + 26);
+      if (tg && p > 0.45) {
+        c.save();
+        c.setLineDash([12, 8]); c.lineWidth = 5; c.strokeStyle = "#ef4444"; c.globalAlpha = 0.76;
+        c.beginPath(); c.moveTo(cx, cy); c.lineTo(tg.x, tg.y); c.stroke();
+        c.restore();
+      }
+      // Positive (black-violet) & Negative (crimson-red) chakra particles compressing into Bijuudama
+      for (let i = 0; i < 10; i++) {
+        const a = (Math.PI * 2 * i) / 10 + p * 4.2;
+        const f = (p * 2.6 + i / 10) % 1;
+        const dist = (1 - f) * 44 + 10;
+        const px = cx + Math.cos(a) * dist;
+        const py = cy + Math.sin(a) * dist;
+        c.fillStyle = i % 2 === 0 ? "#ef4444" : "#3b0764";
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 2;
+        c.beginPath();
+        c.arc(px, py, 4.5 * (1 - f * 0.4), 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+      }
+      const br = 12 + easeOut(p) * 20;
+      c.fillStyle = "rgba(220, 38, 38, 0.34)";
+      c.beginPath();
+      c.arc(cx, cy, br * 1.55, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#581c87";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 3.2;
+      c.beginPath();
+      c.arc(cx, cy, br, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
+      c.fillStyle = "#0f0206";
+      c.beginPath();
+      c.arc(cx, cy, br * 0.72, 0, Math.PI * 2);
+      c.fill();
+      c.strokeStyle = "#fecaca";
+      c.lineWidth = 2.2;
+      c.stroke();
+    } else if (k.kind === "gran_rey_cero") {
+      const cx = ball.x + ux * (ball.radius + 26);
+      const cy = ball.y + uy * (ball.radius + 26);
+      if (tg && p > 0.45) {
+        c.save();
+        c.setLineDash([12, 8]); c.lineWidth = 5; c.strokeStyle = "#ef4444"; c.globalAlpha = 0.78;
+        c.beginPath(); c.moveTo(cx, cy); c.lineTo(tg.x, tg.y); c.stroke();
+        c.restore();
+      }
+      // Crimson-black Cero spiritual lightning converging between Vasto Lorde horns
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI * 2 * i) / 8 - p * 4.5;
+        const f = (p * 2.5 + i / 8) % 1;
+        const d1 = 12 + (1 - f) * 38;
+        const d0 = d1 + 14;
+        c.beginPath();
+        c.moveTo(cx + Math.cos(a) * d0, cy + Math.sin(a) * d0);
+        c.lineTo(cx + Math.cos(a) * d1, cy + Math.sin(a) * d1);
+        c.lineWidth = 4.5; c.strokeStyle = "#090205"; c.stroke();
+        c.lineWidth = 2.2; c.strokeStyle = "#ef4444"; c.stroke();
+      }
+      const cr = 12 + easeOut(p) * 21;
+      c.fillStyle = "rgba(220, 38, 38, 0.35)";
+      c.beginPath();
+      c.arc(cx, cy, cr * 1.55, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#dc2626";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 3.2;
+      c.beginPath();
+      c.arc(cx, cy, cr, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
+      c.fillStyle = "#090205";
+      c.beginPath();
+      c.arc(cx, cy, cr * 0.68, 0, Math.PI * 2);
+      c.fill();
+      c.strokeStyle = COLORS.white;
+      c.lineWidth = 2.2;
+      c.stroke();
     } else if (k.kind === "hollow_purple") {
       const cx = ball.x + ux * (ball.radius + 26);
       const cy = ball.y + uy * (ball.radius + 26);
@@ -875,15 +1086,70 @@
     }
   }
 
+  // Per-slot Evolution Override so P1 (slot 0) and P2 (slot 1) can independently pick Starter (Base) vs Evolved!
+  const slotEvoOverrides = [{}, {}];
+
+  function isSlotEvoEquipped(slotIdx, charId) {
+    if (!isFighterEvolved || !isFighterEvolved(charId)) return false;
+    const slotMap = slotEvoOverrides[slotIdx];
+    if (slotMap && slotMap[charId] !== undefined) {
+      return Boolean(slotMap[charId]);
+    }
+    return Boolean(isEvolutionEquipped && isEvolutionEquipped(charId));
+  }
+
+  function setSlotEvoEquipped(slotIdx, charId, enabled) {
+    if (!isFighterEvolved || !isFighterEvolved(charId)) return false;
+    // Lock in the other slot's current state before changing this slot so the other slot never flips!
+    const otherSlot = slotIdx === 0 ? 1 : 0;
+    if (slotEvoOverrides[otherSlot][charId] === undefined) {
+      slotEvoOverrides[otherSlot][charId] = isSlotEvoEquipped(otherSlot, charId);
+    }
+    slotEvoOverrides[slotIdx][charId] = Boolean(enabled);
+    if (setEvolutionEquipped) setEvolutionEquipped(charId, Boolean(enabled));
+    return true;
+  }
+
+  function getEffectiveCharConfig(charId, slotIdx = null) {
+    const base = CHARACTER_ROSTER[charId] || CHARACTER_ROSTER.goku;
+    const spec = EVOLUTION_SPECS && EVOLUTION_SPECS[base.id];
+    const useEvo = Boolean(
+      spec && (slotIdx === 0 || slotIdx === 1
+        ? isSlotEvoEquipped(slotIdx, base.id)
+        : (isEvolutionEquipped && isEvolutionEquipped(base.id)))
+    );
+    const eqSkin = getEquippedSkin ? getEquippedSkin(base.id) : null;
+    const eqSkins = getEquippedSkinsForChar ? getEquippedSkinsForChar(base.id) : (eqSkin ? [eqSkin] : []);
+    if (!useEvo) return { ...base, evolved: false, skin: eqSkin, skins: eqSkins };
+    return {
+      ...base,
+      evolved: true,
+      skin: eqSkin,
+      skins: eqSkins,
+      name: spec.evolvedName || base.name,
+      role: spec.evolvedRole || base.role,
+      maxHp: base.maxHp + (spec.bonusHp || 0),
+      speed: base.speed + (spec.bonusSpeed || 0),
+    };
+  }
+
   const selectedRosterIds = ["goku", "naruto"];
   const BALL_CONFIGS = [
-    CHARACTER_ROSTER[selectedRosterIds[0]],
-    CHARACTER_ROSTER[selectedRosterIds[1]],
+    getEffectiveCharConfig(selectedRosterIds[0], 0),
+    getEffectiveCharConfig(selectedRosterIds[1], 1),
   ];
+
+  function refreshSlotConfigs() {
+    BALL_CONFIGS[0] = getEffectiveCharConfig(selectedRosterIds[0], 0);
+    BALL_CONFIGS[1] = getEffectiveCharConfig(selectedRosterIds[1], 1);
+  }
 
   class Ball {
     constructor(config, { x, y, angle }) {
       this.name = config.name;
+      this.evolved = Boolean(config.evolved);
+      this.skin = config.skin || null;
+      this.skins = Array.isArray(config.skins) ? [...config.skins] : (config.skin ? [config.skin] : []);
       this.color = config.color;
       this.radius = config.radius;
       this.baseRadius = config.radius;
@@ -909,6 +1175,14 @@
       this.cleaveDashHit = false;
       this.apeMode = false;
       this.apeErraticTimer = 0;
+      this.kyuubiMode = false;
+      this.kyuubiSlashTimer = 0;
+      this.kyuubiSlashHit = false;
+      this.vastoLordeMode = false;
+      this.innerDemonMode = false;
+      this.shunpoDashTimer = 0;
+      this.shunpoDashHit = false;
+      this.ichigoNextMove = "getsuga";
       this.standAttackTimer = 0;
       this.standState = null;
       this.knifeWaveTimer = 0;
@@ -1068,7 +1342,7 @@
   const detailAuraStatus = document.getElementById("detail-aura-status");
   const detailAuraRow = document.getElementById("detail-aura-row");
 
-  let detailFormPreview = false;
+  let detailFormId = "base";
   const shopCoinsDisplay = document.getElementById("shop-coins-display");
   const shopGemsDisplay = document.getElementById("shop-gems-display");
   const merchantCanvas = document.getElementById("merchant-canvas");
@@ -1140,8 +1414,9 @@
   const sessionStats = {
     matches: 0,
     wins: 0,
-    charsUsed: { goku: 1, naruto: 1 },
+    charsUsed: {},
   };
+  try { Object.assign(sessionStats, JSON.parse(localStorage.getItem("bf_profile_v1") || "{}")); } catch (_) {}
 
   let hitStop = 0;
   let shakeTime = 0;
@@ -1209,8 +1484,156 @@
   });
 
   function spawnDomainClashEffect(x, y, duration, b1, b2, spec1, spec2, g) {
+    const b1IsLeft = b1.x <= b2.x;
+    const leftB = b1IsLeft ? b1 : b2;
+    const rightB = b1IsLeft ? b2 : b1;
+    const leftSpec = b1IsLeft ? spec1 : spec2;
+    const rightSpec = b1IsLeft ? spec2 : spec1;
+
     let meter = 0.5;
+    let meterVel = 0;
     let resolved = false;
+    const shrineSlashes = [];
+    const barrierShards = [];
+    for (let i = 0; i < 14; i++) {
+      barrierShards.push({
+        yOff: (i / 14) * WORLD_SIZE + 15,
+        xOff: (rng() - 0.5) * 44,
+        size: 7 + rng() * 10,
+        rot: rng() * Math.PI * 2,
+        vRot: (rng() - 0.5) * 8,
+        side: i % 2 === 0 ? -1 : 1,
+      });
+    }
+
+    function renderSideDomain(c, spec, fighter, centerX, isLeft, t) {
+      if (spec.type === "malevolent_shrine") {
+        c.fillStyle = "#160205";
+        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+        // Radial manga speed-lines behind Shrine
+        c.save();
+        c.translate(centerX, WORLD_SIZE * 0.44);
+        c.strokeStyle = "rgba(220, 38, 38, 0.22)";
+        c.lineWidth = 2.5;
+        for (let i = 0; i < 18; i++) {
+          const a = (i / 18) * Math.PI * 2 + t * 0.6;
+          c.beginPath();
+          c.moveTo(Math.cos(a) * 45, Math.sin(a) * 45);
+          c.lineTo(Math.cos(a) * 320, Math.sin(a) * 320);
+          c.stroke();
+        }
+        c.restore();
+
+        if (BF.drawMalevolentShrineBackdrop) {
+          BF.drawMalevolentShrineBackdrop(c, centerX, WORLD_SIZE * 0.45, 0.92, t, 1);
+        }
+
+        // Cursed Shrine aura seal beneath Sukuna
+        if (fighter && fighter.alive) {
+          c.save();
+          c.translate(fighter.x, fighter.y);
+          c.strokeStyle = "#dc2626";
+          c.lineWidth = 3.5;
+          c.beginPath();
+          c.arc(0, 0, fighter.radius + 16 + Math.sin(t * 28) * 3, 0, Math.PI * 2);
+          c.stroke();
+          c.strokeStyle = "#fca5a5";
+          c.lineWidth = 2;
+          c.beginPath();
+          c.arc(0, 0, fighter.radius + 9, t * 10, t * 10 + Math.PI * 1.3);
+          c.stroke();
+          c.restore();
+        }
+
+        // Relentless Shrine slashes tearing across Sukuna's domain side
+        c.lineCap = "round";
+        for (const s of shrineSlashes) {
+          const sx = isLeft ? s.rx * centerX * 1.9 : centerX + (s.rx - 0.5) * (WORLD_SIZE - centerX) * 1.8;
+          c.save();
+          c.translate(sx, s.y);
+          c.rotate(s.ang);
+          c.globalAlpha = Math.max(0, s.life / 0.2);
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 6;
+          c.beginPath();
+          c.moveTo(-s.len, 0);
+          c.lineTo(s.len, 0);
+          c.stroke();
+          c.strokeStyle = "#ef4444";
+          c.lineWidth = 3.2;
+          c.beginPath();
+          c.moveTo(-s.len, 0);
+          c.lineTo(s.len, 0);
+          c.stroke();
+          c.strokeStyle = "#ffffff";
+          c.lineWidth = 1.4;
+          c.beginPath();
+          c.moveTo(-s.len * 0.72, 0);
+          c.lineTo(s.len * 0.72, 0);
+          c.stroke();
+          c.restore();
+        }
+      } else {
+        c.fillStyle = "#020612";
+        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+        // Cosmic nebula streaks & infinity grid lines
+        c.save();
+        c.translate(centerX, WORLD_SIZE * 0.43);
+        c.strokeStyle = "rgba(56, 189, 248, 0.2)";
+        c.lineWidth = 2;
+        for (let i = 0; i < 18; i++) {
+          const a = (i / 18) * Math.PI * 2 - t * 0.7;
+          c.beginPath();
+          c.moveTo(Math.cos(a) * 52, Math.sin(a) * 52);
+          c.lineTo(Math.cos(a) * 320, Math.sin(a) * 320);
+          c.stroke();
+        }
+        c.restore();
+
+        if (BF.drawUnlimitedVoidBackdrop) {
+          BF.drawUnlimitedVoidBackdrop(c, centerX, WORLD_SIZE * 0.43, 0.92, t, 1);
+        }
+
+        // Iconic white manga ink splatters & spatial streaks on Gojo's side
+        const edgeX = isLeft ? 28 : WORLD_SIZE - 28;
+        const dir = isLeft ? 1 : -1;
+        c.fillStyle = "#ffffff";
+        for (const [ox, oy, r] of [[0, 38, 16], [dir * 26, 24, 10], [dir * 8, 72, 12], [0, 420, 18], [dir * 28, 442, 13]]) {
+          c.beginPath();
+          c.arc(edgeX + ox, oy, r, 0, Math.PI * 2);
+          c.fill();
+        }
+        c.strokeStyle = "#ffffff";
+        c.lineWidth = 5;
+        c.lineCap = "round";
+        c.beginPath();
+        c.moveTo(edgeX, 24);
+        c.lineTo(edgeX + dir * 88, 96);
+        c.moveTo(edgeX, 438);
+        c.lineTo(edgeX + dir * 94, 388);
+        c.stroke();
+
+        // Six Eyes Infinity halo beneath Gojo
+        if (fighter && fighter.alive) {
+          c.save();
+          c.translate(fighter.x, fighter.y);
+          c.strokeStyle = "#38bdf8";
+          c.lineWidth = 3.5;
+          c.beginPath();
+          c.arc(0, 0, fighter.radius + 16 + Math.sin(t * 28) * 3, 0, Math.PI * 2);
+          c.stroke();
+          c.strokeStyle = "#e0f2fe";
+          c.lineWidth = 2;
+          c.beginPath();
+          c.arc(0, 0, fighter.radius + 9, -t * 10, -t * 10 + Math.PI * 1.3);
+          c.stroke();
+          c.restore();
+        }
+      }
+    }
+
     return {
       x,
       y,
@@ -1220,30 +1643,93 @@
       dead: false,
       update(dt) {
         this.life -= dt;
-        meter = Math.max(0.15, Math.min(0.85, meter + (rng() - 0.5) * 0.14));
+        const t = 1 - Math.max(0, this.life / this.maxLife);
+
+        // Dynamic tug-of-war oscillation with high-tension swings
+        meterVel += (rng() - 0.5) * 2.4 * dt;
+        meterVel += (0.5 - meter) * 1.8 * dt;
+        meterVel *= 0.92;
+        meter = Math.max(0.24, Math.min(0.76, meter + meterVel + (rng() - 0.5) * 0.035));
+
+        const splitX = WORLD_SIZE * meter;
+        // Stage left & right fighters in front of their towering Domains like the manga panel!
+        if (leftB && leftB.alive) {
+          const targetLX = Math.max(leftB.radius + 36, Math.min(splitX - leftB.radius - 32, splitX * 0.5));
+          const targetLY = WORLD_SIZE * 0.66;
+          leftB.x += (targetLX - leftB.x) * Math.min(1, dt * 10) + (rng() - 0.5) * 3.2;
+          leftB.y += (targetLY - leftB.y) * Math.min(1, dt * 10) + (rng() - 0.5) * 3.2;
+          leftB.vx = 0;
+          leftB.vy = 0;
+          leftB.domainClashTimer = Math.max(0.05, this.life);
+        }
+        if (rightB && rightB.alive) {
+          const targetRX = Math.min(WORLD_SIZE - rightB.radius - 36, Math.max(splitX + rightB.radius + 32, splitX + (WORLD_SIZE - splitX) * 0.5));
+          const targetRY = WORLD_SIZE * 0.66;
+          rightB.x += (targetRX - rightB.x) * Math.min(1, dt * 10) + (rng() - 0.5) * 3.2;
+          rightB.y += (targetRY - rightB.y) * Math.min(1, dt * 10) + (rng() - 0.5) * 3.2;
+          rightB.vx = 0;
+          rightB.vy = 0;
+          rightB.domainClashTimer = Math.max(0.05, this.life);
+        }
+
+        if (rng() < 0.9) {
+          shrineSlashes.push({
+            rx: 0.12 + rng() * 0.76,
+            y: 45 + rng() * (WORLD_SIZE - 90),
+            ang: (rng() - 0.5) * Math.PI * 0.85,
+            len: 26 + rng() * 44,
+            life: 0.2,
+          });
+        }
+        for (let i = shrineSlashes.length - 1; i >= 0; i--) {
+          shrineSlashes[i].life -= dt;
+          if (shrineSlashes[i].life <= 0) shrineSlashes.splice(i, 1);
+        }
+        for (const sh of barrierShards) {
+          sh.rot += sh.vRot * dt;
+        }
+
+        // Periodic clash shockwaves & sparks along the boundary
+        if (rng() < 0.35) {
+          const sy = 80 + rng() * (WORLD_SIZE - 160);
+          particles.push({
+            x: splitX + (rng() - 0.5) * 18,
+            y: sy,
+            vx: (rng() - 0.5) * 220,
+            vy: (rng() - 0.5) * 220,
+            size: 4 + rng() * 4,
+            life: 0.22,
+            maxLife: 0.22,
+            color: rng() < 0.5 ? leftSpec.color : rightSpec.color,
+          });
+        }
+        shakeTime = Math.max(shakeTime, 0.08);
+        shakeIntensity = Math.max(shakeIntensity, 3.5 + t * 3);
+
         if (this.life <= 0 && !resolved) {
           resolved = true;
           this.dead = true;
           b1.domainClashTimer = 0;
           b2.domainClashTimer = 0;
-          const b1Wins = rng() < 0.5;
-          const winner = b1Wins ? b1 : b2;
-          const loser = b1Wins ? b2 : b1;
-          const winSpec = b1Wins ? spec1 : spec2;
+          const leftWins = rng() < 0.5;
+          const winner = leftWins ? leftB : rightB;
+          const loser = leftWins ? rightB : leftB;
+          const winSpec = leftWins ? leftSpec : rightSpec;
 
           const dealt = g.applyDamage(loser, 18);
           const kAng = Math.atan2(loser.y - winner.y, loser.x - winner.x);
           loser.vx = Math.cos(kAng) * 650;
           loser.vy = Math.sin(kAng) * 650;
-          loser.flashTimer = 0.2;
+          loser.flashTimer = 0.22;
           loser.squash = 1.0;
 
-          g.entities.push(spawnShockRing(x, y, winSpec.color, 180, 0.52));
+          g.entities.push(spawnShockRing(splitX, WORLD_SIZE * 0.5, winSpec.color, 220, 0.55));
+          g.entities.push(spawnShockRing(splitX, WORLD_SIZE * 0.5, COLORS.white, 150, 0.38));
           g.entities.push(spawnBanner(`DOMAIN OVERPOWER: ${winSpec.name}!`, winSpec.color));
           g.spawnDamageText(loser.x, loser.y - loser.radius - 16, dealt, winSpec.color, true, "DOMAIN SHATTERED!");
           g.sound.playCritHit();
-          shakeTime = Math.max(shakeTime, 0.45);
-          shakeIntensity = Math.max(shakeIntensity, 10);
+          shakeTime = Math.max(shakeTime, 0.48);
+          shakeIntensity = Math.max(shakeIntensity, 11);
 
           if (winSpec.createDomain) {
             g.entities.push(winSpec.createDomain());
@@ -1255,46 +1741,257 @@
       },
       render(c) {
         const t = 1 - Math.max(0, this.life / this.maxLife);
-        c.save();
-        c.fillStyle = "rgba(8, 6, 18, 0.45)";
-        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+        const splitX = WORLD_SIZE * meter;
+        const leftCenterX = splitX * 0.5;
+        const rightCenterX = splitX + (WORLD_SIZE - splitX) * 0.5;
 
-        // Split clash aura
-        c.globalAlpha = 0.28;
-        c.fillStyle = spec1.color;
-        c.fillRect(0, 0, WORLD_SIZE * meter, WORLD_SIZE);
-        c.fillStyle = spec2.color;
-        c.fillRect(WORLD_SIZE * meter, 0, WORLD_SIZE * (1 - meter), WORLD_SIZE);
+        // Build jagged spatial fault line from top to bottom
+        const segs = 14;
+        const faultPts = [];
+        for (let i = 0; i <= segs; i++) {
+          const py = (i / segs) * WORLD_SIZE;
+          const edgeDamp = i === 0 || i === segs ? 0 : 1;
+          const wave = Math.sin(t * 38 + i * 1.9) * 11 + Math.cos(t * 62 - i * 2.7) * 6;
+          faultPts.push([splitX + wave * edgeDamp, py]);
+        }
+
+        c.save();
+
+        // 1. LEFT SORCERER DOMAIN TERRITORY (Clipped to left of spatial fault line)
+        c.save();
+        c.beginPath();
+        c.moveTo(0, 0);
+        for (const [fx, fy] of faultPts) c.lineTo(fx, fy);
+        c.lineTo(0, WORLD_SIZE);
+        c.closePath();
+        c.clip();
+        renderSideDomain(c, leftSpec, leftB, leftCenterX, true, t);
+        c.restore();
+
+        // 2. RIGHT SORCERER DOMAIN TERRITORY (Clipped to right of spatial fault line)
+        c.save();
+        c.beginPath();
+        c.moveTo(WORLD_SIZE, 0);
+        for (const [fx, fy] of faultPts) c.lineTo(fx, fy);
+        c.lineTo(WORLD_SIZE, WORLD_SIZE);
+        c.closePath();
+        c.clip();
+        renderSideDomain(c, rightSpec, rightB, rightCenterX, false, t);
+        c.restore();
+
+        // 3. FLOATING SHATTERED BARRIER GLASS SHARDS ALONG THE RIFT
+        for (const sh of barrierShards) {
+          c.save();
+          c.translate(splitX + sh.xOff, sh.yOff);
+          c.rotate(sh.rot);
+          c.fillStyle = sh.side < 0 ? leftSpec.color : rightSpec.color;
+          c.strokeStyle = COLORS.white;
+          c.lineWidth = 1.8;
+          c.beginPath();
+          c.moveTo(0, -sh.size);
+          c.lineTo(sh.size * 0.75, sh.size * 0.2);
+          c.lineTo(-sh.size * 0.6, sh.size * 0.8);
+          c.closePath();
+          c.fill();
+          c.stroke();
+          c.restore();
+        }
+
+        // 4. SPATIAL FAULT LINE & CURSED LIGHTNING CRACKS
+        c.save();
+        c.lineCap = "round";
+        c.lineJoin = "round";
+
+        // Outer cursed energy clash glow
+        c.strokeStyle = "#a855f7";
+        c.lineWidth = 16 + Math.sin(t * 50) * 4;
+        c.globalAlpha = 0.55;
+        c.beginPath();
+        for (let i = 0; i < faultPts.length; i++) {
+          if (i === 0) c.moveTo(faultPts[i][0], faultPts[i][1]);
+          else c.lineTo(faultPts[i][0], faultPts[i][1]);
+        }
+        c.stroke();
         c.globalAlpha = 1;
 
-        // Clash shockline at center
-        const cx = WORLD_SIZE * meter;
-        c.strokeStyle = COLORS.white;
-        c.lineWidth = 4 + Math.sin(t * 45) * 2;
+        // Thick black manga crack border
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 10;
         c.beginPath();
-        c.moveTo(cx, 0);
-        c.lineTo(cx, WORLD_SIZE);
+        for (let i = 0; i < faultPts.length; i++) {
+          if (i === 0) c.moveTo(faultPts[i][0], faultPts[i][1]);
+          else c.lineTo(faultPts[i][0], faultPts[i][1]);
+        }
         c.stroke();
 
-        // Clash Tug-of-war bar
-        const bw = 220;
-        const bh = 16;
-        const bx = WORLD_SIZE * 0.5 - bw * 0.5;
-        const by = 64;
-        c.fillStyle = COLORS.ink;
-        c.fillRect(bx - 4, by - 4, bw + 8, bh + 8);
-        c.fillStyle = spec1.color;
-        c.fillRect(bx, by, bw * meter, bh);
-        c.fillStyle = spec2.color;
-        c.fillRect(bx + bw * meter, by, bw * (1 - meter), bh);
+        // Blinding white spatial fracture core
+        c.strokeStyle = COLORS.white;
+        c.lineWidth = 4.5;
+        c.beginPath();
+        for (let i = 0; i < faultPts.length; i++) {
+          if (i === 0) c.moveTo(faultPts[i][0], faultPts[i][1]);
+          else c.lineTo(faultPts[i][0], faultPts[i][1]);
+        }
+        c.stroke();
 
-        c.font = "900 14px 'Arial Black', sans-serif";
-        c.textAlign = "center";
+        // Branching lateral lightning arcs off the fault line
+        for (let i = 2; i < faultPts.length - 2; i += 2) {
+          const [bx, by] = faultPts[i];
+          const dir = i % 4 === 0 ? -1 : 1;
+          const col = dir < 0 ? leftSpec.color : rightSpec.color;
+          const reach = 26 + Math.sin(t * 45 + i) * 14;
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 5;
+          c.beginPath();
+          c.moveTo(bx, by);
+          c.lineTo(bx + dir * reach * 0.55, by - 10);
+          c.lineTo(bx + dir * reach, by + 8);
+          c.stroke();
+          c.strokeStyle = col;
+          c.lineWidth = 2.5;
+          c.stroke();
+        }
+
+        // Central Clash Singularity Core where both domains collide
+        const coreY = WORLD_SIZE * 0.52;
+        const coreX = faultPts[Math.floor(segs * 0.52)][0];
+        const pulse = 1 + Math.sin(t * 55) * 0.22;
+        c.save();
+        c.translate(coreX, coreY);
+        c.fillStyle = "rgba(168, 85, 247, 0.38)";
+        c.beginPath();
+        c.arc(0, 0, 46 * pulse, 0, Math.PI * 2);
+        c.fill();
+
+        // Sharp manga impact rays at collision point
+        for (let i = 0; i < 12; i++) {
+          const ang = (Math.PI * 2 * i) / 12 + t * 14;
+          const len = (24 + (i % 2) * 20) * pulse;
+          c.strokeStyle = i % 2 === 0 ? leftSpec.color : rightSpec.color;
+          c.lineWidth = 4;
+          c.beginPath();
+          c.moveTo(Math.cos(ang) * 8, Math.sin(ang) * 8);
+          c.lineTo(Math.cos(ang) * len, Math.sin(ang) * len);
+          c.stroke();
+          c.strokeStyle = COLORS.white;
+          c.lineWidth = 1.8;
+          c.stroke();
+        }
         c.fillStyle = COLORS.white;
         c.strokeStyle = COLORS.ink;
+        c.lineWidth = 3.5;
+        c.beginPath();
+        c.arc(0, 0, 14 * pulse, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+        c.restore();
+        c.restore();
+
+        // 5. MANGA DOMAIN CALLOUT PLAQUES (Bottom Left & Bottom Right)
+        c.save();
+        c.font = `bold 12px ${FONT}`;
+        c.textBaseline = "middle";
+        const drawPlaque = (px, py, align, title, sub, col) => {
+          c.save();
+          c.translate(px, py);
+          c.rotate(align === "left" ? -0.04 : 0.04);
+          const pw = 168;
+          const ph = 34;
+          const rx = align === "left" ? 0 : -pw;
+          c.fillStyle = COLORS.ink;
+          c.beginPath();
+          c.roundRect(rx, 3, pw, ph, 7);
+          c.fill();
+          c.fillStyle = "rgba(15, 10, 25, 0.92)";
+          c.strokeStyle = col;
+          c.lineWidth = 3;
+          c.beginPath();
+          c.roundRect(rx, 0, pw, ph, 7);
+          c.fill();
+          c.stroke();
+
+          c.textAlign = align;
+          const tx = align === "left" ? 10 : -10;
+          c.font = `bold 11px ${FONT}`;
+          c.fillStyle = col;
+          c.fillText(sub, tx, 11);
+          c.font = `bold 13px ${FONT}`;
+          c.fillStyle = COLORS.white;
+          c.fillText(title, tx, 24);
+          c.restore();
+        };
+        const lTag = (leftB ? (leftB.shortName || leftB.costume || leftB.name) : "P1").toUpperCase();
+        const rTag = (rightB ? (rightB.shortName || rightB.costume || rightB.name) : "P2").toUpperCase();
+        drawPlaque(14, WORLD_SIZE - 52, "left", leftSpec.name, `${lTag} • DOMAIN`, leftSpec.color);
+        drawPlaque(WORLD_SIZE - 14, WORLD_SIZE - 52, "right", rightSpec.name, `${rTag} • DOMAIN`, rightSpec.color);
+        c.restore();
+
+        // 6. CHUNKY ANIME TUG-OF-WAR DOMAIN CLASH METER (Top-Center)
+        const barW = 336;
+        const barH = 26;
+        const barX = (WORLD_SIZE - barW) * 0.5;
+        const barY = 72;
+        const barSplitX = barX + barW * meter;
+        const p1Pct = Math.round(meter * 100);
+        const p2Pct = 100 - p1Pct;
+
+        c.font = `bold 15px ${FONT}`;
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+        c.lineWidth = 5;
+        c.strokeStyle = COLORS.ink;
+        c.strokeText("⚡ DOMAIN EXPANSION CLASH! ⚡", WORLD_SIZE * 0.5, barY - 16);
+        c.fillStyle = COLORS.gold;
+        c.fillText("⚡ DOMAIN EXPANSION CLASH! ⚡", WORLD_SIZE * 0.5, barY - 16);
+
+        c.fillStyle = COLORS.ink;
+        c.beginPath();
+        c.roundRect(barX, barY + 4, barW, barH, 10);
+        c.fill();
+
+        c.save();
+        c.beginPath();
+        c.roundRect(barX, barY, barW, barH, 10);
+        c.clip();
+        c.fillStyle = leftSpec.color;
+        c.fillRect(barX, barY, barW * meter, barH);
+        c.fillStyle = rightSpec.color;
+        c.fillRect(barSplitX, barY, barW * (1 - meter), barH);
+        c.fillStyle = "rgba(255, 255, 255, 0.24)";
+        c.fillRect(barX, barY, barW, barH * 0.42);
+        c.restore();
+
+        c.strokeStyle = COLORS.ink;
         c.lineWidth = 4;
-        c.strokeText("DOMAIN CLASH!", WORLD_SIZE * 0.5, by - 12);
-        c.fillText("DOMAIN CLASH!", WORLD_SIZE * 0.5, by - 12);
+        c.beginPath();
+        c.roundRect(barX, barY, barW, barH, 10);
+        c.stroke();
+
+        // Glowing clash divider needle
+        c.fillStyle = COLORS.white;
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 2.5;
+        c.beginPath();
+        c.roundRect(barSplitX - 4, barY - 5, 8, barH + 10, 3);
+        c.fill();
+        c.stroke();
+
+        c.font = `bold 13px ${FONT}`;
+        c.lineWidth = 3.5;
+        c.strokeStyle = COLORS.ink;
+
+        c.textAlign = "left";
+        const leftText = `${lTag} ${p1Pct}%`;
+        c.strokeText(leftText, barX + 10, barY + barH * 0.5);
+        c.fillStyle = p1Pct >= p2Pct ? COLORS.gold : COLORS.white;
+        c.fillText(leftText, barX + 10, barY + barH * 0.5);
+
+        c.textAlign = "right";
+        const rightText = `${p2Pct}% ${rTag}`;
+        c.strokeText(rightText, barX + barW - 10, barY + barH * 0.5);
+        c.fillStyle = p2Pct > p1Pct ? COLORS.gold : COLORS.white;
+        c.fillText(rightText, barX + barW - 10, barY + barH * 0.5);
+
         c.restore();
       },
     };
@@ -1305,23 +2002,36 @@
     const activeClash = g.entities.find((ent) => ent.isDomainClash && !ent.dead);
     if (activeClash) return;
 
-    // Also trigger Domain Clash if the opponent is a Sorcerer (gojo/sukuna) currently in Aura mode!
-    const auraSorcererEnemy = !enemyDomain
-      ? g.balls.find((b) => b !== owner && b.alive && (b.costume === "gojo" || b.costume === "sukuna") && b.ultTimer > 0 && !b.domainUsedInUlt)
+    // Trigger Domain Clash whenever ANY Sorcerer with a Domain (Gojo / Sukuna) is the opponent — they immediately counter-activate their Domain!
+    const domainSorcererEnemy = !enemyDomain
+      ? g.balls.find((b) => b !== owner && b.alive && (b.costume === "gojo" || b.costume === "sukuna"))
       : null;
 
-    if (enemyDomain || auraSorcererEnemy) {
-      let enemy = enemyDomain ? enemyDomain.domainOwner : auraSorcererEnemy;
+    if (enemyDomain || domainSorcererEnemy) {
+      const enemy = enemyDomain ? enemyDomain.domainOwner : domainSorcererEnemy;
       if (enemyDomain) {
         enemyDomain.dead = true;
-      } else if (auraSorcererEnemy) {
-        auraSorcererEnemy.domainUsedInUlt = true;
+      } else if (enemy) {
+        // Opponent Sorcerer immediately awakens and counter-expands their Domain!
+        enemy.ultTimer = Math.max(enemy.ultTimer, 8.0);
+        enemy.domainUsedInUlt = true;
+        addEffect(enemy, "haste", 8.0, { factor: 1.15 });
       }
-      // Clear Unlimited Void stun on challenger when Domain Clash begins
+      // Clear stuns, active casts, & stray projectiles/vortexes so both sorcerers face off cleanly in the Domain Clash
+      for (const ent of g.entities) {
+        if (!ent.isDomain && !ent.isDomainClash) ent.dead = true;
+      }
+      floatingTexts.length = 0;
       owner.effects = owner.effects.filter((ef) => ef.type !== "stun");
-      owner.domainClashTimer = 2.0;
+      owner.cast = null;
+      owner.channelTimer = 0;
+      const clashDuration = 2.6;
+      owner.domainClashTimer = clashDuration;
       if (enemy && enemy.alive) {
-        enemy.domainClashTimer = 2.0;
+        enemy.effects = enemy.effects.filter((ef) => ef.type !== "stun");
+        enemy.cast = null;
+        enemy.channelTimer = 0;
+        enemy.domainClashTimer = clashDuration;
       }
       const midX = enemy ? (owner.x + enemy.x) * 0.5 : WORLD_SIZE * 0.5;
       const midY = enemy ? (owner.y + enemy.y) * 0.5 : WORLD_SIZE * 0.5;
@@ -1342,6 +2052,7 @@
               gg.addEffect(owner, "stun", 6.0);
               owner.vx = 0;
               owner.vy = 0;
+              gg.spawnDamageText(owner.x, owner.y - owner.radius - 18, 0, "#7dd3fc", true, "INFINITE VOID (6S)!");
             },
           }
         : {
@@ -1351,14 +2062,21 @@
             createDomain: BF.spawnMalevolentShrineDomain
               ? () => BF.spawnMalevolentShrineDomain({ owner: enemy, duration: 6.0 })
               : null,
-            onStart() {},
+            onStart(gg) {
+              gg.spawnDamageText(enemy.x, enemy.y - enemy.radius - 18, 0, "#ef4444", true, "MALEVOLENT SHRINE!");
+            },
           };
 
+      if (enemy) {
+        g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 18, 0, enemySpec.color, true, `${enemySpec.name}!`);
+      }
+      g.spawnDamageText(owner.x, owner.y - owner.radius - 18, 0, spec.color, true, `${spec.name}!`);
       g.entities.push(spawnBanner("DOMAIN CLASH!", COLORS.gold));
-      g.entities.push(spawnDomainClashEffect(midX, midY, 2.0, owner, enemy || owner, spec, enemySpec, g));
+      g.entities.push(spawnDomainClashEffect(midX, midY, clashDuration, owner, enemy || owner, spec, enemySpec, g));
+      if (g.sound && g.sound.playTimeStop) g.sound.playTimeStop();
       g.sound.playCritHit();
-      shakeTime = Math.max(shakeTime, 0.35);
-      shakeIntensity = Math.max(shakeIntensity, 8);
+      shakeTime = Math.max(shakeTime, 0.45);
+      shakeIntensity = Math.max(shakeIntensity, 9);
       return;
     }
 
@@ -1373,9 +2091,14 @@
   function triggerGokuApeTransform(b) {
     if (!b || !b.alive || b.apeMode) return;
     b.apeMode = true;
-    b.ultTimer = Math.max(b.ultTimer, 7.5);
+    b.ultTimer = Math.max(b.ultTimer, 9.0);
     b.radius = Math.round(b.baseRadius * 1.48);
     b.apeErraticTimer = 0;
+    b.apeRushTimer = 0;
+    b.apeRushHitCooldown = 0;
+    if (b.skills && b.skills[0]) {
+      b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.15);
+    }
     addEffect(b, "shield", b.ultTimer, { reduction: 0.35 });
     entities.push(spawnBanner("GREAT APE: OOZARU!", "#b45309"));
     entities.push(spawnShockRing(b.x, b.y, "#f59e0b", 155, 0.52));
@@ -1385,16 +2108,76 @@
     shakeIntensity = Math.max(shakeIntensity, 9);
   }
 
+  function triggerNarutoKyuubiTransform(b) {
+    if (!b || !b.alive || b.kyuubiMode) return;
+    b.kyuubiMode = true;
+    b.radius = Math.round(b.baseRadius * 1.08);
+    b.baseSpeed = Math.round(b.baseSpeed * 1.24);
+    if (b.skills && b.skills[0]) {
+      b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.15);
+    }
+    const isBoneSkin = b.skin === "naruto_six_tails_bone";
+    entities.push(spawnBanner(isBoneSkin ? "SIX-TAILS SKELETAL KYUUBI!" : "FOUR-TAILS KYUUBI CLOAK!", "#dc2626"));
+    entities.push(spawnShockRing(b.x, b.y, "#ef4444", 160, 0.52));
+    entities.push(spawnShockRing(b.x, b.y, "#140407", 115, 0.38));
+    spawnSparks(b.x, b.y, "#ef4444", "#140407");
+    spawnDamageText(b.x, b.y - b.radius - 16, 0, "#ef4444", true, isBoneSkin ? "SIX-TAILS BONE CLOAK!" : "NINE-TAILS AWAKENED!");
+    sound.playCritHit();
+    shakeTime = Math.max(shakeTime, 0.42);
+    shakeIntensity = Math.max(shakeIntensity, 10);
+  }
+
+  function triggerIchigoInnerDemonTransform(b) {
+    if (!b || !b.alive || b.innerDemonMode || b.vastoLordeMode) return;
+    b.innerDemonMode = true;
+    b.radius = Math.round(b.baseRadius * 1.05);
+    b.baseSpeed = Math.round(b.baseSpeed * 1.22);
+    if (b.skills && b.skills[0]) {
+      b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.15);
+    }
+    entities.push(spawnBanner("INNER HOLLOW TAKEOVER!", "#dc2626"));
+    entities.push(spawnShockRing(b.x, b.y, "#ef4444", 150, 0.48));
+    entities.push(spawnShockRing(b.x, b.y, "#f8fafc", 110, 0.35));
+    spawnSparks(b.x, b.y, "#ef4444", "#f8fafc");
+    spawnDamageText(b.x, b.y - b.radius - 16, 0, "#ef4444", true, "INNER DEMON AWAKENED!");
+    sound.playCritHit();
+    shakeTime = Math.max(shakeTime, 0.4);
+    shakeIntensity = Math.max(shakeIntensity, 9);
+  }
+
+  function triggerIchigoVastoTransform(b) {
+    if (!b || !b.alive || b.vastoLordeMode) return;
+    b.vastoLordeMode = true;
+    b.radius = Math.round(b.baseRadius * 1.08);
+    b.baseSpeed = Math.round(b.baseSpeed * 1.26);
+    addEffect(b, "shield", 99, { reduction: 0.25 });
+    if (b.skills && b.skills[0]) {
+      b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.15);
+    }
+    const isHalfVasto = b.skin === "ichigo_vasto_half_mask" || (Array.isArray(b.skins) && b.skins.includes("ichigo_vasto_half_mask"));
+    entities.push(spawnBanner(isHalfVasto ? "AWAKENED VASTO LORDE!" : "FULL HOLLOW: VASTO LORDE!", "#dc2626"));
+    entities.push(spawnShockRing(b.x, b.y, "#ef4444", 160, 0.52));
+    entities.push(spawnShockRing(b.x, b.y, "#090205", 118, 0.38));
+    spawnSparks(b.x, b.y, "#ef4444", "#090205");
+    spawnDamageText(b.x, b.y - b.radius - 16, 0, "#ef4444", true, "VASTO LORDE AWAKENED!");
+    sound.playCritHit();
+    shakeTime = Math.max(shakeTime, 0.42);
+    shakeIntensity = Math.max(shakeIntensity, 10);
+  }
+
   function activateUltimate(ball) {
     if (!ball.alive) return;
     ball.ultCharge = 0;
     sound.playCritHit();
+    sound.playUlt(ball.ult);
     spawnCritBurst(ball.x, ball.y);
     const fx = {
       gear_4: ["GEAR 4!", COLORS.red],
       kaioken: ["KAIOKEN!", COLORS.orange],
-      rasenshuriken: ["RASENSHURIKEN!", COLORS.blue],
-      hollow_mask: ["HOLLOW MASK!", COLORS.red],
+      rasenshuriken: ball.kyuubiMode ? ["BIJUUDAMA!", "#dc2626"] : ["RASENSHURIKEN!", COLORS.blue],
+      hollow_mask: ball.vastoLordeMode
+        ? ["GRAN REY CERO!", "#dc2626"]
+        : (ball.evolved ? ["HOLLOW MASK!", COLORS.red] : ["BANKAI: TENSA ZANGETSU!", "#dc2626"]),
       time_stop: ["ZA WARUDO!", COLORS.gold],
       star_time_stop: ["STAR PLATINUM: THE WORLD!", "#9b59b6"],
       berserker_armor: ["BERSERKER ARMOR!", COLORS.red],
@@ -1438,44 +2221,128 @@
           addEffect(b, "haste", 8.0, { factor: 1.25 });
           if (b.skills[0]) b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.3);
           entities.push(spawnShockRing(b.x, b.y, COLORS.red, 100, 0.4));
-          if (b.hp <= 100 && !b.apeMode) {
+          if (b.hp <= 200 && !b.apeMode) {
             triggerGokuApeTransform(b);
           }
         },
       });
     } else if (ball.ult === "rasenshuriken") {
       if (!balls.find((x) => x !== ball && x.alive)) return;
-      beginCast(ball, {
-        kind: "orb", blades: true, duration: 1.15, color: COLORS.blue, maxR: 30,
-        fire(b, g) {
-          const t = g.balls.find((x) => x !== b && x.alive);
-          if (!t) return;
-          const m = castMuzzle(b, Math.atan2(t.y - b.y, t.x - b.x), 20);
-          g.entities.push(spawnShockRing(m.x, m.y, COLORS.blue, 90, 0.4));
-          shakeTime = 0.2; shakeIntensity = 5;
-          g.entities.push(spawnProjectile({
-            owner: b, target: t, x: m.x, y: m.y, speed: 520, radius: 26, damage: 30,
-            color: COLORS.blue, label: "RASENSHURIKEN!", shape: "rasenshuriken",
-            onImpact(tt, gg, proj) {
-              gg.addEffect(tt, "stun", 0.9);
-              gg.entities.push(BF.spawnRasenganVisual(proj.x, proj.y, 78));
-              gg.entities.push(spawnShockRing(proj.x, proj.y, COLORS.white, 120, 0.5));
-              gg.spawnSparks(proj.x, proj.y, COLORS.white, COLORS.blue);
-              shakeTime = 0.35; shakeIntensity = 8;
-            },
-          }));
-        },
-      });
+      if (ball.kyuubiMode) {
+        beginCast(ball, {
+          kind: "bijuudama", duration: 1.05, color: "#dc2626", maxR: 34,
+          fire(b, g) {
+            const t = g.balls.find((x) => x !== b && x.alive);
+            if (!t) return;
+            const ang = Math.atan2(t.y - b.y, t.x - b.x);
+            const m = castMuzzle(b, ang, 24);
+            g.entities.push(spawnShockRing(m.x, m.y, "#ef4444", 130, 0.45));
+            shakeTime = Math.max(shakeTime, 0.35);
+            shakeIntensity = Math.max(shakeIntensity, 8);
+            g.entities.push(spawnProjectile({
+              owner: b,
+              target: t,
+              x: m.x,
+              y: m.y,
+              speed: 550,
+              radius: 34,
+              damage: 34,
+              color: "#dc2626",
+              label: "BIJUUDAMA!",
+              shape: "bijuudama",
+              onImpact(tt, gg, proj) {
+                if (BF.triggerBijuudamaExplosion) {
+                  BF.triggerBijuudamaExplosion(proj.x, proj.y, b, gg, tt);
+                }
+              },
+              onOutOfBounds(gg, proj) {
+                if (BF.triggerBijuudamaExplosion) {
+                  BF.triggerBijuudamaExplosion(proj.x, proj.y, b, gg, null);
+                }
+              },
+            }));
+          },
+        });
+      } else {
+        beginCast(ball, {
+          kind: "orb", blades: true, duration: 1.15, color: COLORS.blue, maxR: 30,
+          fire(b, g) {
+            const t = g.balls.find((x) => x !== b && x.alive);
+            if (!t) return;
+            const m = castMuzzle(b, Math.atan2(t.y - b.y, t.x - b.x), 20);
+            g.entities.push(spawnShockRing(m.x, m.y, COLORS.blue, 90, 0.4));
+            shakeTime = 0.2; shakeIntensity = 5;
+            g.entities.push(spawnProjectile({
+              owner: b, target: t, x: m.x, y: m.y, speed: 520, radius: 28, damage: 28,
+              color: COLORS.blue, label: "RASENSHURIKEN!", shape: "rasenshuriken",
+              onImpact(tt, gg, proj) {
+                gg.addEffect(tt, "stun", 0.9);
+                gg.entities.push(BF.spawnRasenganVisual(proj.x, proj.y, 82));
+                if (BF.spawnRasenshurikenVortex) {
+                  gg.entities.push(BF.spawnRasenshurikenVortex({ x: proj.x, y: proj.y, owner: b, duration: 2.2, radius: 155 }));
+                }
+                gg.entities.push(spawnShockRing(proj.x, proj.y, COLORS.white, 125, 0.5));
+                gg.spawnSparks(proj.x, proj.y, COLORS.white, COLORS.blue);
+                shakeTime = 0.35; shakeIntensity = 8;
+              },
+              onOutOfBounds(gg, proj) {
+                if (BF.spawnRasenshurikenVortex) {
+                  gg.entities.push(BF.spawnRasenshurikenVortex({ x: proj.x, y: proj.y, owner: b, duration: 2.0, radius: 145 }));
+                }
+              },
+            }));
+          },
+        });
+      }
     } else if (ball.ult === "hollow_mask") {
-      beginCast(ball, {
-        kind: "powerup", duration: 0.45, color: COLORS.red,
-        fire(b) {
-          b.ultTimer = 8.0;
-          addEffect(b, "haste", 8.0, { factor: 1.28 });
-          if (b.skills[0]) b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.4);
-          entities.push(spawnShockRing(b.x, b.y, COLORS.white, 100, 0.4));
-        },
-      });
+      if (ball.vastoLordeMode) {
+        if (!balls.find((x) => x !== ball && x.alive)) return;
+        beginCast(ball, {
+          kind: "gran_rey_cero", duration: 0.98, color: "#dc2626", maxR: 35,
+          fire(b, g) {
+            const t = g.balls.find((x) => x !== b && x.alive);
+            if (!t) return;
+            const ang = Math.atan2(t.y - b.y, t.x - b.x);
+            const m = castMuzzle(b, ang, 24);
+            g.entities.push(spawnShockRing(m.x, m.y, "#ef4444", 130, 0.45));
+            shakeTime = Math.max(shakeTime, 0.35);
+            shakeIntensity = Math.max(shakeIntensity, 8);
+            g.entities.push(spawnProjectile({
+              owner: b,
+              target: t,
+              x: m.x,
+              y: m.y,
+              speed: 575,
+              radius: 35,
+              damage: 35,
+              color: "#dc2626",
+              label: "GRAN REY CERO!",
+              shape: "gran_rey_cero",
+              onImpact(tt, gg, proj) {
+                if (BF.triggerGranReyCeroExplosion) {
+                  BF.triggerGranReyCeroExplosion(proj.x, proj.y, b, gg, tt);
+                }
+              },
+              onOutOfBounds(gg, proj) {
+                if (BF.triggerGranReyCeroExplosion) {
+                  BF.triggerGranReyCeroExplosion(proj.x, proj.y, b, gg, null);
+                }
+              },
+            }));
+          },
+        });
+      } else {
+        beginCast(ball, {
+          kind: "powerup", duration: 0.45, color: COLORS.red,
+          fire(b) {
+            b.ultTimer = 8.5;
+            addEffect(b, "haste", 8.5, { factor: 1.28 });
+            if (b.skills[0]) b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.25);
+            entities.push(spawnShockRing(b.x, b.y, "#ef4444", 115, 0.42));
+            entities.push(spawnShockRing(b.x, b.y, "#090205", 85, 0.32));
+          },
+        });
+      }
     } else if (ball.ult === "time_stop") {
       beginCast(ball, {
         kind: "time_stop", duration: 0.45, color: COLORS.gold,
@@ -1640,6 +2507,16 @@
     const amount = Math.max(0, Math.round(dmg));
     if (amount <= 0) return 0;
     ball.hp = Math.max(0, ball.hp - amount);
+    if (ball.alive && ball.hp > 0 && ball.costume === "naruto" && ball.evolved && ball.hp <= 200 && !ball.kyuubiMode) {
+      triggerNarutoKyuubiTransform(ball);
+    }
+    if (ball.alive && ball.hp > 0 && ball.costume === "ichigo") {
+      if (ball.evolved && ball.hp <= 200 && !ball.vastoLordeMode) {
+        triggerIchigoVastoTransform(ball);
+      } else if (!ball.evolved && ball.hp <= 100 && !ball.innerDemonMode) {
+        triggerIchigoInnerDemonTransform(ball);
+      }
+    }
     runSkillHook(ball, "onDamaged", amount, game);
     return amount;
   }
@@ -1722,7 +2599,37 @@
     canvas.height = Math.round(rect.height * dpr);
   }
 
+  // Comic-style star burst at the point of impact
+  function spawnImpactBurst(x, y, color) {
+    const life = 0.2;
+    return {
+      life, dead: false,
+      update(dt) { this.life -= dt; if (this.life <= 0) this.dead = true; },
+      render(c) {
+        const p = 1 - Math.max(0, this.life) / life;
+        const R = 14 + 26 * BF.easeOut(p);
+        c.save();
+        c.translate(x, y);
+        c.rotate(p * 0.5);
+        c.beginPath();
+        for (let i = 0; i < 16; i++) {
+          const a = (Math.PI * 2 * i) / 16;
+          const rr = i % 2 ? R * 0.45 : R;
+          c.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+        }
+        c.closePath();
+        c.globalAlpha = 1 - p * 0.8;
+        c.fillStyle = color || COLORS.white;
+        c.fill();
+        c.lineWidth = 3; c.lineJoin = "round"; c.strokeStyle = COLORS.ink;
+        c.stroke();
+        c.restore();
+      },
+    };
+  }
+
   function spawnSparks(x, y, colorA, colorB) {
+    entities.push(spawnImpactBurst(x, y, colorA));
     for (let i = 0; i < 8; i++) {
       const angle = Math.random() * Math.PI * 2;
       const speed = 110 + Math.random() * 190;
@@ -1795,6 +2702,7 @@
   }
 
   function spawnDamageText(x, y, dmg, color, isCrit = false, customLabel = null) {
+    if (customLabel) sound.playSkill(customLabel);
     let text = `-${dmg}`;
     if (isCrit) {
       text = `CRIT! -${dmg}`;
@@ -1837,7 +2745,7 @@
     el.classList.toggle("ready", ready);
     if (fill) fill.style.width = `${pct}%`;
     if (label) {
-      const shortName = skill.name.toUpperCase();
+      const shortName = (ball.apeMode ? "APE RUSH" : ball.kyuubiMode ? "KYUUBI SLASH" : ball.vastoLordeMode ? "SONÍDO SLASH" : skill.name).toUpperCase();
       label.textContent = ready ? `${shortName} • READY` : `${shortName} • ${cd.toFixed(1)}S`;
     }
   }
@@ -1962,6 +2870,13 @@
       ball.squash = Math.max(ball.squash, 0.6);
       ball.preventAxisLock();
       sound.playWallBounce();
+      if (ball.apeMode && ball.apeRushTimer > 0 && BF.triggerApeWallSlam) {
+        const sp = ball.baseSpeed * 2.45;
+        const bAng = Math.atan2(ball.vy, ball.vx);
+        ball.vx = Math.cos(bAng) * sp;
+        ball.vy = Math.sin(bAng) * sp;
+        BF.triggerApeWallSlam(ball.x, ball.y, ball, game);
+      }
       runSkillHook(ball, "onWallBounce", game);
     }
   }
@@ -2082,13 +2997,66 @@
         }
         if (attacker.rasenganTimer > 0 && !attacker.rasenganHit) {
           attacker.rasenganHit = true;
-          const rasDmg = applyDamage(defender, 14);
+          const sage = Boolean(attacker.evolved);
+          const rasDmg = applyDamage(defender, sage ? 17 : 14);
           addEffect(defender, "stun", 0.5);
-          spawnDamageText(defender.x, defender.y - defender.radius - 14, rasDmg, COLORS.blue, false, "RASENGAN!");
-          entities.push(BF.spawnRasenganVisual(midX, midY, 48));
-          entities.push(spawnShockRing(midX, midY, COLORS.blue, 75, 0.35));
+          spawnDamageText(defender.x, defender.y - defender.radius - 14, rasDmg, COLORS.blue, sage, sage ? "SAGE RASENGAN!" : "RASENGAN!");
+          entities.push(BF.spawnRasenganVisual(midX, midY, sage ? 58 : 48));
+          entities.push(spawnShockRing(midX, midY, COLORS.blue, sage ? 90 : 75, 0.35));
           shakeTime = 0.2; shakeIntensity = 5;
           chargeUlt(attacker);
+        }
+        if (attacker.kyuubiSlashTimer > 0 && !attacker.kyuubiSlashHit) {
+          attacker.kyuubiSlashHit = true;
+          attacker.kyuubiSlashTimer = 0;
+          const slashDmg = applyDamage(defender, 20);
+          addEffect(defender, "stun", 0.45);
+          defender.flashTimer = 0.16;
+          defender.squash = 0.92;
+          const sAng = Math.atan2(defender.y - attacker.y, defender.x - attacker.x);
+          defender.vx = Math.cos(sAng) * 490;
+          defender.vy = Math.sin(sAng) * 490;
+          if (BF.spawnKyuubiClawSlashEffect) {
+            entities.push(BF.spawnKyuubiClawSlashEffect(defender.x, defender.y, sAng, 72));
+          }
+          entities.push(spawnShockRing(defender.x, defender.y, "#ef4444", 105, 0.36));
+          spawnSparks(defender.x, defender.y, "#ef4444", "#140407");
+          spawnDamageText(defender.x, defender.y - defender.radius - 14, slashDmg, "#ef4444", true, "KYUUBI SLASH!");
+          sound.playCritHit();
+          hitStop = Math.max(hitStop, 0.08);
+          shakeTime = Math.max(shakeTime, 0.26);
+          shakeIntensity = Math.max(shakeIntensity, 7);
+          chargeUlt(attacker);
+        }
+        if (attacker.shunpoDashTimer > 0 && !attacker.shunpoDashHit) {
+          attacker.shunpoDashHit = true;
+          attacker.shunpoDashTimer = 0;
+          const emp = Boolean(attacker.vastoLordeMode || attacker.ultTimer > 0);
+          const slashDmg = applyDamage(defender, emp ? 22 : 16);
+          addEffect(defender, "stun", emp ? 0.48 : 0.38);
+          defender.flashTimer = 0.16;
+          defender.squash = 0.92;
+          const sAng = Math.atan2(defender.y - attacker.y, defender.x - attacker.x);
+          defender.vx = Math.cos(sAng) * 485;
+          defender.vy = Math.sin(sAng) * 485;
+          if (BF.spawnZangetsuSlashEffect) {
+            entities.push(BF.spawnZangetsuSlashEffect(defender.x, defender.y, sAng, 74, emp));
+          }
+          entities.push(spawnShockRing(defender.x, defender.y, "#ef4444", 100, 0.34));
+          spawnSparks(defender.x, defender.y, "#ef4444", "#090205");
+          spawnDamageText(
+            defender.x,
+            defender.y - defender.radius - 14,
+            slashDmg,
+            "#ef4444",
+            emp,
+            attacker.vastoLordeMode ? "SONÍDO SLASH!" : attacker.ultTimer > 0 ? "HOLLOW SHUNPO!" : "SHUNPO SLASH!"
+          );
+          sound.playCritHit();
+          hitStop = Math.max(hitStop, 0.08);
+          shakeTime = Math.max(shakeTime, 0.24);
+          shakeIntensity = Math.max(shakeIntensity, 6);
+          if (!(attacker.ultTimer > 0 && !attacker.vastoLordeMode)) chargeUlt(attacker);
         }
         if (attacker.dragonRushTimer > 0 && !attacker.dragonRushHit) {
           attacker.dragonRushHit = true;
@@ -2119,12 +3087,29 @@
           if (!(attacker.ultTimer > 0)) chargeUlt(attacker);
         }
         if (attacker.apeMode) {
-          const apeDmg = applyDamage(defender, 5);
-          spawnSparks(midX, midY, "#b45309", "#ef4444");
-          spawnDamageText(defender.x, defender.y - defender.radius - 12, apeDmg, "#f59e0b", true, "APE SMASH!");
-          const kAng = Math.atan2(defender.y - attacker.y, defender.x - attacker.x);
-          defender.vx += Math.cos(kAng) * 260;
-          defender.vy += Math.sin(kAng) * 260;
+          if (attacker.apeRushTimer > 0) {
+            if (!(attacker.apeRushHitCooldown > 0)) {
+              attacker.apeRushHitCooldown = 0.25;
+              const apeDmg = applyDamage(defender, 15);
+              entities.push(spawnShockRing(midX, midY, "#ef4444", 105, 0.32));
+              spawnSparks(midX, midY, "#f59e0b", "#ef4444");
+              spawnDamageText(defender.x, defender.y - defender.radius - 14, apeDmg, "#ef4444", true, "APE RUSH!");
+              const kAng = Math.atan2(defender.y - attacker.y, defender.x - attacker.x);
+              defender.vx = Math.cos(kAng) * 480;
+              defender.vy = Math.sin(kAng) * 480;
+            }
+            const rushSpd = attacker.baseSpeed * 2.45;
+            const aAng = Math.atan2(attacker.vy, attacker.vx);
+            attacker.vx = Math.cos(aAng) * rushSpd;
+            attacker.vy = Math.sin(aAng) * rushSpd;
+          } else {
+            const apeDmg = applyDamage(defender, 5);
+            spawnSparks(midX, midY, "#b45309", "#ef4444");
+            spawnDamageText(defender.x, defender.y - defender.radius - 12, apeDmg, "#f59e0b", true, "APE SMASH!");
+            const kAng = Math.atan2(defender.y - attacker.y, defender.x - attacker.x);
+            defender.vx += Math.cos(kAng) * 260;
+            defender.vy += Math.sin(kAng) * 260;
+          }
         }
       };
       checkDashImpact(b1, b2);
@@ -2486,14 +3471,27 @@
       if (ball.standState) {
         updateStandState(ball, scaledDt);
       }
+      if (ball.costume === "naruto" && ball.evolved && ball.hp > 0 && ball.hp <= 200 && !ball.kyuubiMode) {
+        triggerNarutoKyuubiTransform(ball);
+      }
+      if (ball.costume === "ichigo" && ball.hp > 0) {
+        if (ball.evolved && ball.hp <= 200 && !ball.vastoLordeMode) {
+          triggerIchigoVastoTransform(ball);
+        } else if (!ball.evolved && ball.hp <= 100 && !ball.innerDemonMode) {
+          triggerIchigoInnerDemonTransform(ball);
+        }
+      }
       if (ball.ultTimer > 0) {
         ball.ultTimer = Math.max(0, ball.ultTimer - scaledDt);
-        if (ball.costume === "goku" && ball.hp <= 100 && !ball.apeMode) {
+        if (ball.costume === "goku" && ball.hp <= 200 && !ball.apeMode) {
           triggerGokuApeTransform(ball);
         }
         if (ball.ultTimer <= 0) {
-          ball.radius = ball.baseRadius;
+          ball.radius = (ball.kyuubiMode || ball.vastoLordeMode)
+            ? Math.round(ball.baseRadius * 1.08)
+            : (ball.innerDemonMode ? Math.round(ball.baseRadius * 1.05) : ball.baseRadius);
           ball.apeMode = false;
+          ball.apeRushTimer = 0;
         }
       }
 
@@ -2519,11 +3517,23 @@
       if (ball.rasenganTimer > 0) {
         ball.rasenganTimer = Math.max(0, ball.rasenganTimer - scaledDt);
       }
+      if (ball.kyuubiSlashTimer > 0) {
+        ball.kyuubiSlashTimer = Math.max(0, ball.kyuubiSlashTimer - scaledDt);
+      }
+      if (ball.shunpoDashTimer > 0) {
+        ball.shunpoDashTimer = Math.max(0, ball.shunpoDashTimer - scaledDt);
+      }
       if (ball.dragonRushTimer > 0) {
         ball.dragonRushTimer = Math.max(0, ball.dragonRushTimer - scaledDt);
       }
       if (ball.cleaveDashTimer > 0) {
         ball.cleaveDashTimer = Math.max(0, ball.cleaveDashTimer - scaledDt);
+      }
+      if (ball.apeRushTimer > 0) {
+        ball.apeRushTimer = Math.max(0, ball.apeRushTimer - scaledDt);
+      }
+      if (ball.apeRushHitCooldown > 0) {
+        ball.apeRushHitCooldown = Math.max(0, ball.apeRushHitCooldown - scaledDt);
       }
       ball.updateEffects(scaledDt);
 
@@ -2559,8 +3569,8 @@
         runSkillHook(ball, "onTick", game, scaledDt);
       }
 
-      // Great Ape (Oozaru) erratic & unpredictable berserk rampage
-      if (ball.apeMode && !ball.getEffect("stun") && ball.dragonRushTimer <= 0) {
+      // Great Ape (Oozaru) erratic rampage when NOT in straight-line wall-bouncing Ape Rush
+      if (ball.apeMode && !ball.getEffect("stun") && ball.dragonRushTimer <= 0 && !(ball.apeRushTimer > 0)) {
         ball.apeErraticTimer -= scaledDt;
         if (ball.apeErraticTimer <= 0) {
           ball.apeErraticTimer = 0.16 + rng() * 0.22;
@@ -2580,13 +3590,19 @@
             entities.push(spawnShockRing(ball.x, ball.y, "#f59e0b", 65, 0.24));
           }
         }
+      } else if (ball.apeMode && ball.apeRushTimer > 0 && !ball.getEffect("stun")) {
+        // Keep Great Ape hurtling forward at full Ape Rush speed between wall bounces
+        const rushSpd = ball.baseSpeed * 2.45;
+        const curAng = Math.atan2(ball.vy, ball.vx);
+        ball.vx = Math.cos(curAng) * rushSpd;
+        ball.vy = Math.sin(curAng) * rushSpd;
       }
 
       const speedFactor = ball.getSpeedMultiplier();
       if (speedFactor > 0) {
         ball.x += ball.vx * speedFactor * scaledDt;
         ball.y += ball.vy * speedFactor * scaledDt;
-        if (ball.rocketTimer <= 0 && ball.rasenganTimer <= 0 && ball.dragonRushTimer <= 0 && ball.cleaveDashTimer <= 0 && !ball.apeMode) {
+        if (ball.rocketTimer <= 0 && ball.rasenganTimer <= 0 && ball.kyuubiSlashTimer <= 0 && ball.shunpoDashTimer <= 0 && ball.dragonRushTimer <= 0 && ball.cleaveDashTimer <= 0 && !ball.apeMode) {
           ball.normalizeSpeed();
         }
         handleWallCollisions(ball);
@@ -2750,7 +3766,7 @@
     if (drawer) drawer(ball, r, c);
 
     const tilt = { luffy: -0.02, ichigo: 0.12, dio: -0.08, jotaro: -0.1 }[ball.costume];
-    if (tilt !== undefined && !(ball.costume === "ichigo" && ball.ultTimer > 0)) {
+    if (tilt !== undefined && !(ball.costume === "ichigo" && (ball.ultTimer > 0 || ball.vastoLordeMode))) {
       c.strokeStyle = COLORS.ink;
       c.lineWidth = 3.5;
       c.lineCap = "round";
@@ -2822,6 +3838,7 @@
 
   // Naruto holds a Rasengan that grows while the skill recharges (and surges ahead during dash)
   function drawHeldRasengan(ball, c) {
+    if (ball.kyuubiMode) return;
     const sk = ball.skills && ball.skills.find((x) => x.name === "Rasengan");
     if (!sk) return;
     const dashing = ball.rasenganTimer > 0;
@@ -2876,6 +3893,51 @@
         drawBallAura(ball, c);
       }
     }
+    if (showExtras && ball.shunpoDashTimer > 0) {
+      const ang = Math.atan2(ball.vy, ball.vx);
+      c.save();
+      c.translate(ball.x, ball.y);
+      c.rotate(ang);
+      c.fillStyle = "rgba(9, 2, 5, 0.65)";
+      c.beginPath();
+      c.moveTo(ball.radius * 0.9, 0);
+      c.lineTo(-ball.radius * 2.7, -ball.radius * 0.9);
+      c.lineTo(-ball.radius * 1.7, 0);
+      c.lineTo(-ball.radius * 2.7, ball.radius * 0.9);
+      c.closePath();
+      c.fill();
+      c.strokeStyle = "#ef4444";
+      c.lineWidth = 2.6;
+      c.beginPath();
+      c.moveTo(-ball.radius * 2.3, -ball.radius * 0.45);
+      c.lineTo(ball.radius * 0.85, 0);
+      c.lineTo(-ball.radius * 2.3, ball.radius * 0.45);
+      c.stroke();
+      c.restore();
+    }
+    if (showExtras && ball.kyuubiSlashTimer > 0) {
+      const ang = Math.atan2(ball.vy, ball.vx);
+      c.save();
+      c.translate(ball.x, ball.y);
+      c.rotate(ang);
+      c.fillStyle = "rgba(185, 28, 28, 0.52)";
+      c.beginPath();
+      c.moveTo(ball.radius * 0.95, 0);
+      c.lineTo(-ball.radius * 2.5, -ball.radius * 0.95);
+      c.lineTo(-ball.radius * 1.55, 0);
+      c.lineTo(-ball.radius * 2.5, ball.radius * 0.95);
+      c.closePath();
+      c.fill();
+      c.strokeStyle = "#ef4444";
+      c.lineWidth = 2.6;
+      for (const cy of [-9, 0, 9]) {
+        c.beginPath();
+        c.moveTo(-ball.radius * 1.9, cy * 1.3);
+        c.lineTo(ball.radius * 1.25, cy * 0.5);
+        c.stroke();
+      }
+      c.restore();
+    }
     if (showExtras && ball.cleaveDashTimer > 0) {
       const ang = Math.atan2(ball.vy, ball.vx);
       c.save();
@@ -2895,6 +3957,26 @@
       c.moveTo(-ball.radius * 2.2, -ball.radius * 0.4);
       c.lineTo(ball.radius * 0.6, 0);
       c.lineTo(-ball.radius * 2.2, ball.radius * 0.4);
+      c.stroke();
+      c.restore();
+    }
+    if (showExtras && ball.apeMode && ball.apeRushTimer > 0) {
+      const ang = Math.atan2(ball.vy, ball.vx);
+      c.save();
+      c.translate(ball.x, ball.y);
+      c.rotate(ang);
+      c.fillStyle = "rgba(220, 38, 38, 0.48)";
+      c.beginPath();
+      c.moveTo(ball.radius * 0.85, 0);
+      c.lineTo(-ball.radius * 2.4, -ball.radius * 1.05);
+      c.lineTo(-ball.radius * 1.5, 0);
+      c.lineTo(-ball.radius * 2.4, ball.radius * 1.05);
+      c.closePath();
+      c.fill();
+      c.strokeStyle = "#fef08a";
+      c.lineWidth = 3;
+      c.beginPath();
+      c.arc(0, 0, ball.radius * 1.15, -Math.PI * 0.45, Math.PI * 0.45);
       c.stroke();
       c.restore();
     }
@@ -2959,7 +4041,11 @@
 
     drawCostume(ball, r, c);
 
-    const hasFullFaceMask = ball.costume === "gojo" || ball.costume === "sukuna" || ((ball.costume === "guts" || ball.costume === "ichigo") && ball.ultTimer > 0) || (ball.costume === "goku" && ball.apeMode);
+    const hasFullFaceMask =
+      (ball.costume === "gojo" && !(ball.ultTimer > 0)) ||
+      (ball.costume === "guts" && ball.ultTimer > 0) ||
+      (ball.costume === "ichigo" && (ball.vastoLordeMode || ball.innerDemonMode || (ball.evolved && ball.ultTimer > 0))) ||
+      (ball.costume === "goku" && ball.apeMode);
     if (!hasFullFaceMask) {
       c.fillStyle = "rgba(255, 255, 255, 0.55)";
       c.beginPath();
@@ -2983,6 +4069,13 @@
         c.beginPath();
         c.ellipse(0, r * 0.42, r * 0.14, r * 0.18, 0, 0, Math.PI * 2);
         c.fill();
+      } else if (BF.FACE_DRAWERS && BF.FACE_DRAWERS[ball.costume]) {
+        BF.FACE_DRAWERS[ball.costume](ball, r, c, {
+          ex: Math.cos(ang) * r * 0.1,
+          ey: Math.sin(ang) * r * 0.1,
+          ult: ball.ultTimer > 0,
+          cast: Boolean(ball.cast),
+        });
       } else {
         const ex = Math.cos(ang) * r * 0.1;
         const ey = Math.sin(ang) * r * 0.1;
@@ -3150,7 +4243,28 @@
     }
 
     for (const ball of balls) {
-      if (ball.alive) drawBall(ball);
+      if (ball.alive) {
+        // afterimages for fast / empowered balls
+        const sp = Math.hypot(ball.vx, ball.vy);
+        const nowMs = performance.now();
+        const trail = ball._trail || (ball._trail = []);
+        if ((sp > 430 || ball.ultTimer > 0 || ball.rocketTimer > 0) && (!trail.length || nowMs - trail[trail.length - 1].t > 38)) {
+          trail.push({ x: ball.x, y: ball.y, t: nowMs });
+          if (trail.length > 5) trail.shift();
+        } else if (trail.length && nowMs - trail[0].t > 200) {
+          trail.shift();
+        }
+        for (let i = 0; i < trail.length; i++) {
+          const k = (i + 1) / (trail.length + 1);
+          ctx.globalAlpha = 0.28 * k;
+          ctx.fillStyle = ball.color;
+          ctx.beginPath();
+          ctx.arc(trail[i].x, trail[i].y, ball.radius * (0.7 + 0.3 * k), 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        drawBall(ball);
+      }
     }
     for (const ball of balls) {
       if (ball.alive) drawCast(ball, ctx);
@@ -3374,10 +4488,19 @@
     });
   }
 
+  const closeRosterModal = () => {
+    if (rosterModal) rosterModal.classList.add("hidden");
+    refreshSlotConfigs();
+    setupUnifiedSelectors();
+    updateUnifiedSetupUI();
+    updateHomeMatchupUI();
+    syncFighterUI();
+  };
+
   if (btnModalClose) {
     btnModalClose.addEventListener("click", () => {
       sound.unlock();
-      if (rosterModal) rosterModal.classList.add("hidden");
+      closeRosterModal();
     });
   }
 
@@ -3385,7 +4508,7 @@
     rosterModal.addEventListener("click", (e) => {
       if (e.target === rosterModal) {
         sound.unlock();
-        rosterModal.classList.add("hidden");
+        closeRosterModal();
       }
     });
   }
@@ -3477,7 +4600,7 @@
         return;
       }
       if (rosterModal && !rosterModal.classList.contains("hidden")) {
-        rosterModal.classList.add("hidden");
+        closeRosterModal();
         return;
       }
       if (recMode) {
@@ -3611,37 +4734,95 @@
       const pCtx = canvasEl.getContext("2d");
       pCtx.clearRect(0, 0, canvasEl.width, canvasEl.height);
 
-      const tr = isUlt ? TRANSFORM_DETAILS[cfg.id] : null;
+      const sc = canvasEl === detailCanvas ? canvasEl.width / 160 : 1;
+      pCtx.save();
+      pCtx.scale(sc, sc);
+      const fl = isUlt && typeof isUlt === "object" ? isUlt : { ult: Boolean(isUlt) };
+      const tr = fl.ult ? TRANSFORM_DETAILS[cfg.id] : null;
       const bob = Math.sin(t * 3.8 + phaseOffset) * 4;
-      const baseScale = cfg.id === "guts" && isUlt ? 0.96 : 1.15;
+      const baseScale = cfg.id === "guts" && fl.ult ? 0.96 : 1.15;
       const previewBall = {
-        x: canvasEl.width * 0.5,
-        y: canvasEl.height * 0.56 + bob,
+        x: (canvasEl.width / sc) * 0.5,
+        y: (canvasEl.height / sc) * 0.56 + bob,
         radius: cfg.radius * baseScale * (tr ? tr.radiusMult : 1),
         color: cfg.color,
         costume: cfg.costume,
+        skin: fl.skin !== undefined ? fl.skin : (cfg.skin !== undefined ? cfg.skin : (getEquippedSkin ? getEquippedSkin(cfg.id) : null)),
+        skins: fl.skins !== undefined ? fl.skins : (cfg.skins !== undefined ? cfg.skins : (getEquippedSkinsForChar ? getEquippedSkinsForChar(cfg.id) : [])),
         weapon: cfg.weapon,
         weaponAngle: t * 2.2 + phaseOffset,
         vx: facingRight ? 1 : -1,
         vy: 0,
         flashTimer: 0,
-        ultTimer: isUlt ? 5 : 0,
+        ultTimer: fl.ult ? 5 : 0,
+        evolved: fl.evolved !== undefined ? Boolean(fl.evolved) : (fl.starterOnly ? false : Boolean(cfg.evolved)),
+        apeMode: Boolean(fl.apeMode),
+        kyuubiMode: Boolean(fl.kyuubiMode),
+        vastoLordeMode: Boolean(fl.vastoLordeMode),
+        innerDemonMode: Boolean(fl.innerDemonMode),
+        gear4Mode: fl.gear4Mode || null,
+        cast: null,
         squash: Math.max(0, Math.sin(t * 7.6 + phaseOffset) * 0.14),
         skills: cfg.skills,
         effects: [],
         equippedAura: cfg.equippedAura || "none",
       };
       drawBall(previewBall, pCtx, true);
+      pCtx.restore();
     };
 
     if (currentScreen === "screen-setup" && previewActive) {
       drawFighter(previewActive, BALL_CONFIGS[activeSlot], activeSlot === 0, 0, false);
     } else if (rosterModal && !rosterModal.classList.contains("hidden") && detailCanvas) {
-      drawFighter(detailCanvas, CHARACTER_ROSTER[detailCharId], true, 0, detailFormPreview && Boolean(TRANSFORM_DETAILS[detailCharId]));
+      const f = activeForm();
+      const baseCfg = CHARACTER_ROSTER[detailCharId];
+      const previewCfg = baseCfg ? {
+        ...baseCfg,
+        evolved: f && f.starterOnly ? false : (f && f.evolved !== undefined ? Boolean(f.evolved) : Boolean(isEvolutionEquipped && isEvolutionEquipped(baseCfg.id))),
+        skin: getEquippedSkin ? getEquippedSkin(baseCfg.id) : null,
+        skins: getEquippedSkinsForChar ? getEquippedSkinsForChar(baseCfg.id) : [],
+      } : null;
+      drawFighter(detailCanvas, previewCfg, true, 0, f || false);
     }
 
     if (currentScreen === "screen-shop" && merchantCanvas) {
       drawTurboGranny(merchantCanvas, t);
+    }
+    if (currentScreen === "screen-shop") {
+      document.querySelectorAll(".skin-shop-preview-canvas").forEach((cvs, idx) => {
+        const skinId = cvs.dataset.skinId;
+        const skinSpec = (SKIN_CATALOG || []).find((s) => s.id === skinId);
+        if (skinSpec && CHARACTER_ROSTER[skinSpec.charId]) {
+          const baseChar = CHARACTER_ROSTER[skinSpec.charId];
+          const pCtx = cvs.getContext("2d");
+          pCtx.clearRect(0, 0, cvs.width, cvs.height);
+          const bob = Math.sin(t * 3.8 + idx) * 2.5;
+          const pf = skinSpec.previewFlags || {};
+          const demoBall = {
+            x: cvs.width * 0.5,
+            y: cvs.height * 0.57 + bob,
+            radius: 21,
+            color: baseChar.color,
+            costume: baseChar.costume,
+            skin: skinSpec.id,
+            skins: [skinSpec.id],
+            evolved: pf.evolved !== undefined ? Boolean(pf.evolved) : true,
+            kyuubiMode: Boolean(pf.kyuubiMode),
+            vastoLordeMode: Boolean(pf.vastoLordeMode),
+            innerDemonMode: Boolean(pf.innerDemonMode),
+            ultTimer: pf.ult ? 5 : 0,
+            weapon: null,
+            weaponAngle: 0,
+            vx: 1,
+            vy: 0,
+            flashTimer: 0,
+            squash: Math.max(0, Math.sin(t * 7.2 + idx) * 0.08),
+            skills: [],
+            effects: [],
+          };
+          drawBall(demoBall, pCtx, false);
+        }
+      });
     }
 
     if (shopModal && !shopModal.classList.contains("hidden") && shopModalCanvas) {
@@ -3650,6 +4831,10 @@
   }
 
   function updateHomeMatchupUI() {
+    const hc = document.getElementById("home-coins-display");
+    const hg = document.getElementById("home-gems-display");
+    if (hc) hc.textContent = playerWallet.coins.toLocaleString();
+    if (hg) hg.textContent = playerWallet.gems.toLocaleString();
     if (homeP1Name) homeP1Name.textContent = BALL_CONFIGS[0].name;
     if (homeP2Name) homeP2Name.textContent = BALL_CONFIGS[1].name;
     if (homeP1Canvas) drawMiniAvatar(homeP1Canvas, BALL_CONFIGS[0]);
@@ -3675,6 +4860,82 @@
     if (previewActiveName) previewActiveName.textContent = activeCfg.name;
     if (previewActiveRole) previewActiveRole.textContent = activeCfg.role || `${activeCfg.name} • FIGHTER`;
 
+    const setupEvoBar = document.getElementById("setup-evo-bar");
+    if (setupEvoBar) {
+      const evoSpec = EVOLUTION_SPECS && EVOLUTION_SPECS[activeCfg.id];
+      if (!evoSpec) {
+        setupEvoBar.classList.add("hidden");
+        setupEvoBar.innerHTML = "";
+      } else {
+        setupEvoBar.classList.remove("hidden");
+        setupEvoBar.innerHTML = "";
+        const evolved = isFighterEvolved(activeCfg.id);
+        if (evolved) {
+          const row = document.createElement("div");
+          row.className = "evo-switch-row";
+          const equipped = isSlotEvoEquipped(activeSlot, activeCfg.id);
+
+          const btnStarter = document.createElement("button");
+          btnStarter.type = "button";
+          btnStarter.className = `evo-switch-btn${!equipped ? " active" : ""}`;
+          btnStarter.textContent = `P${activeSlot + 1}: ${evoSpec.starterLabel || "STARTER"}`;
+          btnStarter.addEventListener("click", () => {
+            sound.unlock();
+            sound.playBallHit();
+            setSlotEvoEquipped(activeSlot, activeCfg.id, false);
+            BALL_CONFIGS[activeSlot] = getEffectiveCharConfig(selectedRosterIds[activeSlot], activeSlot);
+            setupUnifiedSelectors();
+            updateUnifiedSetupUI();
+            syncFighterUI();
+          });
+
+          const btnEvo = document.createElement("button");
+          btnEvo.type = "button";
+          btnEvo.className = `evo-switch-btn evo-mode${equipped ? " active" : ""}`;
+          btnEvo.textContent = `✨ P${activeSlot + 1}: ${evoSpec.evolvedLabel || "EVOLVED"}`;
+          btnEvo.addEventListener("click", () => {
+            sound.unlock();
+            sound.playCritHit();
+            setSlotEvoEquipped(activeSlot, activeCfg.id, true);
+            BALL_CONFIGS[activeSlot] = getEffectiveCharConfig(selectedRosterIds[activeSlot], activeSlot);
+            setupUnifiedSelectors();
+            updateUnifiedSetupUI();
+            syncFighterUI();
+          });
+
+          row.appendChild(btnStarter);
+          row.appendChild(btnEvo);
+          setupEvoBar.appendChild(row);
+        } else {
+          const canAfford = playerWallet.coins >= evoSpec.cost;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "btn-evolve-gold";
+          btn.textContent = canAfford
+            ? `✨ EVOLVE: ${evoSpec.evolvedLabel} (🪙 ${evoSpec.cost.toLocaleString()} GOLD)`
+            : `🔒 EVOLVE: ${evoSpec.evolvedLabel} (🪙 ${evoSpec.cost.toLocaleString()} GOLD • HAVE ${playerWallet.coins.toLocaleString()})`;
+          btn.addEventListener("click", () => {
+            sound.unlock();
+            if (playerWallet.coins < evoSpec.cost) {
+              sound.playWallHit();
+              return;
+            }
+            const res = evolveFighter(activeCfg.id);
+            if (res.ok) {
+              sound.playCritHit();
+              setSlotEvoEquipped(activeSlot, activeCfg.id, true);
+              BALL_CONFIGS[activeSlot] = getEffectiveCharConfig(selectedRosterIds[activeSlot], activeSlot);
+              setupUnifiedSelectors();
+              updateUnifiedSetupUI();
+              updateShopUI();
+              syncFighterUI();
+            }
+          });
+          setupEvoBar.appendChild(btn);
+        }
+      }
+    }
+
     if (statValHp) statValHp.textContent = activeCfg.maxHp;
     if (statValSpd) statValSpd.textContent = activeCfg.speed;
     if (statValMass) statValMass.textContent = activeCfg.mass;
@@ -3692,26 +4953,301 @@
     updateHomeMatchupUI();
   }
 
+  const RARITY_LABEL = { starter: "STARTER", rare: "RARE", epic: "EPIC", legend: "LEGEND" };
+
+  function activeForm() {
+    const list = BF.FORMS[detailCharId] || [];
+    return list.find((f) => f.id === detailFormId) || list[0] || null;
+  }
+
+  function applyDetailEvoPreference(charId, useEvo) {
+    if (!EVOLUTION_SPECS || !EVOLUTION_SPECS[charId]) return;
+    if (useEvo && !(isFighterEvolved && isFighterEvolved(charId))) return;
+    setEvolutionEquipped(charId, Boolean(useEvo));
+    if (selectedRosterIds[0] === charId) setSlotEvoEquipped(0, charId, Boolean(useEvo));
+    if (selectedRosterIds[1] === charId) setSlotEvoEquipped(1, charId, Boolean(useEvo));
+    refreshSlotConfigs();
+    setupUnifiedSelectors();
+    updateUnifiedSetupUI();
+    updateHomeMatchupUI();
+    syncFighterUI();
+  }
+
+  function renderSheetMeta(cfg, form) {
+    const stageBox = document.getElementById("detail-stage-list");
+    const box = document.getElementById("detail-form-list");
+    const evolved = Boolean(isFighterEvolved && isFighterEvolved(cfg.id));
+    const eqSkins = getEquippedSkinsForChar ? getEquippedSkinsForChar(cfg.id) : [];
+    const stages = (BF.EVO_STAGES && BF.EVO_STAGES[cfg.id]) || null;
+    const allForms = BF.FORMS[cfg.id] || [];
+
+    const activeStageId = stages
+      ? (form && form.stage ? form.stage : (isEvolutionEquipped && isEvolutionEquipped(cfg.id) ? "evolved" : "starter"))
+      : null;
+
+    if (stageBox) {
+      if (!stages) {
+        stageBox.classList.add("hidden");
+        stageBox.innerHTML = "";
+      } else {
+        stageBox.classList.remove("hidden");
+        stageBox.innerHTML = "";
+        for (const st of stages) {
+          const lockedSt = Boolean(st.evolved && !evolved);
+          const isStActive = st.id === activeStageId;
+          const sb = document.createElement("button");
+          sb.type = "button";
+          sb.className = `stage-btn${st.evolved ? " stage-evo" : ""}${lockedSt ? " locked-evo" : ""}${isStActive ? " active" : ""}`;
+          sb.textContent = lockedSt ? `🔒 ${st.label}` : (st.evolved ? `✨ ${st.label}` : st.label);
+          sb.addEventListener("click", () => {
+            sound.unlock();
+            detailFormId = st.defaultForm;
+            applyDetailEvoPreference(cfg.id, Boolean(st.evolved));
+            updateCharDetailUI();
+          });
+          stageBox.appendChild(sb);
+        }
+      }
+    }
+
+    if (box) {
+      box.innerHTML = "";
+      const visibleForms = stages
+        ? allForms.filter((f) => f.stage === activeStageId)
+        : allForms;
+      for (const f of visibleForms) {
+        const lockedEvo = Boolean(f.evolved && !evolved);
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = `form-chip${f.ult ? " ult" : ""}${lockedEvo ? " locked-evo" : ""}${form && f.id === form.id ? " active" : ""}`;
+        let chipLabel = f.label;
+        if (cfg.id === "naruto" && f.id === "kyuubi" && eqSkins.includes("naruto_six_tails_bone")) {
+          chipLabel = "SIX-TAILS (SKIN)";
+        } else if (cfg.id === "ichigo" && f.id === "hollow" && eqSkins.includes("ichigo_arrancar_arc")) {
+          chipLabel = "ARRANCAR MASK (SKIN)";
+        } else if (cfg.id === "ichigo" && f.id === "vasto" && eqSkins.includes("ichigo_vasto_half_mask")) {
+          chipLabel = "HALF-VASTO (MYTHIC)";
+        }
+        b.textContent = lockedEvo ? `🔒 ${chipLabel}` : chipLabel;
+        b.addEventListener("click", () => {
+          sound.unlock();
+          detailFormId = f.id;
+          if (stages) {
+            applyDetailEvoPreference(cfg.id, Boolean(f.evolved));
+          }
+          updateCharDetailUI();
+        });
+        box.appendChild(b);
+      }
+    }
+    const detailEvoBox = document.getElementById("detail-evo-box");
+    const evoSpec = EVOLUTION_SPECS && EVOLUTION_SPECS[cfg.id];
+    if (detailEvoBox) {
+      if (!evoSpec) {
+        detailEvoBox.classList.add("hidden");
+        detailEvoBox.innerHTML = "";
+      } else {
+        detailEvoBox.classList.remove("hidden");
+        const equipped = isEvolutionEquipped(cfg.id);
+        const canAfford = playerWallet.coins >= evoSpec.cost;
+        detailEvoBox.innerHTML =
+          `<div class="power-header">` +
+            `<span class="power-badge badge-gold">✨ FIGHTER EVOLUTION</span>` +
+            `<span class="power-cd">${evolved ? "UNLOCKED" : `🪙 ${evoSpec.cost.toLocaleString()} GOLD`}</span>` +
+          `</div>` +
+          `<h3 class="power-title">${evoSpec.evolvedName}</h3>` +
+          `<p class="power-desc">${evoSpec.desc}</p>` +
+          `<div id="detail-evo-actions" class="evo-bar"></div>`;
+        const actBox = detailEvoBox.querySelector("#detail-evo-actions");
+        if (actBox) {
+          if (evolved) {
+            const row = document.createElement("div");
+            row.className = "evo-switch-row";
+            const bStart = document.createElement("button");
+            bStart.type = "button";
+            bStart.className = `evo-switch-btn${!equipped ? " active" : ""}`;
+            bStart.textContent = evoSpec.starterLabel;
+            bStart.addEventListener("click", () => {
+              sound.unlock();
+              sound.playBallHit();
+              detailFormId = cfg.id === "ichigo" ? "shikai" : "base";
+              applyDetailEvoPreference(cfg.id, false);
+              updateCharDetailUI();
+            });
+            const bEvo = document.createElement("button");
+            bEvo.type = "button";
+            bEvo.className = `evo-switch-btn evo-mode${equipped ? " active" : ""}`;
+            bEvo.textContent = `✨ ${evoSpec.evolvedLabel}`;
+            bEvo.addEventListener("click", () => {
+              sound.unlock();
+              sound.playCritHit();
+              detailFormId = cfg.id === "naruto" ? "sage" : "base";
+              applyDetailEvoPreference(cfg.id, true);
+              updateCharDetailUI();
+            });
+            row.appendChild(bStart);
+            row.appendChild(bEvo);
+            actBox.appendChild(row);
+          } else {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "btn-evolve-gold";
+            btn.textContent = canAfford
+              ? `✨ EVOLVE NOW (🪙 ${evoSpec.cost.toLocaleString()} GOLD)`
+              : `🔒 NEED ${evoSpec.cost.toLocaleString()} GOLD (YOU HAVE ${playerWallet.coins.toLocaleString()})`;
+            btn.addEventListener("click", () => {
+              sound.unlock();
+              if (playerWallet.coins < evoSpec.cost) {
+                sound.playWallHit();
+                return;
+              }
+              const res = evolveFighter(cfg.id);
+              if (res.ok) {
+                sound.playCritHit();
+                detailFormId = cfg.id === "naruto" ? "sage" : "base";
+                applyDetailEvoPreference(cfg.id, true);
+                updateShopUI();
+                updateCharDetailUI();
+              }
+            });
+            actBox.appendChild(btn);
+          }
+        }
+      }
+    }
+
+    // Diamond Skin Equip Box inside Fighter Detail Sheet (Supports 1 or multiple skins per character!)
+    const detailSkinBox = document.getElementById("detail-skin-box");
+    const charSkins = (SKIN_CATALOG || []).filter((s) => s.charId === cfg.id);
+    if (detailSkinBox) {
+      if (!charSkins.length) {
+        detailSkinBox.classList.add("hidden");
+        detailSkinBox.innerHTML = "";
+      } else {
+        detailSkinBox.classList.remove("hidden");
+        detailSkinBox.innerHTML = "";
+        for (const skinSpec of charSkins) {
+          const unlockedSkin = Boolean(isSkinUnlocked && isSkinUnlocked(skinSpec.id));
+          const isEquipped = Boolean(isSkinEquipped && isSkinEquipped(skinSpec.id));
+          const canAffordGems = playerWallet.gems >= skinSpec.price;
+
+          const itemWrap = document.createElement("div");
+          itemWrap.style.marginBottom = charSkins.length > 1 ? "10px" : "0";
+          itemWrap.innerHTML =
+            `<div class="power-header">` +
+              `<span class="power-badge badge-purple">💎 ${skinSpec.rarity === "legend" ? "MYTHIC SKIN" : "EVO SKIN"}</span>` +
+              `<span class="power-cd">${unlockedSkin ? (isEquipped ? "EQUIPPED" : "OWNED") : `💎 ${skinSpec.price} GEMS`}</span>` +
+            `</div>` +
+            `<h3 class="power-title">${skinSpec.name}</h3>` +
+            `<p class="power-desc">${skinSpec.desc}</p>` +
+            `<div class="evo-bar"></div>`;
+
+          const skinAct = itemWrap.querySelector(".evo-bar");
+          if (skinAct) {
+            const targetForm = skinSpec.previewFormId || (cfg.id === "naruto" ? "kyuubi" : "hollow");
+            if (unlockedSkin) {
+              const row = document.createElement("div");
+              row.className = "evo-switch-row";
+
+              const bDef = document.createElement("button");
+              bDef.type = "button";
+              bDef.className = `evo-switch-btn${!isEquipped ? " active" : ""}`;
+              bDef.textContent = "DEFAULT";
+              bDef.addEventListener("click", () => {
+                sound.unlock();
+                sound.playBallHit();
+                setSkinEquipped(skinSpec.id, false);
+                detailFormId = targetForm;
+                refreshSlotConfigs();
+                setupUnifiedSelectors();
+                updateUnifiedSetupUI();
+                updateShopUI();
+                updateCharDetailUI();
+                syncFighterUI();
+              });
+
+              const bSkin = document.createElement("button");
+              bSkin.type = "button";
+              bSkin.className = `evo-switch-btn skin-equip-btn${isEquipped ? " active" : ""}`;
+              bSkin.textContent = `💀 ${skinSpec.shortLabel || "EQUIP SKIN"}`;
+              bSkin.addEventListener("click", () => {
+                sound.unlock();
+                sound.playCritHit();
+                setSkinEquipped(skinSpec.id, true);
+                detailFormId = targetForm;
+                refreshSlotConfigs();
+                setupUnifiedSelectors();
+                updateUnifiedSetupUI();
+                updateShopUI();
+                updateCharDetailUI();
+                syncFighterUI();
+              });
+
+              row.appendChild(bDef);
+              row.appendChild(bSkin);
+              skinAct.appendChild(row);
+            } else {
+              const row = document.createElement("div");
+              row.className = "evo-switch-row";
+
+              const btnBuy = document.createElement("button");
+              btnBuy.type = "button";
+              btnBuy.className = "btn-buy-skin-gem";
+              btnBuy.innerHTML = canAffordGems
+                ? `<svg><use href="#i-gem"/></svg><span>BUY & EQUIP (${skinSpec.price} GEMS)</span>`
+                : `<svg><use href="#i-gem"/></svg><span>NEED ${skinSpec.price} GEMS (HAVE ${playerWallet.gems})</span>`;
+              btnBuy.addEventListener("click", () => {
+                sound.unlock();
+                if (playerWallet.gems < skinSpec.price) {
+                  sound.playWallHit();
+                  return;
+                }
+                const res = buySkin(skinSpec.id);
+                if (res.ok) {
+                  sound.playCritHit();
+                  detailFormId = targetForm;
+                  refreshSlotConfigs();
+                  setupUnifiedSelectors();
+                  updateUnifiedSetupUI();
+                  updateShopUI();
+                  updateCharDetailUI();
+                  syncFighterUI();
+                }
+              });
+              row.appendChild(btnBuy);
+              skinAct.appendChild(row);
+            }
+          }
+          detailSkinBox.appendChild(itemWrap);
+        }
+      }
+    }
+    const setText = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    setText("detail-form-desc", form ? form.desc : "");
+    setText("detail-series", BF.SERIES[cfg.id] || "ANIME");
+    const rar = BF.RARITY[cfg.id] || "starter";
+    const rc = document.getElementById("detail-rarity");
+    if (rc) { rc.textContent = RARITY_LABEL[rar]; rc.className = `rar-chip rarity-${rar}`; }
+    const lock = document.getElementById("detail-lock-note");
+    if (lock) lock.classList.toggle("hidden", isFighterUnlocked(cfg.id));
+  }
+
   function updateCharDetailUI() {
     const cfg = CHARACTER_ROSTER[detailCharId] || CHARACTER_ROSTER.goku;
     if (!cfg) return;
 
     const tr = TRANSFORM_DETAILS[cfg.id] || null;
-    const showingUlt = Boolean(tr && detailFormPreview);
+    const form = activeForm();
+    const showingUlt = Boolean(tr && form && form.ult);
 
     if (detailHeroBox) detailHeroBox.classList.toggle("is-ult-preview", showingUlt);
-    if (detailFormToggle) {
-      detailFormToggle.classList.toggle("hidden", !tr);
-      if (tr && btnFormUlt) btnFormUlt.textContent = tr.label;
-      if (btnFormBase) btnFormBase.classList.toggle("active", !showingUlt);
-      if (btnFormUlt) btnFormUlt.classList.toggle("active", showingUlt);
-    }
+    renderSheetMeta(cfg, form);
 
     if (detailName) detailName.textContent = cfg.name;
     if (detailTitle) detailTitle.textContent = cfg.title || "Anime Brawler";
 
     const effSpeed = showingUlt ? Math.round(cfg.speed * tr.speedMult) : cfg.speed;
-    if (detailHpFill) detailHpFill.style.width = `${Math.min(100, Math.round((cfg.maxHp / 400) * 100))}%`;
+    if (detailHpFill) detailHpFill.style.width = `${Math.min(100, Math.round((cfg.maxHp / 650) * 100))}%`;
     if (detailHpVal) detailHpVal.textContent = showingUlt && tr.hpNote ? `${cfg.maxHp} + ${tr.hpNote}` : `${cfg.maxHp} HP`;
 
     if (detailSpdFill) detailSpdFill.style.width = `${Math.min(100, Math.round((effSpeed / 480) * 100))}%`;
@@ -3741,70 +5277,176 @@
     }
   }
 
+  let activeSkinHeroFilter = "all";
+
   function updateShopUI() {
     if (shopCoinsDisplay) shopCoinsDisplay.textContent = playerWallet.coins.toLocaleString();
     if (shopGemsDisplay) shopGemsDisplay.textContent = playerWallet.gems.toLocaleString();
+    const hc = document.getElementById("home-coins-display");
+    const hg = document.getElementById("home-gems-display");
+    if (hc) hc.textContent = playerWallet.coins.toLocaleString();
+    if (hg) hg.textContent = playerWallet.gems.toLocaleString();
+    if (BF.Gacha) BF.Gacha.refresh();
 
-    if (!shopItemsGrid) return;
-    shopItemsGrid.innerHTML = "";
+    // Render Diamond Skin Vault in Shop (with per-hero filter & horizontal carousel)
+    const skinGrid = document.getElementById("skin-shop-grid");
+    const skinCountEl = document.getElementById("skin-shop-count");
+    const skinFilterBar = document.getElementById("skin-filter-chips");
+    const skins = SKIN_CATALOG || [];
 
-    const filtered = SHOP_CATALOG.filter((item) => {
-      if (activeShopFilter === "all") return true;
-      return item.category === activeShopFilter;
-    });
-
-    for (const item of filtered) {
-      const isAvailable = item.status === "AVAILABLE" && item.unlockCharId;
-      const isOwned = isAvailable && isFighterUnlocked(item.unlockCharId);
-
-      const card = document.createElement("div");
-      card.className = `shop-card-tile ${isOwned ? "tile-owned" : isAvailable ? "tile-available" : "tile-wip"}`;
-
-      const badge = document.createElement("span");
-      badge.className = `shop-card-badge ${item.badgeClass}`;
-      badge.textContent = isOwned ? "UNLOCKED" : item.badge;
-
-      const icon = document.createElement("div");
-      icon.className = "shop-card-icon";
-      icon.textContent = item.icon;
-
-      const name = document.createElement("h3");
-      name.className = "shop-card-name";
-      name.textContent = item.name;
-
-      const snippet = document.createElement("p");
-      snippet.className = "shop-card-desc-snippet";
-      snippet.textContent = item.targetChar || "UPCOMING";
-
-      const pill = document.createElement("span");
-      pill.className = "shop-card-wip-pill";
-      if (isOwned) {
-        pill.textContent = "✅ OWNED";
-      } else if (isAvailable) {
-        pill.textContent = `${item.currency === "gems" ? "💎" : "🪙"} ${item.price.toLocaleString()}`;
-      } else {
-        pill.textContent = "🔒 WIP";
-      }
-
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = `btn btn-sm ${isOwned ? "btn-wip" : isAvailable ? "btn-play" : "btn-wip"} shop-card-btn`;
-      btn.textContent = isOwned ? "OWNED" : isAvailable ? "BUY" : "PREVIEW";
-
-      card.appendChild(badge);
-      card.appendChild(icon);
-      card.appendChild(name);
-      card.appendChild(snippet);
-      card.appendChild(pill);
-      card.appendChild(btn);
-
-      card.addEventListener("click", () => {
-        sound.unlock();
-        sound.playBallHit();
-        openShopInspectModal(item.id);
+    if (skinFilterBar && !skinFilterBar.dataset.bound) {
+      skinFilterBar.dataset.bound = "1";
+      skinFilterBar.querySelectorAll(".filter-chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          sound.unlock();
+          skinFilterBar.querySelectorAll(".filter-chip").forEach((c) => c.classList.remove("active"));
+          chip.classList.add("active");
+          activeSkinHeroFilter = (chip.dataset.skinChar || "all").toLowerCase();
+          updateShopUI();
+        });
       });
+    }
 
-      shopItemsGrid.appendChild(card);
+    if (skinGrid && !skinGrid.dataset.dragBound) {
+      skinGrid.dataset.dragBound = "1";
+      let isDraggingSkins = false;
+      let startX = 0;
+      let startScroll = 0;
+      skinGrid.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "touch" || e.target.closest("button")) return;
+        isDraggingSkins = true;
+        startX = e.clientX;
+        startScroll = skinGrid.scrollLeft;
+        skinGrid.classList.add("is-dragging");
+      });
+      window.addEventListener("pointermove", (e) => {
+        if (!isDraggingSkins) return;
+        const dx = e.clientX - startX;
+        skinGrid.scrollLeft = startScroll - dx;
+      });
+      const stopSkinDrag = () => {
+        if (!isDraggingSkins) return;
+        isDraggingSkins = false;
+        skinGrid.classList.remove("is-dragging");
+      };
+      window.addEventListener("pointerup", stopSkinDrag);
+      window.addEventListener("pointercancel", stopSkinDrag);
+      skinGrid.addEventListener("wheel", (e) => {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+          e.preventDefault();
+          skinGrid.scrollLeft += e.deltaY;
+        }
+      }, { passive: false });
+    }
+
+    if (skinGrid) {
+      skinGrid.innerHTML = "";
+      let ownedSkins = 0;
+      for (const sk of skins) {
+        if (isSkinUnlocked && isSkinUnlocked(sk.id)) ownedSkins++;
+      }
+      const filteredSkins = skins.filter(
+        (sk) => activeSkinHeroFilter === "all" || sk.charId.toLowerCase() === activeSkinHeroFilter
+      );
+      for (const sk of filteredSkins) {
+        const unlocked = Boolean(isSkinUnlocked && isSkinUnlocked(sk.id));
+        const equipped = Boolean(
+          isSkinEquipped
+            ? isSkinEquipped(sk.id)
+            : (getEquippedSkin && getEquippedSkin(sk.charId)) === sk.id
+        );
+        const charCfg = CHARACTER_ROSTER[sk.charId];
+        const tierLabel = sk.tier === "MYTHIC" ? "MYTHIC SKIN" : "EVO SKIN";
+
+        const card = document.createElement("div");
+        card.className = "skin-shop-card";
+        card.innerHTML =
+          `<div class="skin-shop-canvas-wrap">` +
+            `<canvas class="skin-shop-preview-canvas" data-skin-id="${sk.id}" width="84" height="84"></canvas>` +
+          `</div>` +
+          `<div class="skin-shop-info">` +
+            `<div class="skin-shop-badges">` +
+              `<span class="rar-chip rarity-legend">${tierLabel}</span>` +
+              `<span class="series-chip">${charCfg ? charCfg.name : sk.charId.toUpperCase()}</span>` +
+            `</div>` +
+            `<h4 class="skin-shop-name">${sk.name}</h4>` +
+            `<p class="skin-shop-desc">${sk.desc}</p>` +
+            `<div class="skin-shop-actions"></div>` +
+          `</div>`;
+
+        const actRow = card.querySelector(".skin-shop-actions");
+        if (actRow) {
+          if (!unlocked) {
+            const btnBuy = document.createElement("button");
+            btnBuy.type = "button";
+            btnBuy.className = "btn-buy-skin-gem";
+            btnBuy.innerHTML = `<svg><use href="#i-gem"/></svg><span>BUY • ${sk.price} GEMS</span>`;
+            btnBuy.addEventListener("click", () => {
+              sound.unlock();
+              if (playerWallet.gems < sk.price) {
+                sound.playWallHit();
+                if (merchantSpeechText) {
+                  merchantSpeechText.textContent = `"Oi brat! You need ${sk.price} Gems for ${sk.name}! You only have ${playerWallet.gems}!"`;
+                  BF.grannyTalkUntil = performance.now() + 2000;
+                }
+                return;
+              }
+              const res = buySkin(sk.id);
+              if (res.ok) {
+                sound.playCritHit();
+                if (merchantSpeechText) {
+                  merchantSpeechText.textContent = `"Heh heh! ${sk.name} is yours and equipped! Check it in Fighter Detail!"`;
+                  BF.grannyTalkUntil = performance.now() + 2200;
+                }
+                refreshSlotConfigs();
+                setupUnifiedSelectors();
+                updateUnifiedSetupUI();
+                updateShopUI();
+                updateCharDetailUI();
+                syncFighterUI();
+              }
+            });
+            actRow.appendChild(btnBuy);
+          } else {
+            const btnEq = document.createElement("button");
+            btnEq.type = "button";
+            btnEq.className = `evo-switch-btn skin-equip-btn${equipped ? " active" : ""}`;
+            btnEq.textContent = equipped ? "💀 EQUIPPED" : "💀 EQUIP SKIN";
+            btnEq.addEventListener("click", () => {
+              sound.unlock();
+              sound.playCritHit();
+              if (setSkinEquipped) {
+                setSkinEquipped(sk.id, !equipped);
+              } else if (setEquippedSkin) {
+                setEquippedSkin(sk.charId, equipped ? null : sk.id);
+              }
+              refreshSlotConfigs();
+              setupUnifiedSelectors();
+              updateUnifiedSetupUI();
+              updateShopUI();
+              updateCharDetailUI();
+              syncFighterUI();
+            });
+            actRow.appendChild(btnEq);
+          }
+
+          const btnInspect = document.createElement("button");
+          btnInspect.type = "button";
+          btnInspect.className = "evo-switch-btn";
+          btnInspect.textContent = "🔍 DETAIL";
+          btnInspect.addEventListener("click", () => {
+            sound.unlock();
+            detailCharId = sk.charId;
+            detailFormId = sk.previewFormId || "kyuubi";
+            updateCharDetailUI();
+            if (rosterModal) rosterModal.classList.remove("hidden");
+          });
+          actRow.appendChild(btnInspect);
+        }
+
+        skinGrid.appendChild(card);
+      }
+      if (skinCountEl) skinCountEl.textContent = `${ownedSkins} / ${skins.length}`;
     }
   }
 
@@ -3872,27 +5514,45 @@
   }
 
   function updateProfileUI() {
-    const baseMatches = 24;
-    const baseWins = 18;
-    const totalMatches = sessionStats.matches + baseMatches;
-    const totalWins = sessionStats.wins + baseWins;
+    try { localStorage.setItem("bf_profile_v1", JSON.stringify(sessionStats)); } catch (_) {}
+    const $ = (id) => document.getElementById(id);
+    const { matches, wins } = sessionStats;
+    const all = Object.values(CHARACTER_ROSTER);
+    const have = all.filter((c) => isFighterUnlocked(c.id)).length;
 
-    if (profMatches) profMatches.textContent = totalMatches;
-    if (profWins) profWins.textContent = totalWins;
-    const wr = Math.round((totalWins / Math.max(1, totalMatches)) * 100);
-    if (profWr) profWr.textContent = `${wr}%`;
+    if (profMatches) profMatches.textContent = matches;
+    if (profWins) profWins.textContent = wins;
+    if (profWr) profWr.textContent = `${Math.round((wins / Math.max(1, matches)) * 100)}%`;
 
-    let bestChar = "goku";
-    let maxUsage = -1;
-    for (const [id, count] of Object.entries(sessionStats.charsUsed)) {
-      if (count > maxUsage) {
-        maxUsage = count;
-        bestChar = id;
-      }
+    let best = null;
+    let max = 0;
+    for (const [id, n] of Object.entries(sessionStats.charsUsed)) {
+      if (n > max && CHARACTER_ROSTER[id]) { max = n; best = id; }
     }
-    if (profFav && CHARACTER_ROSTER[bestChar]) {
-      profFav.textContent = CHARACTER_ROSTER[bestChar].name;
+    if (profFav) profFav.textContent = best ? CHARACTER_ROSTER[best].name : "-";
+    drawMiniAvatar($("profile-avatar"), CHARACTER_ROSTER[best || "goku"]);
+
+    const exp = wins * 120 + matches * 40;
+    const lvl = Math.floor(exp / 500) + 1;
+    const rank = lvl >= 12 ? "CHAMPION" : lvl >= 8 ? "ELITE" : lvl >= 5 ? "VETERAN" : lvl >= 3 ? "FIGHTER" : "ROOKIE";
+    if ($("profile-lvl")) $("profile-lvl").textContent = `LV.${lvl}`;
+    if ($("profile-rank")) $("profile-rank").textContent = rank;
+    if ($("profile-exp-fill")) $("profile-exp-fill").style.width = `${(exp % 500) / 5}%`;
+    if ($("profile-exp-text")) $("profile-exp-text").textContent = `EXP ${exp % 500} / 500`;
+
+    const trophies = [
+      ["i-medal", "First Brawl", matches >= 1],
+      ["i-flame", "5 Wins", wins >= 5],
+      ["i-crown", "20 Wins", wins >= 20],
+      ["i-bolt", "Collector (6)", have >= 6],
+      ["i-spark", "Full Roster", have >= all.length],
+      ["i-gem", "Legend Pulled", isFighterUnlocked("gojo")],
+    ];
+    const row = $("trophy-row");
+    if (row) {
+      row.innerHTML = trophies.map(([ic, name, ok]) => `<div class="trophy${ok ? "" : " locked"}"><svg><use href="#${ic}"/></svg><span>${name}</span></div>`).join("");
     }
+    if ($("trophy-count")) $("trophy-count").textContent = `${trophies.filter((t) => t[2]).length} / ${trophies.length}`;
   }
 
   function drawMiniAvatar(canvasEl, cfg) {
@@ -3906,6 +5566,9 @@
       radius: radius,
       color: cfg.color,
       costume: cfg.costume,
+      evolved: Boolean(cfg.evolved !== undefined ? cfg.evolved : (isEvolutionEquipped && isEvolutionEquipped(cfg.id))),
+      skin: cfg.skin !== undefined ? cfg.skin : (getEquippedSkin ? getEquippedSkin(cfg.id) : null),
+      skins: Array.isArray(cfg.skins) ? cfg.skins : (getEquippedSkinsForChar ? getEquippedSkinsForChar(cfg.id) : []),
       weapon: null,
       weaponAngle: 0,
       vx: 1,
@@ -3941,7 +5604,7 @@
         cvs.height = 44;
 
         const nameSpan = document.createElement("span");
-        nameSpan.textContent = char.shortName || char.name;
+        nameSpan.textContent = char.name;
 
         btn.appendChild(cvs);
         btn.appendChild(nameSpan);
@@ -3949,7 +5612,7 @@
         btn.addEventListener("click", () => {
           sound.unlock();
           selectedRosterIds[activeSlot] = char.id;
-          BALL_CONFIGS[activeSlot] = CHARACTER_ROSTER[char.id];
+          BALL_CONFIGS[activeSlot] = getEffectiveCharConfig(char.id, activeSlot);
           updateUnifiedSetupUI();
           syncFighterUI();
         });
@@ -3974,56 +5637,54 @@
     // 2. Fighters Gallery Avatar Grid (Scalable to 50+ Fighters!)
     if (rosterAvatarGrid) {
       rosterAvatarGrid.innerHTML = "";
+      let ownedCount = 0;
       for (const char of entries) {
         const unlocked = isFighterUnlocked(char.id);
+        if (unlocked) ownedCount++;
+        const rar = BF.RARITY[char.id] || "starter";
         const card = document.createElement("div");
-        card.className = `avatar-card${unlocked ? "" : " avatar-locked"}`;
+        card.className = `avatar-card roster-card rarity-${rar}${unlocked ? "" : " avatar-locked"}`;
         card.dataset.id = char.id;
         card.dataset.series = (char.role || "").split("•")[0].trim().toLowerCase();
-
-        const cvs = document.createElement("canvas");
-        cvs.className = "avatar-canvas";
-        cvs.width = 54;
-        cvs.height = 54;
-
-        const nameSpan = document.createElement("span");
-        nameSpan.className = "avatar-name";
-        nameSpan.textContent = char.name;
-
-        const tagSpan = document.createElement("span");
-        tagSpan.className = "avatar-tag";
-        const baseTag = (char.role ? char.role.split("•")[0].trim() : "FIGHTER");
-        tagSpan.textContent = unlocked ? baseTag : `🔒 ${baseTag}`;
-
-        card.appendChild(cvs);
-        card.appendChild(nameSpan);
-        card.appendChild(tagSpan);
-
+        card.innerHTML = `<span class="rc-rarity">${RARITY_LABEL[rar]}</span>` +
+          `<div class="rc-art"><canvas width="132" height="132"></canvas></div>` +
+          `<span class="avatar-name">${char.name}</span>` +
+          `<span class="avatar-tag">${BF.SERIES[char.id] || "ANIME"}</span>` +
+          (unlocked ? "" : `<svg class="rc-lock"><use href="#i-lock"/></svg>`);
         card.addEventListener("click", () => {
           sound.unlock();
           detailCharId = char.id;
-          detailFormPreview = false;
+          const evoActive = Boolean(isEvolutionEquipped && isEvolutionEquipped(char.id));
+          if (char.id === "ichigo") {
+            detailFormId = evoActive ? "base" : "shikai";
+          } else if (char.id === "naruto") {
+            detailFormId = evoActive ? "sage" : "base";
+          } else {
+            detailFormId = "base";
+          }
           updateCharDetailUI();
           if (rosterModal) rosterModal.classList.remove("hidden");
         });
-
         rosterAvatarGrid.appendChild(card);
-        drawMiniAvatar(cvs, char);
+        drawMiniAvatar(card.querySelector("canvas"), char);
+      }
+      const rc = document.getElementById("roster-count");
+      if (rc) rc.textContent = `${ownedCount} / ${entries.length}`;
+      if (rosterFilterChips) {
+        const activeChip = rosterFilterChips.querySelector(".filter-chip.active");
+        const filter = ((activeChip && activeChip.dataset.filter) || "all").toLowerCase();
+        if (filter !== "all") {
+          rosterAvatarGrid.querySelectorAll(".avatar-card").forEach((card) => {
+            const series = (card.dataset.series || "").toLowerCase();
+            const id = (card.dataset.id || "").toLowerCase();
+            card.style.display = (series.includes(filter) || id.includes(filter)) ? "" : "none";
+          });
+        }
       }
     }
 
-    if (btnFormBase && btnFormUlt) {
-      btnFormBase.addEventListener("click", () => {
-        sound.unlock();
-        detailFormPreview = false;
-        updateCharDetailUI();
-      });
-      btnFormUlt.addEventListener("click", () => {
-        sound.unlock();
-        detailFormPreview = true;
-        updateCharDetailUI();
-      });
-    }
+    if (setupUnifiedSelectors._bound) return;
+    setupUnifiedSelectors._bound = true;
 
     // Category Filter Chips (Handles 50+ Fighters smoothly, drag & wheel scrollable)
     if (rosterFilterChips) {
@@ -4092,6 +5753,7 @@
     const merchantWrap = document.getElementById("merchant-avatar-wrap");
     const triggerGrannyTalk = () => {
       sound.unlock();
+      BF.grannyTalkUntil = performance.now() + 1800;
       sound.playBallHit();
       const quote = TURBO_GRANNY_QUOTES[Math.floor(Math.random() * TURBO_GRANNY_QUOTES.length)];
       if (merchantSpeechText) {
@@ -4120,6 +5782,34 @@
     updateProfileUI();
     updateShopUI();
 
+    document.addEventListener("click", (e) => {
+      if (e.target.closest("button, .roster-card, .col-tile")) {
+        sound.unlock();
+        sound.playUi();
+      }
+    });
+
+    BF.drawMiniAvatar = drawMiniAvatar;
+    BF.Gacha.init({
+      sound,
+      wallet: playerWallet,
+      save: saveWallet,
+      isUnlocked: isFighterUnlocked,
+      drawAvatar: drawMiniAvatar,
+      say: (text) => {
+        if (merchantSpeechText) merchantSpeechText.textContent = text;
+        BF.grannyTalkUntil = performance.now() + 1800;
+      },
+      onChange: () => {
+        updateShopUI();
+        setupUnifiedSelectors();
+        updateUnifiedSetupUI();
+        updateProfileUI();
+        updateCharDetailUI();
+        updateHomeMatchupUI();
+      },
+    });
+
     const btnWhatsNew = document.getElementById("btn-whats-new");
     const changelogModal = document.getElementById("changelog-modal");
     const btnChangelogClose = document.getElementById("btn-changelog-close");
@@ -4137,6 +5827,114 @@
     if (changelogModal) {
       changelogModal.addEventListener("click", (e) => {
         if (e.target === changelogModal) changelogModal.classList.add("hidden");
+      });
+    }
+
+    // Secret Admin Control Panel (click Profile 10x)
+    const adminModal = document.getElementById("admin-modal");
+    const btnAdminClose = document.getElementById("btn-admin-close");
+    const adminCoinsDisplay = document.getElementById("admin-coins-display");
+    const adminGemsDisplay = document.getElementById("admin-gems-display");
+    const adminCoinsInput = document.getElementById("admin-coins-input");
+    const adminGemsInput = document.getElementById("admin-gems-input");
+
+    const syncAdminAndAllUI = () => {
+      saveWallet();
+      if (adminCoinsDisplay) adminCoinsDisplay.textContent = playerWallet.coins.toLocaleString();
+      if (adminGemsDisplay) adminGemsDisplay.textContent = playerWallet.gems.toLocaleString();
+      updateShopUI();
+      updateHomeMatchupUI();
+      updateUnifiedSetupUI();
+      updateProfileUI();
+      updateCharDetailUI();
+    };
+
+    const openAdminPanel = () => {
+      if (!adminModal) return;
+      sound.unlock();
+      sound.playCritHit();
+      syncAdminAndAllUI();
+      adminModal.classList.remove("hidden");
+    };
+
+    let profileTapCount = 0;
+    let profileTapResetTimer = null;
+    const registerProfileTap = () => {
+      profileTapCount += 1;
+      clearTimeout(profileTapResetTimer);
+      profileTapResetTimer = setTimeout(() => { profileTapCount = 0; }, 3500);
+      if (profileTapCount >= 10) {
+        profileTapCount = 0;
+        openAdminPanel();
+      }
+    };
+
+    const profileNavBtn = document.querySelector('.cartoon-nav .nav-btn[data-target="screen-profile"]');
+    const profileLicenseEl = document.querySelector("#screen-profile .license");
+    if (profileNavBtn) profileNavBtn.addEventListener("click", registerProfileTap);
+    if (profileLicenseEl) profileLicenseEl.addEventListener("click", registerProfileTap);
+
+    if (btnAdminClose && adminModal) {
+      btnAdminClose.addEventListener("click", () => adminModal.classList.add("hidden"));
+    }
+    if (adminModal) {
+      adminModal.addEventListener("click", (e) => {
+        if (e.target === adminModal) adminModal.classList.add("hidden");
+      });
+      adminModal.querySelectorAll(".admin-add-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          sound.unlock();
+          sound.playBallHit();
+          const curr = btn.dataset.curr === "gems" ? "gems" : "coins";
+          const amt = Number(btn.dataset.amt) || 0;
+          playerWallet[curr] = Math.max(0, playerWallet[curr] + amt);
+          syncAdminAndAllUI();
+        });
+      });
+    }
+
+    const applyCustomCurrency = (curr, inputEl, mode) => {
+      const val = Math.max(0, Math.floor(Number(inputEl?.value) || 0));
+      sound.unlock();
+      sound.playBallHit();
+      playerWallet[curr] = mode === "set" ? val : Math.max(0, playerWallet[curr] + val);
+      if (inputEl) inputEl.value = "";
+      syncAdminAndAllUI();
+    };
+
+    const btnAddCoins = document.getElementById("btn-admin-add-coins");
+    const btnSetCoins = document.getElementById("btn-admin-set-coins");
+    const btnAddGems = document.getElementById("btn-admin-add-gems");
+    const btnSetGems = document.getElementById("btn-admin-set-gems");
+    const btnUnlockAll = document.getElementById("btn-admin-unlock-all");
+    const btnResetWallet = document.getElementById("btn-admin-reset-wallet");
+
+    if (btnAddCoins) btnAddCoins.addEventListener("click", () => applyCustomCurrency("coins", adminCoinsInput, "add"));
+    if (btnSetCoins) btnSetCoins.addEventListener("click", () => applyCustomCurrency("coins", adminCoinsInput, "set"));
+    if (btnAddGems) btnAddGems.addEventListener("click", () => applyCustomCurrency("gems", adminGemsInput, "add"));
+    if (btnSetGems) btnSetGems.addEventListener("click", () => applyCustomCurrency("gems", adminGemsInput, "set"));
+
+    if (btnUnlockAll) {
+      btnUnlockAll.addEventListener("click", () => {
+        sound.unlock();
+        sound.playCritHit();
+        for (const id of Object.keys(CHARACTER_ROSTER)) {
+          playerWallet.unlockedFighters.add(id);
+        }
+        for (const sk of SKIN_CATALOG || []) {
+          playerWallet.unlockedSkins.add(sk.id);
+        }
+        setupUnifiedSelectors();
+        syncAdminAndAllUI();
+      });
+    }
+    if (btnResetWallet) {
+      btnResetWallet.addEventListener("click", () => {
+        sound.unlock();
+        sound.playWallHit();
+        playerWallet.coins = 0;
+        playerWallet.gems = 0;
+        syncAdminAndAllUI();
       });
     }
   }
