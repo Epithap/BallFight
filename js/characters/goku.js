@@ -30,7 +30,7 @@
         if (this.timer >= chargeDuration && !this.fired) {
           this.fired = true;
           game.entities.push(rt.spawnShockRing(owner.x + Math.cos(this.angle) * 40, owner.y + Math.sin(this.angle) * 40, COLORS.blue, 100, 0.4));
-          rt.setShake(0.3, 6);
+          rt.addShake(0.3, 6);
         }
         if (this.timer < chargeDuration || !target.alive) return;
 

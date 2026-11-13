@@ -734,5 +734,6 @@
   BF.spawnStandPunchBarrage = spawnStandPunchBarrage;
   BF.spawnKnifeWave = spawnKnifeWave;
   BF.drawTheWorldStand = drawTheWorldStand;
+  BF.tryDioVampiricHeal = tryDioVampiricHeal;
 })();
 

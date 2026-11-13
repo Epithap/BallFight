@@ -1889,7 +1889,7 @@
         const isEscalated = st.hitCount >= 2;
         const dealt = applyDamage(st.target, dmgAmt);
         if (st.vampiric !== false && ball.costume === "dio") {
-          tryDioVampiricHeal(ball);
+          BF.tryDioVampiricHeal(ball);
         }
         addEffect(st.target, "slow", 0.35, { factor: 0.45 });
         st.target.flashTimer = 0.08;
