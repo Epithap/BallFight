@@ -1698,56 +1698,94 @@ body.rec-mode .arena-wrap {
   border-radius: 999px;
   white-space: nowrap;
 }
-.rateup-hero {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  background: linear-gradient(135deg, #fffdf4 0%, #fef08a 100%);
-  border: 3.5px solid var(--ink);
-  border-radius: 16px;
-  box-shadow: 0 4px 0 var(--ink);
-}
-.rateup-stage {
-  width: 88px;
-  height: 88px;
-  flex: none;
-  background-color: #a8e6cf;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23a8e6cf'/%3E%3Crect width='40' height='40' fill='%2397dcc2'/%3E%3Crect x='40' y='40' width='40' height='40' fill='%2397dcc2'/%3E%3C/svg%3E");
-  background-size: 40px 40px;
-  border: 3px solid var(--ink);
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
+.rateup-hero.modern-gacha-banner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2.1 / 1;
+  background: #0d091a;
+  border: 4px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 0 5px 0 var(--ink);
   overflow: hidden;
+  padding: 0;
 }
-.rateup-stage canvas { width: 100%; height: 100%; display: block; }
-.rateup-info {
-  flex: 1;
-  min-width: 0;
+.rateup-splash-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.rateup-overlay-ui {
+  position: absolute;
+  inset: 0;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.rateup-top-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .rateup-boost-chip {
   font-size: 11px;
-  padding: 1px 10px 2px;
+  padding: 2px 10px 3px;
   background: var(--red);
   color: var(--white);
   border: 2.5px solid var(--ink);
   border-radius: 999px;
+  box-shadow: 0 2px 0 var(--ink);
+}
+.rateup-rot-chip {
+  font-size: 10px;
+  padding: 2px 8px 3px;
+  background: rgba(15, 10, 30, 0.85);
+  color: #67e8f9;
+  border: 2px solid #67e8f9;
+  border-radius: 999px;
+}
+.rateup-bottom-plate {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 64%;
 }
 .rateup-name {
-  font-size: 20px;
-  line-height: 1.05;
-  color: var(--ink);
+  font-size: 22px;
+  line-height: 0.98;
+  color: var(--white);
+  -webkit-text-stroke: 5px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 0 3px 0 var(--ink);
   margin: 0;
 }
 .rateup-series {
   font-size: 11px;
-  opacity: 0.72;
+  color: #e2e8f0;
+  text-shadow: 0 2px 0 var(--ink);
   margin: 0;
+}
+.g-char-fx-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+}
+.g-reveal-quote {
+  position: relative;
+  z-index: 4;
+  margin-top: 8px;
+  padding: 4px 12px;
+  background: var(--ink);
+  color: var(--sun);
+  border: 2.5px solid var(--white);
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-align: center;
 }
 .banner-feat { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .feat-tile {

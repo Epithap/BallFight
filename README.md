@@ -45,7 +45,7 @@
   - **Six-Tails Skeletal Kyuubi** (*Naruto*, `150 Gems`)
   - **Arrancar Arc: Ulquiorra Duel** (*Ichigo*, `120 Gems` — 2-in-1 tattered Bankai + Half-Shattered Dark-Crimson Mask)
   - **Awakened Vasto: Long-Hair Half-Mask** (*Ichigo*, `180 Gems` — Mythic long orange mane &amp; single broken Vasto horn)
-- 🎰 **Hourly Rate-Up Gacha &amp; Pity 100**: All fighters are equal tier (no character rarity!). Gacha drops Coins (42%), Gems (38%), and Fighters (20%), with an **hourly rotating Rate-Up Banner** (55% of character drops) + live character preview and **Pity 100 guaranteed character** following banner odds.
+- 🎰 **Modern Hourly Rate-Up Gacha &amp; Pity 100**: All fighters are equal tier (no character rarity!). Features a dynamic widescreen splash banner (rotates every 1 hour) with **5.0% Rate-Up**, **1.5% other characters**, Coins (48.5%), Gems (45%), **Pity 100 guaranteed character**, and custom **per-character reveal animations**!
 - ⚔️ **Domain Clash &amp; Stand Clash**: **Gojo vs Sukuna** clash in an epic Domain Expansion tug-of-war, while **DIO vs Jotaro** trigger Stand Clashes!
 - 🔊 **Procedural Web Audio SFX (`js/sfx.js`)**: Custom synthesized sounds per skill, ultimate, UI click, and gacha capsule—with zero external audio files.
 - 📱 **9:16 Vertical Recording Mode (`REC`)**: One-click vertical framing for TikTok, Reels, and Shorts.
