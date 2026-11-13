@@ -13,10 +13,12 @@
   const OTHER_CHAR_CHANCE = 1.5; // 1.5% other characters (split equally)
 
   const PRIZES = [
-    { type: "coins", amount: 150, tier: "common", label: "COINS", w: 32.5 },
-    { type: "coins", amount: 400, tier: "rare", label: "BIG COINS", w: 16.0 },
-    { type: "gems", amount: 25, tier: "common", label: "GEMS", w: 30.0 },
-    { type: "gems", amount: 60, tier: "epic", label: "BIG GEMS", w: 15.0 },
+    { type: "coins", amount: 20, tier: "common", label: "COMMON", w: 30.0 },
+    { type: "coins", amount: 100, tier: "rare", label: "RARE", w: 13.5 },
+    { type: "coins", amount: 250, tier: "epic", label: "EPIC", w: 5.0 },
+    { type: "gems", amount: 1, tier: "common", label: "COMMON", w: 28.0 },
+    { type: "gems", amount: 5, tier: "rare", label: "RARE", w: 12.0 },
+    { type: "gems", amount: 10, tier: "epic", label: "EPIC", w: 5.0 },
   ];
 
   // Per-character splash banner & pull reveal themes
