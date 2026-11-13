@@ -38,7 +38,7 @@
 
 > **v1.2 is a full visual & gameplay overhaul of Ball Fight!**
 
-- 🎨 **Complete UI Revamp**: Brand-new solid comic-book theme with chunky `#2b1b3d` outlines, bottom navigation bar (`Play`, `Fighters`, `Profile`, `Shop`), crisp SVG icon sprites, mint checkerboard arena & showcase cards, plus a **Profile License** with persistent stats, EXP/Rank, and 6 unlockable trophies.
+- 🎨 **Complete UI Revamp**: Brand-new solid comic-book theme with chunky `#2b1b3d` outlines, bottom navigation bar (`Play`, `Fighters`, `Profile`, `Shop`), crisp SVG icon sprites, mint checkerboard arena & showcase cards, plus a customizable **Profile License** (**change Display Name & custom Photo / Fighter Avatar**, persistent stats, EXP/Rank, and 6 unlockable trophies).
 - 🎭 **Character Design & Dynamic Anime Faces (`js/faces.js`)**: Every fighter now has custom-drawn anime eyes, brows, and expressions (*cheerful, dark, cool, sly*) that blink, track movement, and react when charging skills or taking hits—plus redesigned **Luffy Gear 4** (*Bounceman* & *Snakeman*), **comic impact bursts**, high-speed **afterimages**, and dark outlines on **HP bars & names** so they stay readable on any character color.
 - 🌟 **Fighter Evolution System (`10,000 Gold`)**: Evolve **Naruto** (*Sage Mode + Four-Tails*) and **Ichigo** (*Bankai + Hollow Mask + Vasto Lorde*). Freely toggle **Starter vs Evolved** independently for **P1 &amp; P2** to run *Base vs Evolved* matchups!
 - 💀 **Diamond Skin Vault (Gems)**: Buy &amp; equip **Evo / Mythic Skins** with per-hero filters &amp; horizontal swipe carousel:

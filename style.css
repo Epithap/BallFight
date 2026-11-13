@@ -1563,6 +1563,46 @@ body.rec-mode .arena-wrap {
   overflow: hidden;
 }
 .lic-photo canvas { width: 100%; height: 100%; display: block; }
+.lic-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.lic-photo-img.hidden, .lic-photo canvas.hidden {
+  display: none !important;
+}
+.profile-edit-btn {
+  background: var(--white);
+  color: var(--ink);
+  font-size: 12px;
+  padding: 4px 12px;
+}
+.profile-avatar-choices {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+.profile-avatar-choice {
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  background: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 0 3px 0 var(--ink);
+  cursor: pointer;
+}
+.profile-avatar-choice.active {
+  background: var(--sun);
+}
+.profile-avatar-choice canvas {
+  width: 40px;
+  height: 40px;
+  display: block;
+}
 .lvl-badge {
   position: absolute;
   left: 0; bottom: 0;

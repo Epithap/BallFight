@@ -5513,6 +5513,27 @@
     if (shopModal) shopModal.classList.remove("hidden");
   }
 
+  const PROFILE_PREFS_KEY = "bf_profile_prefs_v1";
+  let profilePrefs = {
+    name: "EPITHAP",
+    avatarMode: "auto",
+    charId: "goku",
+    photoDataUrl: null,
+  };
+  try {
+    const rawPrefs = localStorage.getItem(PROFILE_PREFS_KEY);
+    if (rawPrefs) {
+      const parsedPrefs = JSON.parse(rawPrefs);
+      if (parsedPrefs && typeof parsedPrefs === "object") {
+        profilePrefs = { ...profilePrefs, ...parsedPrefs };
+      }
+    }
+  } catch (_) {}
+
+  function saveProfilePrefs() {
+    try { localStorage.setItem(PROFILE_PREFS_KEY, JSON.stringify(profilePrefs)); } catch (_) {}
+  }
+
   function updateProfileUI() {
     try { localStorage.setItem("bf_profile_v1", JSON.stringify(sessionStats)); } catch (_) {}
     const $ = (id) => document.getElementById(id);
@@ -5530,7 +5551,24 @@
       if (n > max && CHARACTER_ROSTER[id]) { max = n; best = id; }
     }
     if (profFav) profFav.textContent = best ? CHARACTER_ROSTER[best].name : "-";
-    drawMiniAvatar($("profile-avatar"), CHARACTER_ROSTER[best || "goku"]);
+
+    const nameDisplay = $("profile-name-display");
+    if (nameDisplay) nameDisplay.textContent = (profilePrefs.name || "EPITHAP").toUpperCase();
+
+    const avatarCanvas = $("profile-avatar");
+    const photoImg = $("profile-photo-img");
+    if (profilePrefs.avatarMode === "custom" && profilePrefs.photoDataUrl && photoImg && avatarCanvas) {
+      photoImg.src = profilePrefs.photoDataUrl;
+      photoImg.classList.remove("hidden");
+      avatarCanvas.classList.add("hidden");
+    } else {
+      if (photoImg) photoImg.classList.add("hidden");
+      if (avatarCanvas) avatarCanvas.classList.remove("hidden");
+      const chosenId = (profilePrefs.avatarMode === "char" && CHARACTER_ROSTER[profilePrefs.charId])
+        ? profilePrefs.charId
+        : (best || "goku");
+      drawMiniAvatar(avatarCanvas, CHARACTER_ROSTER[chosenId]);
+    }
 
     const exp = wins * 120 + matches * 40;
     const lvl = Math.floor(exp / 500) + 1;
@@ -5827,6 +5865,115 @@
     if (changelogModal) {
       changelogModal.addEventListener("click", (e) => {
         if (e.target === changelogModal) changelogModal.classList.add("hidden");
+      });
+    }
+
+    // Edit Profile Modal (Name & Custom Photo / Fighter Avatar)
+    const profileEditModal = document.getElementById("profile-edit-modal");
+    const btnEditProfile = document.getElementById("btn-edit-profile");
+    const btnProfileEditClose = document.getElementById("btn-profile-edit-close");
+    const profileNameInput = document.getElementById("profile-name-input");
+    const profilePhotoFile = document.getElementById("profile-photo-file");
+    const btnUploadPhoto = document.getElementById("btn-upload-profile-photo");
+    const btnResetPhoto = document.getElementById("btn-reset-profile-photo");
+    const profileAvatarChoices = document.getElementById("profile-avatar-choices");
+    const btnSaveProfile = document.getElementById("btn-save-profile");
+
+    let draftPrefs = { ...profilePrefs };
+
+    const renderProfileAvatarChoices = () => {
+      if (!profileAvatarChoices) return;
+      profileAvatarChoices.innerHTML = "";
+      for (const char of Object.values(CHARACTER_ROSTER)) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        const isSel = draftPrefs.avatarMode === "char" && draftPrefs.charId === char.id;
+        btn.className = `profile-avatar-choice${isSel ? " active" : ""}`;
+        btn.title = char.name;
+        const cvs = document.createElement("canvas");
+        cvs.width = 44;
+        cvs.height = 44;
+        btn.appendChild(cvs);
+        btn.addEventListener("click", () => {
+          sound.unlock();
+          sound.playBallHit();
+          draftPrefs.avatarMode = "char";
+          draftPrefs.charId = char.id;
+          renderProfileAvatarChoices();
+        });
+        profileAvatarChoices.appendChild(btn);
+        drawMiniAvatar(cvs, char);
+      }
+    };
+
+    if (btnEditProfile && profileEditModal) {
+      btnEditProfile.addEventListener("click", () => {
+        sound.unlock();
+        draftPrefs = { ...profilePrefs };
+        if (profileNameInput) profileNameInput.value = draftPrefs.name || "EPITHAP";
+        renderProfileAvatarChoices();
+        profileEditModal.classList.remove("hidden");
+      });
+    }
+    if (btnProfileEditClose && profileEditModal) {
+      btnProfileEditClose.addEventListener("click", () => profileEditModal.classList.add("hidden"));
+    }
+    if (profileEditModal) {
+      profileEditModal.addEventListener("click", (e) => {
+        if (e.target === profileEditModal) profileEditModal.classList.add("hidden");
+      });
+    }
+    if (btnUploadPhoto && profilePhotoFile) {
+      btnUploadPhoto.addEventListener("click", () => {
+        sound.unlock();
+        profilePhotoFile.click();
+      });
+      profilePhotoFile.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const size = 192;
+            const off = document.createElement("canvas");
+            off.width = size;
+            off.height = size;
+            const oCtx = off.getContext("2d");
+            const minSide = Math.min(img.width, img.height);
+            const sx = (img.width - minSide) * 0.5;
+            const sy = (img.height - minSide) * 0.5;
+            oCtx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+            draftPrefs.avatarMode = "custom";
+            draftPrefs.photoDataUrl = off.toDataURL("image/jpeg", 0.82);
+            renderProfileAvatarChoices();
+            sound.playCritHit();
+          };
+          img.src = String(reader.result || "");
+        };
+        reader.readAsDataURL(file);
+        profilePhotoFile.value = "";
+      });
+    }
+    if (btnResetPhoto) {
+      btnResetPhoto.addEventListener("click", () => {
+        sound.unlock();
+        sound.playBallHit();
+        draftPrefs.avatarMode = "auto";
+        draftPrefs.photoDataUrl = null;
+        renderProfileAvatarChoices();
+      });
+    }
+    if (btnSaveProfile && profileEditModal) {
+      btnSaveProfile.addEventListener("click", () => {
+        sound.unlock();
+        sound.playCritHit();
+        const cleanName = (profileNameInput?.value || "").trim().slice(0, 16);
+        draftPrefs.name = cleanName || "EPITHAP";
+        profilePrefs = { ...draftPrefs };
+        saveProfilePrefs();
+        updateProfileUI();
+        profileEditModal.classList.add("hidden");
       });
     }
 

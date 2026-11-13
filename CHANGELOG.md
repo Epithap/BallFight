@@ -31,7 +31,7 @@ Dokumen ini ditulis supaya AI agent (Antigravity) dan developer langsung paham s
 - **Navigasi**: tab bar fixed di bawah (`.cartoon-nav`, `.nav-btn`). Header berisi logo, chip saldo koin/gem (`#home-coins-display`, `#home-gems-display`), dan tombol What's New (`#btn-whats-new`).
 - **Layar Play**: panggung lobby (`.lobby-stage`) dengan dua avatar, tombol `#btn-quick-fight` (utama) dan `#btn-open-sandbox`, serta kartu Story Saga (masih terkunci).
 - **Fighters**: kartu roster (`.roster-card`) dengan seri anime dan rarity. Klik kartu membuka *fighter sheet* (`#roster-modal`) dengan pemilih form (`#detail-form-list`), stat, skill, ult. Fighter terkunci tetap bisa dilihat, ada catatan `#detail-lock-note`.
-- **Profile**: statistik persisten di localStorage, level/EXP, rank, foto fighter favorit, 6 trofi (`#trophy-row`).
+- **Profile**: statistik persisten di localStorage, level/EXP, rank, **fitur Edit Profile (ganti nama & upload foto profil / pilih avatar fighter)**, dan 6 trofi (`#trophy-row`).
 - **Shop**: tidak ada lagi pembelian fighter. Fighter selain 4 starter dibuka lewat **Fighter Gacha** (lihat bagian Gacha). Turbo Granny digambar ulang.
 - **Wajah karakter**: tiap karakter punya mata, alis, mulut sendiri (`js/faces.js`).
 - **Battle FX**: comic impact burst, afterimage, charge-up cast untuk skill dan ult.

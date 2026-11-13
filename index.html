@@ -275,14 +275,18 @@
       <!-- ================= 5. PROFILE ================= -->
       <section id="screen-profile" class="screen screen-profile hidden">
         <div class="panel">
-          <div class="stamp stamp-yellow">BRAWLER LICENSE</div>
+          <div class="panel-head">
+            <div class="stamp stamp-yellow">BRAWLER LICENSE</div>
+            <button id="btn-edit-profile" class="btn btn-sm profile-edit-btn" type="button">EDIT PROFILE</button>
+          </div>
           <div class="license">
-            <div class="lic-photo">
+            <div class="lic-photo" id="profile-photo-wrap">
               <canvas id="profile-avatar" width="168" height="168"></canvas>
+              <img id="profile-photo-img" class="lic-photo-img hidden" alt="Profile Photo" />
               <span id="profile-lvl" class="lvl-badge">LV.1</span>
             </div>
             <div class="lic-info">
-              <h2 class="lic-name">EPITHAP</h2>
+              <h2 id="profile-name-display" class="lic-name">EPITHAP</h2>
               <span id="profile-rank" class="rank-chip">ROOKIE</span>
               <div class="exp-bar"><div id="profile-exp-fill" class="exp-fill" style="width:0%"></div></div>
               <span id="profile-exp-text" class="exp-text">EXP 0 / 500</span>
@@ -420,6 +424,34 @@
 
   <div id="gacha-overlay" class="gacha-overlay hidden"></div>
 
+  <!-- ================= EDIT PROFILE MODAL ================= -->
+  <div id="profile-edit-modal" class="modal-backdrop hidden">
+    <div class="cartoon-card modal-detail-card admin-modal-card">
+      <button id="btn-profile-edit-close" class="modal-close-btn" type="button" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+      <div class="stamp stamp-yellow">CUSTOMIZE LICENSE</div>
+      <h2 class="changelog-heading">EDIT PROFILE</h2>
+
+      <div class="admin-section">
+        <p class="block-label">DISPLAY NAME</p>
+        <input id="profile-name-input" class="admin-input" type="text" maxlength="16" placeholder="Enter your name..." />
+      </div>
+
+      <div class="admin-section">
+        <p class="block-label">PROFILE PHOTO / AVATAR</p>
+        <div class="admin-btn-row">
+          <input id="profile-photo-file" type="file" accept="image/*" class="hidden" />
+          <button id="btn-upload-profile-photo" type="button" class="btn btn-sm btn-play">UPLOAD PHOTO</button>
+          <button id="btn-reset-profile-photo" type="button" class="btn btn-sm">AUTO (MOST USED)</button>
+        </div>
+        <div id="profile-avatar-choices" class="profile-avatar-choices"></div>
+      </div>
+
+      <div class="admin-btn-row admin-footer-row">
+        <button id="btn-save-profile" type="button" class="btn btn-green btn-big">SAVE PROFILE</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= SECRET ADMIN CONTROL PANEL ================= -->
   <div id="admin-modal" class="modal-backdrop hidden">
     <div class="cartoon-card modal-detail-card admin-modal-card">
@@ -485,7 +517,7 @@
           </div>
           <h3 class="power-title">TOTAL UI REVAMP &amp; DESAIN KARAKTER BARU</h3>
           <p class="power-desc">
-            • <strong>Rombak UI Total</strong>: Tema solid comic-book baru (kuning-ungu tebal + outline ink), <strong>Bottom Nav Bar</strong> (Play, Fighters, Profile, Shop), ikon SVG tajam, kartu Fighter dengan filter anime, serta <strong>Profile License</strong> dengan EXP, Rank &amp; 6 Trophy!<br>
+            • <strong>Rombak UI Total</strong>: Tema solid comic-book baru (kuning-ungu tebal + outline ink), <strong>Bottom Nav Bar</strong> (Play, Fighters, Profile, Shop), ikon SVG tajam, kartu Fighter dengan filter anime, serta <strong>Profile License</strong> (bisa <strong>ganti Nama &amp; Foto Profil</strong>, EXP, Rank &amp; 6 Trophy)!<br>
             • <strong>Desain Karakter &amp; Wajah Anime</strong>: Ekspresi mata &amp; wajah unik per karakter (<em>cheerful, dark, cool, sly</em>) yang berkedip dan melirik arah gerak, <strong>Luffy Gear 4</strong> baru (<em>Bounceman &amp; Snakeman</em>), efek battle solid + <em>comic impact burst</em>, <em>afterimage</em> kecepatan tinggi, serta <strong>Outline Nama &amp; HP Bar</strong> agar jelas di semua warna karakter!
           </p>
         </div>
