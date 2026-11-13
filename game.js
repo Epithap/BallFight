@@ -436,7 +436,7 @@
 
   function spawnShockRing(x, y, color, maxR = 90, life = 0.45) {
     return {
-      x, y, life, maxLife: life, dead: false,
+      x, y, life, maxLife: life, isTimeStopEntity: true, dead: false,
       update(dt) { this.life -= dt; if (this.life <= 0) this.dead = true; },
       render(c) {
         const p = 1 - Math.max(0, this.life / this.maxLife);
@@ -456,7 +456,7 @@
   function spawnBanner(text, color) {
     const dur = 1.0;
     return {
-      life: dur, dead: false,
+      life: dur, isTimeStopEntity: true, dead: false,
       update(dt) { this.life -= dt; if (this.life <= 0) this.dead = true; },
       render(c) {
         const t = 1 - this.life / dur;
@@ -2594,7 +2594,7 @@
 
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(rect.width * dpr);
     canvas.height = Math.round(rect.height * dpr);
   }
@@ -2603,7 +2603,7 @@
   function spawnImpactBurst(x, y, color) {
     const life = 0.2;
     return {
-      life, dead: false,
+      life, isTimeStopEntity: true, dead: false,
       update(dt) { this.life -= dt; if (this.life <= 0) this.dead = true; },
       render(c) {
         const p = 1 - Math.max(0, this.life) / life;
@@ -2674,6 +2674,7 @@
       maxRadius: 115,
       life: 0.34,
       maxLife: 0.34,
+      isTimeStopEntity: true,
       dead: false,
       update(dt) {
         this.life -= dt;
@@ -2906,13 +2907,13 @@
     const impactSpeed = Math.max(0, -velAlongNormal);
 
     if (timeStopTimer > 0) {
-      // In Time Stop, the frozen opponent stays pinned in place while Dio rebounds
+      // In Time Stop, the frozen opponent stays pinned in place while the Time Stop user rebounds cleanly
       if (b1 === timeStopOwner) {
         b1.x -= nx * corr;
         b1.y -= ny * corr;
         if (velAlongNormal < 0) {
-          b1.vx -= 2 * velAlongNormal * nx;
-          b1.vy -= 2 * velAlongNormal * ny;
+          b1.vx += 2 * velAlongNormal * nx;
+          b1.vy += 2 * velAlongNormal * ny;
         }
       } else if (b2 === timeStopOwner) {
         b2.x += nx * corr;
@@ -4159,12 +4160,9 @@
     ctx.scale(cameraZoom, cameraZoom);
     ctx.translate(-cameraX, -cameraY);
 
-    // Grayscale filter during Time Stop
-    if (timeStopTimer > 0) {
-      ctx.filter = "grayscale(100%) contrast(1.06)";
-    }
-
-    ctx.fillStyle = COLORS.floorA;
+    // Hardware-accelerated Time Stop floor (avoid ctx.filter which causes severe CPU freeze on mobile!)
+    const inTimeStop = timeStopTimer > 0;
+    ctx.fillStyle = inTimeStop ? "#cfd6de" : COLORS.floorA;
     ctx.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
     if (shakeTime > 0) {
@@ -4176,11 +4174,17 @@
 
     // Checkerboard floor
     const tile = 50;
-    ctx.fillStyle = COLORS.floorB;
+    ctx.fillStyle = inTimeStop ? "#b8c2cc" : COLORS.floorB;
     for (let i = 0; i < WORLD_SIZE / tile; i++) {
       for (let j = 0; j < WORLD_SIZE / tile; j++) {
         if ((i + j) % 2 === 1) ctx.fillRect(i * tile, j * tile, tile, tile);
       }
+    }
+
+    if (inTimeStop) {
+      const isJotaroTS = timeStopOwner && timeStopOwner.costume === "jotaro";
+      ctx.fillStyle = isJotaroTS ? "rgba(30, 18, 56, 0.22)" : "rgba(40, 32, 12, 0.20)";
+      ctx.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
     }
 
     // Particles
@@ -4240,8 +4244,6 @@
     for (const ball of balls) {
       if (ball.alive) drawCast(ball, ctx);
     }
-
-    ctx.filter = "none";
 
     // Damage numbers
     ctx.textAlign = "center";
