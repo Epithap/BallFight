@@ -16,6 +16,7 @@
     <header class="app-header">
       <h1 class="logo"><span class="logo-a">BALL</span><span class="logo-b">FIGHT</span></h1>
       <p class="tagline">ANIME BALL PHYSICS ARENA</p>
+      <button id="btn-whats-new" class="btn-version-pill" type="button">✨ v1.1 WHAT'S NEW</button>
     </header>
 
     <!-- Top Cartoon Arcade Nav Bar (Hidden when in Battle) -->
@@ -241,11 +242,14 @@
           
           <!-- Category Filter Pills -->
           <div class="filter-chips-row" id="roster-filter-chips">
-            <button class="filter-chip active" data-filter="all" type="button">ALL (4)</button>
+            <button class="filter-chip active" data-filter="all" type="button">ALL (8)</button>
             <button class="filter-chip" data-filter="alien" type="button">ALIEN</button>
             <button class="filter-chip" data-filter="shinobi" type="button">SHINOBI</button>
             <button class="filter-chip" data-filter="pirate" type="button">PIRATE</button>
             <button class="filter-chip" data-filter="reaper" type="button">REAPER</button>
+            <button class="filter-chip" data-filter="stand" type="button">STAND</button>
+            <button class="filter-chip" data-filter="berserker" type="button">BERSERKER</button>
+            <button class="filter-chip" data-filter="sorcerer" type="button">SORCERER</button>
           </div>
 
           <!-- Scalable Avatar Grid -->
@@ -381,11 +385,15 @@
       <button id="btn-modal-close" class="modal-close-btn" type="button" aria-label="Close">✖</button>
       <div class="stamp stamp-yellow">FIGHTER PROFILE</div>
 
-      <div class="detail-hero-box">
-        <canvas id="detail-canvas" class="detail-canvas" width="140" height="140"></canvas>
+      <div id="detail-hero-box" class="detail-hero-box">
+        <canvas id="detail-canvas" class="detail-canvas" width="160" height="160"></canvas>
         <div class="detail-hero-info">
           <h2 id="detail-name" class="detail-hero-name">STRONGEST ALIEN</h2>
           <p id="detail-title" class="detail-hero-title">Earth's Protector • Legendary Ki Master</p>
+          <div id="detail-form-toggle" class="detail-form-toggle hidden">
+            <button id="btn-form-base" class="form-toggle-btn active" type="button">BASE</button>
+            <button id="btn-form-ult" class="form-toggle-btn form-toggle-ult" type="button">🔥 ULT FORM</button>
+          </div>
         </div>
       </div>
 
@@ -436,6 +444,16 @@
           Enters crimson state with glowing red aura! Speeds up and charges massive Kamehameha energy beams.
         </p>
       </div>
+
+      <!-- Empowered Skill Callout (Shown for Transformable Fighters) -->
+      <div id="detail-empowered-box" class="power-bubble empowered-bubble hidden">
+        <div class="power-header">
+          <span class="power-badge badge-purple">EMPOWERED SKILL (ULT)</span>
+          <span id="detail-emp-cd" class="power-cd">CD: 1.25S</span>
+        </div>
+        <h3 id="detail-emp-name" class="power-title">SAVAGE RAMPAGE x2</h3>
+        <p id="detail-emp-desc" class="power-desc"></p>
+      </div>
     </div>
   </div>
 
@@ -462,6 +480,79 @@
 
       <div class="shop-modal-actions">
         <button id="btn-shop-modal-action" class="btn btn-wip btn-big" type="button" disabled>🔒 UNDER CONSTRUCTION</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= v1.1 UPDATE NOTES MODAL ================= -->
+  <div id="changelog-modal" class="modal-backdrop hidden">
+    <div class="cartoon-card modal-detail-card changelog-modal-card">
+      <button id="btn-changelog-close" class="modal-close-btn" type="button" aria-label="Close">✖</button>
+      <div class="stamp stamp-yellow">UPDATE v1.1</div>
+
+      <h2 class="changelog-heading">WHAT'S NEW FROM v1.0</h2>
+      <p class="changelog-sub">v1.1: Stand Users, Shop, Gojo &amp; Guts, plus Goku &amp; Luffy Revamps!</p>
+
+      <div class="changelog-list">
+        <div class="power-bubble skill-bubble">
+          <div class="power-header">
+            <span class="power-badge badge-gold">REVAMP • ALIEN &amp; PIRATE</span>
+            <span class="power-cd">v1.1</span>
+          </div>
+          <h3 class="power-title">GOKU &amp; LUFFY REVAMP</h3>
+          <p class="power-desc">
+            • <strong>Goku (Kamehameha ↔ Dragon Rush)</strong>: Skill bergantian Kamehameha &amp; Dragon Rush lurus (3x Dragon Kick + lemparan). Saat Ulti &amp; HP &le; 100, berubah jadi <strong>Great Ape (Oozaru)</strong> membabi buta dengan <strong>35% Damage Reduction</strong>!<br>
+            • <strong>Luffy (Rocket → Pistol)</strong>: Cooldown awal 2.5s → Gomu Rocket → delay 0.2s Gomu Pistol (knockback) → CD akhir 4.5s. <strong>Gear 4</strong>: HP Ganjil = <strong>Bounceman</strong> (AoE besar), HP Genap = <strong>Snakeman</strong> (pukulan memantul tembok).
+          </p>
+        </div>
+
+        <div class="power-bubble ult-bubble">
+          <div class="power-header">
+            <span class="power-badge badge-purple">NEW FIGHTERS • SORCERER &amp; BERSERKER</span>
+            <span class="power-cd">SHOP UNLOCK</span>
+          </div>
+          <h3 class="power-title">GOJO &amp; GUTS + FIGHTER SHOP</h3>
+          <p class="power-desc">
+            • <strong>Honored Sorcerer (Gojo)</strong>: Limitless bergantian <strong>Red</strong> (knockback) &amp; <strong>Blue</strong> (vortex tarik, 2 dmg) dengan CD 2.5s, <strong>Hollow Purple</strong> (AoE luas), serta <strong>Six Eyes</strong> 13s Infinity + <strong>Unlimited Void</strong> freeze 6s.<br>
+            • <strong>Hundred-Man Slayer (Guts)</strong>: Dragonslayer berat (0 collision dmg, tebasan besar) &amp; <strong>Berserker Armor</strong> (2x Savage Rampage).<br>
+            • <strong>Fighter Shop</strong>: Mulai dengan <strong>2000 Koin</strong> (+100 koin tiap ronde Sandbox) untuk membuka fighter baru!
+          </p>
+        </div>
+        <div class="power-bubble skill-bubble">
+          <div class="power-header">
+            <span class="power-badge badge-gold">NEW FIGHTER • STAND</span>
+            <span class="power-cd">THE WORLD</span>
+          </div>
+          <h3 class="power-title">ARROGANT VAMPIRE</h3>
+          <p class="power-desc">
+            • <strong>Stand Barrage</strong>: Meluncur lurus ke depan (non-homing, 2.3s CD) dengan damage ramping (1→5) + mini-slow. Minimal 2 hit untuk mengisi Ulti!<br>
+            • <strong>Pasif Vampir</strong>: 2.5% chance heal 2–4 HP per hit fisik, 5% teleport ke belakang musuh &amp; 12% teleport acak saat terkena serangan.<br>
+            • <strong>Ulti ZA WARUDO!</strong>: Layar menjadi grayscale, melempar pisau beku (6 dmg), dan Stand Barrage menjadi auto-aim penuh!
+          </p>
+        </div>
+
+        <div class="power-bubble ult-bubble">
+          <div class="power-header">
+            <span class="power-badge badge-purple">NEW FIGHTER • STAND</span>
+            <span class="power-cd">STAR PLATINUM</span>
+          </div>
+          <h3 class="power-title">STAR DELINQUENT</h3>
+          <p class="power-desc">
+            • <strong>ORA Barrage</strong>: Star Platinum meluncur ke depan dengan rentetan pukulan ORA! ramping + mini-slow.<br>
+            • <strong>Ulti STAR PLATINUM: THE WORLD!</strong>: Time Stop 4 detik dengan layar grayscale &amp; pukulan HEAVY ORA! auto-aim.
+          </p>
+        </div>
+
+        <div class="power-bubble clash-bubble">
+          <div class="power-header">
+            <span class="power-badge badge-red">NEW MECHANIC</span>
+            <span class="power-cd">2.2S TUG-OF-WAR</span>
+          </div>
+          <h3 class="power-title">ANIME STAND CLASH!</h3>
+          <p class="power-desc">
+            Saat dua Stand bertemu di tengah serangan, kedua petarung membeku sementara dan muncul <strong>Clash Meter</strong> probabilitas menang! Pemenang 50/50 mendapat <strong>+1 stack Ulti</strong>, sedangkan yang kalah terkena damage besar &amp; terpental jauh!
+          </p>
+        </div>
       </div>
     </div>
   </div>

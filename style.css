@@ -413,16 +413,22 @@ body {
   opacity: 0.75;
 }
 
-/* Character Selector 4-Button Grid */
+/* Character Selector 5-Button Grid */
 .char-grid-chunky {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
   max-height: 190px;
   overflow-y: auto;
   padding: 2px 2px 4px;
   scrollbar-width: thin;
   scrollbar-color: var(--sun) var(--ink);
+}
+
+@media (max-width: 440px) {
+  .char-grid-chunky {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .char-grid-chunky::-webkit-scrollbar {
@@ -460,6 +466,44 @@ body {
 .char-btn-tile .avatar-canvas {
   width: 42px;
   height: 42px;
+}
+
+.char-btn-tile.char-shop-shortcut {
+  background: #fff7d6;
+  justify-content: center;
+}
+.shop-shortcut-icon {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.char-btn-tile.char-locked {
+  background: #eae4d3;
+  opacity: 0.78;
+}
+.char-btn-tile.char-locked .avatar-canvas {
+  filter: grayscale(0.75);
+}
+
+.avatar-card.avatar-locked .avatar-canvas {
+  filter: grayscale(0.5);
+}
+
+.shop-card-tile.tile-available {
+  background: #fffdf5;
+  border-color: var(--ink);
+}
+.shop-card-tile.tile-available .shop-card-wip-pill {
+  background: var(--sun);
+  color: var(--ink);
+}
+
+.shop-card-tile.tile-owned {
+  background: #eefcf1;
+}
+.shop-card-tile.tile-owned .shop-card-wip-pill {
+  background: var(--green);
+  color: var(--white);
 }
 
 .char-btn-tile:hover {
@@ -845,12 +889,50 @@ body {
 /* Category Filter Chips */
 .filter-chips-row {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   overflow-x: auto;
-  padding: 2px 2px 6px;
-  scrollbar-width: none;
+  padding: 2px 0 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sun) var(--ink);
+  -webkit-overflow-scrolling: touch;
 }
-.filter-chips-row::-webkit-scrollbar { display: none; }
+.filter-chips-row::-webkit-scrollbar {
+  height: 6px;
+}
+.filter-chips-row::-webkit-scrollbar-track {
+  background: #f1eddf;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+}
+.filter-chips-row::-webkit-scrollbar-thumb {
+  background: var(--sun);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+}
+
+/* Fighter Roster Category Strip: 4 columns aligned with .avatar-roster-grid, swipe/drag scrollable */
+#roster-filter-chips {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 24px) / 4);
+  gap: 8px;
+  scroll-snap-type: x proximity;
+  cursor: grab;
+  user-select: none;
+}
+#roster-filter-chips.is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+}
+#roster-filter-chips .filter-chip {
+  width: 100%;
+  padding: 5px 4px;
+  font-size: 10.5px;
+  text-align: center;
+  scroll-snap-align: start;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .filter-chip {
   font-family: var(--font);
@@ -1018,17 +1100,65 @@ body {
   border: 4px solid var(--ink);
   border-radius: 18px;
   padding: 10px 14px;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.detail-hero-box.is-ult-preview {
+  background: #1b111c;
+  border-color: var(--red);
+}
+.detail-hero-box.is-ult-preview .detail-hero-name,
+.detail-hero-box.is-ult-preview .detail-hero-title {
+  color: var(--white);
 }
 
 .detail-canvas {
-  width: 95px;
-  height: 95px;
+  width: 110px;
+  height: 110px;
+  flex-shrink: 0;
   display: block;
 }
 
 .detail-hero-info {
   display: flex;
   flex-direction: column;
+  gap: 6px;
+}
+
+.detail-form-toggle {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.form-toggle-btn {
+  font-family: var(--font);
+  font-size: 11px;
+  color: var(--ink);
+  background: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  padding: 4px 10px;
+  box-shadow: 0 3px 0 var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.08s, box-shadow 0.08s, background-color 0.08s;
+}
+
+.form-toggle-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.form-toggle-btn.active {
+  background: var(--sun);
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 var(--ink);
+}
+
+.form-toggle-btn.form-toggle-ult.active {
+  background: var(--red);
+  color: var(--white);
 }
 
 .detail-hero-name {
@@ -1093,6 +1223,10 @@ body {
 
 .power-bubble.ult-bubble {
   background: #fff0f2;
+}
+
+.power-bubble.empowered-bubble {
+  background: #f4eeff;
 }
 
 .power-header {
@@ -1675,6 +1809,71 @@ body.rec-mode .arena-wrap {
 
 .rec-exit-btn.hidden {
   display: none;
+}
+
+.btn-version-pill {
+  margin-top: 6px;
+  font-family: var(--font);
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  color: var(--ink);
+  background: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  padding: 4px 12px;
+  box-shadow: 0 3px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.08s, box-shadow 0.08s, background-color 0.08s;
+}
+
+.btn-version-pill:hover {
+  background: #f3efe4;
+  transform: translateY(-1px);
+}
+
+.btn-version-pill:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+
+.changelog-modal-card {
+  max-height: 82vh;
+  overflow-y: auto;
+}
+
+.changelog-heading {
+  margin: 8px 0 2px;
+  font-size: 22px;
+  color: var(--ink);
+  text-align: center;
+}
+
+.changelog-sub {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #5b4b73;
+  text-align: center;
+}
+
+.changelog-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.badge-gold {
+  background: var(--sun);
+  color: var(--ink);
+}
+
+.badge-purple {
+  background: #9b59b6;
+  color: var(--white);
+}
+
+.clash-bubble {
+  background: #fff4e5;
+  border-color: var(--ink);
 }
 
 /* Animations */

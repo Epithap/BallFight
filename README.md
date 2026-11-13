@@ -35,10 +35,14 @@ Fighters sport hype battleground epithets while unleashing their **authentic, be
 
 | Fighter Title | Inspired Series | Weapon | Signature Skill | 5-Hit Ultimate Form |
 | :--- | :--- | :--- | :--- | :--- |
-| **STRONGEST ALIEN** | *Dragon Ball* | Power Pole (*Nyoibo*) | **Kamehameha** (`3.6s` CD)<br>Charges ki & fires a continuous piercing blue energy blast (`14` dmg + `slow`). | **KAIOKEN BURST**<br>Surges with fiery crimson aura, `+25%` speed, and upgrades Kamehameha into a live-aimed **Kaioken Beam**! |
+| **STRONGEST ALIEN** | *Dragon Ball* | Power Pole (*Nyoibo*) | **Kamehameha / Dragon Rush** (`3.4s` CD)<br>Alternates Ki blast and straight-line **Dragon Rush** (chains **3x Dragon Kicks** + heavy knockback). | **KAIOKEN BURST / GREAT APE**<br>Empowers Kamehameha & Dragon Rush! At **HP ≤ 100** in Ult, transforms into berserk **Great Ape (Oozaru)** with erratic movement & **35% DMG reduction**! |
 | **CHILD OF PROPHECY** | *Naruto* | Kunai | **Rasengan** (`3.0s` CD)<br>Charges a swirling chakra sphere & rockets forward in a high-speed dash (`14` dmg + `stun`). | **RASENSHURIKEN**<br>Throws an explosive 4-bladed vortex disc that violently shreds opponents (`30` dmg + `0.9s stun`)! |
-| **WARRIOR OF LIBERATION** | *One Piece* | Gomu-Gomu Fist | **Gum-Gum Rocket** (`2.8s` CD)<br>Stretches arms backward and slingshots across the arena at bullet velocity (`16` bonus impact dmg). | **GEAR 4 BOUNCE-MAN**<br>Massive inflation with Busoshoku Haki armor (`35%` dmg resist), steam ribbons, and a colossal `26` dmg Rocket! |
+| **WARRIOR OF LIBERATION** | *One Piece* | Gomu-Gomu Fist | **Gomu Rocket → Pistol** (`2.5s` init / `4.5s` total CD)<br>Launches **Gomu Rocket**, then after `0.2s` fires **Gomu Pistol** (`7–10` dmg + knockback). | **GEAR 4 (BOUNCEMAN / SNAKEMAN)**<br>**Odd HP**: Bounceman (wide AoE smash + 35% shield). **Even HP**: Snakeman (+32% speed + wall-bouncing punches)! |
 | **SUBSTITUTE REAPER** | *Bleach* | *Tensa Zangetsu* | **Getsuga Tensho** (`3.4s` CD)<br>Swings the dark greatsword to release a razor-sharp red crescent wave across the arena (`14` dmg + `slow`). | **HOLLOW MASK BANKAI**<br>Dons the demonic bone mask, boosting agility and enlarging slashes into ominous black-red **Hollow Getsuga** arcs! |
+| **ARROGANT VAMPIRE** | *JoJo's Bizarre Adventure* | Throwing Knives | **Stand Barrage** (`2.3s` CD)<br>The World dashes forward and unleashes a ramping Punch Barrage (`1→5` dmg per hit + mini-slow). | **ZA WARUDO (TIME STOP)**<br>Freezes time across the arena! Suspends a deadly ring of knives in mid-air and unleashes auto-aimed Stand attacks before time moves again! |
+| **STAR DELINQUENT** | *JoJo's Bizarre Adventure* | *Star Platinum* | **Ora Barrage** (`2.4s` CD)<br>Star Platinum dashes forward and unleashes a ramping ORA Barrage (`1→5` dmg per hit + mini-slow). | **STAR PLATINUM: THE WORLD!**<br>Freezes time across the arena for 4s and locks onto the rival with auto-aimed heavy ORA barrages! |
+| **HUNDRED-MAN SLAYER** | *Berserk* | *Dragonslayer* Greatsword | **Dragonslayer Cleave** (`2.1s` CD)<br>Zero collision dmg, but swings his colossal iron sword in a wide AoE arc (`22–28` dmg + knockback). | **BERSERKER ARMOR**<br>Dons the cursed black Berserker Armor! Surges with rage speed and replaces Cleave with 2x **Savage Rampage** (`28–35` dmg)! |
+| **HONORED SORCERER** | *Jujutsu Kaisen* | Limitless | **Red / Blue** (`2.5s` CD)<br>Alternates **Reversal Red** (`13–16` dmg + knockback) and **Lapse Blue** (`2` dmg gravitational pull). | **HOLLOW PURPLE & SIX EYES**<br>Fires a huge **Hollow Purple** void (`26–32` dmg), grants **13s Six Eyes Infinity**, and triggers **Unlimited Void** (`6s` freeze)! |
 
 ---
 
@@ -87,6 +91,12 @@ Replay a specific seed:
 ```text
 http://localhost:3000/?seed=777
 ```
+
+---
+
+## 📋 Update Notes
+
+Lihat riwayat lengkap perubahan, karakter baru (*Stand Users*), mekanisme *Stand Clash*, dan penyesuaian *balance* sejak awal clone di **[CHANGELOG.md](CHANGELOG.md)**.
 
 ---
 
