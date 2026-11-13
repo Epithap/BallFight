@@ -105,6 +105,21 @@
       unlockCharId: "gojo",
       previewCharId: "gojo",
     },
+    {
+      id: "fighter_sukuna",
+      name: "KING OF CURSES",
+      category: "fighter",
+      targetChar: "CURSE • SUKUNA",
+      badge: "FIGHTER",
+      badgeClass: "badge-fighter",
+      icon: "⛩️",
+      desc: "Ryomen Sukuna! Alternates Cleave & Dismantle slashes, Divine Flame (FUGA) ultimate, and Malevolent Shrine Domain Clash!",
+      price: 450,
+      currency: "coins",
+      status: "AVAILABLE",
+      unlockCharId: "sukuna",
+      previewCharId: "sukuna",
+    },
 
     // --- SECRET FIGHTERS (WIP) ---
     {

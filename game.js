@@ -80,11 +80,11 @@
         this.x += this.vx * infFactor * dt;
         this.y += this.vy * infFactor * dt;
         this.trail = (this.trail || 0) - dt;
-        if (this.trail <= 0) {
+        if (this.trail <= 0 && shape !== "dismantle_slash") {
           this.trail = 0.035;
           particles.push({ x: this.x, y: this.y, vx: 0, vy: 0, size: this.radius * 0.55, life: 0.2, maxLife: 0.2, color });
         }
-        if (shape === "rasenshuriken" || shape === "limitless_red" || shape === "hollow_purple") {
+        if (shape === "rasenshuriken" || shape === "limitless_red" || shape === "hollow_purple" || shape === "fuga_arrow") {
           this.spin += dt * 18 * Math.max(0.2, infFactor);
         }
 
@@ -218,6 +218,71 @@
           c.beginPath();
           c.arc(0, 0, this.radius * 0.68, 0, Math.PI * 2);
           c.stroke();
+        } else if (this.shape === "dismantle_slash") {
+          // Bold curved crescent slash blade (tapered sharp tips)
+          const R = this.radius * 1.45;
+          c.fillStyle = "#dc2626";
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 3;
+          c.beginPath();
+          c.arc(-R * 0.25, 0, R, -Math.PI * 0.42, Math.PI * 0.42);
+          c.quadraticCurveTo(R * 0.38, 0, -R * 0.25 + Math.cos(-Math.PI * 0.42) * R, Math.sin(-Math.PI * 0.42) * R);
+          c.closePath();
+          c.fill();
+          c.stroke();
+
+          c.strokeStyle = "#fecaca";
+          c.lineWidth = 2.4;
+          c.lineCap = "round";
+          c.beginPath();
+          c.arc(-R * 0.2, 0, R * 0.88, -Math.PI * 0.3, Math.PI * 0.3);
+          c.stroke();
+        } else if (this.shape === "fuga_arrow") {
+          // Blazing Divine Flame: Open (Fuga) Fire Arrow with multi-layer inferno aura
+          const pulse = 1 + 0.12 * Math.sin(this.spin * 2.2);
+          c.fillStyle = "rgba(220, 38, 38, 0.28)";
+          c.beginPath();
+          c.ellipse(-this.radius * 0.35, 0, this.radius * 2.5 * pulse, this.radius * 1.15 * pulse, 0, 0, Math.PI * 2);
+          c.fill();
+          c.fillStyle = "rgba(249, 115, 22, 0.42)";
+          c.beginPath();
+          c.ellipse(0, 0, this.radius * 1.9 * pulse, this.radius * 0.78 * pulse, 0, 0, Math.PI * 2);
+          c.fill();
+
+          // Jagged flame tail streaks
+          c.fillStyle = "#f97316";
+          c.beginPath();
+          c.moveTo(-this.radius * 0.4, -this.radius * 0.45);
+          c.lineTo(-this.radius * 2.55, -this.radius * 0.18);
+          c.lineTo(-this.radius * 1.65, 0);
+          c.lineTo(-this.radius * 2.55, this.radius * 0.18);
+          c.lineTo(-this.radius * 0.4, this.radius * 0.45);
+          c.closePath();
+          c.fill();
+
+          c.fillStyle = "#ea580c";
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 3;
+          c.beginPath();
+          c.moveTo(this.radius * 1.6, 0);
+          c.lineTo(this.radius * 0.25, -this.radius * 0.68);
+          c.lineTo(this.radius * 0.4, -this.radius * 0.24);
+          c.lineTo(-this.radius * 1.4, -this.radius * 0.24);
+          c.lineTo(-this.radius * 1.0, 0);
+          c.lineTo(-this.radius * 1.4, this.radius * 0.24);
+          c.lineTo(this.radius * 0.4, this.radius * 0.24);
+          c.lineTo(this.radius * 0.25, this.radius * 0.68);
+          c.closePath();
+          c.fill();
+          c.stroke();
+
+          c.fillStyle = "#fef9c3";
+          c.beginPath();
+          c.moveTo(this.radius * 1.25, 0);
+          c.lineTo(-this.radius * 0.8, -this.radius * 0.14);
+          c.lineTo(-this.radius * 0.8, this.radius * 0.14);
+          c.closePath();
+          c.fill();
         } else {
           // Kamehameha energy blast
           c.beginPath();
@@ -404,6 +469,89 @@
         c.lineWidth = 2;
         c.stroke();
       }
+    } else if (k.kind === "shrine_slash") {
+      // Cursed slash arcs & targeting crosshair (no floating orb!)
+      if (tg && p > 0.35) {
+        c.save();
+        c.setLineDash([8, 6]); c.lineWidth = 3; c.strokeStyle = k.color; c.globalAlpha = 0.65;
+        c.beginPath(); c.moveTo(ball.x, ball.y); c.lineTo(tg.x, tg.y); c.stroke();
+        c.restore();
+      }
+      c.save();
+      c.translate(ball.x, ball.y);
+      c.rotate(ang);
+      for (let i = -1; i <= 1; i++) {
+        const arcR = ball.radius + 14 + p * 10;
+        const a0 = i * 0.45 - 0.35;
+        const a1 = i * 0.45 + 0.35;
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 6;
+        c.beginPath(); c.arc(0, 0, arcR, a0, a1); c.stroke();
+        c.strokeStyle = k.color;
+        c.lineWidth = 3;
+        c.beginPath(); c.arc(0, 0, arcR, a0, a1); c.stroke();
+      }
+      c.restore();
+    } else if (k.kind === "fuga_arrow") {
+      const cx = ball.x + ux * (ball.radius + 28);
+      const cy = ball.y + uy * (ball.radius + 28);
+      if (tg && p > 0.4) {
+        c.save();
+        c.setLineDash([12, 8]); c.lineWidth = 5; c.strokeStyle = "#f97316"; c.globalAlpha = 0.82;
+        c.beginPath(); c.moveTo(cx, cy); c.lineTo(tg.x, tg.y); c.stroke();
+        c.restore();
+      }
+      // Swirling flame rings around Sukuna while drawing the Divine Flame bow
+      c.save();
+      c.translate(ball.x, ball.y);
+      c.strokeStyle = "rgba(249, 115, 22, 0.75)";
+      c.lineWidth = 4;
+      c.beginPath();
+      c.arc(0, 0, ball.radius + 18 + Math.sin(p * 18) * 3, p * 8, p * 8 + Math.PI * 1.4);
+      c.stroke();
+      c.strokeStyle = "rgba(254, 240, 138, 0.85)";
+      c.lineWidth = 2.5;
+      c.beginPath();
+      c.arc(0, 0, ball.radius + 24, -p * 10, -p * 10 + Math.PI * 1.2);
+      c.stroke();
+      c.restore();
+
+      c.save();
+      c.translate(cx, cy);
+      c.rotate(ang);
+      const bowR = 28 + p * 10;
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 8;
+      c.beginPath();
+      c.arc(-10, 0, bowR, -Math.PI * 0.46, Math.PI * 0.46);
+      c.stroke();
+      c.strokeStyle = "#fb923c";
+      c.lineWidth = 4.5;
+      c.beginPath();
+      c.arc(-10, 0, bowR, -Math.PI * 0.46, Math.PI * 0.46);
+      c.stroke();
+      // Bowstring
+      c.strokeStyle = "#fef08a";
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(-10 + Math.cos(-Math.PI * 0.46) * bowR, Math.sin(-Math.PI * 0.46) * bowR);
+      c.lineTo(-10 - p * 10, 0);
+      c.lineTo(-10 + Math.cos(Math.PI * 0.46) * bowR, Math.sin(Math.PI * 0.46) * bowR);
+      c.stroke();
+
+      c.fillStyle = "#fef08a";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 2.8;
+      const len = 22 + p * 26;
+      c.beginPath();
+      c.moveTo(len, 0);
+      c.lineTo(-12, -8);
+      c.lineTo(-4, 0);
+      c.lineTo(-12, 8);
+      c.closePath();
+      c.fill();
+      c.stroke();
+      c.restore();
     } else if (k.kind === "slash") {
       const e = easeOut(p), R = k.maxR * (0.3 + 0.7 * e);
       c.save();
@@ -757,6 +905,8 @@
       this.rasenganHit = false;
       this.dragonRushTimer = 0;
       this.dragonRushHit = false;
+      this.cleaveDashTimer = 0;
+      this.cleaveDashHit = false;
       this.apeMode = false;
       this.apeErraticTimer = 0;
       this.standAttackTimer = 0;
@@ -1055,7 +1205,170 @@
       shakeTime = Math.max(shakeTime, t);
       shakeIntensity = Math.max(shakeIntensity, i);
     },
+    triggerDomainExpansion,
   });
+
+  function spawnDomainClashEffect(x, y, duration, b1, b2, spec1, spec2, g) {
+    let meter = 0.5;
+    let resolved = false;
+    return {
+      x,
+      y,
+      life: duration,
+      maxLife: duration,
+      isDomainClash: true,
+      dead: false,
+      update(dt) {
+        this.life -= dt;
+        meter = Math.max(0.15, Math.min(0.85, meter + (rng() - 0.5) * 0.14));
+        if (this.life <= 0 && !resolved) {
+          resolved = true;
+          this.dead = true;
+          b1.domainClashTimer = 0;
+          b2.domainClashTimer = 0;
+          const b1Wins = rng() < 0.5;
+          const winner = b1Wins ? b1 : b2;
+          const loser = b1Wins ? b2 : b1;
+          const winSpec = b1Wins ? spec1 : spec2;
+
+          const dealt = g.applyDamage(loser, 18);
+          const kAng = Math.atan2(loser.y - winner.y, loser.x - winner.x);
+          loser.vx = Math.cos(kAng) * 650;
+          loser.vy = Math.sin(kAng) * 650;
+          loser.flashTimer = 0.2;
+          loser.squash = 1.0;
+
+          g.entities.push(spawnShockRing(x, y, winSpec.color, 180, 0.52));
+          g.entities.push(spawnBanner(`DOMAIN OVERPOWER: ${winSpec.name}!`, winSpec.color));
+          g.spawnDamageText(loser.x, loser.y - loser.radius - 16, dealt, winSpec.color, true, "DOMAIN SHATTERED!");
+          g.sound.playCritHit();
+          shakeTime = Math.max(shakeTime, 0.45);
+          shakeIntensity = Math.max(shakeIntensity, 10);
+
+          if (winSpec.createDomain) {
+            g.entities.push(winSpec.createDomain());
+          }
+          if (winSpec.onStart) {
+            winSpec.onStart(g);
+          }
+        }
+      },
+      render(c) {
+        const t = 1 - Math.max(0, this.life / this.maxLife);
+        c.save();
+        c.fillStyle = "rgba(8, 6, 18, 0.45)";
+        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+        // Split clash aura
+        c.globalAlpha = 0.28;
+        c.fillStyle = spec1.color;
+        c.fillRect(0, 0, WORLD_SIZE * meter, WORLD_SIZE);
+        c.fillStyle = spec2.color;
+        c.fillRect(WORLD_SIZE * meter, 0, WORLD_SIZE * (1 - meter), WORLD_SIZE);
+        c.globalAlpha = 1;
+
+        // Clash shockline at center
+        const cx = WORLD_SIZE * meter;
+        c.strokeStyle = COLORS.white;
+        c.lineWidth = 4 + Math.sin(t * 45) * 2;
+        c.beginPath();
+        c.moveTo(cx, 0);
+        c.lineTo(cx, WORLD_SIZE);
+        c.stroke();
+
+        // Clash Tug-of-war bar
+        const bw = 220;
+        const bh = 16;
+        const bx = WORLD_SIZE * 0.5 - bw * 0.5;
+        const by = 64;
+        c.fillStyle = COLORS.ink;
+        c.fillRect(bx - 4, by - 4, bw + 8, bh + 8);
+        c.fillStyle = spec1.color;
+        c.fillRect(bx, by, bw * meter, bh);
+        c.fillStyle = spec2.color;
+        c.fillRect(bx + bw * meter, by, bw * (1 - meter), bh);
+
+        c.font = "900 14px 'Arial Black', sans-serif";
+        c.textAlign = "center";
+        c.fillStyle = COLORS.white;
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 4;
+        c.strokeText("DOMAIN CLASH!", WORLD_SIZE * 0.5, by - 12);
+        c.fillText("DOMAIN CLASH!", WORLD_SIZE * 0.5, by - 12);
+        c.restore();
+      },
+    };
+  }
+
+  function triggerDomainExpansion(owner, spec, g) {
+    const enemyDomain = g.entities.find((ent) => ent.isDomain && !ent.dead && ent.domainOwner !== owner);
+    const activeClash = g.entities.find((ent) => ent.isDomainClash && !ent.dead);
+    if (activeClash) return;
+
+    // Also trigger Domain Clash if the opponent is a Sorcerer (gojo/sukuna) currently in Aura mode!
+    const auraSorcererEnemy = !enemyDomain
+      ? g.balls.find((b) => b !== owner && b.alive && (b.costume === "gojo" || b.costume === "sukuna") && b.ultTimer > 0 && !b.domainUsedInUlt)
+      : null;
+
+    if (enemyDomain || auraSorcererEnemy) {
+      let enemy = enemyDomain ? enemyDomain.domainOwner : auraSorcererEnemy;
+      if (enemyDomain) {
+        enemyDomain.dead = true;
+      } else if (auraSorcererEnemy) {
+        auraSorcererEnemy.domainUsedInUlt = true;
+      }
+      // Clear Unlimited Void stun on challenger when Domain Clash begins
+      owner.effects = owner.effects.filter((ef) => ef.type !== "stun");
+      owner.domainClashTimer = 2.0;
+      if (enemy && enemy.alive) {
+        enemy.domainClashTimer = 2.0;
+      }
+      const midX = enemy ? (owner.x + enemy.x) * 0.5 : WORLD_SIZE * 0.5;
+      const midY = enemy ? (owner.y + enemy.y) * 0.5 : WORLD_SIZE * 0.5;
+
+      const enemyDomainType = enemyDomain
+        ? enemyDomain.domainType
+        : (enemy && enemy.costume === "gojo" ? "unlimited_void" : "malevolent_shrine");
+
+      const enemySpec = enemyDomainType === "unlimited_void"
+        ? {
+            type: "unlimited_void",
+            name: "UNLIMITED VOID",
+            color: "#38bdf8",
+            createDomain: BF.spawnUnlimitedVoidDomain
+              ? () => BF.spawnUnlimitedVoidDomain({ owner: enemy, duration: 6.0 })
+              : null,
+            onStart(gg) {
+              gg.addEffect(owner, "stun", 6.0);
+              owner.vx = 0;
+              owner.vy = 0;
+            },
+          }
+        : {
+            type: "malevolent_shrine",
+            name: "MALEVOLENT SHRINE",
+            color: "#dc2626",
+            createDomain: BF.spawnMalevolentShrineDomain
+              ? () => BF.spawnMalevolentShrineDomain({ owner: enemy, duration: 6.0 })
+              : null,
+            onStart() {},
+          };
+
+      g.entities.push(spawnBanner("DOMAIN CLASH!", COLORS.gold));
+      g.entities.push(spawnDomainClashEffect(midX, midY, 2.0, owner, enemy || owner, spec, enemySpec, g));
+      g.sound.playCritHit();
+      shakeTime = Math.max(shakeTime, 0.35);
+      shakeIntensity = Math.max(shakeIntensity, 8);
+      return;
+    }
+
+    if (spec.createDomain) {
+      g.entities.push(spec.createDomain());
+    }
+    if (spec.onStart) {
+      spec.onStart(g);
+    }
+  }
 
   function triggerGokuApeTransform(b) {
     if (!b || !b.alive || b.apeMode) return;
@@ -1086,6 +1399,7 @@
       star_time_stop: ["STAR PLATINUM: THE WORLD!", "#9b59b6"],
       berserker_armor: ["BERSERKER ARMOR!", COLORS.red],
       hollow_purple: ["HOLLOW PURPLE!", "#b84dff"],
+      fuga: ["OPEN: FUGA!", "#f97316"],
     }[ball.ult];
     if (fx) {
       if (ball.ult !== "time_stop" && ball.ult !== "star_time_stop") {
@@ -1229,6 +1543,43 @@
             },
             onOutOfBounds(gg, proj) {
               BF.triggerHollowPurpleExplosion(proj.x, proj.y, b, gg, null);
+            },
+          }));
+        },
+      });
+    } else if (ball.ult === "fuga") {
+      if (!balls.find((x) => x !== ball && x.alive)) return;
+      beginCast(ball, {
+        kind: "fuga_arrow",
+        duration: 0.85,
+        color: "#f97316",
+        fire(b, g) {
+          b.ultTimer = 13.0;
+          b.domainUsedInUlt = false;
+          addEffect(b, "haste", 13.0, { factor: 1.15 });
+          const t = g.balls.find((x) => x !== b && x.alive);
+          if (!t) return;
+          const ang = Math.atan2(t.y - b.y, t.x - b.x);
+          const m = castMuzzle(b, ang, 24);
+          g.entities.push(spawnShockRing(m.x, m.y, "#fb923c", 135, 0.45));
+          shakeTime = Math.max(shakeTime, 0.35);
+          shakeIntensity = Math.max(shakeIntensity, 8);
+          g.entities.push(spawnProjectile({
+            owner: b,
+            target: t,
+            x: m.x,
+            y: m.y,
+            speed: 560,
+            radius: 36,
+            damage: Math.round(26 + rng() * 6),
+            color: "#f97316",
+            label: "FUGA!",
+            shape: "fuga_arrow",
+            onImpact(tt, gg, proj) {
+              BF.triggerFugaExplosion(proj.x, proj.y, b, gg, tt);
+            },
+            onOutOfBounds(gg, proj) {
+              BF.triggerFugaExplosion(proj.x, proj.y, b, gg, null);
             },
           }));
         },
@@ -1746,6 +2097,27 @@
           entities.push(BF.spawnDragonKickCombo(attacker, defender, ult));
           if (!ult) chargeUlt(attacker);
         }
+        if (attacker.cleaveDashTimer > 0 && !attacker.cleaveDashHit) {
+          attacker.cleaveDashHit = true;
+          attacker.cleaveDashTimer = 0;
+          const dealt = applyDamage(defender, 15);
+          defender.flashTimer = 0.16;
+          defender.squash = 0.9;
+          const cAng = Math.atan2(defender.y - attacker.y, defender.x - attacker.x);
+          defender.vx = Math.cos(cAng) * 480;
+          defender.vy = Math.sin(cAng) * 480;
+          if (BF.spawnCleaveSlashEffect) {
+            entities.push(BF.spawnCleaveSlashEffect(defender.x, defender.y, 56));
+          }
+          entities.push(spawnShockRing(defender.x, defender.y, "#dc2626", 95, 0.34));
+          spawnSparks(defender.x, defender.y, "#dc2626", COLORS.white);
+          spawnDamageText(defender.x, defender.y - defender.radius - 14, dealt, "#ef4444", true, "CLEAVE!");
+          sound.playCritHit();
+          hitStop = Math.max(hitStop, 0.08);
+          shakeTime = Math.max(shakeTime, 0.25);
+          shakeIntensity = Math.max(shakeIntensity, 7);
+          if (!(attacker.ultTimer > 0)) chargeUlt(attacker);
+        }
         if (attacker.apeMode) {
           const apeDmg = applyDamage(defender, 5);
           spawnSparks(midX, midY, "#b45309", "#ef4444");
@@ -2150,6 +2522,9 @@
       if (ball.dragonRushTimer > 0) {
         ball.dragonRushTimer = Math.max(0, ball.dragonRushTimer - scaledDt);
       }
+      if (ball.cleaveDashTimer > 0) {
+        ball.cleaveDashTimer = Math.max(0, ball.cleaveDashTimer - scaledDt);
+      }
       ball.updateEffects(scaledDt);
 
       if (ball.channelTimer > 0) {
@@ -2171,8 +2546,9 @@
         continue;
       }
 
-      // Freeze both fighters in place while their Stands are clashing
-      if (ball.standState && ball.standState.phase === "clashing") {
+      // Freeze both fighters in place while their Stands or Domains are clashing
+      if ((ball.standState && ball.standState.phase === "clashing") || ball.domainClashTimer > 0) {
+        if (ball.domainClashTimer > 0) ball.domainClashTimer = Math.max(0, ball.domainClashTimer - scaledDt);
         continue;
       }
 
@@ -2210,7 +2586,7 @@
       if (speedFactor > 0) {
         ball.x += ball.vx * speedFactor * scaledDt;
         ball.y += ball.vy * speedFactor * scaledDt;
-        if (ball.rocketTimer <= 0 && ball.rasenganTimer <= 0 && ball.dragonRushTimer <= 0 && !ball.apeMode) {
+        if (ball.rocketTimer <= 0 && ball.rasenganTimer <= 0 && ball.dragonRushTimer <= 0 && ball.cleaveDashTimer <= 0 && !ball.apeMode) {
           ball.normalizeSpeed();
         }
         handleWallCollisions(ball);
@@ -2500,6 +2876,28 @@
         drawBallAura(ball, c);
       }
     }
+    if (showExtras && ball.cleaveDashTimer > 0) {
+      const ang = Math.atan2(ball.vy, ball.vx);
+      c.save();
+      c.translate(ball.x, ball.y);
+      c.rotate(ang);
+      c.fillStyle = "rgba(220, 38, 38, 0.45)";
+      c.beginPath();
+      c.moveTo(ball.radius * 0.8, 0);
+      c.lineTo(-ball.radius * 2.6, -ball.radius * 0.85);
+      c.lineTo(-ball.radius * 1.7, 0);
+      c.lineTo(-ball.radius * 2.6, ball.radius * 0.85);
+      c.closePath();
+      c.fill();
+      c.strokeStyle = "#fecaca";
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(-ball.radius * 2.2, -ball.radius * 0.4);
+      c.lineTo(ball.radius * 0.6, 0);
+      c.lineTo(-ball.radius * 2.2, ball.radius * 0.4);
+      c.stroke();
+      c.restore();
+    }
     if (showExtras && ball.dragonRushTimer > 0) {
       const ang = Math.atan2(ball.vy, ball.vx);
       c.save();
@@ -2561,7 +2959,7 @@
 
     drawCostume(ball, r, c);
 
-    const hasFullFaceMask = ball.costume === "gojo" || ((ball.costume === "guts" || ball.costume === "ichigo") && ball.ultTimer > 0) || (ball.costume === "goku" && ball.apeMode);
+    const hasFullFaceMask = ball.costume === "gojo" || ball.costume === "sukuna" || ((ball.costume === "guts" || ball.costume === "ichigo") && ball.ultTimer > 0) || (ball.costume === "goku" && ball.apeMode);
     if (!hasFullFaceMask) {
       c.fillStyle = "rgba(255, 255, 255, 0.55)";
       c.beginPath();

@@ -193,6 +193,11 @@
 
   function spawnUnlimitedVoidDomain({ owner, duration = 6.0 }) {
     return {
+      isDomain: true,
+      domainOwner: owner,
+      domainType: "unlimited_void",
+      domainName: "UNLIMITED VOID",
+      domainColor: "#38bdf8",
       life: duration,
       maxLife: duration,
       dead: false,
@@ -284,14 +289,25 @@
 
       if (ball.ultTimer > 0 && !ball.domainUsedInUlt) {
         ball.domainUsedInUlt = true;
-        g.addEffect(target, "stun", 6.0);
-        target.vx = 0;
-        target.vy = 0;
-        g.entities.push(spawnUnlimitedVoidDomain({ owner: ball, duration: 6.0 }));
-        g.entities.push(rt.spawnBanner("DOMAIN: UNLIMITED VOID!", "#38bdf8"));
-        g.spawnDamageText(target.x, target.y - target.radius - 18, 0, "#7dd3fc", true, "INFINITE VOID (6S)!");
-        g.sound.playTimeStop();
-        rt.addShake(0.35, 8);
+        rt.triggerDomainExpansion(ball, {
+          type: "unlimited_void",
+          name: "UNLIMITED VOID",
+          color: "#38bdf8",
+          duration: 6.0,
+          createDomain: () => spawnUnlimitedVoidDomain({ owner: ball, duration: 6.0 }),
+          onStart(gg) {
+            const t = gg.balls.find((b) => b !== ball && b.alive);
+            if (t) {
+              g.addEffect(t, "stun", 6.0);
+              t.vx = 0;
+              t.vy = 0;
+              gg.spawnDamageText(t.x, t.y - t.radius - 18, 0, "#7dd3fc", true, "INFINITE VOID (6S)!");
+            }
+            gg.entities.push(rt.spawnBanner("DOMAIN: UNLIMITED VOID!", "#38bdf8"));
+            gg.sound.playTimeStop();
+            rt.addShake(0.35, 8);
+          },
+        }, g);
       }
 
       const mode = ball.limitlessNext === "blue" ? "blue" : "red";
@@ -491,5 +507,6 @@
   };
 
   BF.triggerHollowPurpleExplosion = triggerHollowPurpleExplosion;
+  BF.spawnUnlimitedVoidDomain = spawnUnlimitedVoidDomain;
 })();
 
