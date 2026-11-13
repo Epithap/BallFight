@@ -1,4 +1,3 @@
-
 ## 🐱 Official Shop Mascot: Turbo Granny (*Dandadan* — v1.2 Model)
 
 <table>
@@ -35,8 +34,12 @@
 
 ---
 
-## ✨ What's New in v1.2
+## 📣 Major Update News — Version 1.2 (UI & Character Overhaul)
 
+> **v1.2 is a full visual & gameplay overhaul of Ball Fight!**
+
+- 🎨 **Complete UI Revamp**: Brand-new solid comic-book theme with chunky `#2b1b3d` outlines, bottom navigation bar (`Play`, `Fighters`, `Profile`, `Shop`), crisp SVG icon sprites, mint checkerboard arena & showcase cards, plus a **Profile License** with persistent stats, EXP/Rank, and 6 unlockable trophies.
+- 🎭 **Character Design & Dynamic Anime Faces (`js/faces.js`)**: Every fighter now has custom-drawn anime eyes, brows, and expressions (*cheerful, dark, cool, sly*) that blink, track movement, and react when charging skills or taking hits—plus redesigned **Luffy Gear 4** (*Bounceman* & *Snakeman*), **comic impact bursts**, high-speed **afterimages**, and dark outlines on **HP bars & names** so they stay readable on any character color.
 - 🌟 **Fighter Evolution System (`10,000 Gold`)**: Evolve **Naruto** (*Sage Mode + Four-Tails*) and **Ichigo** (*Bankai + Hollow Mask + Vasto Lorde*). Freely toggle **Starter vs Evolved** independently for **P1 &amp; P2** to run *Base vs Evolved* matchups!
 - 💀 **Diamond Skin Vault (Gems)**: Buy &amp; equip **Evo / Mythic Skins** with per-hero filters &amp; horizontal swipe carousel:
   - **Six-Tails Skeletal Kyuubi** (*Naruto*, `150 Gems`)
@@ -44,7 +47,7 @@
   - **Awakened Vasto: Long-Hair Half-Mask** (*Ichigo*, `180 Gems` — Mythic long orange mane &amp; single broken Vasto horn)
 - 🎰 **Fighter Gacha &amp; Pity System**: Pull rare, epic, and legend fighters (`Gojo`, `Sukuna`, `Guts`, `DIO`, `Jotaro`) using Gold or Gems with guaranteed pity.
 - ⚔️ **Domain Clash &amp; Stand Clash**: **Gojo vs Sukuna** clash in an epic Domain Expansion tug-of-war, while **DIO vs Jotaro** trigger Stand Clashes!
-- 🎨 **Solid Cartoon UI, Dynamic Anime Faces &amp; 500+ HP Balance**: Bold ink outlines on names/HP bars, character-specific animated eyes/expressions (`js/faces.js`), and procedural Web Audio SFX (`js/sfx.js`) with zero external audio files.
+- 🔊 **Procedural Web Audio SFX (`js/sfx.js`)**: Custom synthesized sounds per skill, ultimate, UI click, and gacha capsule—with zero external audio files.
 - 📱 **9:16 Vertical Recording Mode (`REC`)**: One-click vertical framing for TikTok, Reels, and Shorts.
 
 ---
