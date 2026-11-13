@@ -109,7 +109,7 @@
       id: "fighter_sukuna",
       name: "KING OF CURSES",
       category: "fighter",
-      targetChar: "CURSE • SUKUNA",
+      targetChar: "SORCERER • SUKUNA",
       badge: "FIGHTER",
       badgeClass: "badge-fighter",
       icon: "⛩️",

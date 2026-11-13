@@ -341,7 +341,7 @@
     name: "KING OF CURSES",
     shortName: "SUKUNA",
     title: "Ryomen Sukuna • Shrine & Divine Flame",
-    role: "CURSE • CLEAVE, DISMANTLE & FUGA",
+    role: "SORCERER • CLEAVE, DISMANTLE & FUGA",
     color: "#dc2626",
     radius: 28,
     speed: 370,
