@@ -325,16 +325,26 @@
 
           <div class="banner">
             <div class="banner-head">
-              <div class="stamp stamp-red">FIGHTER GACHA</div>
-              <span class="banner-sub">Unlock new brawlers</span>
+              <div class="stamp stamp-red">RATE-UP BANNER</div>
+              <span id="banner-timer" class="banner-timer">NEXT: 59:59</span>
+            </div>
+            <div class="rateup-hero">
+              <div class="rateup-stage">
+                <canvas id="banner-rateup-canvas" width="128" height="128"></canvas>
+              </div>
+              <div class="rateup-info">
+                <span class="rateup-boost-chip">55% CHAR RATE-UP!</span>
+                <h3 id="banner-rateup-name" class="rateup-name">HONORED SORCERER</h3>
+                <p id="banner-rateup-series" class="rateup-series">JUJUTSU KAISEN • ROTATES EVERY 1H</p>
+              </div>
             </div>
             <div id="banner-feat" class="banner-feat"></div>
             <div class="pity">
               <span class="pity-label">PITY</span>
               <div class="pity-track"><div id="gacha-pity-fill" class="pity-fill" style="width:0%"></div></div>
-              <span id="gacha-pity-text" class="pity-text">0 / 10</span>
+              <span id="gacha-pity-text" class="pity-text">0 / 100</span>
             </div>
-            <p class="rates">LEGEND 7% • EPIC 18% • RARE 24% • a new fighter is guaranteed within 10 pulls • duplicates give 30 gems</p>
+            <p class="rates">CHAR 20% (RATE-UP 55% • OTHERS 45%) • COINS 42% • GEMS 38% • PITY 100 GUARANTEED CHAR (BY CHANCE)</p>
             <div class="pull-row">
               <button id="btn-pull-1" class="btn btn-pull" type="button"><span>PULL x1</span><b><svg><use href="#i-coin"/></svg>160</b></button>
               <button id="btn-pull-10" class="btn btn-green btn-pull" type="button"><span>PULL x10</span><b><svg><use href="#i-coin"/></svg>1,500</b></button>
@@ -561,13 +571,13 @@
 
         <div class="power-bubble ult-bubble">
           <div class="power-header">
-            <span class="power-badge badge-red">LEGEND FIGHTER • JJK</span>
-            <span class="power-cd">DOMAIN CLASH</span>
+            <span class="power-badge badge-red">RATE-UP GACHA &amp; SUKUNA</span>
+            <span class="power-cd">PITY 100 • 1H ROTATION</span>
           </div>
-          <h3 class="power-title">SUKUNA (KING OF CURSES) &amp; GACHA</h3>
+          <h3 class="power-title">HOURLY RATE-UP BANNER, SUKUNA &amp; EQUAL FIGHTERS</h3>
           <p class="power-desc">
-            • <strong>Sukuna</strong>: Wajah 4 mata, Dismantle/Cleave, Fuga, serta <strong>Malevolent Shrine</strong> yang memicu <strong>Domain Clash</strong> melawan Unlimited Void Gojo!<br>
-            • <strong>Fighter Gacha &amp; Turbo Granny</strong>: Pull karakter via Gacha dengan sistem pity, maskot baru Turbo Granny, ekspresi wajah anime dinamis, HP/Nama ber-outline, dan <strong>Secret Admin Panel</strong> (tap Profile 10x)!
+            • <strong>Banner Rate-Up Tiap 1 Jam</strong>: Gacha kini berisi <strong>Coins, Gems &amp; Fighters</strong> tanpa sistem rarity karakter (semua setara!). Banner Rate-Up berganti tiap 1 jam dengan preview animasi &amp; <strong>Pity 100</strong> dijamin karakter sesuai chance!<br>
+            • <strong>Sukuna &amp; Guts Fix</strong>: Wajah 4 mata + <strong>Malevolent Shrine</strong> (<em>Domain Clash</em> vs Gojo), pedang <strong>Dragonslayer Guts</strong> kini diam di punggung &amp; hanya menebas saat skill, plus <strong>Secret Admin Panel</strong> (tap Profile 10x)!
           </p>
         </div>
       </div>

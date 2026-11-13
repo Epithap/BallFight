@@ -6,7 +6,7 @@
     goku: "DRAGON BALL", naruto: "NARUTO", luffy: "ONE PIECE", ichigo: "BLEACH",
     dio: "JOJO", jotaro: "JOJO", guts: "BERSERK", gojo: "JUJUTSU KAISEN", sukuna: "JUJUTSU KAISEN",
   };
-  BF.RARITY = { goku: "starter", naruto: "starter", luffy: "starter", ichigo: "starter", jotaro: "rare", guts: "epic", dio: "epic", gojo: "legend", sukuna: "legend" };
+  BF.RARITY = { goku: "fighter", naruto: "fighter", luffy: "fighter", ichigo: "fighter", jotaro: "fighter", guts: "fighter", dio: "fighter", gojo: "fighter", sukuna: "fighter" };
 
   // Evolution stage tabs shown on the top row of Fighter Detail when a character has evolution branches
   BF.EVO_STAGES = {

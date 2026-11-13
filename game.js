@@ -3427,42 +3427,13 @@
         ball.squash = Math.max(0, ball.squash - dt * 5);
       }
       if (!ball.swingState) {
-        ball.weaponAngle += dt * 4.2;
-      }
-      if (ball.weapon === "dragonslayer") {
-        if (ball.swordHitCd > 0) ball.swordHitCd = Math.max(0, ball.swordHitCd - scaledDt);
-        if (!ball.swingState && ball.swordHitCd <= 0) {
-          const ang = ball.weaponAngle;
-          const bx = ball.x + Math.cos(ang) * (ball.radius + 8);
-          const by = ball.y + Math.sin(ang) * (ball.radius + 8);
-          const tx = ball.x + Math.cos(ang) * (ball.radius + 98);
-          const ty = ball.y + Math.sin(ang) * (ball.radius + 98);
-          const segDx = tx - bx;
-          const segDy = ty - by;
-          const segLenSq = segDx * segDx + segDy * segDy || 1;
-          for (const enemy of balls) {
-            if (enemy === ball || !enemy.alive) continue;
-            const t = Math.max(0, Math.min(1, ((enemy.x - bx) * segDx + (enemy.y - by) * segDy) / segLenSq));
-            const cx = bx + t * segDx;
-            const cy = by + t * segDy;
-            const dist = Math.hypot(enemy.x - cx, enemy.y - cy);
-            if (dist <= enemy.radius + 12) {
-              ball.swordHitCd = 0.32;
-              const berserk = ball.ultTimer > 0;
-              const swordDmg = applyDamage(enemy, berserk ? Math.round(10 + rng() * 4) : Math.round(6 + rng() * 3));
-              enemy.flashTimer = 0.1;
-              enemy.squash = 0.75;
-              const kAng = Math.atan2(enemy.y - cy, enemy.x - cx);
-              enemy.vx = Math.cos(kAng) * 280;
-              enemy.vy = Math.sin(kAng) * 280;
-              spawnSparks(cx, cy, berserk ? COLORS.red : COLORS.silver, COLORS.ink);
-              spawnDamageText(enemy.x, enemy.y - enemy.radius - 10, swordDmg, berserk ? COLORS.red : COLORS.silver, false, "IRON HIT!");
-              sound.playBallHit();
-              shakeTime = Math.max(shakeTime, 0.12);
-              shakeIntensity = Math.max(shakeIntensity, 4.5);
-              break;
-            }
+        if (ball.weapon === "dragonslayer") {
+          // Guts keeps Dragonslayer slung steadily behind his back; only swings & hits during skill
+          if (Math.hypot(ball.vx, ball.vy) > 1) {
+            ball.weaponAngle = Math.atan2(-ball.vy, -ball.vx);
           }
+        } else {
+          ball.weaponAngle += dt * 4.2;
         }
       }
       if (ball.standAttackTimer > 0) {
@@ -4750,7 +4721,9 @@
         skin: fl.skin !== undefined ? fl.skin : (cfg.skin !== undefined ? cfg.skin : (getEquippedSkin ? getEquippedSkin(cfg.id) : null)),
         skins: fl.skins !== undefined ? fl.skins : (cfg.skins !== undefined ? cfg.skins : (getEquippedSkinsForChar ? getEquippedSkinsForChar(cfg.id) : [])),
         weapon: cfg.weapon,
-        weaponAngle: t * 2.2 + phaseOffset,
+        weaponAngle: cfg.weapon === "dragonslayer"
+          ? (facingRight ? -Math.PI * 0.78 : -Math.PI * 0.22)
+          : (t * 2.2 + phaseOffset),
         vx: facingRight ? 1 : -1,
         vy: 0,
         flashTimer: 0,
@@ -4787,6 +4760,7 @@
 
     if (currentScreen === "screen-shop" && merchantCanvas) {
       drawTurboGranny(merchantCanvas, t);
+      if (BF.Gacha && BF.Gacha.tick) BF.Gacha.tick(t);
     }
     if (currentScreen === "screen-shop") {
       document.querySelectorAll(".skin-shop-preview-canvas").forEach((cvs, idx) => {
@@ -4953,7 +4927,7 @@
     updateHomeMatchupUI();
   }
 
-  const RARITY_LABEL = { starter: "STARTER", rare: "RARE", epic: "EPIC", legend: "LEGEND" };
+  const RARITY_LABEL = { starter: "FIGHTER", common: "FIGHTER", rare: "FIGHTER", epic: "FIGHTER", legend: "FIGHTER", fighter: "FIGHTER" };
 
   function activeForm() {
     const list = BF.FORMS[detailCharId] || [];
@@ -5225,9 +5199,8 @@
     const setText = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
     setText("detail-form-desc", form ? form.desc : "");
     setText("detail-series", BF.SERIES[cfg.id] || "ANIME");
-    const rar = BF.RARITY[cfg.id] || "starter";
     const rc = document.getElementById("detail-rarity");
-    if (rc) { rc.textContent = RARITY_LABEL[rar]; rc.className = `rar-chip rarity-${rar}`; }
+    if (rc) { rc.textContent = "FIGHTER"; rc.className = "rar-chip rarity-fighter"; }
     const lock = document.getElementById("detail-lock-note");
     if (lock) lock.classList.toggle("hidden", isFighterUnlocked(cfg.id));
   }
@@ -5679,12 +5652,11 @@
       for (const char of entries) {
         const unlocked = isFighterUnlocked(char.id);
         if (unlocked) ownedCount++;
-        const rar = BF.RARITY[char.id] || "starter";
         const card = document.createElement("div");
-        card.className = `avatar-card roster-card rarity-${rar}${unlocked ? "" : " avatar-locked"}`;
+        card.className = `avatar-card roster-card rarity-fighter${unlocked ? "" : " avatar-locked"}`;
         card.dataset.id = char.id;
         card.dataset.series = (char.role || "").split("•")[0].trim().toLowerCase();
-        card.innerHTML = `<span class="rc-rarity">${RARITY_LABEL[rar]}</span>` +
+        card.innerHTML = `<span class="rc-rarity">FIGHTER</span>` +
           `<div class="rc-art"><canvas width="132" height="132"></canvas></div>` +
           `<span class="avatar-name">${char.name}</span>` +
           `<span class="avatar-tag">${BF.SERIES[char.id] || "ANIME"}</span>` +
@@ -5828,6 +5800,7 @@
     });
 
     BF.drawMiniAvatar = drawMiniAvatar;
+    BF.drawBall = drawBall;
     BF.Gacha.init({
       sound,
       wallet: playerWallet,

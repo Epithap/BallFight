@@ -1,28 +1,49 @@
-// Fighter gacha: pull logic, pity, reveal animation and the shop banner / collection UI
+// Fighter gacha: hourly Rate-Up Banner, Pity 100 guaranteed character (by chance), Coins & Gems
 (() => {
   const BF = (window.BallFight = window.BallFight || {});
-  const KEY = "bf_gacha_v1";
+  const KEY = "bf_gacha_v2";
   const COSTS = { one: 160, ten: 1500, gem: 50 };
-  const PITY = 10, DUPE_GEMS = 30;
-  const RANK = { common: 0, rare: 1, epic: 2, legend: 3 };
-  const LABEL = { common: "COMMON", rare: "RARE", epic: "EPIC", legend: "LEGEND" };
-  const FIGHTERS = [
-    { id: "gojo", rarity: "legend", w: 4 }, { id: "sukuna", rarity: "legend", w: 3 }, { id: "guts", rarity: "epic", w: 10 },
-    { id: "dio", rarity: "epic", w: 8 }, { id: "jotaro", rarity: "rare", w: 14 },
-  ];
+  const PITY = 100;
+  const DUPE_GEMS = 50;
+  const HOUR_MS = 3600 * 1000;
+
+  // All characters are equal tier (no character rarity); Rate-Up boosts featured character's share
+  const FIGHTERS = ["gojo", "sukuna", "guts", "dio", "jotaro"];
+  const CHAR_TOTAL_CHANCE = 20; // 20% character, 42% coins, 38% gems
+  const RATE_UP_SHARE = 0.55;   // 55% of character drops = featured hero; 45% split among others
+
   const PRIZES = [
-    { type: "coins", amount: 150, rarity: "common", w: 25 },
-    { type: "coins", amount: 400, rarity: "rare", w: 10 },
-    { type: "gems", amount: 25, rarity: "common", w: 26 },
+    { type: "coins", amount: 150, tier: "common", label: "COINS", w: 28 },
+    { type: "coins", amount: 400, tier: "rare", label: "BIG COINS", w: 14 },
+    { type: "gems", amount: 25, tier: "common", label: "GEMS", w: 26 },
+    { type: "gems", amount: 60, tier: "epic", label: "BIG GEMS", w: 12 },
   ];
 
+  const RANK = { common: 0, rare: 1, epic: 2, fighter: 3 };
   const state = { pity: 0, total: 0 };
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (_) {}
   const saveState = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {} };
 
-  let deps = null, busy = false, ctl = null;
+  let deps = null, busy = false, ctl = null, lastHourSlot = -1;
   const $ = (id) => document.getElementById(id);
   const owned = (id) => deps.isUnlocked(id);
+
+  function getHourSlot(now = Date.now()) {
+    return Math.floor(now / HOUR_MS);
+  }
+
+  function getFeaturedId(now = Date.now()) {
+    const slot = getHourSlot(now);
+    return FIGHTERS[((slot % FIGHTERS.length) + FIGHTERS.length) % FIGHTERS.length];
+  }
+
+  function getRemainingTimeText(now = Date.now()) {
+    const remMs = HOUR_MS - (now % HOUR_MS);
+    const totalSec = Math.max(0, Math.floor(remMs / 1000));
+    const mm = String(Math.floor(totalSec / 60)).padStart(2, "0");
+    const ss = String(totalSec % 60).padStart(2, "0");
+    return `NEXT: ${mm}:${ss}`;
+  }
 
   function weighted(list) {
     let r = Math.random() * list.reduce((a, x) => a + x.w, 0);
@@ -30,23 +51,48 @@
     return list[list.length - 1];
   }
 
+  // Roll a character following Rate-Up chances (used for both normal drops & Pity 100)
+  function rollFighterByChance(featuredId) {
+    const others = FIGHTERS.filter((id) => id !== featuredId);
+    const otherWeight = others.length ? (1 - RATE_UP_SHARE) / others.length : 0;
+    const pool = FIGHTERS.map((id) => ({
+      id,
+      w: id === featuredId ? RATE_UP_SHARE : otherWeight,
+    }));
+    return weighted(pool).id;
+  }
+
   function rollOne() {
-    state.total++; state.pity++;
-    const locked = FIGHTERS.filter((f) => !owned(f.id));
-    const pick = state.pity >= PITY && locked.length
-      ? { ...weighted(locked), type: "fighter" }
-      : weighted([...FIGHTERS.map((f) => ({ ...f, type: "fighter" })), ...PRIZES]);
-    if (pick.type === "fighter") {
-      state.pity = 0;
-      if (owned(pick.id)) {
-        deps.wallet.gems += DUPE_GEMS;
-        return { kind: "dupe", id: pick.id, rarity: pick.rarity, gems: DUPE_GEMS };
-      }
-      deps.wallet.unlockedFighters.add(pick.id);
-      return { kind: "fighter", id: pick.id, rarity: pick.rarity };
+    state.total++;
+    state.pity++;
+    const featuredId = getFeaturedId();
+    const isPityGuaranteed = state.pity >= PITY;
+
+    let isChar = isPityGuaranteed;
+    let prizePick = null;
+    if (!isChar) {
+      const roll = weighted([
+        { type: "fighter", w: CHAR_TOTAL_CHANCE },
+        ...PRIZES,
+      ]);
+      if (roll.type === "fighter") isChar = true;
+      else prizePick = roll;
     }
-    deps.wallet[pick.type] += pick.amount;
-    return { kind: pick.type, amount: pick.amount, rarity: pick.rarity };
+
+    if (isChar) {
+      state.pity = 0;
+      const charId = rollFighterByChance(featuredId);
+      const isRateUp = charId === featuredId;
+      if (owned(charId)) {
+        deps.wallet.gems += DUPE_GEMS;
+        return { kind: "dupe", id: charId, tier: "fighter", isRateUp, gems: DUPE_GEMS };
+      }
+      deps.wallet.unlockedFighters.add(charId);
+      return { kind: "fighter", id: charId, tier: "fighter", isRateUp };
+    }
+
+    deps.wallet[prizePick.type] += prizePick.amount;
+    return { kind: prizePick.type, amount: prizePick.amount, tier: prizePick.tier, label: prizePick.label };
   }
 
   const wait = (ms) => new Promise((res) => {
@@ -58,16 +104,17 @@
 
   function cardEl(r) {
     const el = document.createElement("div");
-    el.className = `g-card rarity-${r.rarity}`;
+    el.className = `g-card rarity-${r.tier === "fighter" ? "legend" : r.tier}`;
     if (r.kind === "fighter" || r.kind === "dupe") {
       const cfg = BF.CHARACTER_ROSTER[r.id];
-      el.innerHTML = `<span class="g-rarity">${LABEL[r.rarity]}</span><canvas class="g-canvas" width="168" height="168"></canvas>` +
+      const badgeText = r.isRateUp ? "RATE-UP!" : "FIGHTER";
+      el.innerHTML = `<span class="g-rarity">${badgeText}</span><canvas class="g-canvas" width="168" height="168"></canvas>` +
         `<h3 class="g-name">${cfg.name}</h3><p class="g-sub">${BF.SERIES[r.id] || ""}</p>` +
         `<span class="g-tag ${r.kind === "dupe" ? "dupe" : "new"}">${r.kind === "dupe" ? `DUPLICATE +${r.gems} GEMS` : "NEW FIGHTER!"}</span>`;
       deps.drawAvatar(el.querySelector("canvas"), cfg);
     } else {
       const gem = r.kind === "gems";
-      el.innerHTML = `<span class="g-rarity">${LABEL[r.rarity]}</span><svg class="g-prize"><use href="#${gem ? "i-gem" : "i-coin"}"/></svg>` +
+      el.innerHTML = `<span class="g-rarity">${r.label || (gem ? "GEMS" : "COINS")}</span><svg class="g-prize"><use href="#${gem ? "i-gem" : "i-coin"}"/></svg>` +
         `<h3 class="g-name">+${r.amount}</h3><p class="g-sub">${gem ? "GEMS" : "COINS"}</p>`;
     }
     return el;
@@ -83,18 +130,19 @@
   })();
 
   async function playOne(stage, r, quick) {
-    stage.className = `g-stage rarity-${r.rarity}`;
+    const fxRarity = r.tier === "fighter" ? "legend" : r.tier;
+    stage.className = `g-stage rarity-${fxRarity}`;
     stage.innerHTML = `<svg class="g-rays" viewBox="0 0 200 200"><polygon points="${RAYS}"/></svg>` +
       `<div class="g-capsule"><i class="cap-top"></i><i class="cap-bot"></i></div><div class="g-flash"></div>`;
     deps.sound.gachaShake();
-    await wait(quick ? 750 : 1100);
+    await wait(quick ? 650 : 1000);
     if (ctl.skipped) return;
     stage.classList.add("open");
     deps.sound.gachaPop();
-    await wait(260);
+    await wait(240);
     stage.appendChild(cardEl(r));
-    deps.sound.gachaReveal(r.rarity);
-    if (quick) await wait(RANK[r.rarity] >= 2 ? 1300 : 800);
+    deps.sound.gachaReveal(fxRarity);
+    if (quick) await wait(r.tier === "fighter" ? 1200 : 700);
     else { const hint = document.createElement("p"); hint.className = "g-hint"; hint.textContent = "TAP TO CONTINUE"; stage.appendChild(hint); await tap(); }
   }
 
@@ -106,7 +154,7 @@
     ov.querySelector(".g-skip").onclick = () => { ctl.skipped = true; ctl.cancel && ctl.cancel(); ctl.tapRes && ctl.tapRes(); };
     ov.onclick = (e) => { if (!e.target.closest(".g-skip") && ctl.tapRes) { const f = ctl.tapRes; ctl.tapRes = null; f(); } };
     const stage = ov.querySelector(".g-stage");
-    const order = results.length > 1 ? [...results].sort((a, b) => RANK[a.rarity] - RANK[b.rarity]) : results;
+    const order = results.length > 1 ? [...results].sort((a, b) => RANK[a.tier] - RANK[b.tier]) : results;
     for (const r of order) { if (ctl.skipped) break; await playOne(stage, r, results.length > 1); }
 
     ov.innerHTML = `<div class="g-summary"><div class="stamp stamp-yellow">RESULTS</div><div class="g-grid"></div><button class="btn btn-green g-ok" type="button">OK</button></div>`;
@@ -134,10 +182,17 @@
     for (let i = 0; i < n; i++) results.push(rollOne());
     deps.save(); saveState();
     await sequence(results);
-    const best = results.reduce((a, r) => (RANK[r.rarity] > RANK[a.rarity] ? r : a), results[0]);
-    deps.say(best.rarity === "legend" ? `"WHAT?! A LEGEND?! Baa-san's lucky cat is cursed, I swear!"`
-      : best.kind === "fighter" ? `"Hmph! ${BF.CHARACTER_ROSTER[best.id].name} is yours now. Don't waste 'em, gaki!"`
-      : `"Heh! Pull again, brat. The next one's the good one."`);
+    const gotChar = results.find((r) => r.kind === "fighter");
+    const gotDupe = results.find((r) => r.kind === "dupe");
+    deps.say(
+      gotChar
+        ? (gotChar.isRateUp
+            ? `"JACKPOT! Rate-Up ${BF.CHARACTER_ROSTER[gotChar.id].name} answered your pull!"`
+            : `"Whoa! ${BF.CHARACTER_ROSTER[gotChar.id].name} popped out! Lucky brat!"`)
+        : gotDupe
+          ? `"Duplicate fighter! Here's +${DUPE_GEMS} Gems instead, gaki!"`
+          : `"Heh! Keep pulling — Pity 100 guarantees a fighter!"`
+    );
     busy = false;
     deps.onChange();
   }
@@ -152,29 +207,45 @@
 
   function refresh() {
     if (!deps) return;
+    const now = Date.now();
     const w = deps.wallet;
+    const featuredId = getFeaturedId(now);
+    const featCfg = BF.CHARACTER_ROSTER[featuredId];
+    lastHourSlot = getHourSlot(now);
+
     const set = (id, v) => { const e = $(id); if (e) e.textContent = v; };
     set("gacha-pity-text", `${Math.min(state.pity, PITY)} / ${PITY}`);
+    set("banner-timer", getRemainingTimeText(now));
+    if (featCfg) {
+      set("banner-rateup-name", featCfg.name);
+      set("banner-rateup-series", `${BF.SERIES[featuredId] || "ANIME"} • ROTATES EVERY 1H`);
+    }
     const fill = $("gacha-pity-fill"); if (fill) fill.style.width = `${Math.min(100, (state.pity / PITY) * 100)}%`;
     for (const [id, cost, cur] of [["btn-pull-1", COSTS.one, "coins"], ["btn-pull-10", COSTS.ten, "coins"], ["btn-pull-gem", COSTS.gem, "gems"]]) {
       const b = $(id); if (b) b.classList.toggle("poor", w[cur] < cost);
     }
 
+    const rateUpCv = $("banner-rateup-canvas");
+    if (rateUpCv && featCfg) {
+      deps.drawAvatar(rateUpCv, featCfg);
+    }
+
     const feat = $("banner-feat");
     if (feat) {
       feat.innerHTML = "";
-      for (const f of FIGHTERS) {
-        const cfg = BF.CHARACTER_ROSTER[f.id]; if (!cfg) continue;
-        const has = owned(f.id);
+      for (const id of FIGHTERS) {
+        const cfg = BF.CHARACTER_ROSTER[id]; if (!cfg) continue;
+        const has = owned(id);
+        const isRateUp = id === featuredId;
         const t = document.createElement("div");
-        t.className = `feat-tile rarity-${f.rarity}${has ? " has" : ""}`;
+        t.className = `feat-tile rarity-fighter${isRateUp ? " is-rateup" : ""}${has ? " has" : ""}`;
         const cv = document.createElement("canvas"); cv.width = 96; cv.height = 96;
         t.appendChild(cv);
-        const tag = document.createElement("span"); tag.textContent = has ? LABEL[f.rarity] : "???";
+        const tag = document.createElement("span");
+        tag.textContent = isRateUp ? "RATE UP" : (has ? "OWNED" : "FIGHTER");
         t.appendChild(tag);
         feat.appendChild(t);
         deps.drawAvatar(cv, cfg);
-        if (!has) silhouette(cv);
       }
     }
 
@@ -199,6 +270,44 @@
     }
   }
 
+  function tick(t) {
+    if (!deps) return;
+    const now = Date.now();
+    if (getHourSlot(now) !== lastHourSlot) {
+      refresh();
+      return;
+    }
+    const timerEl = $("banner-timer");
+    if (timerEl) timerEl.textContent = getRemainingTimeText(now);
+
+    const rateUpCv = $("banner-rateup-canvas");
+    const featuredId = getFeaturedId(now);
+    const featCfg = BF.CHARACTER_ROSTER[featuredId];
+    if (rateUpCv && featCfg) {
+      const pCtx = rateUpCv.getContext("2d");
+      pCtx.clearRect(0, 0, rateUpCv.width, rateUpCv.height);
+      const bob = Math.sin(t * 3.6) * 3.5;
+      const demoBall = {
+        x: rateUpCv.width * 0.5,
+        y: rateUpCv.height * 0.56 + bob,
+        radius: 34,
+        color: featCfg.color,
+        costume: featCfg.costume,
+        evolved: Boolean(BF.isEvolutionEquipped && BF.isEvolutionEquipped(featCfg.id)),
+        weapon: null,
+        weaponAngle: 0,
+        vx: 1,
+        vy: 0,
+        flashTimer: 0,
+        squash: Math.max(0, Math.sin(t * 6.8) * 0.08),
+        skills: [],
+        effects: [],
+      };
+      if (BF.drawBall) BF.drawBall(demoBall, pCtx, false);
+      else deps.drawAvatar(rateUpCv, featCfg);
+    }
+  }
+
   BF.Gacha = {
     init(d) {
       deps = d;
@@ -209,5 +318,6 @@
       refresh();
     },
     refresh,
+    tick,
   };
 })();

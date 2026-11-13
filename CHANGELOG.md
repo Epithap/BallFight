@@ -23,7 +23,8 @@ Dokumen ini ditulis supaya AI agent (Antigravity) dan developer langsung paham s
   - **Secret Admin Panel**: Ketuk tab/kartu **Profile 10x** untuk membuka panel admin (atur Gold, Gems, dan Unlock All untuk testing).
 - **Sukuna (`sukuna`) & Domain Clash**: seri JUJUTSU KAISEN, rarity legend, form `BASE` / `KING OF CURSES` (`js/forms.js`), wajah 4 mata (`BF.FACE_DRAWERS.sukuna`), Dismantle/Cleave/Fuga/Malevolent Shrine, dan **Domain Clash** otomatis saat Gojo & Sukuna sama-sama dalam mode Aura.
 - **Variasi wajah (`js/faces.js`)**: mata punya kepribadian per karakter (cheerful, dark, cool, sly) dengan jeda kedip masing-masing.
-- **Luffy Gear 4 revamp**: *Bounceman* (pipi menggembung, pusaran Haki, uap putih, Kong Smash) & *Snakeman* (mata sipit emas, pita Haki, Black Mamba).
+- **Hourly Rate-Up Gacha &amp; Pity 100 (`js/gacha.js`)**: Semua fighter kini setara (tanpa rarity). Gacha berisi Coins (42%), Gems (38%), dan Fighter (20%) dengan **Banner Rate-Up berganti tiap 1 jam** (55% dari drop karakter) + preview animasi dan **Pity 100** dijamin mendapat karakter sesuai chance banner.
+- **Guts Dragonslayer Fix**: Pedang *Dragonslayer* kini diam tersandang di belakang punggung saat bergerak dan hanya menebas/mengenai lawan saat mengaktifkan skill.
 - **Turbo Granny Model v1.2 (`js/granny.js` & `assets/turbo-granny.svg`)**: Desain ulang maskot shop dengan mata almond pupil celah emas, alis tajam, pipi merona, bibir `ω`, syal hijau berlekuk 5, lonceng emas, dan koin Koban `千万` yang berayun.
 
 ### Ringkasan perubahan

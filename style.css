@@ -1355,6 +1355,7 @@ body.rec-mode .arena-wrap {
 }
 
 /* ================= Screens v2: fighters, sheet, profile, shop, gacha ================= */
+.rarity-fighter { --rar: var(--blue); }
 .rarity-starter { --rar: #8b93a1; }
 .rarity-common { --rar: var(--blue); }
 .rarity-rare { --rar: var(--green); }
@@ -1689,7 +1690,66 @@ body.rec-mode .arena-wrap {
 }
 .banner-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .banner-sub { font-size: 14px; }
-.banner-feat { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.banner-timer {
+  font-size: 12px;
+  padding: 2px 10px 3px;
+  background: var(--ink);
+  color: var(--sun);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.rateup-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #fffdf4 0%, #fef08a 100%);
+  border: 3.5px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 0 4px 0 var(--ink);
+}
+.rateup-stage {
+  width: 88px;
+  height: 88px;
+  flex: none;
+  background-color: #a8e6cf;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23a8e6cf'/%3E%3Crect width='40' height='40' fill='%2397dcc2'/%3E%3Crect x='40' y='40' width='40' height='40' fill='%2397dcc2'/%3E%3C/svg%3E");
+  background-size: 40px 40px;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.rateup-stage canvas { width: 100%; height: 100%; display: block; }
+.rateup-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.rateup-boost-chip {
+  font-size: 11px;
+  padding: 1px 10px 2px;
+  background: var(--red);
+  color: var(--white);
+  border: 2.5px solid var(--ink);
+  border-radius: 999px;
+}
+.rateup-name {
+  font-size: 20px;
+  line-height: 1.05;
+  color: var(--ink);
+  margin: 0;
+}
+.rateup-series {
+  font-size: 11px;
+  opacity: 0.72;
+  margin: 0;
+}
+.banner-feat { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .feat-tile {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding: 4px 2px 6px;
@@ -1698,9 +1758,14 @@ body.rec-mode .arena-wrap {
   border-radius: 14px;
   box-shadow: 0 3px 0 var(--ink);
 }
+.feat-tile.is-rateup {
+  background: #fff3b0;
+  border-color: var(--red);
+  box-shadow: 0 3px 0 var(--red);
+}
 .feat-tile canvas { width: 100%; height: auto; display: block; }
-.feat-tile span { font-size: 11px; color: var(--white); background: var(--rar); padding: 0 8px 1px; border: 2px solid var(--ink); border-radius: 999px; }
-.feat-tile.rarity-legend span { color: var(--ink); }
+.feat-tile span { font-size: 10px; color: var(--white); background: var(--rar, var(--blue)); padding: 0 6px 1px; border: 2px solid var(--ink); border-radius: 999px; }
+.feat-tile.is-rateup span { background: var(--red); }
 .pity { display: flex; align-items: center; gap: 8px; font-size: 14px; }
 .pity-track { flex: 1; height: 14px; background: var(--white); border: 3px solid var(--ink); border-radius: 999px; overflow: hidden; }
 .pity-fill { height: 100%; background: var(--red); transition: width 0.3s; }
