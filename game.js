@@ -6028,6 +6028,7 @@
     const btnSetGems = document.getElementById("btn-admin-set-gems");
     const btnUnlockAll = document.getElementById("btn-admin-unlock-all");
     const btnResetWallet = document.getElementById("btn-admin-reset-wallet");
+    const btnResetAll = document.getElementById("btn-admin-reset-all");
 
     if (btnAddCoins) btnAddCoins.addEventListener("click", () => applyCustomCurrency("coins", adminCoinsInput, "add"));
     if (btnSetCoins) btnSetCoins.addEventListener("click", () => applyCustomCurrency("coins", adminCoinsInput, "set"));
@@ -6055,6 +6056,52 @@
         playerWallet.coins = 0;
         playerWallet.gems = 0;
         syncAdminAndAllUI();
+      });
+    }
+    if (btnResetAll) {
+      btnResetAll.addEventListener("click", () => {
+        sound.unlock();
+        sound.playWallHit();
+        // Reset wallet, unlocked fighters (back to 4 starters), evolutions & skins
+        playerWallet.coins = 0;
+        playerWallet.gems = 0;
+        playerWallet.unlockedFighters = new Set(["goku", "naruto", "luffy", "ichigo"]);
+        playerWallet.evolvedFighters = new Set();
+        playerWallet.equippedEvolutions = {};
+        playerWallet.unlockedSkins = new Set();
+        playerWallet.equippedSkins = {};
+        slotEvoOverrides[0] = {};
+        slotEvoOverrides[1] = {};
+        selectedRosterIds[0] = "goku";
+        selectedRosterIds[1] = "naruto";
+
+        // Reset profile stats & preferences
+        sessionStats.matches = 0;
+        sessionStats.wins = 0;
+        sessionStats.charsUsed = {};
+        profilePrefs = {
+          name: "EPITHAP",
+          avatarMode: "auto",
+          charId: "goku",
+          photoDataUrl: null,
+        };
+
+        try {
+          localStorage.removeItem("anime_ball_wallet_v3");
+          localStorage.removeItem("bf_profile_v1");
+          localStorage.removeItem("bf_profile_prefs_v1");
+          localStorage.removeItem("bf_gacha_v1");
+          localStorage.removeItem("bf_gacha_v2");
+        } catch (_) {}
+
+        saveProfilePrefs();
+        if (BF.Gacha && typeof BF.Gacha.reset === "function") {
+          BF.Gacha.reset();
+        }
+        refreshSlotConfigs();
+        setupUnifiedSelectors();
+        syncAdminAndAllUI();
+        syncFighterUI();
       });
     }
   }

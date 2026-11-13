@@ -1748,8 +1748,13 @@ body.rec-mode .arena-wrap {
 .rateup-bottom-plate {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  max-width: 64%;
+  gap: 3px;
+  max-width: 66%;
+  background: linear-gradient(90deg, rgba(8, 5, 18, 0.86) 0%, rgba(8, 5, 18, 0.45) 75%, rgba(8, 5, 18, 0) 100%);
+  padding: 6px 10px;
+  margin-left: -4px;
+  border-left: 3.5px solid var(--sun);
+  border-radius: 6px;
 }
 .rateup-name {
   font-size: 22px;
@@ -1761,18 +1766,22 @@ body.rec-mode .arena-wrap {
   margin: 0;
 }
 .rateup-series {
-  font-size: 11px;
-  color: #e2e8f0;
+  font-size: 10.5px;
+  color: #fde047;
   text-shadow: 0 2px 0 var(--ink);
+  letter-spacing: 0.04em;
   margin: 0;
 }
 .g-char-fx-canvas {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  inset: -12px;
+  width: calc(100% + 24px);
+  height: calc(100% + 24px);
+  border: 4px solid var(--ink);
+  border-radius: 24px;
+  box-shadow: 0 10px 0 var(--ink);
   pointer-events: none;
-  z-index: 3;
+  z-index: 6;
 }
 .g-reveal-quote {
   position: relative;

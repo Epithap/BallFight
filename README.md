@@ -45,7 +45,8 @@
   - **Six-Tails Skeletal Kyuubi** (*Naruto*, `150 Gems`)
   - **Arrancar Arc: Ulquiorra Duel** (*Ichigo*, `120 Gems` — 2-in-1 tattered Bankai + Half-Shattered Dark-Crimson Mask)
   - **Awakened Vasto: Long-Hair Half-Mask** (*Ichigo*, `180 Gems` — Mythic long orange mane &amp; single broken Vasto horn)
-- 🎰 **Modern Hourly Rate-Up Gacha &amp; Pity 100**: All fighters are equal tier (no character rarity!). Features a dynamic widescreen splash banner (rotates every 1 hour) with **5.0% Rate-Up**, **1.5% other characters**, Coins (48.5%), Gems (45%), **Pity 100 guaranteed character**, and custom **per-character reveal animations**!
+- 🎰 **Professional Hourly Rate-Up Gacha, MUGEN Cut-In FX &amp; Pity 100**: All fighters are equal tier (no character rarity!). Features a high-resolution layered widescreen banner (rotates every 1 hour) with **5.0% Rate-Up**, **1.5% other characters**, balanced currency drops (**Common**: `20 Gold` / `1 Gem`, **Rare**: `100 Gold` / `5 Gems`, **Epic**: `250 Gold` / `10 Gems`), **Pity 100 guaranteed character** (following banner odds), and custom **MUGEN-style per-character reveal animations** (*Gojo Hollow Purple*, *Sukuna Malevolent Shrine*, *DIO Za Warudo Clock &amp; Knives*, *Jotaro Star Platinum ORA Barrage*, &amp; *Guts Blood-Moon Eclipse Cleave*)!
+- 🛠️ **Secret Admin Panel &amp; Full Reset (`Profile x10`)**: Adjust Gold/Gems, unlock all fighters/skins, or click **Reset All Progress (From 0)** to wipe progression and start fresh from zero.
 - ⚔️ **Domain Clash &amp; Stand Clash**: **Gojo vs Sukuna** clash in an epic Domain Expansion tug-of-war, while **DIO vs Jotaro** trigger Stand Clashes!
 - 🔊 **Procedural Web Audio SFX (`js/sfx.js`)**: Custom synthesized sounds per skill, ultimate, UI click, and gacha capsule—with zero external audio files.
 - 📱 **9:16 Vertical Recording Mode (`REC`)**: One-click vertical framing for TikTok, Reels, and Shorts.
