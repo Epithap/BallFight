@@ -4,6 +4,53 @@ Dokumen ini ditulis supaya AI agent (Antigravity) dan developer langsung paham s
 
 ---
 
+## Version 1.3.1 — Dual Gacha Revamp, Daily Missions, Balance & Modular Stability
+
+### Highlights v1.3.1
+- **HSR-Style Dual Gacha (`js/gacha.js`, `index.html`, `style.css`)**:
+  - **Starter Roster Change**: Starter awal kini **Goku (`goku`)** saja; **Naruto**, **Luffy**, dan **Ichigo** pindah ke pool gacha **Standard Banner**.
+  - **Standard Banner (`300 Coins` x1 / `3,000 Coins` x10)**: Pool eksklusif Big Three (`Naruto`, `Luffy`, `Ichigo`) dengan rate karakter **0.5%**, background splash art transparan trio shonen, serta maskot bola trio.
+  - **Hourly Rate-Up Banner (`30 Gems` x1 / `300 Gems` x10)**: Rotasi featured fighter tiap **1 jam** (termasuk preview jam berikutnya), mekanisme **50/50 + Guaranteed** ala HSR (jika kalah rate-off ke trio standard, pull karakter berikutnya dijamin Rate-Up), pity terbawa antar rotasi banner, dan background splash art karakter asli transparan di `assets/gacha-bg/`.
+  - **Pity 60 Shared Cap**: Pity diturunkan dari `100` menjadi **60** untuk Standard Banner maupun Rate-Up Banner.
+- **Daily Missions Popup (`js/missions.js`, `index.html`, `style.css`)**:
+  - Tombol misi harian (`#btn-daily-missions`) dengan titik notifikasi merah (`#mission-dot`) ditempatkan di `.header-right` tepat di kanan header **BALL FIGHT**.
+  - Pop-up `#missions-modal` berisi **5 Misi Harian** (auto-reset tiap pergantian tanggal kalender lokal, `localStorage` `bf_daily_missions_v1`):
+    1. **Daily Check-In** (`1/1`): `+150 Coins`, `+15 Gems`
+    2. **Arena Brawler** (`3 match`): `+300 Coins`, `+25 Gems`
+    3. **Victory Streak** (`2 win P1`): `+450 Coins`, `+35 Gems`
+    4. **Combo Striker** (`15 hits`): `+300 Coins`, `+25 Gems`
+    5. **Daily Champion** (selesaikan 4 misi di atas): `+600 Coins`, `+50 Gems`
+  - Total hadiah hingga **1,800 Coins + 150 Gems/hari**, ditambah bonus **+5 Gems** setiap kemenangan Player 1 di arena (`game.js`).
+- **Balance & Progression**:
+  - **Evolution Cost (`25,000 Gold`)**: Biaya evolusi di `EVOLUTION_SPECS` (`js/shop.js`) dan deskripsi form (`js/forms.js`) untuk **Naruto**, **Ichigo**, dan **Sasuke** naik dari `10,000` menjadi **25,000 Gold**.
+  - **Goku Great Ape (Oozaru)**: Syarat berubah menjadi Great Ape diubah dari `HP <= 200` menjadi **saat cast/dalam Ult dengan `HP < 50`** (`game.js`, `js/characters/goku.js`, `js/forms.js`) agar berfungsi sebagai kartu as/comeback.
+- **Minor Fixes & Modular Refactor (Anti-Freeze & Mobile Smoothness)**:
+  - **Sasuke (`js/characters/sasuke.js`, `js/forms.js`)**: Perbaikan tampilan & animasi **Susanoo** / **Indra's Arrow** (keluar dari atas arena saat HP <= 150 / Armored Susanoo), plus preview **Susanoo** & **Indra Susanoo** terpisah di Char Detail tanpa Sasuke dengan skala penuh.
+  - **Garou (`js/characters/garou.js`)**: Perbaikan bug **Monster Garou** diam setelah skill, perbaikan animasi pengangkatan oleh **God**, revamp **Moon Sanctuary Arena** (permukaan bulan + luar angkasa berplanet), dan cleanup **Gamma Ray Burst** agar tidak nyangkut setelah battle selesai.
+  - **Pemisahan `game.js` (`BF._rt`)**: Fungsi VFX (`js/vfx.js`), Clash (`js/clashes.js`), dan Transform (`js/transforms.js`) dipisah dari `game.js` menggunakan bridge `BF._rt` dan hoisted function delegates; seluruh pemanggilan `rt()`, `easeOut`, `drawBall`, dan `checkKO` sudah diaudit & disimulasikan untuk 15 karakter tanpa error/freeze.
+  - **Mobile DPR Cap**: `resizeCanvas()` di `game.js` membatasi `devicePixelRatio` maksimal `1.5` pada layar `<= 640px` agar FPS di HP tetap stabil.
+
+---
+
+## Version 1.3 — 4 New Fighters, Cosmic Moon Arena & Stand Clash 2.0
+
+### Highlights v1.3
+- **Garou (`js/characters/garou.js`, One-Punch Man)**:
+  - 3 Form lengkap (**Hero Hunter**, **Monster Form**, **Cosmic Fear**), *Water Stream Counter* (deflect proyektil + counter-throw), *Whirlwind Iron & Water Stream*, serta *Monster God Slayer Dash + 4-Hit Barrage*.
+  - **Cosmic Fear Awakening (`HP < 100`, 1x/match)**: Time freeze `2.4s`, diangkat ke Bulan oleh **God**, turun dengan **Cosmic Fear Form + Heal 50 HP**, lalu membuka portal ke **Moon Sanctuary Arena** dan melancarkan **Full-Arena Gamma Ray Burst**.
+- **Denji (`js/characters/denji.js`, Chainsaw Man)**:
+  - Tangan gergaji `/()\` beranimasi (4 tangan gergaji saat Ult **Hero of Hell** + *Blood Lifesteal*), **Twin Chainsaw Launch**, dan **Revving Saw Rush** (`0.78s` charge + **5 detik** pantulan dinding penuh).
+- **Sung Jin-Woo (`js/characters/jinwoo.js`, Solo Leveling)**:
+  - Dual dagger *Knight Killer & Baruka's Dagger*, **Vital-Point Mutilation**, **Ruler's Authority**, dan Ulti **ARISE: Monarch's Domain** (memanggil **Igris**, **Tank**, **Beru**, serta serangan tukik **Kaisel**).
+- **Killua Zoldyck (`js/characters/killua.js`, Hunter × Hunter)**:
+  - **50-Kg Alloy Yo-Yo**, **Rhythm Echo + Izutsushi**, dan **Godspeed: Kanmuru** (*Whirlwind Auto-Counter* + *Shippujinrai*).
+- **Stand Clash 2.0, Jotaro & Guts Rework**:
+  - Efek adu pukulan baru untuk **DIO vs Jotaro Stand Clash** dengan *Stand-Crush Knockback Finisher*.
+  - Rework **Jotaro** (*Star Finger*, *Yare Yare Daze*, *Star Catch*, *Time-Step Beatdown*) & **Guts** (*Arm Cannon*, *Bleed Cleave*, *Struggler's Grit*).
+  - Preview 3 form Garou di Fighter Detail + animasi MUGEN Gacha untuk 4 fighter baru.
+
+---
+
 ## Version 1.2 — Evolution, Mythic Skins, Sukuna, Gacha & UI Revamp
 
 ### Highlights v1.2
@@ -40,9 +87,17 @@ Dokumen ini ditulis supaya AI agent (Antigravity) dan developer langsung paham s
 
 ### Peta file
 ```
-index.html          semua layar + modal + sprite ikon + urutan <script>
-style.css           semua gaya (blok "Home v2" dan "Screens v2" ada di bagian bawah)
-game.js             engine battle, render, UI wiring, profile, shop wiring
+index.html          semua layar + modal (Daily Missions, What's New v1.3.1, dll) + sprite ikon + urutan <script>
+style.css           semua gaya (blok "Home v2", "Screens v2", & Daily Missions di bagian bawah)
+game.js             core engine battle, Ball class, BF._rt bridge, render, UI & profile wiring
+js/vfx.js           projectile, shock ring, banner, cast indicator, time-resume & clash cut-in
+js/clashes.js       Stand Clash 2.0 (DIO vs Jotaro) & Domain Clash (Gojo vs Sukuna)
+js/transforms.js    activateUltimate & transformasi (Oozaru, Kyuubi, Curse Mark, Susanoo, Hollow/Vasto)
+js/missions.js      Daily Missions tracker, auto-reset harian & klaim reward
+js/gacha.js         HSR-style Dual Banner (Standard + 1H Rate-Up), Pity 60, 50/50 + Guarantee & MUGEN FX
+js/shop.js          wallet persistence, Evolution 25k Gold & Diamond Skin Vault
+js/characters/      15 file fighter modular (goku..garou)
+```
 js/constants.js     namespace window.BallFight (BF), COLORS, FONT, konstanta game
 js/sound.js         class SoundEngine (sound dasar: hit, KO, time stop, dll)
 js/sfx.js           [BARU] extend SoundEngine.prototype: playSkill, playUlt, playUi, gacha sounds
