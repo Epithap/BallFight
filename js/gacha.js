@@ -4,7 +4,7 @@
   const KEY = "bf_gacha_v3";
   const STD_COSTS = { one: 300, ten: 3000 };
   const RU_COSTS = { one: 50, ten: 500 };
-  const PITY = 100;
+  const PITY = 60;
   const DUPE_GEMS = 50;
   const HOUR_MS = 3600 * 1000;
 
@@ -249,7 +249,7 @@
     const isRateUpBanner = bannerType === "rateup";
 
     if (!isRateUpBanner) {
-      // Standard Banner: 300/3000 Coins, 0.5% char (Naruto/Luffy/Ichigo), Pity 100
+      // Standard Banner: 300/3000 Coins, 0.5% char (Naruto/Luffy/Ichigo), Pity 60
       state.standardPity++;
       const isPity = state.standardPity >= PITY;
       let prizePick = null;
@@ -268,7 +268,7 @@
       return { kind: prizePick.type, amount: prizePick.amount, tier: prizePick.tier, label: prizePick.label };
     }
 
-    // Rate-Up Banner: 50/500 Gems, 0.5% char, Pity 100 shared, HSR 50/50 + Guarantee
+    // Rate-Up Banner: 50/500 Gems, 0.5% char, Pity 60 shared, HSR 50/50 + Guarantee
     state.rateUpPity++;
     const featuredId = getFeaturedId();
     const isPity = state.rateUpPity >= PITY;
@@ -1068,7 +1068,7 @@
           ? (gotOff
               ? `"Duplicate Rate-Off (+${DUPE_GEMS} Gems)! Next Rate-Up char is 100% GUARANTEED!"`
               : `"Duplicate fighter! Here's +${DUPE_GEMS} Gems instead, gaki!"`)
-          : `"Heh! Keep pulling — Pity 100 guarantees a fighter!"`
+          : `"Heh! Keep pulling — Pity 60 guarantees a fighter!"`
     );
     busy = false;
     deps.onChange();
