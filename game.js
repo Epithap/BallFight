@@ -1015,8 +1015,8 @@
         c.save();
         const cry1 = b1 && b1.costume === "jotaro" ? "ORA ORA ORA!!" : "MUDA MUDA MUDA!!";
         const cry2 = b2 && b2.costume === "dio" ? "MUDA MUDA MUDA!!" : "ORA ORA ORA!!";
-        const jitterX = Math.sin(t * 90) * 3;
-        const jitterY = Math.cos(t * 85) * 3;
+        const jitterX = Math.sin(t * 45) * 1;
+        const jitterY = Math.cos(t * 42) * 1;
         c.font = `bold 15px ${FONT}`;
         c.textAlign = "center";
         c.textBaseline = "middle";
@@ -1179,9 +1179,9 @@
           b2.standAttackTimer = clashDuration + 0.5;
 
           entities.push(spawnStandClashEffect(midX, midY, clashDuration, b1, b2, () => s1.clashMeter));
-          hitStop = 0.08;
-          shakeTime = 0.35;
-          shakeIntensity = 9;
+          hitStop = 0.06;
+          shakeTime = 0.14;
+          shakeIntensity = 3;
           sound.playMudaRush();
           return;
         }
@@ -1806,8 +1806,8 @@
             color: rng() < 0.5 ? leftSpec.color : rightSpec.color,
           });
         }
-        shakeTime = Math.max(shakeTime, 0.08);
-        shakeIntensity = Math.max(shakeIntensity, 3.5 + t * 3);
+        shakeTime = Math.max(shakeTime, 0.06);
+        shakeIntensity = Math.max(shakeIntensity, 1.5);
 
         if (this.life <= 0 && !resolved) {
           resolved = true;
@@ -3001,8 +3001,8 @@
         entities.push(spawnShockRing(ball.x, ball.y, COLORS.red, 110, 0.38));
         spawnSparks(ball.x, ball.y, COLORS.red, COLORS.gold);
         spawnDamageText(ball.x, ball.y - ball.radius - 12, 0, COLORS.red, true, "WALL SLAM!");
-        shakeTime = Math.max(shakeTime, 0.28);
-        shakeIntensity = Math.max(shakeIntensity, 9);
+        shakeTime = Math.max(shakeTime, 0.18);
+        shakeIntensity = Math.max(shakeIntensity, 4.5);
         sound.playCritHit();
         ball.knockbackTimer = Math.min(ball.knockbackTimer, 0.15);
       }
@@ -3420,13 +3420,14 @@
       st.clashTimer -= dt;
       st.clashPulseTimer -= dt;
 
-      // Dynamic push of the two Stands based on the tug-of-war meter + intense anime vibration
+      // Dynamic push of the two Stands based on the tug-of-war meter (smooth, minimal vibration so it's easy to watch)
       const primarySt = st.clashPrimary ? st : (st.clashPartner && st.clashPartner.standState ? st.clashPartner.standState : st);
       const curMeter = primarySt.clashMeter ?? 0.5;
       const pushShift = (curMeter - 0.5) * 44;
       const mainAng = primarySt.angle || 0;
-      st.x = st.clashBaseX + Math.cos(mainAng) * pushShift + (rng() - 0.5) * 6;
-      st.y = st.clashBaseY + Math.sin(mainAng) * pushShift + (rng() - 0.5) * 6;
+      const microVibe = Math.sin(st.clashTimer * 35) * 1.2;
+      st.x = st.clashBaseX + Math.cos(mainAng) * pushShift + Math.cos(mainAng) * microVibe;
+      st.y = st.clashBaseY + Math.sin(mainAng) * pushShift + Math.sin(mainAng) * microVibe;
 
       if (st.clashPulseTimer <= 0) {
         st.clashPulseTimer = 0.09;
@@ -3434,7 +3435,7 @@
           const prog = 1 - Math.max(0, st.clashTimer / (st.clashDuration || 2.4));
           if (prog < 0.62) {
             // Dramatic tug-of-war back-and-forth swings
-            st.clashMeter = Math.max(0.24, Math.min(0.76, st.clashMeter + (rng() - 0.5) * 0.22));
+            st.clashMeter = Math.max(0.24, Math.min(0.76, st.clashMeter + (rng() - 0.5) * 0.18));
           } else {
             // Final push toward the 50/50 clash winner
             const targetMeter = st.clashWinnerIdx === 0 ? 0.74 + rng() * 0.12 : 0.14 + rng() * 0.12;
@@ -3443,8 +3444,6 @@
           const fxX = st.clashMidX + Math.cos(mainAng) * pushShift;
           const fxY = st.clashMidY + Math.sin(mainAng) * pushShift;
           spawnSparks(fxX, fxY, COLORS.gold, "#a855f7");
-          shakeTime = Math.max(shakeTime, 0.1);
-          shakeIntensity = Math.max(shakeIntensity, 6);
           sound.playBallHit();
         }
       }
@@ -3484,9 +3483,9 @@
               const winCry = winner.costume === "jotaro" ? "STAR BREAKER: ORA!!" : "THE WORLD: MUDA!!";
               spawnDamageText(loseSt.x, loseSt.y - 26, 0, winner.color, true, winCry);
               sound.playCritHit();
-              hitStop = 0.08;
-              shakeTime = 0.35;
-              shakeIntensity = 11;
+              hitStop = 0.06;
+              shakeTime = 0.16;
+              shakeIntensity = 3.5;
               return;
             }
           }
@@ -3544,9 +3543,9 @@
             spawnCritBurst(loser.x, loser.y);
             spawnSparks(loser.x, loser.y, COLORS.red, COLORS.gold);
             spawnDamageText(loser.x, loser.y - loser.radius - 18, clashDmg, COLORS.red, true, "STAND CRUSHED!!");
-            hitStop = 0.12;
-            shakeTime = 0.48;
-            shakeIntensity = 14;
+            hitStop = 0.08;
+            shakeTime = 0.22;
+            shakeIntensity = 5.5;
             sound.playCritHit();
             checkKO(loser.x, loser.y);
           }
@@ -3608,6 +3607,9 @@
 
     if (shakeTime > 0) {
       shakeTime = Math.max(0, shakeTime - dt);
+      if (shakeTime <= 0) {
+        shakeIntensity = 0;
+      }
     }
 
     if (hitStop > 0) {
