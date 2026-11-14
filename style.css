@@ -2308,3 +2308,139 @@ body.rec-mode .arena-wrap {
     -1px  1px 0 var(--ink),
      1px  1px 0 var(--ink);
 }
+
+/* ================= DAILY MISSIONS MODAL ================= */
+.mission-btn {
+  background: #fff4cc;
+}
+.missions-modal-card {
+  max-width: 480px;
+  width: 94%;
+  padding: 18px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.missions-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-right: 40px;
+}
+.missions-date-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #64748b;
+}
+.missions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.mission-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 2.5px solid var(--ink);
+  border-radius: 14px;
+  background: #f8fafc;
+  box-shadow: 0 3px 0 var(--ink);
+}
+.mission-row.is-ready {
+  background: #fef9c3;
+}
+.mission-row.is-claimed {
+  background: #ecfdf5;
+  opacity: 0.78;
+}
+.mission-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mission-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.mission-title {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--ink);
+  letter-spacing: 0.3px;
+}
+.mission-prog-text {
+  font-size: 11px;
+  font-weight: 900;
+  color: #475569;
+}
+.mission-desc {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: #475569;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+}
+.mission-prog-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  background: #e2e8f0;
+  overflow: hidden;
+  margin-top: 2px;
+}
+.mission-prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #38bdf8, #3ddc84);
+  transition: width 0.25s ease;
+}
+.mission-reward-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.mission-reward-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1.8px solid var(--ink);
+  background: #fff4cc;
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--ink);
+}
+.mission-reward-chip.is-gem {
+  background: #e0f2fe;
+}
+.mission-reward-chip svg {
+  width: 13px;
+  height: 13px;
+}
+.mission-claim-btn {
+  min-width: 78px;
+  padding: 8px 10px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.mission-claim-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.missions-modal-footer {
+  padding-top: 2px;
+}

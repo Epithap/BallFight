@@ -3388,8 +3388,12 @@
     const isMatchEnd = scores[0] >= ROUNDS_TO_WIN || scores[1] >= ROUNDS_TO_WIN;
     matchOver = isMatchEnd;
 
-    // Every completed Sandbox round/game awards +100 Coins
+    // Every completed Sandbox round/game awards +100 Coins (+5 Gems on P1 match win)
     playerWallet.coins += 100;
+    const p1WonMatch = isMatchEnd && scores[0] > scores[1];
+    if (p1WonMatch) {
+      playerWallet.gems += 5;
+    }
     saveWallet();
     updateShopUI();
 
@@ -3401,6 +3405,9 @@
       sessionStats.charsUsed[BALL_CONFIGS[0].id] = (sessionStats.charsUsed[BALL_CONFIGS[0].id] || 0) + 1;
       sessionStats.charsUsed[BALL_CONFIGS[1].id] = (sessionStats.charsUsed[BALL_CONFIGS[1].id] || 0) + 1;
       updateProfileUI();
+      if (BF.Missions && typeof BF.Missions.recordMatch === "function") {
+        BF.Missions.recordMatch({ won: p1WonMatch, hits: totalHits });
+      }
 
       if (overlayStamp) overlayStamp.textContent = "MATCH WINNER";
       btnRematch.textContent = "REMATCH";
@@ -3417,7 +3424,7 @@
       winnerText.style.color = COLORS.white;
     }
 
-    statsText.textContent = `${totalHits} HITS • ${elapsed.toFixed(1)}S • +100 🪙`;
+    statsText.textContent = `${totalHits} HITS • ${elapsed.toFixed(1)}S • +100 🪙${p1WonMatch ? " +5 💎" : ""}`;
     overlay.classList.remove("hidden");
   }
 
@@ -6602,6 +6609,18 @@
       },
     });
 
+    if (BF.Missions && typeof BF.Missions.init === "function") {
+      BF.Missions.init({
+        sound,
+        wallet: playerWallet,
+        save: saveWallet,
+        onChange: () => {
+          updateShopUI();
+          updateProfileUI();
+        },
+      });
+    }
+
     const btnWhatsNew = document.getElementById("btn-whats-new");
     const changelogModal = document.getElementById("changelog-modal");
     const btnChangelogClose = document.getElementById("btn-changelog-close");
@@ -6878,6 +6897,9 @@
         saveProfilePrefs();
         if (BF.Gacha && typeof BF.Gacha.reset === "function") {
           BF.Gacha.reset();
+        }
+        if (BF.Missions && typeof BF.Missions.reset === "function") {
+          BF.Missions.reset();
         }
         refreshSlotConfigs();
         setupUnifiedSelectors();

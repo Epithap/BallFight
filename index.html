@@ -38,6 +38,9 @@
           <div class="wallet-chip"><svg><use href="#i-coin"/></svg><span id="home-coins-display">0</span></div>
           <div class="wallet-chip"><svg><use href="#i-gem"/></svg><span id="home-gems-display">0</span></div>
         </div>
+        <button id="btn-daily-missions" class="news-btn mission-btn" type="button" aria-label="Daily Missions" title="Daily Missions">
+          <svg><use href="#i-medal"/></svg><span id="mission-dot" class="news-dot hidden"></span>
+        </button>
         <button id="btn-whats-new" class="news-btn" type="button" aria-label="What's new in v1.3">
           <svg><use href="#i-spark"/></svg><span class="news-dot"></span>
         </button>
@@ -564,6 +567,21 @@
     </div>
   </div>
 
+  <!-- ================= DAILY MISSIONS MODAL ================= -->
+  <div id="missions-modal" class="modal-backdrop hidden">
+    <div class="cartoon-card modal-detail-card missions-modal-card">
+      <button id="btn-missions-close" class="modal-close-btn" type="button" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+      <div class="missions-modal-header">
+        <span class="stamp stamp-gold">DAILY MISSIONS</span>
+        <span id="missions-date-label" class="missions-date-label">DAILY RESET</span>
+      </div>
+      <div id="missions-list" class="missions-list"></div>
+      <div class="missions-modal-footer">
+        <button id="btn-missions-claim-all" class="btn btn-green btn-block" type="button">CLAIM ALL REWARDS</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= v1.3 UPDATE NOTES MODAL ================= -->
   <div id="changelog-modal" class="modal-backdrop hidden">
     <div class="cartoon-card modal-detail-card changelog-modal-card">
@@ -638,6 +656,7 @@
   <script src="js/faces.js"></script>
   <script src="js/granny.js"></script>
   <script src="js/gacha.js"></script>
+  <script src="js/missions.js"></script>
   <script src="js/characters/goku.js"></script>
   <script src="js/characters/naruto.js"></script>
   <script src="js/characters/luffy.js"></script>
