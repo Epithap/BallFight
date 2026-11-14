@@ -1,14 +1,4 @@
-<p align="center">
-  <img src="assets/hero-banner.svg" alt="Ball Fight — Anime Ball Physics Battler" width="100%" />
-</p>
 
-<h1 align="center">⚡ BALL FIGHT — Anime Ball Physics Battler (v1.3.1)</h1>
-
-<p align="center">
-  <strong>15 Playable Anime Fighters • HSR-Style Dual Gacha • Daily Missions • Domain &amp; Stand Clashes • 60 FPS HTML5 Canvas</strong>
-</p>
-
----
 
 ## 📋 Changelog
 
