@@ -96,127 +96,211 @@
           c.stroke();
         }
         c.restore();
+
+        // Swirling black-crimson Nen aura ribbons around the Rock fist
+        drawBlackCrimsonRibbons(
+          c,
+          this.owner.x + Math.cos(ang) * (this.owner.radius + 6),
+          this.owner.y + Math.sin(ang) * (this.owner.radius + 6),
+          27,
+          performance.now() * 0.006,
+          3,
+          3.2
+        );
       },
     };
   }
 
-  // ---- Jajanken: Scissors (Golden Nen Blade Slash) ----
-  function spawnJajankenScissorsSlash(owner, angle) {
+  function drawBlackCrimsonRibbons(c, x, y, radius, time, count, lineW) {
+    c.save();
+    c.translate(x, y);
+    c.lineCap = "round";
+    for (let i = 0; i < count; i++) {
+      const baseAng = time * (i % 2 === 0 ? 1 : -1) + (i * Math.PI * 2) / count;
+      c.save();
+      c.rotate(baseAng);
+      c.strokeStyle = "#450a0a";
+      c.lineWidth = lineW + 2.2;
+      c.beginPath();
+      c.arc(0, 0, radius, -0.9, 1.35);
+      c.stroke();
+
+      c.strokeStyle = "#09090b";
+      c.lineWidth = lineW;
+      c.beginPath();
+      c.arc(0, 0, radius * 0.94, -0.75, 1.25);
+      c.stroke();
+      c.restore();
+    }
+    c.restore();
+  }
+
+  // ---- Jajanken: Scissors (Dash-Through Golden Nen Sword Slash) ----
+  function spawnJajankenScissorsDash(owner, target) {
+    const startAng = Math.atan2(target.y - owner.y, target.x - owner.x) || 0;
     return {
       owner,
-      x: owner.x,
-      y: owner.y,
-      angle,
-      life: 0.3,
-      maxLife: 0.3,
-      radius: 96,
+      target,
+      angle: startAng,
+      duration: 0.34,
+      elapsed: 0,
+      speed: 740,
       hitSet: new Set(),
+      slashBursts: [],
+      trail: [],
       dead: false,
       update(dt, g) {
-        this.life -= dt;
-        if (this.life <= 0) {
+        this.elapsed += dt;
+        if (!this.owner.alive) {
           this.dead = true;
           return;
         }
-        this.x = this.owner.x;
-        this.y = this.owner.y;
+
+        // Dash straight through along the locked sword angle
+        this.owner.vx = Math.cos(this.angle) * this.speed;
+        this.owner.vy = Math.sin(this.angle) * this.speed;
+        this.owner.x += this.owner.vx * dt;
+        this.owner.y += this.owner.vy * dt;
+
+        // Keep inside arena bounds
+        const pad = this.owner.radius + 4;
+        if (this.owner.x < pad) { this.owner.x = pad; this.angle = Math.PI - this.angle; }
+        if (this.owner.x > WORLD_SIZE - pad) { this.owner.x = WORLD_SIZE - pad; this.angle = Math.PI - this.angle; }
+        if (this.owner.y < pad) { this.owner.y = pad; this.angle = -this.angle; }
+        if (this.owner.y > WORLD_SIZE - pad) { this.owner.y = WORLD_SIZE - pad; this.angle = -this.angle; }
+
+        this.trail.push({ x: this.owner.x, y: this.owner.y, ang: this.angle, life: 0.22 });
+        for (let i = this.trail.length - 1; i >= 0; i--) {
+          this.trail[i].life -= dt;
+          if (this.trail[i].life <= 0) this.trail.splice(i, 1);
+        }
+
+        for (let i = this.slashBursts.length - 1; i >= 0; i--) {
+          this.slashBursts[i].life -= dt;
+          if (this.slashBursts[i].life <= 0) this.slashBursts.splice(i, 1);
+        }
+
+        // Slice any enemy intersected along the dash path without stopping
         for (const enemy of g.balls) {
           if (enemy === this.owner || !enemy.alive || this.hitSet.has(enemy)) continue;
-          const dx = enemy.x - this.x;
-          const dy = enemy.y - this.y;
-          const dist = Math.hypot(dx, dy);
-          if (dist <= this.radius + enemy.radius) {
-            let diff = Math.atan2(dy, dx) - this.angle;
-            while (diff > Math.PI) diff -= Math.PI * 2;
-            while (diff < -Math.PI) diff += Math.PI * 2;
-            if (Math.abs(diff) <= 1.25) {
-              this.hitSet.add(enemy);
-              const dealt = g.applyDamage(enemy, 9);
-              enemy.flashTimer = 0.14;
-              enemy.squash = 0.84;
-              g.addEffect(enemy, "slow", 0.6, { factor: 0.78 });
-              g.chargeUlt(this.owner);
-              g.entities.push(rt.spawnShockRing(enemy.x, enemy.y, "#facc15", 82, 0.24));
-              g.spawnSparks(enemy.x, enemy.y, "#fde047", "#ffffff");
-              g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 14, dealt, "#facc15", true, "JAJANKEN: SCISSORS!");
-              if (g.sound && g.sound.playBallHit) g.sound.playBallHit();
-            }
+          const tipX = this.owner.x + Math.cos(this.angle) * (this.owner.radius + 32);
+          const tipY = this.owner.y + Math.sin(this.angle) * (this.owner.radius + 32);
+          const distBody = Math.hypot(enemy.x - this.owner.x, enemy.y - this.owner.y);
+          const distTip = Math.hypot(enemy.x - tipX, enemy.y - tipY);
+          if (distBody <= this.owner.radius + enemy.radius + 20 || distTip <= enemy.radius + 26) {
+            this.hitSet.add(enemy);
+            const dealt = g.applyDamage(enemy, 9);
+            enemy.flashTimer = 0.16;
+            enemy.squash = 0.78;
+            g.addEffect(enemy, "slow", 0.6, { factor: 0.78 });
+            g.chargeUlt(this.owner);
+            this.slashBursts.push({ x: enemy.x, y: enemy.y, ang: this.angle, life: 0.28, maxLife: 0.28 });
+            g.entities.push(rt.spawnShockRing(enemy.x, enemy.y, "#facc15", 98, 0.26));
+            g.spawnSparks(enemy.x, enemy.y, "#fde047", "#ffffff");
+            g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 16, dealt, "#facc15", true, "JAJANKEN: SCISSORS!");
+            g.shake = Math.max(g.shake || 0, 8);
+            if (g.sound && g.sound.playBallHit) g.sound.playBallHit();
           }
+        }
+
+        if (this.elapsed >= this.duration && this.slashBursts.length === 0) {
+          const spd = this.owner.baseSpeed || 356;
+          this.owner.vx = Math.cos(this.angle) * spd;
+          this.owner.vy = Math.sin(this.angle) * spd;
+          this.dead = true;
         }
       },
       render(c) {
-        const p = 1 - Math.max(0, this.life / this.maxLife);
-        const alpha = Math.max(0, Math.min(1, (this.life / this.maxLife) * 1.4));
-        // Scissor blades start open at ±0.58 rad and snap shut to ±0.03 rad around p = 0.55
-        const snapP = Math.min(1, p / 0.55);
-        const bladeSpread = 0.58 * (1 - snapP) + 0.03;
-        const bladeLen = this.radius + 14;
-
         c.save();
-        c.translate(this.x, this.y);
-        c.rotate(this.angle);
-        c.globalAlpha = alpha;
+        for (const pt of this.trail) {
+          const a = Math.max(0, pt.life / 0.22);
+          c.fillStyle = `rgba(250, 204, 21, ${0.38 * a})`;
+          c.beginPath();
+          c.arc(pt.x, pt.y, this.owner.radius * 0.9, 0, Math.PI * 2);
+          c.fill();
+        }
+        c.restore();
+      },
+      renderOverlay(c) {
+        if (!this.owner.alive) return;
+        const p = Math.min(1, this.elapsed / this.duration);
 
-        // Draw two long glowing golden Nen scissor blades snapping shut
-        for (const side of [-1, 1]) {
+        // Draw Gon's thick, blazing golden Nen energy sword while dashing
+        if (this.elapsed < this.duration) {
           c.save();
-          c.rotate(side * bladeSpread);
+          c.translate(this.owner.x, this.owner.y);
+          c.rotate(this.angle);
 
-          // Outer orange-gold Nen glow
+          // Thick wide sword aura sweep
+          const bladeLen = this.owner.radius + 76;
           c.shadowColor = "#facc15";
-          c.shadowBlur = 18;
-          c.fillStyle = "rgba(249, 115, 22, 0.48)";
+          c.shadowBlur = 20;
+
+          c.fillStyle = "rgba(249, 115, 22, 0.55)";
           c.beginPath();
-          c.moveTo(this.owner.radius * 0.5, -side * 4);
-          c.lineTo(bladeLen * 0.72, side * 14);
+          c.moveTo(this.owner.radius * 0.4, -13);
+          c.lineTo(bladeLen * 0.72, -11);
+          c.lineTo(bladeLen + 14, 0);
+          c.lineTo(bladeLen * 0.72, 11);
+          c.lineTo(this.owner.radius * 0.4, 13);
+          c.closePath();
+          c.fill();
+
+          const sGrad = c.createLinearGradient(this.owner.radius * 0.4, 0, bladeLen + 10, 0);
+          sGrad.addColorStop(0, "#fbbf24");
+          sGrad.addColorStop(0.55, "#fde047");
+          sGrad.addColorStop(1, "#ffffff");
+          c.fillStyle = sGrad;
+          c.beginPath();
+          c.moveTo(this.owner.radius * 0.45, -8);
+          c.lineTo(bladeLen * 0.75, -7);
           c.lineTo(bladeLen + 8, 0);
-          c.lineTo(bladeLen * 0.45, -side * 5);
+          c.lineTo(bladeLen * 0.75, 7);
+          c.lineTo(this.owner.radius * 0.45, 8);
           c.closePath();
           c.fill();
 
-          // Sharp golden Nen blade body
-          const bGrad = c.createLinearGradient(this.owner.radius * 0.5, 0, bladeLen, 0);
-          bGrad.addColorStop(0, "#fbbf24");
-          bGrad.addColorStop(0.55, "#fde047");
-          bGrad.addColorStop(1, "#ffffff");
-          c.fillStyle = bGrad;
-          c.beginPath();
-          c.moveTo(this.owner.radius * 0.55, 0);
-          c.lineTo(bladeLen * 0.7, side * 9);
-          c.lineTo(bladeLen, 0);
-          c.lineTo(bladeLen * 0.5, -side * 2.5);
-          c.closePath();
-          c.fill();
-
-          // Razor-white cutting edge highlight
+          // White-hot sword core + hilt flash
           c.strokeStyle = "#ffffff";
-          c.lineWidth = 2.2;
+          c.lineWidth = 3.6;
           c.beginPath();
-          c.moveTo(this.owner.radius * 0.6, 0);
-          c.lineTo(bladeLen, 0);
+          c.moveTo(this.owner.radius * 0.5, 0);
+          c.lineTo(bladeLen + 4, 0);
+          c.stroke();
+
+          // Thick crescent slash wake around Gon
+          c.strokeStyle = `rgba(254, 240, 138, ${0.85 * (1 - p * 0.4)})`;
+          c.lineWidth = 7;
+          c.beginPath();
+          c.arc(6, 0, this.owner.radius + 28, -0.95, 0.95);
           c.stroke();
           c.restore();
         }
 
-        // Shear flash & cross-cut sparks right when the scissor blades snap shut
-        if (p >= 0.45) {
-          const flashA = Math.max(0, 1 - (p - 0.45) / 0.55);
+        // Thick X-cross sword slash burst on enemies sliced through
+        for (const b of this.slashBursts) {
+          const k = Math.max(0, b.life / b.maxLife);
           c.save();
-          c.globalAlpha = flashA;
-          c.strokeStyle = "#ffffff";
-          c.shadowColor = "#fde047";
-          c.shadowBlur = 16;
-          c.lineWidth = 3.5;
-          for (const ang of [-0.45, 0.45]) {
+          c.translate(b.x, b.y);
+          c.rotate(b.ang);
+          c.globalAlpha = Math.min(1, k * 1.4);
+          c.shadowColor = "#facc15";
+          c.shadowBlur = 18;
+          for (const slAng of [-0.55, 0.55]) {
+            c.save();
+            c.rotate(slAng);
+            c.fillStyle = "#f97316";
             c.beginPath();
-            c.moveTo(this.owner.radius * 0.8, 0);
-            c.lineTo(bladeLen * 1.08, Math.sin(ang) * 34);
-            c.stroke();
+            c.ellipse(0, 0, 56 * (1.2 - k * 0.2), 7 * k, 0, 0, Math.PI * 2);
+            c.fill();
+            c.fillStyle = "#ffffff";
+            c.beginPath();
+            c.ellipse(0, 0, 48 * (1.2 - k * 0.2), 3.4 * k, 0, 0, Math.PI * 2);
+            c.fill();
+            c.restore();
           }
           c.restore();
         }
-
-        c.restore();
       },
     };
   }
@@ -387,7 +471,11 @@
             g.addEffect(this.target, "stun", 0.72);
             g.spawnSparks(this.grabX, this.grabY, "#ffffff", "#09090b");
             g.spawnDamageText(this.grabX, this.grabY - 36, 0, "#ffffff", true, "GOTCHA!");
-          } else if (this.phaseElapsed >= 1.25) {
+          } else if (this.phaseElapsed >= 2.2) {
+            const spd = this.owner.baseSpeed || 356;
+            const ang = Math.atan2(dy, dx) || 0;
+            this.owner.vx = Math.cos(ang) * spd;
+            this.owner.vy = Math.sin(ang) * spd;
             this.dead = true;
           }
         } else if (this.phase === "lift") {
@@ -444,7 +532,12 @@
             this.target.vy = 0;
             this.rockAng = Math.atan2(this.target.y - this.owner.y, this.target.x - this.owner.x) || 0;
 
-            const dealt = g.applyDamage(this.target, 12);
+            // Keep enemy at >= 1 HP during slam so Adult Rock finisher ALWAYS triggers
+            const shield = this.target.getEffect && this.target.getEffect("shield");
+            const red = shield ? (shield.data?.reduction ?? 0.35) : 0;
+            const rawSlam = Math.max(1, Math.round(12 * (1 - red)));
+            const dealt = this.target.hp > 1 ? Math.min(rawSlam, this.target.hp - 1) : 0;
+            if (dealt > 0) this.target.hp -= dealt;
             this.target.flashTimer = 0.2;
             this.target.squash = 0.65;
             g.addEffect(this.target, "stun", 1.2);
@@ -536,66 +629,72 @@
             c.stroke();
           }
         }
-
+        c.restore();
+      },
+      renderOverlay(c) {
+        c.save();
         if (this.phase === "rock_charge") {
           const p = Math.min(1, this.phaseElapsed / 0.72);
           const fx = this.owner.x - Math.cos(this.rockAng) * 16;
           const fy = this.owner.y - Math.sin(this.rockAng) * 16;
 
-          // Dark dramatic anime backdrop + converging manga speedlines
-          c.fillStyle = `rgba(3, 3, 8, ${0.68 * Math.min(1, p * 2)})`;
+          // Dark dramatic anime backdrop + thick converging manga speedlines
+          c.fillStyle = `rgba(3, 3, 8, ${0.72 * Math.min(1, p * 2)})`;
           c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
-          c.strokeStyle = `rgba(255, 255, 255, ${0.22 + p * 0.35})`;
-          c.lineWidth = 2;
-          for (let i = 0; i < 16; i++) {
-            const a = (i * Math.PI) / 8 + this.phaseElapsed * 1.4;
+          c.strokeStyle = `rgba(255, 255, 255, ${0.28 + p * 0.42})`;
+          c.lineWidth = 3.2;
+          for (let i = 0; i < 20; i++) {
+            const a = (i * Math.PI) / 10 + this.phaseElapsed * 1.6;
             c.beginPath();
-            c.moveTo(fx + Math.cos(a) * (95 - p * 45), fy + Math.sin(a) * (95 - p * 45));
-            c.lineTo(fx + Math.cos(a) * 320, fy + Math.sin(a) * 320);
+            c.moveTo(fx + Math.cos(a) * (105 - p * 52), fy + Math.sin(a) * (105 - p * 52));
+            c.lineTo(fx + Math.cos(a) * 360, fy + Math.sin(a) * 360);
             c.stroke();
           }
 
           // Colossal blazing Nen sun on Adult Gon's pulled-back fist
-          const coreR = 26 + p * 46;
-          const fistGrad = c.createRadialGradient(fx, fy, 4, fx, fy, coreR);
+          const coreR = 32 + p * 56;
+          const fistGrad = c.createRadialGradient(fx, fy, 5, fx, fy, coreR);
           fistGrad.addColorStop(0, "#ffffff");
           fistGrad.addColorStop(0.32, "#fde047");
-          fistGrad.addColorStop(0.65, "rgba(249, 115, 22, 0.92)");
-          fistGrad.addColorStop(0.88, "rgba(220, 38, 38, 0.65)");
+          fistGrad.addColorStop(0.65, "rgba(249, 115, 22, 0.96)");
+          fistGrad.addColorStop(0.88, "rgba(220, 38, 38, 0.75)");
           fistGrad.addColorStop(1, "rgba(9, 9, 11, 0)");
           c.fillStyle = fistGrad;
           c.beginPath();
           c.arc(fx, fy, coreR, 0, Math.PI * 2);
           c.fill();
 
-          // Dark-red lightning & white-ink shock rings
+          // Thick swirling black-crimson Nen ribbons around the Adult Rock fist
+          drawBlackCrimsonRibbons(c, fx, fy, coreR * 0.78, this.phaseElapsed * 7, 4, 4.5);
+
+          // White-ink shock arc
           c.strokeStyle = "#ffffff";
-          c.lineWidth = 2.6;
+          c.lineWidth = 3.2;
           c.beginPath();
           c.arc(fx, fy, coreR * 0.65, this.phaseElapsed * 12, this.phaseElapsed * 12 + Math.PI * 1.3);
           c.stroke();
 
           // Anime battle cry callout banner
-          const jx = (Math.random() - 0.5) * 4 * p;
-          const jy = (Math.random() - 0.5) * 4 * p;
-          c.font = "900 22px Impact, system-ui, sans-serif";
+          const jx = (Math.random() - 0.5) * 5 * p;
+          const jy = (Math.random() - 0.5) * 5 * p;
+          c.font = "900 26px Impact, system-ui, sans-serif";
           c.textAlign = "center";
           c.strokeStyle = "#09090b";
-          c.lineWidth = 5;
+          c.lineWidth = 6;
           const txt = p < 0.55 ? "FIRST COMES ROCK..." : "JAJANKEN...";
-          c.strokeText(txt, WORLD_SIZE * 0.5 + jx, 76 + jy);
+          c.strokeText(txt, WORLD_SIZE * 0.5 + jx, 78 + jy);
           c.fillStyle = p < 0.55 ? "#fde047" : "#ffffff";
-          c.fillText(txt, WORLD_SIZE * 0.5 + jx, 76 + jy);
+          c.fillText(txt, WORLD_SIZE * 0.5 + jx, 78 + jy);
         }
 
         if (this.phase === "rock_impact") {
           const p = Math.min(1, this.phaseElapsed / 0.38);
           const a = Math.max(0, 1 - p);
 
-          // Inverted black-and-white manga impact flash in the first 0.08s
+          // Inverted black-and-white manga impact flash in the first 0.09s
           if (this.phaseElapsed < 0.09) {
-            c.fillStyle = "rgba(255, 255, 255, 0.82)";
+            c.fillStyle = "rgba(255, 255, 255, 0.85)";
             c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
           }
 
@@ -604,30 +703,30 @@
           c.translate(this.owner.x, this.owner.y);
           c.rotate(this.rockAng);
           c.globalAlpha = a;
-          const coneGrad = c.createLinearGradient(0, 0, 340, 0);
+          const coneGrad = c.createLinearGradient(0, 0, 380, 0);
           coneGrad.addColorStop(0, "#ffffff");
-          coneGrad.addColorStop(0.35, "rgba(253, 224, 71, 0.9)");
-          coneGrad.addColorStop(0.75, "rgba(249, 115, 22, 0.6)");
+          coneGrad.addColorStop(0.32, "rgba(253, 224, 71, 0.95)");
+          coneGrad.addColorStop(0.72, "rgba(249, 115, 22, 0.7)");
           coneGrad.addColorStop(1, "rgba(220, 38, 38, 0)");
           c.fillStyle = coneGrad;
           c.beginPath();
-          c.moveTo(0, -18);
-          c.lineTo(340, -95);
-          c.lineTo(340, 95);
-          c.lineTo(0, 18);
+          c.moveTo(0, -24);
+          c.lineTo(380, -115);
+          c.lineTo(380, 115);
+          c.lineTo(0, 24);
           c.closePath();
           c.fill();
           c.restore();
 
           c.save();
           c.globalAlpha = a;
-          c.font = "900 32px Impact, system-ui, sans-serif";
+          c.font = "900 36px Impact, system-ui, sans-serif";
           c.textAlign = "center";
           c.strokeStyle = "#09090b";
-          c.lineWidth = 6;
-          c.strokeText("R O C K ! !", WORLD_SIZE * 0.5, 82);
+          c.lineWidth = 7;
+          c.strokeText("R O C K ! !", WORLD_SIZE * 0.5, 84);
           c.fillStyle = "#f97316";
-          c.fillText("R O C K ! !", WORLD_SIZE * 0.5, 82);
+          c.fillText("R O C K ! !", WORLD_SIZE * 0.5, 84);
           c.restore();
         }
         c.restore();
@@ -713,7 +812,7 @@
           if (activeForm === "rock") {
             gg.entities.push(spawnJajankenRockDash(b, t));
           } else if (activeForm === "scissors") {
-            gg.entities.push(spawnJajankenScissorsSlash(b, aim));
+            gg.entities.push(spawnJajankenScissorsDash(b, t));
           } else {
             const m = rt.castMuzzle(b, aim, 14);
             gg.entities.push(spawnJajankenPaperOrb(b, m.x, m.y, aim));

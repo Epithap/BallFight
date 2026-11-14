@@ -4727,6 +4727,12 @@
       if (ball.alive) drawCast(ball, ctx);
     }
 
+    for (const ent of entities) {
+      if (!ent.dead && typeof ent.renderOverlay === "function") {
+        ent.renderOverlay(ctx);
+      }
+    }
+
     // Damage numbers
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
