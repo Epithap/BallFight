@@ -966,8 +966,10 @@
 
   BF.drawClashCutin = function (c, leftBall, rightBall, leftCol, rightCol, progress, label) {
     if (!leftBall || !rightBall) return;
-    const p = clamp(progress || 0, 0, 1);
-    const enter = p < 0.14 ? easeOutCubic(p / 0.14) : p > 0.88 ? clamp((1 - p) / 0.12, 0, 1) : 1;
+    const cl = (v, a, b) => Math.max(a, Math.min(b, v));
+    const easeOut = (t) => 1 - Math.pow(1 - cl(t, 0, 1), 3);
+    const p = cl(progress || 0, 0, 1);
+    const enter = p < 0.14 ? easeOut(p / 0.14) : p > 0.88 ? cl((1 - p) / 0.12, 0, 1) : 1;
     if (enter <= 0.02) return;
 
     const slideOffset = (1 - enter) * 260;
@@ -978,7 +980,7 @@
 
     const drawSide = (ball, isLeft, col, yTop) => {
       c.save();
-      c.globalAlpha = clamp(enter * 1.15, 0, 1);
+      c.globalAlpha = cl(enter * 1.15, 0, 1);
       const x0 = isLeft ? -8 - slideOffset : WORLD_SIZE + 8 + slideOffset;
       const xInnerTop = isLeft ? x0 + panelW : x0 - panelW;
       const xInnerBot = isLeft ? x0 + panelW - slant : x0 - panelW + slant;
@@ -1009,7 +1011,7 @@
       c.fillRect(0, yTop - 4, WORLD_SIZE, panelH + 8);
 
       c.fillStyle = col || "#38bdf8";
-      c.globalAlpha = 0.85 * clamp(enter * 1.15, 0, 1);
+      c.globalAlpha = 0.85 * cl(enter * 1.15, 0, 1);
       c.beginPath();
       if (isLeft) {
         c.moveTo(x0, yTop);
@@ -1024,7 +1026,7 @@
       }
       c.closePath();
       c.fill();
-      c.globalAlpha = clamp(enter * 1.15, 0, 1);
+      c.globalAlpha = cl(enter * 1.15, 0, 1);
 
       // Diagonal Persona/anime speedlines inside cut-in
       c.strokeStyle = "rgba(255, 255, 255, 0.28)";
@@ -1103,7 +1105,7 @@
 
     if (label && enter > 0.4) {
       c.save();
-      c.globalAlpha = clamp((enter - 0.4) / 0.6, 0, 1);
+      c.globalAlpha = cl((enter - 0.4) / 0.6, 0, 1);
       c.font = `bold 11px ${FONT}`;
       c.textAlign = "center";
       c.textBaseline = "middle";
