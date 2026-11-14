@@ -162,7 +162,6 @@
           const dealt = g.applyDamage(this.target, damage);
           this.target.flashTimer = 0.08;
           this.target.squash = 0.45;
-          g.chargeUlt(this.owner);
           g.spawnSparks(this.x, this.y, COLORS.silver, COLORS.red);
           g.spawnDamageText(
             this.target.x + (g.rng() - 0.5) * 18,
@@ -256,9 +255,8 @@
               g.addEffect(t, "slow", 0.45, { factor: 0.45 });
               // Combo setup: Hand Cannon recoil shaves cooldown off Dragonslayer Cleave
               if (owner.skills[0] && owner.skills[0]._cd > 0.25) {
-                owner.skills[0]._cd = Math.max(0.2, owner.skills[0]._cd - 0.5);
+                owner.skills[0]._cd = Math.max(0.2, owner.skills[0]._cd - 0.35);
               }
-              g.chargeUlt(owner);
               g.spawnSparks(t.x, t.y, "#f97316", COLORS.red);
               g.spawnDamageText(t.x, t.y - t.radius - 16, dealt, "#f97316", true, "HAND CANNON!!");
               g.sound.playCritHit();
@@ -305,7 +303,7 @@
 
   const SKILL_DRAGONSLAYER_CLEAVE = {
     name: "Dragonslayer Cleave",
-    cooldown: 2.3,
+    cooldown: 2.8,
     onTick(ball, g) {
       const target = g.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
@@ -328,14 +326,14 @@
           b.vy = Math.sin(ang) * spd * (berserk ? 1.3 : 1.24);
 
           if (berserk) {
-            if (b.skills[0]) b.skills[0]._cd = 1.45;
+            if (b.skills[0]) b.skills[0]._cd = 1.95;
             gg.entities.push(spawnGreatswordSwing({
               owner: b,
               angle: ang,
               arcSpan: Math.PI * 2,
               reach: 152,
               duration: 0.2,
-              damage: Math.round(14 + gg.rng() * 4),
+              damage: Math.round(10 + gg.rng() * 3),
               knockback: 260,
               berserk: true,
               direction: 1,
@@ -352,7 +350,7 @@
                   arcSpan: Math.PI * 2,
                   reach: 158,
                   duration: 0.22,
-                  damage: Math.round(16 + gg.rng() * 4),
+                  damage: Math.round(11 + gg.rng() * 3),
                   knockback: 460,
                   berserk: true,
                   direction: -1,
@@ -367,7 +365,7 @@
               arcSpan: Math.PI * 1.0,
               reach: 134,
               duration: 0.24,
-              damage: Math.round(16 + gg.rng() * 4),
+              damage: Math.round(11 + gg.rng() * 3),
               knockback: 350,
               berserk: false,
             }));
@@ -389,7 +387,7 @@
 
   const SKILL_PROSTHETIC_ARSENAL = {
     name: "Prosthetic Arm: Cannon & Repeater",
-    cooldown: 4.0,
+    cooldown: 4.8,
     onTick(ball, g) {
       if (ball.swingState) return false;
       const target = g.balls.find((b) => b !== ball && b.alive);
@@ -483,7 +481,7 @@
         t._gutsBleedTick = (t._gutsBleedTick || 0.6) - dt;
         if (t._gutsBleedTick <= 0) {
           t._gutsBleedTick = 0.6;
-          const bleedDmg = g.applyDamage(t, 2);
+          const bleedDmg = g.applyDamage(t, 1);
           g.spawnSparks(t.x, t.y, COLORS.red, "#1c1d24");
           g.spawnDamageText(t.x + (g.rng() - 0.5) * 16, t.y - t.radius - 8, bleedDmg, COLORS.red, false, "BLEED");
         }
@@ -534,7 +532,7 @@
     color: "#1c1d24",
     radius: 29,
     speed: 355,
-    maxHp: 620,
+    maxHp: 580,
     damage: [0, 0],
     mass: 1.15,
     costume: "guts",
@@ -551,10 +549,10 @@
     label: "🔥 BERSERKER",
     speedMult: 1.32,
     radiusMult: 1.0,
-    powerText: "30-38 x2",
+    powerText: "21-27",
     ultSkillName: "SAVAGE RAMPAGE x2",
-    ultSkillCd: "CD: 1.45S",
-    ultSkillDesc: "Speed +32% & 22% Armor! Leaps into 2x consecutive 360° Dragonslayer swings (14-18 + 16-20 DMG) with Bleed & Prosthetic Cannon combos.",
+    ultSkillCd: "CD: 1.95S",
+    ultSkillDesc: "Speed +32% & 22% Armor! Leaps into 2x consecutive 360° Dragonslayer swings (10-13 + 11-14 DMG) with Bleed & Prosthetic Cannon combos.",
   };
 
   BF.WEAPON_DRAWERS.dragonslayer = (ball, c) => {
