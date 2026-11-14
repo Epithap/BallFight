@@ -123,25 +123,25 @@
           const winner = narutoWins ? this.naruto : this.sasuke;
           const loser = narutoWins ? this.sasuke : this.naruto;
 
-          const dmgLoser = g.applyDamage(loser, 10);
-          const dmgWinner = g.applyDamage(winner, 5);
-          loser.flashTimer = 0.22;
-          winner.flashTimer = 0.16;
+          const dmgLoser = g.applyDamage(loser, 14);
+          loser.flashTimer = 0.28;
+          winner.flashTimer = 0.14;
+          if (g.chargeUlt) g.chargeUlt(winner);
 
-          const pushAng = Math.atan2(sasuke.y - naruto.y, sasuke.x - naruto.x) || 0;
-          this.naruto.vx = -Math.cos(pushAng) * 720;
-          this.naruto.vy = -Math.sin(pushAng) * 720;
-          this.sasuke.vx = Math.cos(pushAng) * 720;
-          this.sasuke.vy = Math.sin(pushAng) * 720;
-          g.addEffect(loser, "stun", 0.45);
+          const pushAng = Math.atan2(loser.y - winner.y, loser.x - winner.x) || 0;
+          loser.vx = Math.cos(pushAng) * 920;
+          loser.vy = Math.sin(pushAng) * 920;
+          winner.vx = -Math.cos(pushAng) * 220;
+          winner.vy = -Math.sin(pushAng) * 220;
+          g.addEffect(loser, "stun", 0.7);
 
-          g.entities.push(rt.spawnShockRing(midX, midY, "#09090b", 190, 0.42));
-          g.entities.push(rt.spawnShockRing(midX, midY, "#ffffff", 150, 0.34));
-          g.entities.push(rt.spawnShockRing(midX, midY, "#38bdf8", 115, 0.28));
+          g.entities.push(rt.spawnShockRing(midX, midY, "#09090b", 220, 0.48));
+          g.entities.push(rt.spawnShockRing(midX, midY, "#ffffff", 170, 0.38));
+          g.entities.push(rt.spawnShockRing(midX, midY, "#38bdf8", 130, 0.3));
           g.spawnSparks(midX, midY, "#ffffff", "#38bdf8");
-          g.spawnDamageText(loser.x, loser.y - loser.radius - 18, dmgLoser, "#38bdf8", true, "CLASH BLAST!");
-          g.spawnDamageText(winner.x, winner.y - winner.radius - 14, dmgWinner, "#f8fafc", false);
-          g.shake = Math.max(g.shake || 0, 18);
+          g.spawnDamageText(loser.x, loser.y - loser.radius - 18, dmgLoser, "#38bdf8", true, "CLASH LOST!");
+          g.spawnDamageText(winner.x, winner.y - winner.radius - 20, "+1 ULT!", "#fde047", true);
+          g.shake = Math.max(g.shake || 0, 20);
           if (g.sound && g.sound.playBallHit) g.sound.playBallHit();
           this.dead = true;
         }
@@ -156,8 +156,37 @@
 
         c.save();
         // Dramatic dark Final Valley backdrop
-        c.fillStyle = `rgba(4, 6, 18, ${0.42 + p * 0.2})`;
+        c.fillStyle = `rgba(4, 6, 18, ${0.44 + p * 0.22})`;
         c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+        // Swirling blue Rasengan wind rings on Naruto's side
+        c.save();
+        c.translate(this.naruto.x, this.naruto.y);
+        for (let r = 0; r < 3; r++) {
+          const rad = this.naruto.radius + 10 + r * 9 + Math.sin(t * 2 + r) * 3;
+          c.strokeStyle = r === 0 ? "#ffffff" : "#0ea5e9";
+          c.lineWidth = 3 - r * 0.6;
+          c.beginPath();
+          c.arc(0, 0, rad, t * 0.9 + r * 2.1, t * 0.9 + r * 2.1 + Math.PI * 1.35);
+          c.stroke();
+        }
+        c.restore();
+
+        // Jagged Chidori lightning arcs on Sasuke's side
+        c.save();
+        c.strokeStyle = "#a5f3fc";
+        c.lineWidth = 2.4;
+        for (let i = 0; i < 6; i++) {
+          const ang = (i * Math.PI) / 3 + t * 0.55;
+          const sr = this.sasuke.radius + 6;
+          const er = this.sasuke.radius + 24 + (i % 2) * 10;
+          c.beginPath();
+          c.moveTo(this.sasuke.x + Math.cos(ang) * sr, this.sasuke.y + Math.sin(ang) * sr);
+          c.lineTo(this.sasuke.x + Math.cos(ang + 0.2) * ((sr + er) * 0.5), this.sasuke.y + Math.sin(ang + 0.2) * ((sr + er) * 0.5));
+          c.lineTo(this.sasuke.x + Math.cos(ang - 0.12) * er, this.sasuke.y + Math.sin(ang - 0.12) * er);
+          c.stroke();
+        }
+        c.restore();
 
         // Contrasting black & white energy sphere at the clash point
         const orbR = 26 + p * 34 + Math.sin(t * 2.5) * 4;
@@ -194,15 +223,86 @@
           c.stroke();
         }
 
-        // Clash Banner
-        c.font = "900 22px Impact, system-ui, sans-serif";
+        // Tug-of-war Clash Meter Bar (Top-Center)
+        const narutoIsLeft = this.naruto.x <= this.sasuke.x;
+        const leftB = narutoIsLeft ? this.naruto : this.sasuke;
+        const rightB = narutoIsLeft ? this.sasuke : this.naruto;
+        const leftCol = narutoIsLeft ? "#0ea5e9" : "#8b5cf6";
+        const rightCol = narutoIsLeft ? "#8b5cf6" : "#0ea5e9";
+        const leftRatio = narutoIsLeft ? this.meter : 1 - this.meter;
+        const p1Pct = Math.round(leftRatio * 100);
+        const p2Pct = 100 - p1Pct;
+
+        const barW = 320;
+        const barH = 24;
+        const barX = (WORLD_SIZE - barW) * 0.5;
+        const barY = 72;
+        const splitX = barX + barW * leftRatio;
+
+        c.font = `bold 15px ${FONT}`;
         c.textAlign = "center";
-        c.strokeStyle = "#09090b";
+        c.textBaseline = "middle";
+        c.strokeStyle = COLORS.ink;
         c.lineWidth = 5;
-        c.strokeText("RASENGAN  VS  CHIDORI !!", WORLD_SIZE * 0.5, 62);
+        c.strokeText("RASENGAN  VS  CHIDORI !!", WORLD_SIZE * 0.5, barY - 16);
         c.fillStyle = "#38bdf8";
-        c.fillText("RASENGAN  VS  CHIDORI !!", WORLD_SIZE * 0.5, 62);
+        c.fillText("RASENGAN  VS  CHIDORI !!", WORLD_SIZE * 0.5, barY - 16);
+
+        c.fillStyle = COLORS.ink;
+        c.beginPath();
+        c.roundRect(barX, barY + 4, barW, barH, 9);
+        c.fill();
+
+        c.save();
+        c.beginPath();
+        c.roundRect(barX, barY, barW, barH, 9);
+        c.clip();
+        c.fillStyle = leftCol;
+        c.fillRect(barX, barY, barW * leftRatio, barH);
+        c.fillStyle = rightCol;
+        c.fillRect(splitX, barY, barW * (1 - leftRatio), barH);
+        c.fillStyle = "rgba(255, 255, 255, 0.24)";
+        c.fillRect(barX, barY, barW, barH * 0.42);
         c.restore();
+
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 3.5;
+        c.beginPath();
+        c.roundRect(barX, barY, barW, barH, 9);
+        c.stroke();
+
+        // Glowing clash divider needle
+        c.fillStyle = COLORS.white;
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 2.5;
+        c.beginPath();
+        c.roundRect(splitX - 4, barY - 5, 8, barH + 10, 3);
+        c.fill();
+        c.stroke();
+
+        c.font = `bold 12px ${FONT}`;
+        c.lineWidth = 3.5;
+        c.strokeStyle = COLORS.ink;
+        const lName = (leftB.shortName || leftB.costume || "P1").toUpperCase();
+        const rName = (rightB.shortName || rightB.costume || "P2").toUpperCase();
+
+        c.textAlign = "left";
+        const lTxt = `${lName} ${p1Pct}%`;
+        c.strokeText(lTxt, barX + 10, barY + barH * 0.5);
+        c.fillStyle = p1Pct >= p2Pct ? COLORS.gold : COLORS.white;
+        c.fillText(lTxt, barX + 10, barY + barH * 0.5);
+
+        c.textAlign = "right";
+        const rTxt = `${p2Pct}% ${rName}`;
+        c.strokeText(rTxt, barX + barW - 10, barY + barH * 0.5);
+        c.fillStyle = p2Pct > p1Pct ? COLORS.gold : COLORS.white;
+        c.fillText(rTxt, barX + barW - 10, barY + barH * 0.5);
+
+        c.restore();
+
+        if (BF.drawClashCutin) {
+          BF.drawClashCutin(c, leftB, rightB, leftCol, rightCol, p, "FINAL VALLEY CLASH!");
+        }
       },
     };
   }
@@ -364,7 +464,7 @@
               if (enemy === this.owner || !enemy.alive) continue;
               const d = Math.hypot(enemy.x - this.hitX, enemy.y - this.hitY);
               if (d <= 155 + enemy.radius) {
-                const dealt = gg.applyDamage(enemy, 26);
+                const dealt = gg.applyDamage(enemy, 38);
                 enemy.flashTimer = 0.28;
                 enemy.squash = 0.58;
                 gg.addEffect(enemy, "stun", 0.65);
@@ -701,9 +801,10 @@
     label: "⚡ MANGEKYOU SHARINGAN • KIRIN",
     speedMult: 1.18,
     radiusMult: 1.0,
-    powerText: "26 KIRIN + CHIDORI CLASH",
+    powerText: "38 KIRIN + CHIDORI CLASH",
     hpNote: "KIRIN SUMMONS STORM ON ULT",
     ultSkillName: "KIRIN THUNDER DRAGON",
     ultSkillCd: "CD: 3.0S / 4.4S",
   };
 })();
+

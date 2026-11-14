@@ -964,6 +964,158 @@
     timeStopOwner = null;
   }
 
+  BF.drawClashCutin = function (c, leftBall, rightBall, leftCol, rightCol, progress, label) {
+    if (!leftBall || !rightBall) return;
+    const p = clamp(progress || 0, 0, 1);
+    const enter = p < 0.14 ? easeOutCubic(p / 0.14) : p > 0.88 ? clamp((1 - p) / 0.12, 0, 1) : 1;
+    if (enter <= 0.02) return;
+
+    const slideOffset = (1 - enter) * 260;
+    const jitter = Math.sin(p * 65) * 1.6;
+    const panelW = 218;
+    const panelH = 66;
+    const slant = 28;
+
+    const drawSide = (ball, isLeft, col, yTop) => {
+      c.save();
+      c.globalAlpha = clamp(enter * 1.15, 0, 1);
+      const x0 = isLeft ? -8 - slideOffset : WORLD_SIZE + 8 + slideOffset;
+      const xInnerTop = isLeft ? x0 + panelW : x0 - panelW;
+      const xInnerBot = isLeft ? x0 + panelW - slant : x0 - panelW + slant;
+      const yBot = yTop + panelH;
+
+      // Hard Persona-style black drop shadow
+      c.fillStyle = COLORS.ink;
+      c.beginPath();
+      c.moveTo(x0, yTop + 6);
+      c.lineTo(xInnerTop + (isLeft ? 6 : -6), yTop + 6);
+      c.lineTo(xInnerBot + (isLeft ? 6 : -6), yBot + 6);
+      c.lineTo(x0, yBot + 6);
+      c.closePath();
+      c.fill();
+
+      // Clipped slanted trapezoid panel
+      c.save();
+      c.beginPath();
+      c.moveTo(x0, yTop);
+      c.lineTo(xInnerTop, yTop);
+      c.lineTo(xInnerBot, yBot);
+      c.lineTo(x0, yBot);
+      c.closePath();
+      c.clip();
+
+      // Dark dramatic base + character accent stripe
+      c.fillStyle = "#110f1a";
+      c.fillRect(0, yTop - 4, WORLD_SIZE, panelH + 8);
+
+      c.fillStyle = col || "#38bdf8";
+      c.globalAlpha = 0.85 * clamp(enter * 1.15, 0, 1);
+      c.beginPath();
+      if (isLeft) {
+        c.moveTo(x0, yTop);
+        c.lineTo(xInnerTop - 32, yTop);
+        c.lineTo(xInnerBot - 54, yBot);
+        c.lineTo(x0, yBot);
+      } else {
+        c.moveTo(x0, yTop);
+        c.lineTo(xInnerTop + 32, yTop);
+        c.lineTo(xInnerBot + 54, yBot);
+        c.lineTo(x0, yBot);
+      }
+      c.closePath();
+      c.fill();
+      c.globalAlpha = clamp(enter * 1.15, 0, 1);
+
+      // Diagonal Persona/anime speedlines inside cut-in
+      c.strokeStyle = "rgba(255, 255, 255, 0.28)";
+      c.lineWidth = 2.5;
+      for (let i = 0; i < 6; i++) {
+        const sy = yTop + 8 + i * 11;
+        const sx = isLeft ? x0 + ((p * 260 + i * 42) % 180) : x0 - ((p * 260 + i * 42) % 180);
+        c.beginPath();
+        c.moveTo(sx, sy);
+        c.lineTo(sx + (isLeft ? 48 : -48), sy - 9);
+        c.stroke();
+      }
+
+      // Render actual Chibi fighter portrait zoomed inside the cut-in frame
+      const portraitX = isLeft ? x0 + 82 : x0 - 82;
+      const portraitY = yTop + panelH * 0.56 + jitter * (isLeft ? 1 : -1);
+      const mockBall = {
+        x: portraitX,
+        y: portraitY,
+        radius: 27,
+        color: ball.color || col || "#fff",
+        costume: ball.costume,
+        evolved: Boolean(ball.evolved),
+        skin: ball.skin,
+        skins: ball.skins,
+        weapon: null,
+        weaponAngle: 0,
+        vx: isLeft ? 1 : -1,
+        vy: 0,
+        flashTimer: 0,
+        ultTimer: ball.ultTimer || 0,
+        apeMode: Boolean(ball.apeMode),
+        kyuubiMode: Boolean(ball.kyuubiMode),
+        vastoLordeMode: Boolean(ball.vastoLordeMode),
+        innerDemonMode: Boolean(ball.innerDemonMode),
+        _isCosmicGarou: Boolean(ball._isCosmicGarou),
+        squash: 0,
+        skills: [],
+        effects: [],
+      };
+      drawBall(mockBall, c, false);
+
+      // Name tag inside inner edge of cut-in
+      const tagName = (ball.shortName || ball.costume || ball.name || "P").toUpperCase();
+      c.font = `bold 11px ${FONT}`;
+      c.textAlign = isLeft ? "right" : "left";
+      c.textBaseline = "bottom";
+      c.lineWidth = 3.5;
+      c.strokeStyle = COLORS.ink;
+      const tagX = isLeft ? xInnerBot - 12 : xInnerBot + 12;
+      c.strokeText(tagName, tagX, yBot - 6);
+      c.fillStyle = COLORS.white;
+      c.fillText(tagName, tagX, yBot - 6);
+
+      c.restore(); // end clip
+
+      // Crisp white inner rim + bold black manga outer border
+      c.strokeStyle = COLORS.white;
+      c.lineWidth = 5;
+      c.beginPath();
+      c.moveTo(x0, yTop);
+      c.lineTo(xInnerTop, yTop);
+      c.lineTo(xInnerBot, yBot);
+      c.lineTo(x0, yBot);
+      c.closePath();
+      c.stroke();
+
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 3;
+      c.stroke();
+      c.restore();
+    };
+
+    drawSide(leftBall, true, leftCol, 112);
+    drawSide(rightBall, false, rightCol, 122);
+
+    if (label && enter > 0.4) {
+      c.save();
+      c.globalAlpha = clamp((enter - 0.4) / 0.6, 0, 1);
+      c.font = `bold 11px ${FONT}`;
+      c.textAlign = "center";
+      c.textBaseline = "middle";
+      c.lineWidth = 4;
+      c.strokeStyle = COLORS.ink;
+      c.strokeText(label, WORLD_SIZE * 0.5, 118);
+      c.fillStyle = COLORS.white;
+      c.fillText(label, WORLD_SIZE * 0.5, 118);
+      c.restore();
+    }
+  };
+
   function spawnStandClashEffect(x, y, duration = 2.4, b1 = null, b2 = null, getMeter = null) {
     return {
       x,
@@ -1195,6 +1347,12 @@
         c.fillText(rightText, barX + barW - 10, barY + barH * 0.5);
 
         c.restore();
+
+        if (b1 && b2) {
+          const leftCol = b1.costume === "dio" ? "#facc15" : "#a855f7";
+          const rightCol = b2.costume === "dio" ? "#facc15" : "#a855f7";
+          BF.drawClashCutin(c, b1, b2, leftCol, rightCol, 1 - this.life / this.maxLife, "STAND RUSH!");
+        }
       },
     };
   }
@@ -2188,6 +2346,10 @@
         c.fillText(rightText, barX + barW - 10, barY + barH * 0.5);
 
         c.restore();
+
+        if (leftB && rightB) {
+          BF.drawClashCutin(c, leftB, rightB, leftSpec.color, rightSpec.color, 1 - this.life / this.maxLife, "DOMAIN CLASH!");
+        }
       },
     };
   }
