@@ -2604,11 +2604,14 @@
         kind: "powerup",
         duration: 0.4,
         color: "#38bdf8",
-        fire(b) {
-          b.ultTimer = 8.0;
-          addEffect(b, "haste", 8.0, { factor: 1.35 });
-          addEffect(b, "shield", 8.0, { reduction: 0.2 });
+        fire(b, g) {
+          b.ultTimer = 7.5;
+          b._whirlwindCd = 0;
+          b._denkoTimer = 0.5;
+          addEffect(b, "haste", 7.5, { factor: 1.35 });
+          addEffect(b, "shield", 7.5, { reduction: 0.2 });
           if (b.skills[0]) b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.25);
+          if (BF.triggerGodspeedOpener) BF.triggerGodspeedOpener(b, g);
           entities.push(spawnShockRing(b.x, b.y, "#38bdf8", 125, 0.42));
           entities.push(spawnShockRing(b.x, b.y, "#e0f2fe", 90, 0.3));
         },

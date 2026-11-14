@@ -1,6 +1,6 @@
 // ============================================================
 //  KILLUA ZOLDYCK (LIGHTNING ASSASSIN)
-//  Hunter x Hunter — Assassin / Alloy Yo-Yo, Narukami & Godspeed
+//  Hunter x Hunter — 50kg Alloy Yo-Yo, Rhythm Echo & Godspeed (Kanmuru)
 // ============================================================
 
 (() => {
@@ -10,15 +10,19 @@
   const { COLORS, WORLD_SIZE } = BF;
   const rt = BF.rt;
 
-  function spawnLightningBoltVisual(x1, y1, x2, y2, color = "#38bdf8", life = 0.26) {
+  function clampArena(val, pad) {
+    return Math.max(pad, Math.min(WORLD_SIZE - pad, val));
+  }
+
+  function spawnLightningBoltVisual(x1, y1, x2, y2, color = "#38bdf8", life = 0.26, width = 9) {
     const pts = [{ x: x1, y: y1 }];
     const steps = 7;
     for (let i = 1; i < steps; i++) {
       const f = i / steps;
-      const jitter = (Math.random() - 0.5) * 32;
+      const jitter = (Math.random() - 0.5) * 30;
       pts.push({
         x: x1 + (x2 - x1) * f + jitter,
-        y: y1 + (y2 - y1) * f + (Math.random() - 0.5) * 12,
+        y: y1 + (y2 - y1) * f + (Math.random() - 0.5) * 14,
       });
     }
     pts.push({ x: x2, y: y2 });
@@ -39,7 +43,7 @@
         c.lineJoin = "round";
 
         c.strokeStyle = color;
-        c.lineWidth = 9 * a;
+        c.lineWidth = width * a;
         c.shadowColor = color;
         c.shadowBlur = 14;
         c.beginPath();
@@ -47,7 +51,7 @@
         c.stroke();
 
         c.strokeStyle = "#ffffff";
-        c.lineWidth = 3.2 * a;
+        c.lineWidth = Math.max(2, width * 0.35) * a;
         c.beginPath();
         pts.forEach((p, idx) => (idx === 0 ? c.moveTo(p.x, p.y) : c.lineTo(p.x, p.y)));
         c.stroke();
@@ -56,18 +60,249 @@
     };
   }
 
-  function spawnRhythmEchoClone(owner, offsetAngle) {
-    const ang = Math.atan2(owner.vy, owner.vx) + offsetAngle;
-    const spd = Math.max(owner.baseSpeed * 1.15, 390);
+  function spawnElectricAfterimage(x, y, radius, life = 0.35) {
+    return {
+      x,
+      y,
+      radius,
+      life,
+      maxLife: life,
+      dead: false,
+      update(dt) {
+        this.life -= dt;
+        if (this.life <= 0) this.dead = true;
+      },
+      render(c) {
+        const a = Math.max(0, (this.life / this.maxLife) * 0.65);
+        c.save();
+        c.globalAlpha = a;
+        c.translate(this.x, this.y);
+        c.fillStyle = "#38bdf8";
+        c.strokeStyle = "#e0f2fe";
+        c.lineWidth = 2.5;
+        c.beginPath();
+        c.arc(0, 0, this.radius, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+        c.restore();
+      },
+    };
+  }
+
+  // ---- Static Field left on ground by Narukami Sky Pillar ----
+  function spawnStaticField(owner, x, y, radius = 56, duration = 2.5) {
     return {
       owner,
-      x: owner.x + Math.cos(ang) * 18,
-      y: owner.y + Math.sin(ang) * 18,
-      vx: Math.cos(ang) * spd,
-      vy: Math.sin(ang) * spd,
+      x,
+      y,
+      radius,
+      life: duration,
+      maxLife: duration,
+      tickTimer: 0.45,
+      dead: false,
+      update(dt, g) {
+        this.life -= dt;
+        if (this.life <= 0 || !this.owner.alive) {
+          this.dead = true;
+          return;
+        }
+        this.tickTimer -= dt;
+        const enemy = g.balls.find((b) => b !== this.owner && b.alive);
+        if (!enemy) return;
+
+        const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
+        if (dist <= this.radius + enemy.radius) {
+          g.addEffect(enemy, "slow", 0.2, { factor: 0.8 });
+          if (this.tickTimer <= 0) {
+            this.tickTimer = 0.5;
+            const dealt = g.applyDamage(enemy, 2);
+            g.spawnSparks(enemy.x, enemy.y, "#38bdf8", "#e0f2fe");
+            g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 10, dealt, "#7dd3fc", false, "STATIC!");
+          }
+        }
+      },
+      render(c) {
+        const a = Math.min(1, this.life / 0.45) * 0.55;
+        const pulse = Math.sin((rt.elapsed || 0) * 14) * 3;
+        c.save();
+        c.globalAlpha = a;
+        const grad = c.createRadialGradient(this.x, this.y, 4, this.x, this.y, this.radius);
+        grad.addColorStop(0, "rgba(224, 242, 254, 0.5)");
+        grad.addColorStop(0.65, "rgba(56, 189, 248, 0.28)");
+        grad.addColorStop(1, "rgba(56, 189, 248, 0)");
+        c.fillStyle = grad;
+        c.beginPath();
+        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        c.fill();
+
+        c.strokeStyle = "#38bdf8";
+        c.lineWidth = 2.5;
+        c.setLineDash([8, 6]);
+        c.beginPath();
+        c.arc(this.x, this.y, this.radius + pulse, 0, Math.PI * 2);
+        c.stroke();
+        c.restore();
+      },
+    };
+  }
+
+  // ---- Tethered 50kg Alloy Yo-Yo Boomerang Entity ----
+  function spawnTetheredYoYo(owner, angle, throwState, inUlt) {
+    const speed = inUlt ? 620 : 560;
+    return {
+      owner,
+      throwState,
+      x: owner.x + Math.cos(angle) * (owner.radius + 10),
+      y: owner.y + Math.sin(angle) * (owner.radius + 10),
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      radius: 13,
+      phase: "out",
+      outTime: 0,
+      maxOutTime: 0.44,
+      totalLife: 0,
+      spin: 0,
+      outHit: false,
+      retHit: false,
+      dead: false,
+      update(dt, g) {
+        if (!this.owner || !this.owner.alive) {
+          this.dead = true;
+          return;
+        }
+        this.totalLife += dt;
+        this.spin += dt * 24;
+        if (this.totalLife > 1.7) {
+          this.dead = true;
+          return;
+        }
+
+        if (this.phase === "out") {
+          this.outTime += dt;
+          this.x += this.vx * dt;
+          this.y += this.vy * dt;
+
+          // Wall ricochet!
+          let bounced = false;
+          if (this.x < this.radius) { this.x = this.radius; this.vx = Math.abs(this.vx); bounced = true; }
+          if (this.x > WORLD_SIZE - this.radius) { this.x = WORLD_SIZE - this.radius; this.vx = -Math.abs(this.vx); bounced = true; }
+          if (this.y < this.radius) { this.y = this.radius; this.vy = Math.abs(this.vy); bounced = true; }
+          if (this.y > WORLD_SIZE - this.radius) { this.y = WORLD_SIZE - this.radius; this.vy = -Math.abs(this.vy); bounced = true; }
+          if (bounced) {
+            g.spawnSparks(this.x, this.y, "#38bdf8", "#ffffff");
+          }
+
+          const distFromOwner = Math.hypot(this.x - this.owner.x, this.y - this.owner.y);
+          if (this.outTime >= this.maxOutTime || distFromOwner >= 245) {
+            this.phase = "return";
+          }
+        } else {
+          // Retract swiftly back to Killua's current position
+          const dx = this.owner.x - this.x;
+          const dy = this.owner.y - this.y;
+          const dist = Math.hypot(dx, dy) || 1;
+          if (dist <= this.owner.radius + 14) {
+            this.dead = true;
+            return;
+          }
+          const retSpeed = inUlt ? 720 : 650;
+          this.vx = (dx / dist) * retSpeed;
+          this.vy = (dy / dist) * retSpeed;
+          this.x += this.vx * dt;
+          this.y += this.vy * dt;
+        }
+
+        const target = g.balls.find((b) => b !== this.owner && b.alive);
+        if (!target) return;
+        const dTarget = Math.hypot(target.x - this.x, target.y - this.y);
+        if (dTarget <= target.radius + this.radius) {
+          if (this.phase === "out" && !this.outHit) {
+            this.outHit = true;
+            const raw = inUlt ? Math.round(9 + rt.rng() * 2) : Math.round(7 + rt.rng() * 2);
+            const dealt = g.applyDamage(target, raw);
+            target.flashTimer = 0.1;
+            target.squash = 0.72;
+            const kAng = Math.atan2(this.vy, this.vx);
+            target.vx += Math.cos(kAng) * 140;
+            target.vy += Math.sin(kAng) * 140;
+            g.spawnSparks(this.x, this.y, "#38bdf8", "#e0f2fe");
+            g.spawnDamageText(target.x, target.y - target.radius - 12, dealt, "#38bdf8", false, "YO-YO HIT!");
+            g.sound.playBallHit();
+            if (!inUlt && !this.throwState.ultCharged) {
+              this.throwState.ultCharged = true;
+              g.chargeUlt(this.owner);
+            }
+          } else if (this.phase === "return" && !this.retHit) {
+            this.retHit = true;
+            const raw = inUlt ? Math.round(8 + rt.rng() * 2) : Math.round(6 + rt.rng() * 2);
+            const dealt = g.applyDamage(target, raw);
+            target.flashTimer = 0.1;
+            target.squash = 0.75;
+            // Snap-pull enemy slightly toward Killua
+            const pullAng = Math.atan2(this.owner.y - target.y, this.owner.x - target.x);
+            target.vx += Math.cos(pullAng) * 185;
+            target.vy += Math.sin(pullAng) * 185;
+            g.spawnSparks(this.x, this.y, "#7dd3fc", "#ffffff");
+            g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#7dd3fc", false, "YO-YO SNAP!");
+            g.sound.playBallHit();
+            if (!inUlt && !this.throwState.ultCharged) {
+              this.throwState.ultCharged = true;
+              g.chargeUlt(this.owner);
+            }
+          }
+        }
+      },
+      render(c) {
+        if (!this.owner || !this.owner.alive) return;
+        c.save();
+        // High-tension metallic wire tethered to Killua
+        c.strokeStyle = inUlt ? "#7dd3fc" : "#e2e8f0";
+        c.lineWidth = 2.2;
+        c.beginPath();
+        c.moveTo(this.owner.x, this.owner.y);
+        c.lineTo(this.x, this.y);
+        c.stroke();
+
+        // Spinning 50kg Alloy Yo-Yo disc
+        c.translate(this.x, this.y);
+        c.rotate(this.spin);
+        c.fillStyle = "#475569";
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 2.8;
+        c.beginPath();
+        c.arc(0, 0, this.radius, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+
+        c.fillStyle = "#cbd5e1";
+        c.lineWidth = 1.6;
+        c.beginPath();
+        c.arc(0, 0, this.radius * 0.68, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+
+        c.fillStyle = "#38bdf8";
+        c.beginPath();
+        c.arc(0, 0, 3.2, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+      },
+    };
+  }
+
+  // ---- Rhythm Echo Decoy Afterimage ----
+  function spawnRhythmEchoDecoy(owner, target, angleOffset) {
+    const baseAng = Math.atan2(target.y - owner.y, target.x - owner.x) + angleOffset;
+    const spd = Math.max(owner.baseSpeed * 1.12, 375);
+    return {
+      owner,
+      x: owner.x + Math.cos(baseAng) * 14,
+      y: owner.y + Math.sin(baseAng) * 14,
+      vx: Math.cos(baseAng) * spd,
+      vy: Math.sin(baseAng) * spd,
       radius: owner.radius * 0.9,
-      life: 2.0,
-      maxLife: 2.0,
+      life: 1.4,
+      maxLife: 1.4,
       dead: false,
       update(dt, g) {
         this.life -= dt;
@@ -77,130 +312,260 @@
         }
         this.x += this.vx * dt;
         this.y += this.vy * dt;
-
         if (this.x < this.radius) { this.x = this.radius; this.vx = Math.abs(this.vx); }
         if (this.x > WORLD_SIZE - this.radius) { this.x = WORLD_SIZE - this.radius; this.vx = -Math.abs(this.vx); }
         if (this.y < this.radius) { this.y = this.radius; this.vy = Math.abs(this.vy); }
         if (this.y > WORLD_SIZE - this.radius) { this.y = WORLD_SIZE - this.radius; this.vy = -Math.abs(this.vy); }
 
-        const target = g.balls.find((b) => b !== this.owner && b.alive);
-        if (!target) return;
-        const dist = Math.hypot(target.x - this.x, target.y - this.y);
-        if (dist <= target.radius + this.radius) {
+        const t = g.balls.find((b) => b !== this.owner && b.alive);
+        if (!t) return;
+        if (Math.hypot(t.x - this.x, t.y - this.y) <= t.radius + this.radius) {
           this.dead = true;
-          const dmg = Math.round(9 + rt.rng() * 3);
-          const dealt = g.applyDamage(target, dmg);
-          target.flashTimer = 0.12;
-          target.squash = 0.78;
-          g.addEffect(target, "stun", 0.24);
-          g.entities.push(rt.spawnShockRing(this.x, this.y, "#38bdf8", 68, 0.26));
-          g.spawnSparks(this.x, this.y, "#38bdf8", "#ffffff");
-          g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#38bdf8", false, "ECHO ZAP!");
+          const dealt = g.applyDamage(t, 3);
+          g.entities.push(rt.spawnShockRing(this.x, this.y, "#bae6fd", 58, 0.22));
+          g.spawnDamageText(t.x, t.y - t.radius - 10, dealt, "#bae6fd", false, "DECOY!");
           g.sound.playBallHit();
         }
       },
       render(c) {
-        const a = Math.min(0.62, (this.life / this.maxLife) * 0.75);
+        const a = Math.min(0.5, (this.life / this.maxLife) * 0.6);
         c.save();
         c.globalAlpha = a;
         c.translate(this.x, this.y);
         c.fillStyle = "#0ea5e9";
         c.strokeStyle = "#e0f2fe";
-        c.lineWidth = 2.5;
+        c.lineWidth = 2;
         c.beginPath();
         c.arc(0, 0, this.radius, 0, Math.PI * 2);
         c.fill();
         c.stroke();
-
-        // Spiky silver silhouette hair on afterimage
-        c.fillStyle = "#e2e8f0";
-        c.beginPath();
-        c.moveTo(-this.radius * 0.85, -this.radius * 0.35);
-        c.lineTo(-this.radius * 0.55, -this.radius * 1.15);
-        c.lineTo(0, -this.radius * 1.25);
-        c.lineTo(this.radius * 0.55, -this.radius * 1.15);
-        c.lineTo(this.radius * 0.85, -this.radius * 0.35);
-        c.closePath();
-        c.fill();
         c.restore();
       },
     };
   }
 
-  // ---- Skill 1: Narukami Thunderbolt (Primary +1 Ult Charge) ----
-  const SKILL_THUNDERBOLT = {
-    name: "Narukami Bolt",
-    cooldown: 2.5,
+  // ---- Delayed Blindspot Backstab + Izutsushi (Lightning Palm) ----
+  function spawnIzutsushiAmbush(owner, target) {
+    return {
+      owner,
+      target,
+      timer: 0.24,
+      dead: false,
+      update(dt, g) {
+        this.timer -= dt;
+        if (this.timer > 0) return;
+        this.dead = true;
+        if (!this.owner.alive || !this.target || !this.target.alive) return;
+
+        // Leave electric afterimage at old position
+        g.entities.push(spawnElectricAfterimage(this.owner.x, this.owner.y, this.owner.radius, 0.32));
+
+        // Blink to the target's blindspot (away from walls)
+        const moveAng = Math.hypot(this.target.vx, this.target.vy) > 10
+          ? Math.atan2(this.target.vy, this.target.vx)
+          : Math.atan2(this.target.y - this.owner.y, this.target.x - this.owner.x);
+        const backAng = moveAng + Math.PI;
+        const standOff = this.owner.radius + this.target.radius + 16;
+        const pad = this.owner.radius + 18;
+        let bx = clampArena(this.target.x + Math.cos(backAng) * standOff, pad);
+        let by = clampArena(this.target.y + Math.sin(backAng) * standOff, pad);
+
+        // If wall-clamped too close, fall back to arena-center side
+        if (Math.hypot(bx - this.target.x, by - this.target.y) < this.owner.radius + this.target.radius + 6) {
+          const toCenter = Math.atan2(WORLD_SIZE * 0.5 - this.target.y, WORLD_SIZE * 0.5 - this.target.x);
+          bx = clampArena(this.target.x + Math.cos(toCenter) * standOff, pad);
+          by = clampArena(this.target.y + Math.sin(toCenter) * standOff, pad);
+        }
+
+        this.owner.x = bx;
+        this.owner.y = by;
+        const strikeAng = Math.atan2(this.target.y - by, this.target.x - bx);
+        this.owner.vx = Math.cos(strikeAng) * this.owner.baseSpeed * 1.15;
+        this.owner.vy = Math.sin(strikeAng) * this.owner.baseSpeed * 1.15;
+
+        // Strike with Izutsushi (Lightning Palm) + apply Static Mark!
+        const raw = Math.round(10 + rt.rng() * 3);
+        const dealt = g.applyDamage(this.target, raw);
+        this.target.flashTimer = 0.14;
+        this.target.squash = 0.85;
+        g.addEffect(this.target, "stun", 0.35);
+        this.target._staticMarkTimer = 2.2;
+        this.target._staticMarkOwner = this.owner;
+
+        g.entities.push(spawnLightningBoltVisual(this.owner.x, this.owner.y, this.target.x, this.target.y, "#38bdf8", 0.24, 8));
+        g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#38bdf8", 82, 0.28));
+        g.spawnSparks(this.target.x, this.target.y, "#38bdf8", "#ffffff");
+        g.spawnDamageText(this.target.x, this.target.y - this.target.radius - 14, dealt, "#38bdf8", true, "IZUTSUSHI!");
+        g.sound.playCritHit();
+        rt.setHitStop(0.045);
+        rt.addShake(0.14, 3.8);
+      },
+    };
+  }
+
+  // ---- Godspeed Opener: Narukami Sky Pillar + Static Field ----
+  BF.triggerGodspeedOpener = function triggerGodspeedOpener(b, g) {
+    const enemy = g.balls.find((x) => x !== b && x.alive);
+    if (!enemy) return;
+
+    const raw = Math.round(14 + rt.rng() * 2);
+    const dealt = g.applyDamage(enemy, raw);
+    enemy.flashTimer = 0.16;
+    enemy.squash = 0.9;
+    g.addEffect(enemy, "stun", 0.4);
+
+    g.entities.push(spawnLightningBoltVisual(enemy.x, 12, enemy.x, enemy.y, "#38bdf8", 0.36, 13));
+    g.entities.push(spawnStaticField(b, enemy.x, enemy.y, 58, 2.5));
+    g.entities.push(rt.spawnShockRing(enemy.x, enemy.y, "#e0f2fe", 110, 0.38));
+    g.spawnSparks(enemy.x, enemy.y, "#38bdf8", "#ffffff");
+    g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 16, dealt, "#38bdf8", true, "NARUKAMI SKY PILLAR!");
+    rt.setHitStop(0.06);
+    rt.addShake(0.22, 5.5);
+  };
+
+  function triggerWhirlwindCounter(ball, target, g) {
+    if (!target || !target.alive) return;
+    const raw = Math.round(8 + rt.rng() * 2);
+    const dealt = g.applyDamage(target, raw);
+    target.flashTimer = 0.12;
+    g.entities.push(spawnLightningBoltVisual(ball.x, ball.y, target.x, target.y, "#38bdf8", 0.22, 8));
+    g.spawnSparks(target.x, target.y, "#38bdf8", "#ffffff");
+    g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#38bdf8", false, "WHIRLWIND COUNTER!");
+    g.sound.playBallHit();
+  }
+
+  // ---- Skill 1: 50kg Alloy Yo-Yo: Trick Orbit (Primary +1 Ult Charge) ----
+  const SKILL_ALLOY_YOYO = {
+    name: "Alloy Yo-Yo",
+    cooldown: 2.6,
     onTick(ball, g) {
       const target = g.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
       const dist = Math.hypot(target.x - ball.x, target.y - ball.y);
-      if (dist > 340) return false;
+      if (dist > 330) return false;
 
       const inUlt = ball.ultTimer > 0;
       rt.beginCast(ball, {
-        kind: "lightning",
-        duration: 0.22,
+        kind: "slash",
+        duration: 0.18,
         color: "#38bdf8",
         fire(b, gg) {
           const t = gg.balls.find((x) => x !== b && x.alive);
           if (!t) return;
-          const rawDmg = inUlt ? Math.round(16 + rt.rng() * 4) : Math.round(14 + rt.rng() * 4);
-          const dealt = gg.applyDamage(t, rawDmg);
-          t.flashTimer = 0.14;
-          t.squash = 0.85;
-          gg.addEffect(t, "stun", 0.32);
-
-          if (!inUlt) {
-            gg.chargeUlt(b);
+          const baseAng = Math.atan2(t.y - b.y, t.x - b.x);
+          const throwState = { ultCharged: false };
+          for (const offset of [-0.28, 0.28]) {
+            gg.entities.push(spawnTetheredYoYo(b, baseAng + offset, throwState, inUlt));
           }
-
-          gg.entities.push(spawnLightningBoltVisual(t.x + (rt.rng() - 0.5) * 28, Math.max(18, t.y - 230), t.x, t.y, "#38bdf8", 0.28));
-          gg.entities.push(spawnLightningBoltVisual(b.x, b.y, t.x, t.y, "#bae6fd", 0.22));
-          gg.entities.push(rt.spawnShockRing(t.x, t.y, "#38bdf8", 88, 0.32));
-          gg.spawnSparks(t.x, t.y, "#38bdf8", "#ffffff");
-          gg.spawnDamageText(t.x, t.y - t.radius - 14, dealt, "#38bdf8", inUlt, inUlt ? "GODSPEED NARUKAMI!" : "NARUKAMI!");
-          gg.sound.playCritHit();
-          rt.setHitStop(0.05);
-          rt.addShake(0.16, 4.5);
+          gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#7dd3fc", false, "ALLOY YO-YO!");
+          gg.sound.playBallHit();
         },
       });
       return true;
     },
   };
 
-  // ---- Skill 2: Rhythm Echo Clones + Whirlwind Reflex (No Ult Charge) ----
+  // ---- Skill 2: Rhythm Echo & Izutsushi + Godspeed Passive Hooks ----
   const SKILL_RHYTHM_ECHO = {
     name: "Rhythm Echo",
-    cooldown: 4.6,
-    onTick(ball, g) {
-      const target = g.balls.find((b) => b !== ball && b.alive);
-      if (!target) return false;
+    cooldown: 4.5,
+    onTick(ball, g, dt) {
+      // Tick Static Mark on enemy if present
+      const enemy = g.balls.find((b) => b !== ball && b.alive);
+      if (enemy && enemy._staticMarkTimer > 0 && dt) {
+        enemy._staticMarkTimer = Math.max(0, enemy._staticMarkTimer - dt);
+      }
 
-      // Spawn 2 assassin afterimage clones that bounce and zap on contact
-      g.entities.push(spawnRhythmEchoClone(ball, -0.42));
-      g.entities.push(spawnRhythmEchoClone(ball, 0.42));
+      // Godspeed active mechanics (Denko Sekka Zig-Zag + Shippujinrai Projectile Auto-Dodge)
+      if (ball.ultTimer > 0 && dt) {
+        ball._whirlwindCd = Math.max(0, (ball._whirlwindCd || 0) - dt);
+        ball._denkoTimer = (ball._denkoTimer || 0) - dt;
+
+        // 1. Shippujinrai: Auto-Dodge incoming enemy projectiles within 52px
+        if (ball._whirlwindCd <= 0) {
+          for (const ent of g.entities) {
+            if (!ent || ent.dead || ent.owner === ball || ent._dodgedByKillua) continue;
+            if (typeof ent.vx !== "number" || typeof ent.vy !== "number" || typeof ent.x !== "number") continue;
+            const d = Math.hypot(ent.x - ball.x, ent.y - ball.y);
+            if (d <= ball.radius + (ent.radius || 12) + 36) {
+              ent._dodgedByKillua = true;
+              ball._whirlwindCd = 1.6;
+              g.entities.push(spawnElectricAfterimage(ball.x, ball.y, ball.radius, 0.35));
+
+              const pAng = Math.atan2(ent.vy, ent.vx);
+              const side = rt.rng() < 0.5 ? 1 : -1;
+              const dodgeAng = pAng + side * Math.PI * 0.5;
+              const pad = ball.radius + 16;
+              const nx = clampArena(ball.x + Math.cos(dodgeAng) * 54, pad);
+              const ny = clampArena(ball.y + Math.sin(dodgeAng) * 54, pad);
+              g.entities.push(spawnLightningBoltVisual(ball.x, ball.y, nx, ny, "#e0f2fe", 0.22, 6));
+              ball.x = nx;
+              ball.y = ny;
+              g.spawnDamageText(ball.x, ball.y - ball.radius - 14, 0, "#e0f2fe", false, "SHIPPUJINRAI DODGE!");
+
+              if (enemy && Math.hypot(enemy.x - ball.x, enemy.y - ball.y) <= 185) {
+                triggerWhirlwindCounter(ball, enemy, g);
+              }
+              break;
+            }
+          }
+        }
+
+        // 2. Denko Sekka: Periodic Zig-Zag lightning dash toward enemy
+        if (ball._denkoTimer <= 0 && enemy) {
+          ball._denkoTimer = 0.85;
+          const toEnemy = Math.atan2(enemy.y - ball.y, enemy.x - ball.x);
+          ball._denkoFlip = -(ball._denkoFlip || 1);
+          const zigAng = toEnemy + ball._denkoFlip * 0.65;
+          const pad = ball.radius + 16;
+          const zx = clampArena(ball.x + Math.cos(zigAng) * 40, pad);
+          const zy = clampArena(ball.y + Math.sin(zigAng) * 40, pad);
+          g.entities.push(spawnLightningBoltVisual(ball.x, ball.y, zx, zy, "#38bdf8", 0.2, 6));
+          ball.x = zx;
+          ball.y = zy;
+          const spd = Math.hypot(ball.vx, ball.vy) || ball.baseSpeed;
+          ball.vx = Math.cos(toEnemy) * spd;
+          ball.vy = Math.sin(toEnemy) * spd;
+        }
+      }
+
+      // Active Skill 2 cast check
+      if (this._cd > 0 || !enemy) return false;
+      const dist = Math.hypot(enemy.x - ball.x, enemy.y - ball.y);
+      if (dist > 340) return false;
+
+      // Spawn 3 Rhythm Echo decoy clones + schedule Izutsushi blindspot backstab
+      for (const angOff of [-0.65, 0, 0.65]) {
+        g.entities.push(spawnRhythmEchoDecoy(ball, enemy, angOff));
+      }
+      g.entities.push(spawnIzutsushiAmbush(ball, enemy));
       g.entities.push(rt.spawnShockRing(ball.x, ball.y, "#bae6fd", 72, 0.26));
       g.spawnDamageText(ball.x, ball.y - ball.radius - 12, 0, "#bae6fd", false, "RHYTHM ECHO!");
       return true;
     },
+    onHit(ball, target, g) {
+      if (!target || !target.alive) return false;
+      if (target._staticMarkTimer > 0 && target._staticMarkOwner === ball) {
+        target._staticMarkTimer = 0;
+        const dealt = g.applyDamage(target, 3);
+        g.spawnSparks(target.x, target.y, "#38bdf8", "#ffffff");
+        g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#7dd3fc", false, "STATIC SNAP!");
+      }
+      return false;
+    },
     onDamaged(ball, amount, g) {
       if (!ball.alive || !(ball.ultTimer > 0) || amount <= 0) return false;
-      const now = rt.elapsed || 0;
-      if (now - (ball._whirlwindLast || -99) < 1.45) return false;
+      if ((ball._whirlwindCd || 0) > 0) return false;
       const target = g.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
 
-      ball._whirlwindLast = now;
-      const dealt = g.applyDamage(target, 9);
-      g.entities.push(spawnLightningBoltVisual(ball.x, ball.y, target.x, target.y, "#38bdf8", 0.22));
-      g.spawnSparks(target.x, target.y, "#38bdf8", "#ffffff");
-      g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#38bdf8", false, "WHIRLWIND REFLEX!");
+      ball._whirlwindCd = 1.6;
+      triggerWhirlwindCounter(ball, target, g);
       return false;
     },
   };
 
-      // ---- Shared polygon helper (points in radius units) ----
+  // ---- Shared polygon helper (points in radius units) ----
   function hairPoly(c, r, pts) {
     c.beginPath();
     pts.forEach(([x, y], i) => (i === 0 ? c.moveTo(x * r, y * r) : c.lineTo(x * r, y * r)));
@@ -364,7 +729,7 @@
     c.restore();
   };
 
-BF.CHARACTER_ROSTER.killua = {
+  BF.CHARACTER_ROSTER.killua = {
     id: "killua",
     name: "LIGHTNING ASSASSIN",
     shortName: "ASSASSIN",
@@ -380,9 +745,9 @@ BF.CHARACTER_ROSTER.killua = {
     weapon: "alloy_yoyo",
     ult: "godspeed",
     ultName: "GODSPEED (KANMURU)",
-    ultDesc: "Surrounds himself in high-voltage aura for 8s! Grants +35% Speed, 20% Shield, empowers Narukami Bolt, and auto-counters attackers with Whirlwind Reflex.",
-    skillName: "NARUKAMI & RHYTHM ECHO",
-    skillDesc: "Drops an overhead Narukami thunderbolt that micro-stuns the enemy, while weaving Rhythm Echo afterimage clones across the arena!",
-    skills: [SKILL_THUNDERBOLT, SKILL_RHYTHM_ECHO],
+    ultDesc: "Drops Narukami Sky Pillar (+Static Field), enters Denko Sekka zig-zag lightning movement (+35% Speed), and uses Shippujinrai to auto-dodge projectiles & counter!",
+    skillName: "ALLOY YO-YO & IZUTSUSHI",
+    skillDesc: "Throws 2 wall-bouncing Alloy Yo-Yos that snap back for double hits, and uses Rhythm Echo decoys to blink behind enemies with Izutsushi Lightning Palm!",
+    skills: [SKILL_ALLOY_YOYO, SKILL_RHYTHM_ECHO],
   };
 })();
