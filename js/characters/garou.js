@@ -706,8 +706,8 @@
     name: "Whirlwind Iron Cutting Fist",
     cooldown: 2.6,
     onTick(ball, g) {
-      // Cosmic Fear Awakening when HP < 50 (once per match)
-      if (ball.alive && ball.hp > 0 && ball.hp < 50 && !ball._cosmicAwakened) {
+      // Cosmic Fear Awakening when HP < 100 (once per match)
+      if (ball.alive && ball.hp > 0 && ball.hp < 100 && !ball._cosmicAwakened) {
         BF.triggerGarouCosmicAwakening(ball, g);
         return false;
       }
@@ -1140,7 +1140,7 @@
     weapon: null,
     ult: "cosmic_fear",
     ultName: "MONSTERIZATION & COSMIC MOON",
-    ultDesc: "Ult: Monster Form with God Slayer Dash Barrage! Below 50 HP: Time freezes for God's Cosmic Moon Awakening (+50 HP), Black Hole Moon Arena Rampage, & Gamma Ray Burst!",
+    ultDesc: "Ult: Monster Form with God Slayer Dash Barrage! Below 100 HP: Time freezes for God's Cosmic Moon Awakening (+50 HP), Black Hole Moon Arena Rampage, & Gamma Ray Burst!",
     skillName: "WHIRLWIND FIST / BLACK HOLE & COUNTER / GAMMA RAY",
     skillDesc: "Base: spiral waves & Water Stream Counter. Monster: God Slayer Dash Barrage. Cosmic: Black Hole Moon Arena Rampage & Gamma Ray Burst!",
     skills: [SKILL_WHIRLWIND_FIST, SKILL_WATER_STREAM_COUNTER],

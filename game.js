@@ -2814,7 +2814,7 @@
     const amount = Math.max(0, Math.round(dmg));
     if (amount <= 0) return 0;
     ball.hp = Math.max(0, ball.hp - amount);
-    if (ball.alive && ball.hp > 0 && ball.costume === "garou" && ball.hp < 50 && !ball._cosmicAwakened && BF.triggerGarouCosmicAwakening) {
+    if (ball.alive && ball.hp > 0 && ball.costume === "garou" && ball.hp < 100 && !ball._cosmicAwakened && BF.triggerGarouCosmicAwakening) {
       BF.triggerGarouCosmicAwakening(ball, game);
     }
     if (ball.alive && ball.hp > 0 && ball.costume === "naruto" && ball.evolved && ball.hp <= 200 && !ball.kyuubiMode) {

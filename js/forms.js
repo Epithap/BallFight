@@ -86,7 +86,7 @@
     garou: [
       { id: "base", label: "HERO HUNTER", desc: "Whirlwind Iron Cutting Fist spiral waves and Water Stream Rock Smashing Counter." },
       { id: "monster", label: "MONSTER FORM", ult: true, desc: "Awakened Monster carapace! God Slayer Dash + 4-hit Barrage and Extreme Fa Jin strikes." },
-      { id: "cosmic", label: "COSMIC FEAR", ult: true, cosmicMode: true, desc: "Triggers below 50 HP! God's Moon Awakening (+50 HP), Black Hole Moon Arena Rampage, and Gamma Ray Burst!" },
+      { id: "cosmic", label: "COSMIC FEAR", ult: true, cosmicMode: true, desc: "Triggers below 100 HP! God's Moon Awakening (+50 HP), Black Hole Moon Arena Rampage, and Gamma Ray Burst!" },
     ],
   };
 })();
