@@ -126,6 +126,8 @@
     [/GOMU|ROCKET|BOUNCE|SNAKE/, "rubber"], [/PURPLE/, "purple"], [/GETSUGA|HOLLOW/, "getsuga"],
     [/\bRED\b/, "red"], [/\bBLUE\b/, "blue"], [/VOID|SIX EYES/, "voidd"], [/ORA|MUDA|BARRAGE/, "barrage"],
     [/DRAGON|KICK|RUSH/, "dragon"], [/SLAYER|SAVAGE|RAMPAGE|BERSERK/, "slayer"],
+    [/NARUKAMI|ECHO|WHIRLWIND|GODSPEED/, "shuriken"], [/MUTILATE|IGRIS|BERU|RULER/, "cleave"],
+    [/RIP|CHAIN|VROOM/, "slayer"], [/FANG|NUCLEAR|WATER STREAM|GAMMA/, "dragon"],
   ];
 
   P.playSkill = function (label) {
@@ -173,6 +175,22 @@
     hollow_purple() {
       for (const f of [880, 1320, 1760, 2640]) this._tone({ f0: f, dur: 1.2, vol: 0.045 });
       this._noise({ dur: 0.8, vol: 0.06, ftype: "highpass", f0: 2000, f1: 6000 });
+    },
+    godspeed() {
+      for (let i = 0; i < 6; i++) this._tone({ type: "sawtooth", f0: 900 + i * 220, f1: 1800, dur: 0.14, vol: 0.06, t0: i * 0.07 });
+      this._noise({ dur: 0.75, vol: 0.09, ftype: "highpass", f0: 2800, f1: 6500 });
+    },
+    arise() {
+      for (const f of [110, 146.8, 220]) this._tone({ type: "sawtooth", f0: f, f1: f * 0.75, dur: 1.0, vol: 0.08 });
+      this._noise({ dur: 0.85, vol: 0.08, ftype: "bandpass", f0: 600, f1: 1800, q: 2 });
+    },
+    hero_of_hell() {
+      for (let i = 0; i < 4; i++) this._tone({ type: "sawtooth", f0: 85 + i * 25, f1: 240, dur: 0.22, vol: 0.12, t0: i * 0.14 });
+      this._noise({ dur: 0.9, vol: 0.11, ftype: "bandpass", f0: 800, f1: 3200, q: 1.8 });
+    },
+    cosmic_fear() {
+      for (const f of [220, 330, 440, 660]) this._tone({ type: "triangle", f0: f, f1: f * 1.5, dur: 0.95, vol: 0.06 });
+      this._noise({ dur: 0.85, vol: 0.09, ftype: "highpass", f0: 1600, f1: 5200 });
     },
   };
 

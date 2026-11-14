@@ -5,8 +5,13 @@
   BF.SERIES = {
     goku: "DRAGON BALL", naruto: "NARUTO", luffy: "ONE PIECE", ichigo: "BLEACH",
     dio: "JOJO", jotaro: "JOJO", guts: "BERSERK", gojo: "JUJUTSU KAISEN", sukuna: "JUJUTSU KAISEN",
+    killua: "HUNTER X HUNTER", jinwoo: "SOLO LEVELING", denji: "CHAINSAW MAN", garou: "ONE-PUNCH MAN",
   };
-  BF.RARITY = { goku: "fighter", naruto: "fighter", luffy: "fighter", ichigo: "fighter", jotaro: "fighter", guts: "fighter", dio: "fighter", gojo: "fighter", sukuna: "fighter" };
+  BF.RARITY = {
+    goku: "fighter", naruto: "fighter", luffy: "fighter", ichigo: "fighter",
+    jotaro: "fighter", guts: "fighter", dio: "fighter", gojo: "fighter", sukuna: "fighter",
+    killua: "fighter", jinwoo: "fighter", denji: "fighter", garou: "fighter",
+  };
 
   // Evolution stage tabs shown on the top row of Fighter Detail when a character has evolution branches
   BF.EVO_STAGES = {
@@ -65,6 +70,22 @@
     sukuna: [
       { id: "base", label: "BASE", desc: "Four eyes, cursed markings and a fanged grin." },
       { id: "ult", label: "KING OF CURSES", ult: true, desc: "Fuga aura. First skill opens Malevolent Shrine and can start a Domain Clash." },
+    ],
+    killua: [
+      { id: "base", label: "ASSASSIN", desc: "50kg Alloy Yo-Yo, Narukami Thunderbolt and Rhythm Echo afterimage clones." },
+      { id: "ult", label: "GODSPEED (KANMURU)", ult: true, desc: "Electric aura, +38% Speed, 20% Shield and Whirlwind Reflex auto-counter lightning." },
+    ],
+    jinwoo: [
+      { id: "base", label: "HUNTER", desc: "Kamish's Wrath twin daggers, Mutilate cross-slash dash and Ruler's Authority gravity pull." },
+      { id: "ult", label: "ARISE (SHADOW MONARCH)", ult: true, desc: "Summons autonomous Shadow Soldiers (Igris & Beru) to hunt the enemy and empowers Mutilate." },
+    ],
+    denji: [
+      { id: "base", label: "CHAINSAW HYBRID", desc: "Spinning arm chainsaws, Rip & Tear blood lifesteal and Devil Chain Grapple." },
+      { id: "ult", label: "HERO OF HELL", ult: true, desc: "Black Chainsaw Devil armor, +28% Speed, 22% Shield and boosted Blood Lifesteal." },
+    ],
+    garou: [
+      { id: "base", label: "HERO HUNTER", desc: "Cross Fang Dragon Slayer Fist (Water Stream + Whirlwind Iron) and Water Stream Counter." },
+      { id: "ult", label: "COSMIC FEAR", ult: true, desc: "Galaxy starfield body, Gamma Ray Burst blast, +25% Speed and Nuclear Fission punches." },
     ],
   };
 })();

@@ -8,7 +8,7 @@
   const HOUR_MS = 3600 * 1000;
 
   // All characters are equal tier (no character rarity)
-  const FIGHTERS = ["gojo", "sukuna", "guts", "dio", "jotaro"];
+  const FIGHTERS = ["gojo", "sukuna", "guts", "dio", "jotaro", "killua", "jinwoo", "denji", "garou"];
   const RATE_UP_CHANCE = 5.0;    // 5.0% featured Rate-Up character
   const OTHER_CHAR_CHANCE = 1.5; // 1.5% other characters (split equally)
 
@@ -72,6 +72,46 @@
       battleCry: "GRIFFIIIITH!!",
       quote: "STRUGGLE ON, BLACK SWORDSMAN.",
       motif: "eclipse",
+    },
+    killua: {
+      bg1: "#040d1a", bg2: "#0c2444", bg3: "#1e3a8a",
+      c1: "#38bdf8", c2: "#e0f2fe", c3: "#818cf8",
+      watermark: "GODSPEED • KANMURU",
+      epithet: "ZOLDYCK HEIR • LIGHTNING ASSASSIN",
+      ultTag: "GODSPEED",
+      battleCry: "KANMURU: NARUKAMI!!",
+      quote: "IF YOU MOVE AN INCH, I'LL SWEEP YOUR HEAD OFF.",
+      motif: "godspeed",
+    },
+    jinwoo: {
+      bg1: "#070312", bg2: "#1b0b38", bg3: "#3b0764",
+      c1: "#a855f7", c2: "#38bdf8", c3: "#e9d5ff",
+      watermark: "ARISE • MONARCH",
+      epithet: "SHADOW MONARCH • S-RANK HUNTER",
+      ultTag: "ARISE",
+      battleCry: "ARISE... MY SHADOW ARMY!!",
+      quote: "I ALONE LEVEL UP IN THE DARKNESS.",
+      motif: "monarch",
+    },
+    denji: {
+      bg1: "#140602", bg2: "#3b1106", bg3: "#450a0a",
+      c1: "#f97316", c2: "#ef4444", c3: "#fde047",
+      watermark: "HERO OF HELL",
+      epithet: "DEVIL HUNTER • CHAINSAW HYBRID",
+      ultTag: "CHAINSAW DEVIL",
+      battleCry: "VROOOOM!! RIP AND TEAR!!",
+      quote: "EVERYBODY'S AFTER MY CHAINSAW HEART!",
+      motif: "chainsaw",
+    },
+    garou: {
+      bg1: "#090314", bg2: "#240a34", bg3: "#3f0d1c",
+      c1: "#e11d48", c2: "#38bdf8", c3: "#c084fc",
+      watermark: "COSMIC FEAR",
+      epithet: "ABSOLUTE EVIL • HERO HUNTER",
+      ultTag: "GAMMA RAY BURST",
+      battleCry: "FIST OF FLOWING WATER, CRUSHING ROCK!!",
+      quote: "TIME TO HUNT SOME HEROES.",
+      motif: "cosmic",
     },
   };
 
@@ -576,6 +616,178 @@
         c.moveTo(48, -14); c.lineTo(208, -10); c.lineTo(228, 0); c.lineTo(208, 10); c.lineTo(48, 14);
         c.stroke();
         c.restore();
+      } else if (charId === "killua") {
+        // KILLUA: Godspeed Kanmuru Electric Storm + Narukami Sky Pillar + Twin Alloy Yo-Yo Orbits
+        const kGlow = c.createRadialGradient(cx, cy, 15, cx, cy, 220);
+        kGlow.addColorStop(0, "rgba(224, 242, 254, 0.85)");
+        kGlow.addColorStop(0.45, "rgba(56, 189, 248, 0.45)");
+        kGlow.addColorStop(1, "rgba(30, 58, 138, 0)");
+        c.fillStyle = kGlow;
+        c.beginPath(); c.arc(cx, cy, 220, 0, Math.PI * 2); c.fill();
+
+        // Twin Orbiting 50kg Alloy Yo-Yos on high-voltage wire
+        for (const sgn of [-1, 1]) {
+          const ya = t * 5.2 + (sgn === 1 ? 0 : Math.PI);
+          const yx = cx + Math.cos(ya) * 145;
+          const yy = cy + Math.sin(ya) * 82;
+          c.strokeStyle = "#bae6fd";
+          c.lineWidth = 2;
+          c.beginPath(); c.moveTo(cx, cy); c.lineTo(yx, yy); c.stroke();
+          c.fillStyle = "#475569";
+          c.strokeStyle = "#38bdf8";
+          c.lineWidth = 3;
+          c.beginPath(); c.arc(yx, yy, 20, 0, Math.PI * 2); c.fill(); c.stroke();
+          drawImpactStar(c, yx, yy, 15, 6, 6, t * 4, "#38bdf8", "#0f172a");
+        }
+
+        // Jagged Narukami Thunderbolt arcs raining from sky to center
+        for (let b = 0; b < 7; b++) {
+          const bx0 = cx + (b - 3) * 58;
+          c.strokeStyle = b % 2 === 0 ? "#ffffff" : "#38bdf8";
+          c.lineWidth = b === 3 ? 6 : 3.2;
+          c.shadowColor = "#38bdf8";
+          c.shadowBlur = 14;
+          c.beginPath();
+          c.moveTo(bx0, 60);
+          for (let s = 1; s <= 6; s++) {
+            const frac = s / 6;
+            const lx = bx0 + (cx - bx0) * frac + Math.sin(t * 28 + b * 3 + s * 2) * (1 - frac) * 32;
+            const ly = 60 + (cy - 60) * frac;
+            c.lineTo(lx, ly);
+          }
+          c.stroke();
+        }
+        c.shadowBlur = 0;
+      } else if (charId === "jinwoo") {
+        // JIN-WOO: Shadow Monarch Abyssal Gate + Igris & Beru Shadow Soldiers + Kamish's Wrath Twin Slash
+        const mGlow = c.createRadialGradient(cx, cy, 18, cx, cy, 235);
+        mGlow.addColorStop(0, "rgba(168, 85, 247, 0.7)");
+        mGlow.addColorStop(0.55, "rgba(56, 189, 248, 0.3)");
+        mGlow.addColorStop(1, "rgba(15, 23, 42, 0)");
+        c.fillStyle = mGlow;
+        c.beginPath(); c.arc(cx, cy, 235, 0, Math.PI * 2); c.fill();
+
+        // Swirling Shadow Monarch Magic Circle
+        c.save();
+        c.translate(cx, cy + 54);
+        c.strokeStyle = "#a855f7";
+        c.lineWidth = 3.5;
+        c.beginPath(); c.ellipse(0, 0, 165, 42, 0, 0, Math.PI * 2); c.stroke();
+        c.strokeStyle = "#38bdf8";
+        c.lineWidth = 2;
+        c.beginPath(); c.ellipse(0, 0, 125, 30, 0, 0, Math.PI * 2); c.stroke();
+        c.restore();
+
+        // Flanking Shadow Knights (Igris on left, Beru on right) rising from the shadows
+        const rise = Math.min(1, p * 2.1);
+        for (const sgn of [-1, 1]) {
+          const sx = cx + sgn * 128;
+          const sy = cy + 12 + (1 - rise) * 70;
+          const glow = sgn === -1 ? "#c084fc" : "#38bdf8";
+          c.save();
+          c.translate(sx, sy);
+          c.fillStyle = "#090514";
+          c.strokeStyle = glow;
+          c.lineWidth = 3;
+          c.shadowColor = glow;
+          c.shadowBlur = 14;
+          c.beginPath(); c.arc(0, 0, 28, 0, Math.PI * 2); c.fill(); c.stroke();
+          // Glowing Monarch Knight Eyes
+          c.fillStyle = "#ffffff";
+          c.beginPath();
+          c.moveTo(-12, -4); c.lineTo(-3, -2); c.lineTo(-9, 4); c.closePath();
+          c.moveTo(12, -4); c.lineTo(3, -2); c.lineTo(9, 4); c.closePath();
+          c.fill();
+          c.restore();
+        }
+
+        // Twin Kamish's Wrath X-Slash across the screen
+        if (p > 0.32) {
+          const sp = Math.min(1, (p - 0.32) / 0.45);
+          c.save();
+          c.strokeStyle = "#f3e8ff";
+          c.shadowColor = "#a855f7";
+          c.shadowBlur = 16;
+          c.lineWidth = 8 * (1 - sp * 0.35);
+          c.beginPath();
+          c.moveTo(cx - 170 * sp, cy - 120 * sp);
+          c.lineTo(cx + 170 * sp, cy + 120 * sp);
+          c.moveTo(cx + 170 * sp, cy - 120 * sp);
+          c.lineTo(cx - 170 * sp, cy + 120 * sp);
+          c.stroke();
+          c.restore();
+        }
+      } else if (charId === "denji") {
+        // DENJI: Chainsaw Rip-Cord Ignition + Triple Roaring Chainsaw Blades + Crimson Devil Burst
+        const dGlow = c.createRadialGradient(cx, cy, 18, cx, cy, 230);
+        dGlow.addColorStop(0, "rgba(251, 146, 60, 0.78)");
+        dGlow.addColorStop(0.5, "rgba(220, 38, 38, 0.45)");
+        dGlow.addColorStop(1, "rgba(69, 10, 10, 0)");
+        c.fillStyle = dGlow;
+        c.beginPath(); c.arc(cx, cy, 230, 0, Math.PI * 2); c.fill();
+
+        // Crossed Giant Chainsaw Bars with Reciprocating Teeth
+        const sawShift = Math.floor(now * 0.05) % 2 * 6;
+        for (const ang of [-0.58, 0.58, -Math.PI * 0.5]) {
+          c.save();
+          c.translate(cx, cy);
+          c.rotate(ang);
+          c.fillStyle = "#334155";
+          c.strokeStyle = "#f97316";
+          c.lineWidth = 3;
+          c.beginPath();
+          c.roundRect(-22, -210, 44, 210, 18);
+          c.fill();
+          c.stroke();
+          // Saw teeth along edges
+          c.fillStyle = "#f8fafc";
+          for (let y = -195 + sawShift; y < -35; y += 18) {
+            c.beginPath();
+            c.moveTo(-22, y); c.lineTo(-34, y + 6); c.lineTo(-22, y + 12);
+            c.moveTo(22, y); c.lineTo(34, y + 6); c.lineTo(22, y + 12);
+            c.fill();
+          }
+          c.restore();
+        }
+      } else if (charId === "garou") {
+        // GAROU: Twin-Stream Martial Helix (Cyan Water Stream + Crimson Whirlwind Iron) + Cosmic Fear Galaxy Burst
+        const gGlow = c.createRadialGradient(cx, cy, 16, cx, cy, 235);
+        gGlow.addColorStop(0, "rgba(192, 132, 252, 0.75)");
+        gGlow.addColorStop(0.45, "rgba(225, 29, 72, 0.4)");
+        gGlow.addColorStop(0.8, "rgba(56, 189, 248, 0.25)");
+        gGlow.addColorStop(1, "rgba(9, 3, 20, 0)");
+        c.fillStyle = gGlow;
+        c.beginPath(); c.arc(cx, cy, 235, 0, Math.PI * 2); c.fill();
+
+        // Swirling Twin Martial Arts Dragon Streams (Cyan & Crimson)
+        c.save();
+        c.translate(cx, cy);
+        c.lineWidth = 8;
+        c.lineCap = "round";
+        c.strokeStyle = "#38bdf8";
+        c.shadowColor = "#0284c7";
+        c.shadowBlur = 16;
+        c.beginPath();
+        c.arc(0, 0, 142, t * 5, t * 5 + Math.PI * 1.25);
+        c.stroke();
+
+        c.strokeStyle = "#f43f5e";
+        c.shadowColor = "#e11d48";
+        c.beginPath();
+        c.arc(0, 0, 142, t * 5 + Math.PI, t * 5 + Math.PI * 2.25);
+        c.stroke();
+
+        // Gamma Ray Burst Diagonal Cosmic Beam
+        if (p > 0.35) {
+          c.rotate(-0.45);
+          const beamGrad = c.createLinearGradient(-220, 0, 220, 0);
+          beamGrad.addColorStop(0, "rgba(56, 189, 248, 0)");
+          beamGrad.addColorStop(0.5, "rgba(253, 224, 71, 0.85)");
+          beamGrad.addColorStop(1, "rgba(192, 132, 252, 0)");
+          c.fillStyle = beamGrad;
+          c.fillRect(-220, -22, 440, 44);
+        }
+        c.restore();
       }
 
       // 3. ACTUAL CHARACTER BALL IN ULTIMATE POSE AT THE CENTER
@@ -946,6 +1158,63 @@
       c.strokeStyle = "#ef4444";
       c.lineWidth = 3;
       c.beginPath(); c.moveTo(hx - 74, hy + 52); c.lineTo(hx + 68, hy - 58); c.stroke();
+    } else if (theme.motif === "godspeed") {
+      // Killua: Godspeed Electric Halo + Twin Alloy Yo-Yo Orbits + Lightning Arcs
+      const kGlow = c.createRadialGradient(hx, hy, 10, hx, hy, 88);
+      kGlow.addColorStop(0, "rgba(56, 189, 248, 0.65)");
+      kGlow.addColorStop(0.6, "rgba(129, 140, 248, 0.25)");
+      kGlow.addColorStop(1, "rgba(56, 189, 248, 0)");
+      c.fillStyle = kGlow;
+      c.beginPath(); c.arc(hx, hy, 88, 0, Math.PI * 2); c.fill();
+
+      c.strokeStyle = "#bae6fd";
+      c.lineWidth = 2.2;
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2 + t * 2.4;
+        c.beginPath();
+        c.moveTo(hx + Math.cos(a) * 44, hy + Math.sin(a) * 44);
+        c.lineTo(hx + Math.cos(a + 0.2) * 62, hy + Math.sin(a + 0.2) * 62);
+        c.lineTo(hx + Math.cos(a - 0.1) * 78, hy + Math.sin(a - 0.1) * 78);
+        c.stroke();
+      }
+    } else if (theme.motif === "monarch") {
+      // Jin-Woo: Abyssal Shadow Portal + Twin Glowing Monarch Eyes & Purple Flame
+      const mGlow = c.createRadialGradient(hx, hy, 10, hx, hy, 90);
+      mGlow.addColorStop(0, "rgba(168, 85, 247, 0.68)");
+      mGlow.addColorStop(0.6, "rgba(56, 189, 248, 0.25)");
+      mGlow.addColorStop(1, "rgba(168, 85, 247, 0)");
+      c.fillStyle = mGlow;
+      c.beginPath(); c.arc(hx, hy, 90, 0, Math.PI * 2); c.fill();
+
+      c.strokeStyle = "rgba(192, 132, 252, 0.8)";
+      c.lineWidth = 2.2;
+      c.beginPath(); c.ellipse(hx, hy, 76, 28, t * 0.7, 0, Math.PI * 2); c.stroke();
+      c.strokeStyle = "rgba(56, 189, 248, 0.75)";
+      c.beginPath(); c.ellipse(hx, hy, 76, 28, -t * 0.7, 0, Math.PI * 2); c.stroke();
+    } else if (theme.motif === "chainsaw") {
+      // Denji: Spinning Saw Ring + Blood-Orange Rip-Cord Slashes
+      const cGlow = c.createRadialGradient(hx, hy, 12, hx, hy, 88);
+      cGlow.addColorStop(0, "rgba(249, 115, 22, 0.65)");
+      cGlow.addColorStop(0.6, "rgba(239, 68, 68, 0.3)");
+      cGlow.addColorStop(1, "rgba(239, 68, 68, 0)");
+      c.fillStyle = cGlow;
+      c.beginPath(); c.arc(hx, hy, 88, 0, Math.PI * 2); c.fill();
+
+      drawImpactStar(c, hx, hy, 74, 54, 16, t * 1.8, "rgba(234, 88, 12, 0.28)", "#fde047");
+    } else if (theme.motif === "cosmic") {
+      // Garou: Twin Martial Streams (Cyan Water + Crimson Whirlwind) + Cosmic Starfield Ring
+      const gGlow = c.createRadialGradient(hx, hy, 10, hx, hy, 90);
+      gGlow.addColorStop(0, "rgba(225, 29, 72, 0.58)");
+      gGlow.addColorStop(0.55, "rgba(56, 189, 248, 0.32)");
+      gGlow.addColorStop(1, "rgba(192, 132, 252, 0)");
+      c.fillStyle = gGlow;
+      c.beginPath(); c.arc(hx, hy, 90, 0, Math.PI * 2); c.fill();
+
+      c.lineWidth = 3.5;
+      c.strokeStyle = "#38bdf8";
+      c.beginPath(); c.arc(hx, hy, 68, t * 2, t * 2 + Math.PI * 1.2); c.stroke();
+      c.strokeStyle = "#f43f5e";
+      c.beginPath(); c.arc(hx, hy, 68, t * 2 + Math.PI, t * 2 + Math.PI * 2.2); c.stroke();
     }
     c.restore();
 

@@ -2305,6 +2305,10 @@
       berserker_armor: ["BERSERKER ARMOR!", COLORS.red],
       hollow_purple: ["HOLLOW PURPLE!", "#b84dff"],
       fuga: ["OPEN: FUGA!", "#f97316"],
+      godspeed: ["GODSPEED: KANMURU!", "#38bdf8"],
+      arise: ["ARISE: SHADOW ARMY!", "#a855f7"],
+      hero_of_hell: ["HERO OF HELL!", "#ea580c"],
+      cosmic_fear: ["COSMIC FEAR: GAMMA RAY BURST!", "#c084fc"],
     }[ball.ult];
     if (fx) {
       if (ball.ult !== "time_stop" && ball.ult !== "star_time_stop") {
@@ -2595,6 +2599,89 @@
           }));
         },
       });
+    } else if (ball.ult === "godspeed") {
+      beginCast(ball, {
+        kind: "powerup",
+        duration: 0.4,
+        color: "#38bdf8",
+        fire(b) {
+          b.ultTimer = 8.0;
+          addEffect(b, "haste", 8.0, { factor: 1.35 });
+          addEffect(b, "shield", 8.0, { reduction: 0.2 });
+          if (b.skills[0]) b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.25);
+          entities.push(spawnShockRing(b.x, b.y, "#38bdf8", 125, 0.42));
+          entities.push(spawnShockRing(b.x, b.y, "#e0f2fe", 90, 0.3));
+        },
+      });
+    } else if (ball.ult === "arise") {
+      beginCast(ball, {
+        kind: "powerup",
+        duration: 0.45,
+        color: "#a855f7",
+        fire(b) {
+          b.ultTimer = 8.0;
+          addEffect(b, "haste", 8.0, { factor: 1.2 });
+          addEffect(b, "shield", 8.0, { reduction: 0.18 });
+          if (b.skills[0]) b.skills[0]._cd = 0;
+          if (BF.spawnShadowSoldier) {
+            entities.push(BF.spawnShadowSoldier(b, "igris"));
+            entities.push(BF.spawnShadowSoldier(b, "beru"));
+          }
+          entities.push(spawnShockRing(b.x, b.y, "#a855f7", 130, 0.45));
+          entities.push(spawnShockRing(b.x, b.y, "#38bdf8", 92, 0.34));
+        },
+      });
+    } else if (ball.ult === "hero_of_hell") {
+      beginCast(ball, {
+        kind: "powerup",
+        duration: 0.42,
+        color: "#ea580c",
+        fire(b) {
+          b.ultTimer = 8.0;
+          addEffect(b, "haste", 8.0, { factor: 1.28 });
+          addEffect(b, "shield", 8.0, { reduction: 0.22 });
+          if (b.skills[0]) b.skills[0]._cd = 0;
+          entities.push(spawnShockRing(b.x, b.y, "#ef4444", 130, 0.44));
+          entities.push(spawnShockRing(b.x, b.y, "#fbbf24", 94, 0.32));
+        },
+      });
+    } else if (ball.ult === "cosmic_fear") {
+      beginCast(ball, {
+        kind: "powerup",
+        duration: 0.55,
+        color: "#c084fc",
+        fire(b, g) {
+          b.ultTimer = 8.0;
+          addEffect(b, "haste", 8.0, { factor: 1.25 });
+          addEffect(b, "shield", 8.0, { reduction: 0.2 });
+          if (b.skills[0]) b.skills[0]._cd = 0;
+          entities.push(spawnShockRing(b.x, b.y, "#c084fc", 135, 0.45));
+          const t = g.balls.find((x) => x !== b && x.alive);
+          if (t) {
+            const ang = Math.atan2(t.y - b.y, t.x - b.x);
+            const m = castMuzzle(b, ang, 22);
+            g.entities.push(
+              spawnProjectile({
+                owner: b,
+                target: t,
+                x: m.x,
+                y: m.y,
+                speed: 590,
+                radius: 30,
+                damage: Math.round(20 + rng() * 4),
+                color: "#c084fc",
+                label: "GAMMA RAY BURST!",
+                onImpact(tt, gg, proj) {
+                  gg.addEffect(tt, "stun", 0.45);
+                  gg.entities.push(spawnShockRing(proj.x, proj.y, "#fde047", 115, 0.4));
+                  gg.entities.push(spawnShockRing(proj.x, proj.y, "#38bdf8", 85, 0.3));
+                  gg.spawnSparks(proj.x, proj.y, "#fde047", "#c084fc");
+                },
+              })
+            );
+          }
+        },
+      });
     }
   }
 
@@ -2635,7 +2722,9 @@
         ball.shunpoDashTimer > 0 ||
         ball.dragonRushTimer > 0 ||
         ball.cleaveDashTimer > 0 ||
-        ball.apeRushTimer > 0
+        ball.apeRushTimer > 0 ||
+        ball.jinwooDashTimer > 0 ||
+        ball.denjiDashTimer > 0
       )
     );
   }
@@ -3781,6 +3870,12 @@
       if (ball.cleaveDashTimer > 0) {
         ball.cleaveDashTimer = Math.max(0, ball.cleaveDashTimer - scaledDt);
       }
+      if (ball.jinwooDashTimer > 0) {
+        ball.jinwooDashTimer = Math.max(0, ball.jinwooDashTimer - scaledDt);
+      }
+      if (ball.denjiDashTimer > 0) {
+        ball.denjiDashTimer = Math.max(0, ball.denjiDashTimer - scaledDt);
+      }
       if (ball.apeRushTimer > 0) {
         ball.apeRushTimer = Math.max(0, ball.apeRushTimer - scaledDt);
       }
@@ -4314,7 +4409,9 @@
       (ball.costume === "gojo" && !(ball.ultTimer > 0)) ||
       (ball.costume === "guts" && ball.ultTimer > 0) ||
       (ball.costume === "ichigo" && (ball.vastoLordeMode || ball.innerDemonMode || (ball.evolved && ball.ultTimer > 0))) ||
-      (ball.costume === "goku" && ball.apeMode);
+      (ball.costume === "goku" && ball.apeMode) ||
+      ball.costume === "denji" ||
+      (ball.costume === "garou" && ball.ultTimer > 0);
     if (!hasFullFaceMask) {
       c.fillStyle = "rgba(255, 255, 255, 0.55)";
       c.beginPath();
