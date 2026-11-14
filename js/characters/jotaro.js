@@ -40,20 +40,17 @@
               target.channelTimer = 0;
               target.cast = null;
             }
-            g.addEffect(target, "slow", 0.65, { factor: 0.35 });
-            // Step Jotaro forward toward the staggered target to combo into Ora Barrage!
-            const stepSpd = owner.baseSpeed * 1.35;
+            g.addEffect(target, "slow", 0.5, { factor: 0.45 });
+            // Step Jotaro forward slightly toward the staggered target
+            const stepSpd = owner.baseSpeed * 1.18;
             owner.vx = dx * stepSpd;
             owner.vy = dy * stepSpd;
-            if (owner.skills[0] && owner.skills[0]._cd > 0.35) {
-              owner.skills[0]._cd = Math.max(0.2, owner.skills[0]._cd - 0.9);
-            }
             g.chargeUlt(owner);
             g.spawnSparks(target.x, target.y, "#00f0ff", "#a855f7");
             g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#00f0ff", true, "STAR FINGER!!");
             g.sound.playCritHit();
-            rt.setHitStop(0.05);
-            rt.addShake(0.14, 3.5);
+            rt.setHitStop(0.04);
+            rt.addShake(0.12, 3);
           }
         }
 
@@ -117,18 +114,18 @@
 
   const SKILL_ORA_BARRAGE = {
     name: "Ora Barrage",
-    cooldown: 2.1,
+    cooldown: 2.4,
     onTick(ball, game) {
       if (ball.standState) return false;
       const target = game.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
       const inUlt = ball.ultTimer > 0;
       const dist = Math.hypot(target.x - ball.x, target.y - ball.y);
-      const maxReach = inUlt ? 420 : (ball.yareYareMode ? 285 : 250);
+      const maxReach = inUlt ? 380 : (ball.yareYareMode ? 265 : 240);
       if (dist > maxReach + target.radius) return false;
 
       rt.beginCast(ball, {
-        kind: "stand_rush", duration: inUlt ? 0.12 : 0.2, color: "#9b59b6",
+        kind: "stand_rush", duration: inUlt ? 0.15 : 0.22, color: "#9b59b6",
         fire(b, g) {
           const t = g.balls.find((x) => x !== b && x.alive);
           if (!t) return;
@@ -145,12 +142,12 @@
             angle: angToTarget,
             target: t,
             dashDist: 0,
-            maxDashDist: inUlt ? 400 : (b.yareYareMode ? 280 : 240),
+            maxDashDist: inUlt ? 380 : (b.yareYareMode ? 260 : 230),
             barrageTimer: 0,
-            punchInterval: inUlt ? 0.065 : 0.072,
-            punchesLeft: inUlt ? 7 : (b.yareYareMode ? 6 : 5),
+            punchInterval: 0.075,
+            punchesLeft: inUlt ? 6 : 5,
             hitCount: 0,
-            heavy: inUlt || Boolean(b.yareYareMode),
+            heavy: inUlt,
             cry: "ORA",
             standColor: "#9b59b6",
             vampiric: false,
@@ -164,27 +161,27 @@
 
   const SKILL_STAR_FINGER = {
     name: "Star Finger",
-    cooldown: 3.8,
+    cooldown: 4.5,
     onTick(ball, game) {
       if (ball.standState) return false;
       const target = game.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
       const dist = Math.hypot(target.x - ball.x, target.y - ball.y);
       // Ideal mid-to-long range poke or interrupt when enemy is casting
-      if (dist < 90 || dist > 375) return false;
+      if (dist < 95 || dist > 365) return false;
 
       rt.beginCast(ball, {
-        kind: "stand_rush", duration: 0.16, color: "#00f0ff",
+        kind: "stand_rush", duration: 0.18, color: "#00f0ff",
         fire(b, g) {
           const t = g.balls.find((x) => x !== b && x.alive);
           if (!t) return;
           const ang = Math.atan2(t.y - b.y, t.x - b.x);
-          const dmg = Math.round((b.yareYareMode ? 18 : 14) + g.rng() * 5);
+          const dmg = Math.round((b.yareYareMode ? 11 : 9) + g.rng() * 3);
           g.entities.push(spawnStarFingerBeam({
             owner: b,
             target: t,
             angle: ang,
-            reach: 365,
+            reach: 355,
             duration: 0.24,
             damage: dmg,
           }));
@@ -201,14 +198,12 @@
     onTick(ball, game, dt) {
       if (ball._guardCd > 0) ball._guardCd = Math.max(0, ball._guardCd - dt);
 
-      // 1. "YARE YARE DAZE..." Rage Awakening at <= 45% HP (once per round)
-      if (!ball.yareYareMode && ball.hp > 0 && ball.hp <= ball.maxHp * 0.45) {
+      // 1. "YARE YARE DAZE..." Rage Awakening at <= 40% HP (once per round)
+      if (!ball.yareYareMode && ball.hp > 0 && ball.hp <= ball.maxHp * 0.40) {
         ball.yareYareMode = true;
-        game.addEffect(ball, "shield", 6.5, { reduction: 0.25 });
-        game.addEffect(ball, "haste", 6.5, { factor: 1.2 });
-        for (const s of ball.skills) {
-          if (s._cd > 0) s._cd = 0;
-        }
+        game.addEffect(ball, "shield", 5.0, { reduction: 0.18 });
+        game.addEffect(ball, "haste", 5.0, { factor: 1.15 });
+        if (ball.skills[0] && ball.skills[0]._cd > 0) ball.skills[0]._cd = 0;
         game.chargeUlt(ball);
         game.entities.push(rt.spawnShockRing(ball.x, ball.y, "#00f0ff", 130, 0.42));
         game.entities.push(rt.spawnBanner("YARE YARE DAZE...", "#a855f7"));
@@ -217,10 +212,10 @@
         rt.addShake(0.18, 4);
       }
 
-      // Bonus 30% faster skill cooldown recovery while in Yare Yare Rage Mode
+      // Bonus 18% faster skill cooldown recovery while in Yare Yare Rage Mode
       if (ball.yareYareMode) {
         for (const s of ball.skills) {
-          if (s._cd > 0) s._cd = Math.max(0, s._cd - dt * 0.3);
+          if (s._cd > 0) s._cd = Math.max(0, s._cd - dt * 0.18);
         }
       }
 
@@ -233,7 +228,7 @@
           const d = Math.hypot(ent.x - ball.x, ent.y - ball.y);
           if (d <= ball.radius + 46) {
             ent.dead = true;
-            ball._guardCd = 3.0;
+            ball._guardCd = 3.8;
             ball.standAttackTimer = 0.28;
             game.chargeUlt(ball);
             game.spawnSparks(ent.x, ent.y, "#00f0ff", COLORS.gold);
@@ -246,18 +241,18 @@
       return false;
     },
     onDamaged(ball, amount, game) {
-      if (amount < 4 || ball._guardCd > 0 || !ball.alive) return false;
+      if (amount < 6 || ball._guardCd > 0 || !ball.alive) return false;
       const attacker = game.balls.find((b) => b !== ball && b.alive);
       if (!attacker) return false;
       const dist = Math.hypot(attacker.x - ball.x, attacker.y - ball.y);
-      if (dist <= ball.radius + attacker.radius + 95) {
-        ball._guardCd = 3.2;
+      if (dist <= ball.radius + attacker.radius + 88) {
+        ball._guardCd = 4.2;
         ball.standAttackTimer = 0.32;
-        game.addEffect(ball, "shield", 1.1, { reduction: 0.35 });
-        const counterDmg = game.applyDamage(attacker, Math.round(9 + game.rng() * 5));
+        game.addEffect(ball, "shield", 0.9, { reduction: 0.25 });
+        const counterDmg = game.applyDamage(attacker, Math.round(5 + game.rng() * 3));
         const ang = Math.atan2(attacker.y - ball.y, attacker.x - ball.x);
-        attacker.vx = Math.cos(ang) * 420;
-        attacker.vy = Math.sin(ang) * 420;
+        attacker.vx = Math.cos(ang) * 380;
+        attacker.vy = Math.sin(ang) * 380;
         game.spawnSparks(attacker.x, attacker.y, "#a855f7", "#00f0ff");
         game.spawnDamageText(attacker.x, attacker.y - attacker.radius - 14, counterDmg, "#a855f7", true, "STAR COUNTER! ORA!");
         game.sound.playBallHit();
@@ -476,10 +471,10 @@
     role: "STAND USER • STAR PLATINUM",
     color: "#6c5ce7",
     radius: 28,
-    speed: 370,
-    maxHp: 585,
-    damage: [6, 10],
-    mass: 1.08,
+    speed: 365,
+    maxHp: 575,
+    damage: [5, 8],
+    mass: 1.05,
     costume: "jotaro",
     weapon: null,
     ult: "star_time_stop",

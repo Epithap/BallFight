@@ -875,12 +875,12 @@
         const hits = b.stoppedTimeHits;
         const burstAng = b.stoppedTimeAngle ?? 0;
         b.stoppedTimeHits = 0;
-        const burstDmg = applyDamage(b, Math.min(26, hits * 4));
+        const burstDmg = applyDamage(b, Math.min(12, hits * 2));
         b.flashTimer = 0.25;
         b.squash = 0.95;
-        b.vx = Math.cos(burstAng) * 860;
-        b.vy = Math.sin(burstAng) * 860;
-        b.knockbackTimer = 0.42;
+        b.vx = Math.cos(burstAng) * 760;
+        b.vy = Math.sin(burstAng) * 760;
+        b.knockbackTimer = 0.36;
         entities.push(spawnShockRing(b.x, b.y, "#a855f7", 150, 0.42));
         spawnCritBurst(b.x, b.y);
         spawnDamageText(b.x, b.y - b.radius - 18, burstDmg, "#a855f7", true, `TOKI WA UGOKIDASU! (${hits}x ORA)`);
@@ -2485,19 +2485,18 @@
           b.ultTimer = 4.0;
           timeStopTimer = 4.0;
           timeStopOwner = b;
-          for (const s of b.skills) {
-            s._cd = 0;
-          }
-          // Instant Time-Step Blink onto the frozen enemy so Jotaro never whiffs Time Stop!
+          if (b.skills[0]) b.skills[0]._cd = 0;
+          // Time-Step Blink onto the arena-interior side of the frozen enemy so Jotaro never wedges them against a wall!
           const enemy = balls.find((x) => x !== b && x.alive);
           if (enemy) {
             enemy.stoppedTimeHits = 0;
-            const angTo = Math.atan2(enemy.y - b.y, enemy.x - b.x);
-            const standOff = enemy.radius + b.radius + 34;
-            b.x = Math.max(b.radius + 6, Math.min(WORLD_SIZE - b.radius - 6, enemy.x - Math.cos(angTo) * standOff));
-            b.y = Math.max(b.radius + 6, Math.min(WORLD_SIZE - b.radius - 6, enemy.y - Math.sin(angTo) * standOff));
-            b.vx = Math.cos(angTo) * b.baseSpeed * 1.15;
-            b.vy = Math.sin(angTo) * b.baseSpeed * 1.15;
+            const toCenterAng = Math.atan2(WORLD_SIZE * 0.5 - enemy.y, WORLD_SIZE * 0.5 - enemy.x);
+            const standOff = enemy.radius + b.radius + 54;
+            b.x = Math.max(b.radius + 14, Math.min(WORLD_SIZE - b.radius - 14, enemy.x + Math.cos(toCenterAng) * standOff));
+            b.y = Math.max(b.radius + 14, Math.min(WORLD_SIZE - b.radius - 14, enemy.y + Math.sin(toCenterAng) * standOff));
+            const moveAng = Math.atan2(enemy.y - b.y, enemy.x - b.x) + 0.38;
+            b.vx = Math.cos(moveAng) * b.baseSpeed;
+            b.vy = Math.sin(moveAng) * b.baseSpeed;
             entities.push(spawnShockRing(b.x, b.y, "#00f0ff", 110, 0.35));
             spawnDamageText(b.x, b.y - b.radius - 12, 0, "#00f0ff", false, "TIME-STEP BLINK!");
           }
@@ -2510,16 +2509,14 @@
         kind: "powerup", duration: 0.45, color: COLORS.red,
         fire(b) {
           b.ultTimer = 8.5;
-          addEffect(b, "haste", 8.5, { factor: 1.35 });
-          addEffect(b, "shield", 8.5, { reduction: 0.3 });
-          for (const s of b.skills) {
-            s._cd = 0;
-          }
+          addEffect(b, "haste", 8.5, { factor: 1.32 });
+          addEffect(b, "shield", 8.5, { reduction: 0.22 });
+          if (b.skills[0]) b.skills[0]._cd = 0;
           const enemy = balls.find((x) => x !== b && x.alive);
           if (enemy) {
             const ang = Math.atan2(enemy.y - b.y, enemy.x - b.x);
-            b.vx = Math.cos(ang) * b.baseSpeed * 1.55;
-            b.vy = Math.sin(ang) * b.baseSpeed * 1.55;
+            b.vx = Math.cos(ang) * b.baseSpeed * 1.4;
+            b.vy = Math.sin(ang) * b.baseSpeed * 1.4;
           }
           entities.push(spawnShockRing(b.x, b.y, COLORS.red, 135, 0.45));
         },
@@ -3125,7 +3122,7 @@
     }
 
     if (hitCooldown <= 0) {
-      hitCooldown = HIT_COOLDOWN;
+      hitCooldown = timeStopTimer > 0 ? 0.38 : HIT_COOLDOWN;
       totalHits += 1;
 
       const maxImpact = b1.baseSpeed + b2.baseSpeed;
@@ -3308,7 +3305,7 @@
           const heavyCry = isJotaro ? "HEAVY ORA!" : "HEAVY MUDA!";
           attacker.standAttackTimer = 0.3;
           if (timeStopTimer > 0 && attacker === timeStopOwner) {
-            const heavyStandDmg = applyDamage(defender, Math.round(9 + rng() * 4));
+            const heavyStandDmg = applyDamage(defender, Math.round(4 + rng() * 2));
             if (isJotaro) {
               defender.stoppedTimeHits = (defender.stoppedTimeHits || 0) + 1;
               defender.stoppedTimeAngle = Math.atan2(defender.y - attacker.y, defender.x - attacker.x);
@@ -3427,10 +3424,10 @@
         st.punchesLeft--;
         st.hitCount = (st.hitCount || 0) + 1;
 
-        // Ramping DoT barrage: hit 1 barely scratches, hit 2+ ramps up harder
-        const baseFirst = st.heavy ? 2 : 1;
-        const rampStep = st.heavy ? 2 : 1;
-        const dmgAmt = baseFirst + (st.hitCount - 1) * rampStep;
+        // Ramping DoT barrage: hit 1 barely scratches, hit 2+ ramps up moderately
+        const baseFirst = 1;
+        const rampStep = st.heavy ? 1.35 : 1;
+        const dmgAmt = Math.round(baseFirst + (st.hitCount - 1) * rampStep);
         const isEscalated = st.hitCount >= 2;
         const dealt = applyDamage(st.target, dmgAmt);
         if (st.vampiric !== false && ball.costume === "dio") {

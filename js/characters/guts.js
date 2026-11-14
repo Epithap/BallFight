@@ -57,8 +57,8 @@
               const dealt = g.applyDamage(target, damage);
               target.flashTimer = 0.14;
               target.squash = 0.95;
-              target._gutsBleedTimer = 2.4;
-              target._gutsBleedTick = 0.55;
+              target._gutsBleedTimer = 1.8;
+              target._gutsBleedTick = 0.6;
               const kAng = Math.atan2(dy, dx);
               target.vx = Math.cos(kAng) * knockback;
               target.vy = Math.sin(kAng) * knockback;
@@ -253,17 +253,17 @@
               const kAng = Math.atan2(dy, dx);
               t.vx = Math.cos(kAng) * 460;
               t.vy = Math.sin(kAng) * 460;
-              g.addEffect(t, "slow", 0.55, { factor: 0.4 });
-              // Instant combo setup: Hand Cannon recoil spins Guts right into Dragonslayer Cleave!
-              if (owner.skills[0] && owner.skills[0]._cd > 0.2) {
-                owner.skills[0]._cd = Math.max(0.15, owner.skills[0]._cd - 1.15);
+              g.addEffect(t, "slow", 0.45, { factor: 0.45 });
+              // Combo setup: Hand Cannon recoil shaves cooldown off Dragonslayer Cleave
+              if (owner.skills[0] && owner.skills[0]._cd > 0.25) {
+                owner.skills[0]._cd = Math.max(0.2, owner.skills[0]._cd - 0.5);
               }
               g.chargeUlt(owner);
               g.spawnSparks(t.x, t.y, "#f97316", COLORS.red);
               g.spawnDamageText(t.x, t.y - t.radius - 16, dealt, "#f97316", true, "HAND CANNON!!");
               g.sound.playCritHit();
-              rt.setHitStop(0.06);
-              rt.addShake(0.18, 4.5);
+              rt.setHitStop(0.05);
+              rt.addShake(0.15, 4);
             }
           }
         }
@@ -305,18 +305,18 @@
 
   const SKILL_DRAGONSLAYER_CLEAVE = {
     name: "Dragonslayer Cleave",
-    cooldown: 1.95,
+    cooldown: 2.3,
     onTick(ball, g) {
       const target = g.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
       const inUlt = ball.ultTimer > 0;
       const dist = Math.hypot(target.x - ball.x, target.y - ball.y);
       // Only swing when within lunge-cleave range so Guts never wastes swings on empty air!
-      const triggerRange = inUlt ? 290 : 235;
+      const triggerRange = inUlt ? 275 : 225;
       if (dist > triggerRange + target.radius) return false;
 
       rt.beginCast(ball, {
-        kind: "swing", duration: inUlt ? 0.12 : 0.24, color: inUlt ? COLORS.red : COLORS.silver,
+        kind: "swing", duration: inUlt ? 0.14 : 0.25, color: inUlt ? COLORS.red : COLORS.silver,
         fire(b, gg) {
           const t = gg.balls.find((x) => x !== b && x.alive);
           if (!t) return;
@@ -324,18 +324,18 @@
           const berserk = b.ultTimer > 0;
           // Heavy Iron Lunge Step toward enemy as Guts swings the Dragonslayer!
           const spd = Math.max(Math.hypot(b.vx, b.vy), b.baseSpeed);
-          b.vx = Math.cos(ang) * spd * (berserk ? 1.38 : 1.32);
-          b.vy = Math.sin(ang) * spd * (berserk ? 1.38 : 1.32);
+          b.vx = Math.cos(ang) * spd * (berserk ? 1.3 : 1.24);
+          b.vy = Math.sin(ang) * spd * (berserk ? 1.3 : 1.24);
 
           if (berserk) {
-            if (b.skills[0]) b.skills[0]._cd = 1.15;
+            if (b.skills[0]) b.skills[0]._cd = 1.45;
             gg.entities.push(spawnGreatswordSwing({
               owner: b,
               angle: ang,
               arcSpan: Math.PI * 2,
-              reach: 158,
+              reach: 152,
               duration: 0.2,
-              damage: Math.round(25 + gg.rng() * 6),
+              damage: Math.round(14 + gg.rng() * 4),
               knockback: 260,
               berserk: true,
               direction: 1,
@@ -344,16 +344,16 @@
                 const t2 = gg2.balls.find((x) => x !== b && x.alive);
                 const ang2 = t2 ? Math.atan2(t2.y - b.y, t2.x - b.x) : ang;
                 const spd2 = Math.max(Math.hypot(b.vx, b.vy), b.baseSpeed);
-                b.vx = Math.cos(ang2) * spd2 * 1.32;
-                b.vy = Math.sin(ang2) * spd2 * 1.32;
+                b.vx = Math.cos(ang2) * spd2 * 1.24;
+                b.vy = Math.sin(ang2) * spd2 * 1.24;
                 gg2.entities.push(spawnGreatswordSwing({
                   owner: b,
                   angle: ang2,
                   arcSpan: Math.PI * 2,
-                  reach: 164,
+                  reach: 158,
                   duration: 0.22,
-                  damage: Math.round(29 + gg2.rng() * 8),
-                  knockback: 490,
+                  damage: Math.round(16 + gg.rng() * 4),
+                  knockback: 460,
                   berserk: true,
                   direction: -1,
                 }));
@@ -364,11 +364,11 @@
             gg.entities.push(spawnGreatswordSwing({
               owner: b,
               angle: ang,
-              arcSpan: Math.PI * 1.05,
-              reach: 138,
+              arcSpan: Math.PI * 1.0,
+              reach: 134,
               duration: 0.24,
-              damage: Math.round(26 + gg.rng() * 6),
-              knockback: 360,
+              damage: Math.round(16 + gg.rng() * 4),
+              knockback: 350,
               berserk: false,
             }));
           }
@@ -379,9 +379,9 @@
       return true;
     },
     onHit(ball) {
-      // Since Guts deals 0 body collision damage by design, colliding shaves cooldown off Dragonslayer Cleave!
-      if (ball.skills[0] && ball.skills[0]._cd > 0.15) {
-        ball.skills[0]._cd = Math.max(0.05, ball.skills[0]._cd - 0.85);
+      // Since Guts deals 0 body collision damage by design, colliding shaves a bit of cooldown off Dragonslayer Cleave!
+      if (ball.skills[0] && ball.skills[0]._cd > 0.2) {
+        ball.skills[0]._cd = Math.max(0.1, ball.skills[0]._cd - 0.4);
       }
       return false;
     },
@@ -389,17 +389,17 @@
 
   const SKILL_PROSTHETIC_ARSENAL = {
     name: "Prosthetic Arm: Cannon & Repeater",
-    cooldown: 3.2,
+    cooldown: 4.0,
     onTick(ball, g) {
       if (ball.swingState) return false;
       const target = g.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
       const dist = Math.hypot(target.x - ball.x, target.y - ball.y);
-      const isClose = dist <= 185 + target.radius;
+      const isClose = dist <= 180 + target.radius;
 
       rt.beginCast(ball, {
         kind: isClose ? "fire" : "arrow",
-        duration: isClose ? 0.15 : 0.18,
+        duration: isClose ? 0.16 : 0.2,
         color: isClose ? "#f97316" : COLORS.silver,
         fire(b, gg) {
           const t = gg.balls.find((x) => x !== b && x.alive);
@@ -407,14 +407,14 @@
           const ang = Math.atan2(t.y - b.y, t.x - b.x);
           const curDist = Math.hypot(t.x - b.x, t.y - b.y);
 
-          if (curDist <= 200 + t.radius) {
+          if (curDist <= 190 + t.radius) {
             // Close range: Hidden Hand Cannon Explosive Blast!
             gg.entities.push(spawnHandCannonBlast({
               owner: b,
               angle: ang,
-              reach: 185,
+              reach: 175,
               duration: 0.25,
-              damage: Math.round(21 + gg.rng() * 6),
+              damage: Math.round(12 + gg.rng() * 4),
             }));
             for (let i = 0; i < 12; i++) {
               const a = ang + (gg.rng() - 0.5) * 0.9;
@@ -433,9 +433,9 @@
             gg.sound.playCritHit();
             gg.spawnDamageText(b.x, b.y - b.radius, 0, "#f97316", false, "IRON CANNON!");
           } else {
-            // Mid/Long range: 4-Bolt Repeater Crossbow Volley!
-            for (let i = 0; i < 4; i++) {
-              gg.entities.push(rt.spawnDelayedAction(i * 0.08, (gg2) => {
+            // Mid/Long range: 3-Bolt Repeater Crossbow Volley!
+            for (let i = 0; i < 3; i++) {
+              gg.entities.push(rt.spawnDelayedAction(i * 0.09, (gg2) => {
                 if (!b.alive) return;
                 const tgt = gg2.balls.find((x) => x !== b && x.alive);
                 if (!tgt) return;
@@ -447,13 +447,13 @@
                   x: m.x,
                   y: m.y,
                   angle: aim,
-                  speed: 790,
-                  damage: Math.round(5 + gg2.rng() * 3),
+                  speed: 780,
+                  damage: Math.round(3 + gg2.rng() * 2),
                 }));
                 gg2.sound.playKnifeThrow();
               }));
             }
-            gg.spawnDamageText(b.x, b.y - b.radius, 0, COLORS.silver, false, "REPEATER VOLLEY x4!");
+            gg.spawnDamageText(b.x, b.y - b.radius, 0, COLORS.silver, false, "REPEATER VOLLEY x3!");
           }
         },
       });
@@ -467,9 +467,9 @@
     onTick(ball, g, dt) {
       if (ball._counterCd > 0) ball._counterCd = Math.max(0, ball._counterCd - dt);
 
-      // 1. Struggler's Grit: Missing HP accelerates Guts's skill cooldowns up to +45% faster!
+      // 1. Struggler's Grit: Missing HP accelerates Guts's skill cooldowns up to +22% faster
       const missingRatio = Math.max(0, Math.min(1, 1 - ball.hp / ball.maxHp));
-      const bonusRate = missingRatio * 0.45 + (ball.ultTimer > 0 ? 0.25 : 0);
+      const bonusRate = missingRatio * 0.22;
       if (bonusRate > 0) {
         for (const s of ball.skills) {
           if (s._cd > 0) s._cd = Math.max(0, s._cd - dt * bonusRate);
@@ -480,10 +480,10 @@
       for (const t of g.balls) {
         if (t === ball || !t.alive || !(t._gutsBleedTimer > 0)) continue;
         t._gutsBleedTimer = Math.max(0, t._gutsBleedTimer - dt);
-        t._gutsBleedTick = (t._gutsBleedTick || 0.55) - dt;
+        t._gutsBleedTick = (t._gutsBleedTick || 0.6) - dt;
         if (t._gutsBleedTick <= 0) {
-          t._gutsBleedTick = 0.55;
-          const bleedDmg = g.applyDamage(t, 3);
+          t._gutsBleedTick = 0.6;
+          const bleedDmg = g.applyDamage(t, 2);
           g.spawnSparks(t.x, t.y, COLORS.red, "#1c1d24");
           g.spawnDamageText(t.x + (g.rng() - 0.5) * 16, t.y - t.radius - 8, bleedDmg, COLORS.red, false, "BLEED");
         }
@@ -491,11 +491,11 @@
       return false;
     },
     onDamaged(ball, amount, g) {
-      if (amount < 4 || !ball.alive) return false;
+      if (amount < 6 || !ball.alive) return false;
       // Passive Grit armor: brief tenacity shield when taking hits at low HP
       const missingRatio = Math.max(0, Math.min(1, 1 - ball.hp / ball.maxHp));
-      if (missingRatio >= 0.25) {
-        g.addEffect(ball, "shield", 0.9, { reduction: Math.min(0.32, 0.12 + missingRatio * 0.25) });
+      if (missingRatio >= 0.3) {
+        g.addEffect(ball, "shield", 0.75, { reduction: Math.min(0.24, 0.1 + missingRatio * 0.18) });
       }
 
       // Counter-Slash when struck in close range!
@@ -503,18 +503,18 @@
       const attacker = g.balls.find((b) => b !== ball && b.alive);
       if (!attacker) return false;
       const dist = Math.hypot(attacker.x - ball.x, attacker.y - ball.y);
-      if (dist <= ball.radius + attacker.radius + 115) {
-        ball._counterCd = 3.8;
+      if (dist <= ball.radius + attacker.radius + 105) {
+        ball._counterCd = 5.0;
         const ang = Math.atan2(attacker.y - ball.y, attacker.x - ball.x);
         const berserk = ball.ultTimer > 0;
         g.entities.push(spawnGreatswordSwing({
           owner: ball,
           angle: ang,
-          arcSpan: Math.PI * 1.1,
-          reach: 142,
+          arcSpan: Math.PI * 1.0,
+          reach: 136,
           duration: 0.2,
-          damage: Math.round(19 + g.rng() * 5),
-          knockback: 380,
+          damage: Math.round(11 + g.rng() * 3),
+          knockback: 340,
           berserk,
         }));
         g.sound.playCritHit();
@@ -533,15 +533,15 @@
     role: "BERSERKER • DRAGONSLAYER",
     color: "#1c1d24",
     radius: 29,
-    speed: 360,
-    maxHp: 625,
+    speed: 355,
+    maxHp: 620,
     damage: [0, 0],
     mass: 1.15,
     costume: "guts",
     weapon: "dragonslayer",
     ult: "berserker_armor",
     ultName: "BERSERKER ARMOR",
-    ultDesc: "Dons the cursed Berserker Armor! Gains +35% speed, 30% damage reduction, leaps at the foe, and unleashes 2x 360° Savage Rampage.",
+    ultDesc: "Dons the cursed Berserker Armor! Gains +32% speed, 22% damage reduction, leaps at the foe, and unleashes 2x 360° Savage Rampage.",
     skillName: "DRAGONSLAYER & PROSTHETIC ARSENAL",
     skillDesc: "0 collision damage by design! Lunges with bleed-inflicting Dragonslayer Cleaves, fires Hand Cannon & Repeater Crossbow, and counters close hits!",
     skills: [SKILL_DRAGONSLAYER_CLEAVE, SKILL_PROSTHETIC_ARSENAL, SKILL_STRUGGLERS_GRIT],
@@ -549,12 +549,12 @@
 
   BF.TRANSFORM_DETAILS.guts = {
     label: "🔥 BERSERKER",
-    speedMult: 1.35,
+    speedMult: 1.32,
     radiusMult: 1.0,
-    powerText: "54-68 x2",
+    powerText: "30-38 x2",
     ultSkillName: "SAVAGE RAMPAGE x2",
-    ultSkillCd: "CD: 1.15S",
-    ultSkillDesc: "Speed +35% & 30% Armor! Leaps into 2x consecutive 360° Dragonslayer swings (25-31 + 29-37 DMG) with Bleed & Prosthetic Cannon combos.",
+    ultSkillCd: "CD: 1.45S",
+    ultSkillDesc: "Speed +32% & 22% Armor! Leaps into 2x consecutive 360° Dragonslayer swings (14-18 + 16-20 DMG) with Bleed & Prosthetic Cannon combos.",
   };
 
   BF.WEAPON_DRAWERS.dragonslayer = (ball, c) => {
