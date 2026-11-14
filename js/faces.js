@@ -805,15 +805,39 @@
   // Chibi Uchiha Prodigy (Sasuke): big round crimson Sharingan eyes (3 tomoe in Base, Mangekyou in Ult/Cast), cool smirk.
   F.sasuke = (ball, r, c, s) => {
     const ms = s.ult || s.cast;
+    const cm = Boolean(ball.curseMarkMode);
     const bl = blinkAmt(ball) * 0.5;
+
+    if (cm) {
+      // Curse Mark Stage 2 grayish-brown skin tint + dark cross/star mark across nose bridge
+      c.save();
+      c.beginPath();
+      c.arc(0, 0, r - 1.5, 0, TAU);
+      c.clip();
+      c.fillStyle = "rgba(120, 113, 108, 0.56)";
+      c.fillRect(-r, -r, r * 2, r * 2);
+
+      // Iconic dark CM2 cross/star marking over the nose bridge
+      c.fillStyle = "#1c1917";
+      c.beginPath();
+      c.moveTo(0, -r * 0.24);
+      c.lineTo(r * 0.14, -r * 0.04);
+      c.lineTo(0, r * 0.12);
+      c.lineTo(-r * 0.14, -r * 0.04);
+      c.closePath();
+      c.fill();
+      c.restore();
+    }
+
     for (const side of [-1, 1]) {
       eye(c, r, side, {
         rx: 0.245,
         ry: 0.24,
         slant: 0.2,
         iris: 0.15,
-        color: "#dc2626",
-        innerRing: "#7f1d1d",
+        sclera: cm ? "#1c1917" : "#ffffff",
+        color: cm ? "#f59e0b" : "#dc2626",
+        innerRing: cm ? "#b91c1c" : "#7f1d1d",
         lidArc: true,
         blink: bl,
         ex: s.ex,

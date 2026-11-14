@@ -1060,6 +1060,7 @@
         ultTimer: ball.ultTimer || 0,
         apeMode: Boolean(ball.apeMode),
         kyuubiMode: Boolean(ball.kyuubiMode),
+        curseMarkMode: Boolean(ball.curseMarkMode),
         vastoLordeMode: Boolean(ball.vastoLordeMode),
         innerDemonMode: Boolean(ball.innerDemonMode),
         _isCosmicGarou: Boolean(ball._isCosmicGarou),
@@ -1531,6 +1532,7 @@
       this.apeMode = false;
       this.apeErraticTimer = 0;
       this.kyuubiMode = false;
+      this.curseMarkMode = false;
       this.kyuubiSlashTimer = 0;
       this.kyuubiSlashHit = false;
       this.vastoLordeMode = false;
@@ -2486,6 +2488,26 @@
     shakeIntensity = Math.max(shakeIntensity, 10);
   }
 
+  function triggerSasukeCurseMarkTransform(b) {
+    if (!b || !b.alive || b.curseMarkMode) return;
+    b.curseMarkMode = true;
+    b.radius = Math.round(b.baseRadius * 1.07);
+    b.baseSpeed = Math.round(b.baseSpeed * 1.2);
+    b.damage = [b.damage[0] + 3, b.damage[1] + 4];
+    b.hp = Math.min(b.maxHp, b.hp + 45);
+    if (b.skills && b.skills[0]) {
+      b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.15);
+    }
+    entities.push(spawnBanner("CURSE MARK STAGE 2!", "#a855f7"));
+    entities.push(spawnShockRing(b.x, b.y, "#a855f7", 165, 0.52));
+    entities.push(spawnShockRing(b.x, b.y, "#09090b", 120, 0.38));
+    spawnSparks(b.x, b.y, "#a855f7", "#09090b");
+    spawnDamageText(b.x, b.y - b.radius - 16, 0, "#c084fc", true, "CURSED FORM (+45 HP)!");
+    sound.playCritHit();
+    shakeTime = Math.max(shakeTime, 0.42);
+    shakeIntensity = Math.max(shakeIntensity, 10);
+  }
+
   function triggerIchigoInnerDemonTransform(b) {
     if (!b || !b.alive || b.innerDemonMode || b.vastoLordeMode) return;
     b.innerDemonMode = true;
@@ -3022,6 +3044,9 @@
     if (ball.alive && ball.hp > 0 && ball.costume === "naruto" && ball.evolved && ball.hp <= 200 && !ball.kyuubiMode) {
       triggerNarutoKyuubiTransform(ball);
     }
+    if (ball.alive && ball.hp > 0 && ball.costume === "sasuke" && ball.hp <= 150 && !ball.curseMarkMode) {
+      triggerSasukeCurseMarkTransform(ball);
+    }
     if (ball.alive && ball.hp > 0 && ball.costume === "ichigo") {
       if (ball.evolved && ball.hp <= 200 && !ball.vastoLordeMode) {
         triggerIchigoVastoTransform(ball);
@@ -3542,12 +3567,14 @@
         if (attacker.chidoriTimer > 0 && !attacker.chidoriHit) {
           attacker.chidoriHit = true;
           attacker.chidoriTimer = 0;
-          const chiDmg = applyDamage(defender, 11);
-          addEffect(defender, "slow", 0.6, { factor: 0.72 });
-          spawnDamageText(defender.x, defender.y - defender.radius - 14, chiDmg, "#38bdf8", true, "CHIDORI!");
-          entities.push(spawnShockRing(midX, midY, "#38bdf8", 88, 0.32));
-          spawnSparks(midX, midY, "#ffffff", "#38bdf8");
-          shakeTime = 0.18; shakeIntensity = 5;
+          const isCM = Boolean(attacker.curseMarkMode);
+          const chiDmg = applyDamage(defender, isCM ? 17 : 11);
+          addEffect(defender, isCM ? "stun" : "slow", isCM ? 0.4 : 0.6, isCM ? undefined : { factor: 0.72 });
+          const cCol = isCM ? "#a855f7" : "#38bdf8";
+          spawnDamageText(defender.x, defender.y - defender.radius - 14, chiDmg, cCol, true, isCM ? "DARK CHIDORI!" : "CHIDORI!");
+          entities.push(spawnShockRing(midX, midY, cCol, isCM ? 105 : 88, 0.34));
+          spawnSparks(midX, midY, isCM ? "#09090b" : "#ffffff", cCol);
+          shakeTime = isCM ? 0.24 : 0.18; shakeIntensity = isCM ? 7 : 5;
           chargeUlt(attacker);
         }
         if (attacker.kyuubiSlashTimer > 0 && !attacker.kyuubiSlashHit) {
@@ -4085,6 +4112,9 @@
       if (ball.costume === "naruto" && ball.evolved && ball.hp > 0 && ball.hp <= 200 && !ball.kyuubiMode) {
         triggerNarutoKyuubiTransform(ball);
       }
+      if (ball.costume === "sasuke" && ball.hp > 0 && ball.hp <= 150 && !ball.curseMarkMode) {
+        triggerSasukeCurseMarkTransform(ball);
+      }
       if (ball.costume === "ichigo" && ball.hp > 0) {
         if (ball.evolved && ball.hp <= 200 && !ball.vastoLordeMode) {
           triggerIchigoVastoTransform(ball);
@@ -4100,7 +4130,8 @@
         if (ball.ultTimer <= 0) {
           ball.radius = (ball.kyuubiMode || ball.vastoLordeMode)
             ? Math.round(ball.baseRadius * 1.08)
-            : (ball.innerDemonMode ? Math.round(ball.baseRadius * 1.05) : ball.baseRadius);
+            : (ball.curseMarkMode ? Math.round(ball.baseRadius * 1.07)
+            : (ball.innerDemonMode ? Math.round(ball.baseRadius * 1.05) : ball.baseRadius));
           ball.apeMode = false;
           ball.apeRushTimer = 0;
         }
@@ -5424,6 +5455,7 @@
         evolved: fl.evolved !== undefined ? Boolean(fl.evolved) : (fl.starterOnly ? false : Boolean(cfg.evolved)),
         apeMode: Boolean(fl.apeMode),
         kyuubiMode: Boolean(fl.kyuubiMode),
+        curseMarkMode: Boolean(fl.curseMarkMode),
         vastoLordeMode: Boolean(fl.vastoLordeMode),
         innerDemonMode: Boolean(fl.innerDemonMode),
         gear4Mode: fl.gear4Mode || null,
@@ -5476,6 +5508,7 @@
             skins: [skinSpec.id],
             evolved: pf.evolved !== undefined ? Boolean(pf.evolved) : true,
             kyuubiMode: Boolean(pf.kyuubiMode),
+            curseMarkMode: Boolean(pf.curseMarkMode),
             vastoLordeMode: Boolean(pf.vastoLordeMode),
             innerDemonMode: Boolean(pf.innerDemonMode),
             ultTimer: pf.ult ? 5 : 0,

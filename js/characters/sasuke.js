@@ -34,18 +34,19 @@
 
         c.save();
         c.translate(hx, hy);
-        const grad = c.createRadialGradient(0, 0, 2, 0, 0, 24);
-        grad.addColorStop(0, "#ffffff");
-        grad.addColorStop(0.4, "#38bdf8");
-        grad.addColorStop(0.8, "rgba(37, 99, 235, 0.45)");
+        const cm = Boolean(this.owner.curseMarkMode);
+        const grad = c.createRadialGradient(0, 0, 2, 0, 0, cm ? 28 : 24);
+        grad.addColorStop(0, cm ? "#09090b" : "#ffffff");
+        grad.addColorStop(0.4, cm ? "#a855f7" : "#38bdf8");
+        grad.addColorStop(0.8, cm ? "rgba(126, 34, 206, 0.55)" : "rgba(37, 99, 235, 0.45)");
         grad.addColorStop(1, "rgba(37, 99, 235, 0)");
         c.fillStyle = grad;
         c.beginPath();
-        c.arc(0, 0, 24, 0, Math.PI * 2);
+        c.arc(0, 0, cm ? 28 : 24, 0, Math.PI * 2);
         c.fill();
 
         // Jagged Chidori lightning arcs
-        c.strokeStyle = "#e0f2fe";
+        c.strokeStyle = cm ? "#e9d5ff" : "#e0f2fe";
         c.lineWidth = 2.2;
         c.lineCap = "round";
         for (let i = 0; i < 6; i++) {
@@ -106,6 +107,7 @@
         this.sasuke.vy = 0;
 
         this.meterVel += (Math.random() - 0.5) * 4.5 * dt;
+        if (this.sasuke.curseMarkMode) this.meterVel -= 1.2 * dt;
         this.meterVel *= 0.94;
         this.meter = Math.max(0.22, Math.min(0.78, this.meter + this.meterVel * dt));
 
@@ -341,14 +343,17 @@
 
   // ---- Skill 2: Fireball Jutsu (Katon: Gokakyu no Jutsu) ----
   function spawnFireballJutsu(owner, x, y, angle) {
-    const speed = 470;
+    const cm = Boolean(owner.curseMarkMode);
+    const speed = cm ? 530 : 470;
+    const dmg = cm ? 13 : 8;
     return {
       owner,
+      cm,
       x,
       y,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      radius: 20,
+      radius: cm ? 23 : 20,
       life: 1.25,
       t: 0,
       dead: false,
@@ -368,15 +373,16 @@
         const target = pickEnemy(this.owner, g);
         if (target && Math.hypot(target.x - this.x, target.y - this.y) <= target.radius + this.radius) {
           this.dead = true;
-          const dealt = g.applyDamage(target, 8);
+          const dealt = g.applyDamage(target, this.cm ? 13 : 8);
           target.flashTimer = 0.16;
           target.squash = 0.82;
           g.chargeUlt(this.owner);
-          g.entities.push(rt.spawnShockRing(this.x, this.y, "#f97316", 92, 0.28));
+          const rCol = this.cm ? "#a855f7" : "#f97316";
+          g.entities.push(rt.spawnShockRing(this.x, this.y, rCol, this.cm ? 110 : 92, 0.28));
           g.entities.push(rt.spawnShockRing(this.x, this.y, "#ef4444", 64, 0.22));
-          g.spawnSparks(this.x, this.y, "#fde047", "#dc2626");
-          g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#f97316", true, "KATON: FIREBALL!");
-          g.shake = Math.max(g.shake || 0, 7);
+          g.spawnSparks(this.x, this.y, this.cm ? "#c084fc" : "#fde047", "#dc2626");
+          g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, rCol, true, this.cm ? "CURSED DRAGON FLAME!" : "KATON: FIREBALL!");
+          g.shake = Math.max(g.shake || 0, this.cm ? 10 : 7);
           if (g.sound && g.sound.playBallHit) g.sound.playBallHit();
         }
       },
@@ -651,14 +657,15 @@
           const dx = t.x - b.x;
           const dy = t.y - b.y;
           const len = Math.hypot(dx, dy) || 1;
-          const dashSpd = 610;
+          const cm = Boolean(b.curseMarkMode);
+          const dashSpd = cm ? 720 : 610;
           b.vx = (dx / len) * dashSpd;
           b.vy = (dy / len) * dashSpd;
           b.chidoriTimer = 0.52;
           b.chidoriHit = false;
           gg.entities.push(spawnChidoriHandFX(b));
-          gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#38bdf8", true, "CHIDORI!");
-          gg.spawnSparks(b.x, b.y, "#ffffff", "#38bdf8");
+          gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, cm ? "#a855f7" : "#38bdf8", true, cm ? "DARK CHIDORI!" : "CHIDORI!");
+          gg.spawnSparks(b.x, b.y, cm ? "#09090b" : "#ffffff", cm ? "#a855f7" : "#38bdf8");
         },
       });
       return true;
@@ -697,9 +704,55 @@
   // ---- Chibi Uchiha Sasuke Costume ----
   BF.COSTUME_DRAWERS.sasuke = (ball, r, c) => {
     const isUlt = ball.ultTimer > 0;
+    const isCM = Boolean(ball.curseMarkMode);
     const t = performance.now() * 0.004;
 
-    if (isUlt) {
+    if (isCM) {
+      // Curse Mark Stage 2: Massive clawed hand-wings behind Sasuke + dark purple chakra aura
+      const flap = Math.sin(t * 2.2) * 0.08;
+      for (const side of [-1, 1]) {
+        c.save();
+        c.scale(side, 1);
+        c.rotate(flap);
+        c.fillStyle = "#78716c";
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 2.6;
+        c.lineJoin = "round";
+        c.beginPath();
+        c.moveTo(r * 0.25, r * 0.1);
+        c.lineTo(r * 1.15, -r * 0.35);
+        c.lineTo(r * 1.62, -r * 1.05); // top wing claw
+        c.lineTo(r * 1.38, -r * 0.55);
+        c.lineTo(r * 1.72, -r * 0.65); // mid-top claw
+        c.lineTo(r * 1.38, -r * 0.18);
+        c.lineTo(r * 1.56, r * 0.16);  // lower claw
+        c.lineTo(r * 1.12, r * 0.36);
+        c.lineTo(r * 0.32, r * 0.42);
+        c.closePath();
+        c.fill();
+        c.stroke();
+
+        // Dark CM2 wing spots & vein lines
+        c.fillStyle = "#292524";
+        c.beginPath();
+        c.arc(r * 1.12, -r * 0.32, r * 0.09, 0, Math.PI * 2);
+        c.arc(r * 1.28, -r * 0.04, r * 0.07, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+      }
+
+      // Dark cursed aura wisps
+      c.save();
+      for (let i = 0; i < 6; i++) {
+        const a = t * 1.4 + (i * Math.PI) / 3;
+        c.strokeStyle = i % 2 === 0 ? "rgba(168, 85, 247, 0.78)" : "rgba(24, 24, 27, 0.75)";
+        c.lineWidth = 2.8;
+        c.beginPath();
+        c.arc(0, 0, r * 1.22, a, a + 0.55);
+        c.stroke();
+      }
+      c.restore();
+    } else if (isUlt) {
       // Subtle electric-purple Susanoo & Kirin static aura
       c.save();
       for (let i = 0; i < 6; i++) {
@@ -721,21 +774,29 @@
     c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
     c.clip();
 
-    // High dark-navy Uchiha collar & shirt
-    c.fillStyle = "#1e293b";
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.5;
-    c.beginPath();
-    c.moveTo(-r, r * 0.42);
-    c.lineTo(-r * 0.34, r * 0.46);
-    c.lineTo(0, r * 0.66);
-    c.lineTo(r * 0.34, r * 0.46);
-    c.lineTo(r, r * 0.42);
-    c.lineTo(r, r * 1.1);
-    c.lineTo(-r, r * 1.1);
-    c.closePath();
-    c.fill();
-    c.stroke();
+    // High dark-navy Uchiha collar & shirt (or CM2 shirtless waistcloth + purple rope)
+    if (isCM) {
+      c.fillStyle = "#1e1b4b";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 2.5;
+      c.fillRect(-r, r * 0.58, r * 2, r * 0.55);
+      c.strokeRect(-r, r * 0.58, r * 2, r * 0.55);
+    } else {
+      c.fillStyle = "#1e293b";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 2.5;
+      c.beginPath();
+      c.moveTo(-r, r * 0.42);
+      c.lineTo(-r * 0.34, r * 0.46);
+      c.lineTo(0, r * 0.66);
+      c.lineTo(r * 0.34, r * 0.46);
+      c.lineTo(r, r * 0.42);
+      c.lineTo(r, r * 1.1);
+      c.lineTo(-r, r * 1.1);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    }
 
     // Purple rope belt / sash accent at base
     c.fillStyle = "#7e22ce";
@@ -766,9 +827,10 @@
     c.save();
     c.lineJoin = "round";
     c.lineCap = "round";
-    c.fillStyle = "#111827";
+    c.fillStyle = isCM ? "#1e1b4b" : "#111827";
     c.strokeStyle = COLORS.ink;
     c.lineWidth = 3;
+    if (isCM) c.scale(1.08, 1.12);
     hairPoly(c, r, hair);
     c.fill();
     c.stroke();

@@ -81,6 +81,7 @@
     ],
     sasuke: [
       { id: "base", label: "SHARINGAN", desc: "Chidori dash (triggers Rasengan vs Chidori Clash against Naruto!) and Katon: Fireball Jutsu." },
+      { id: "curse_mark", label: "CURSE MARK STAGE 2", curseMarkMode: true, desc: "Permanent Cursed Form at HP <= 150! Sprouts clawed wings, +20% Speed, +45 HP burst, Dark Chidori & Cursed Dragon Flame!" },
       { id: "ult", label: "KIRIN (THUNDERSTORM)", ult: true, desc: "Mangekyou Sharingan! Summons dark storm clouds over the arena and calls down the Kirin Lightning Dragon!" },
     ],
     jinwoo: [
