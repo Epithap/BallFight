@@ -2952,6 +2952,8 @@
   }
 
   function startKOSequence(targetX, targetY, winnerIndex) {
+    timeStopTimer = 0;
+    timeStopOwner = null;
     sound.playKO();
     if (navigator.vibrate) navigator.vibrate([60, 40, 140]);
     koSequence = {
@@ -2964,6 +2966,8 @@
   }
 
   function finishRound(winnerIndex) {
+    timeStopTimer = 0;
+    timeStopOwner = null;
     roundOver = true;
     running = false;
     btnPlay.textContent = "START";
@@ -4364,7 +4368,7 @@
     }
     c.restore();
 
-    if (showExtras && timeStopTimer > 0 && ball !== timeStopOwner) {
+    if (showExtras && c === ctx && timeStopTimer > 0 && ball !== timeStopOwner) {
       c.save();
       c.fillStyle = "#e5e7eb";
       c.strokeStyle = COLORS.ink;
