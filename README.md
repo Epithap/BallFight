@@ -1,15 +1,3 @@
-<p align="center">
-  <img src="assets/hero-banner.svg" alt="Ball Fight — Anime Ball Physics Battler" width="100%" />
-</p>
-
-<h1 align="center">⚡ BALL FIGHT</h1>
-
-<p align="center">
-  <strong>Anime Ball Physics Battler powered by HTML5 Canvas &amp; Vanilla JavaScript.</strong><br>
-  Pick from 15 iconic anime fighters, bounce inside the arena, trigger signature skills, Domain &amp; Stand Clashes, unlock Evolutions &amp; Mythic Skins, complete Daily Missions, and pull characters in an HSR-style Dual Gacha!
-</p>
-
----
 
 ## 🎯 What Is This Project?
 
