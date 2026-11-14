@@ -4,7 +4,7 @@
 **Ball Fight** is a fast-paced 2D physics battle simulator inspired by anime arena brawlers and viral ball-bounce combat reels (`1v1` automated physics + skill/ultimate timing, plus a `9:16` vertical **REC** mode for Shorts/Reels/TikTok). Every fighter has custom canvas art, dynamic anime facial expressions, procedural Web Audio SFX, and unique transformations.
 
 - **15 Playable Fighters**: Goku, Naruto, Sasuke, Luffy, Ichigo, DIO, Jotaro, Guts, Gojo, Sukuna, Killua, Gon, Sung Jin-Woo, Denji, and Garou.
-- **HSR-Style Dual Gacha (`Pity 60`)**: Standard Coin Banner (`Naruto`, `Luffy`, `Ichigo`) + Hourly Rate-Up Gem Banner (`50/50 + Guaranteed`).
+- **Dual Gacha (`Pity 60`)**: Standard Coin Banner (`Naruto`, `Luffy`, `Ichigo`) + Hourly Rate-Up Gem Banner (`50/50 + Guaranteed`).
 - **Daily Missions &amp; Progression**: Daily Coin/Gem quests, Fighter Evolutions (`25,000 Gold`), and Diamond Skin Vault.
 - **Zero Build Tools**: Pure HTML, CSS, and modular JavaScript (`index.html`, `style.css`, `game.js`, `js/`).
 
