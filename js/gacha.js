@@ -3,7 +3,7 @@
   const BF = (window.BallFight = window.BallFight || {});
   const KEY = "bf_gacha_v3";
   const STD_COSTS = { one: 300, ten: 3000 };
-  const RU_COSTS = { one: 50, ten: 500 };
+  const RU_COSTS = { one: 30, ten: 300 };
   const PITY = 60;
   const DUPE_GEMS = 50;
   const HOUR_MS = 3600 * 1000;
@@ -268,7 +268,7 @@
       return { kind: prizePick.type, amount: prizePick.amount, tier: prizePick.tier, label: prizePick.label };
     }
 
-    // Rate-Up Banner: 50/500 Gems, 0.5% char, Pity 60 shared, HSR 50/50 + Guarantee
+    // Rate-Up Banner: 30/300 Gems, 0.5% char, Pity 60 shared, HSR 50/50 + Guarantee
     state.rateUpPity++;
     const featuredId = getFeaturedId();
     const isPity = state.rateUpPity >= PITY;
