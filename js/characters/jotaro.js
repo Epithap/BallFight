@@ -45,7 +45,6 @@
             const stepSpd = owner.baseSpeed * 1.18;
             owner.vx = dx * stepSpd;
             owner.vy = dy * stepSpd;
-            g.chargeUlt(owner);
             g.spawnSparks(target.x, target.y, "#00f0ff", "#a855f7");
             g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#00f0ff", true, "STAR FINGER!!");
             g.sound.playCritHit();
@@ -204,7 +203,6 @@
         game.addEffect(ball, "shield", 5.0, { reduction: 0.18 });
         game.addEffect(ball, "haste", 5.0, { factor: 1.15 });
         if (ball.skills[0] && ball.skills[0]._cd > 0) ball.skills[0]._cd = 0;
-        game.chargeUlt(ball);
         game.entities.push(rt.spawnShockRing(ball.x, ball.y, "#00f0ff", 130, 0.42));
         game.entities.push(rt.spawnBanner("YARE YARE DAZE...", "#a855f7"));
         game.spawnDamageText(ball.x, ball.y - ball.radius - 16, 0, "#00f0ff", true, "UNBREAKABLE RAGE!");
@@ -230,7 +228,6 @@
             ent.dead = true;
             ball._guardCd = 3.8;
             ball.standAttackTimer = 0.28;
-            game.chargeUlt(ball);
             game.spawnSparks(ent.x, ent.y, "#00f0ff", COLORS.gold);
             game.spawnDamageText(ball.x, ball.y - ball.radius - 12, 0, "#00f0ff", false, "STAR CATCH!");
             game.sound.playWallBounce();
