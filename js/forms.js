@@ -39,7 +39,7 @@
     naruto: [
       { id: "base", stage: "starter", label: "BASE", starterOnly: true, desc: "Starter Base: Classic orange jumpsuit, Rasengan dash & Shadow Clone (Nine-Tails locked)." },
       { id: "rasenshuriken", stage: "starter", label: "RASENSHURIKEN (ULT)", ult: true, starterOnly: true, desc: "Starter Ult: Throws Wind Style: Rasenshuriken that leaves a pulling Wind Vortex on impact!" },
-      { id: "sage", stage: "evolved", label: "SAGE MODE", evolved: true, desc: "Evolved Base (10k Gold): Red Sage Cloak, Giant Scroll, Toad Sage eyes, Senpō Giant Rasengan & unlocks Four-Tails!" },
+      { id: "sage", stage: "evolved", label: "SAGE MODE", evolved: true, desc: "Evolved Base (25k Gold): Red Sage Cloak, Giant Scroll, Toad Sage eyes, Senpō Giant Rasengan & unlocks Four-Tails!" },
       { id: "kyuubi", stage: "evolved", label: "FOUR-TAILS (HP≤200)", ult: true, evolved: true, kyuubiMode: true, desc: "Sage Mode Passive (HP <= 200): Permanent Four-Tails mode with Kyuubi Claw Slash & Bijuudama Ult!" },
     ],
     luffy: [
@@ -51,7 +51,7 @@
       { id: "shikai", stage: "starter", label: "SHIKAI", starterOnly: true, desc: "Starter Base: Giant Shikai Zangetsu cleaver, Blue Getsuga Tensho & Shunpo." },
       { id: "bankai_ult", stage: "starter", label: "BANKAI (ULT)", ult: true, starterOnly: true, desc: "Starter Ult: Unleashes Bankai Tensa Zangetsu with crimson Reiatsu & faster slashes!" },
       { id: "inner_demon", stage: "starter", label: "INNER DEMON (HP≤100)", starterOnly: true, innerDemonMode: true, desc: "Starter HP <= 100: Taken over by Inner Hollow with creeping half-mask, black-gold eyes & maniacal grin!" },
-      { id: "base", stage: "evolved", label: "BANKAI", evolved: true, desc: "Evolved Base (10k Gold): Starts directly in Bankai with Tensa Zangetsu (or Arrancar tattered outfit)!" },
+      { id: "base", stage: "evolved", label: "BANKAI", evolved: true, desc: "Evolved Base (25k Gold): Starts directly in Bankai with Tensa Zangetsu (or Arrancar tattered outfit)!" },
       { id: "hollow", stage: "evolved", label: "HOLLOW MASK (ULT)", ult: true, evolved: true, desc: "Evolved Ult: Dons Hollow Mask (or Arrancar Arc Half-Mask skin) with Black Getsuga Tensho!" },
       { id: "vasto", stage: "evolved", label: "VASTO LORDE (HP≤200)", ult: true, evolved: true, vastoLordeMode: true, desc: "Evolved HP <= 200: Permanent Vasto Lorde (or Long-Hair Half-Vasto Mythic skin) with Sonído & Gran Rey Cero!" },
     ],
@@ -87,7 +87,7 @@
       { id: "base", stage: "starter", label: "SHARINGAN", starterOnly: true, desc: "Starter Base: Chidori dash (triggers Rasengan vs Chidori Clash against Naruto!) & Katon: Fireball Jutsu." },
       { id: "kirin", stage: "starter", label: "KIRIN (ULT)", ult: true, starterOnly: true, desc: "Starter Ult: Summons thunderstorm clouds over the arena and calls down the Kirin Thunder Dragon!" },
       { id: "curse_mark", stage: "starter", label: "CURSE MARK (HP≤150)", starterOnly: true, curseMarkMode: true, desc: "Starter HP <= 150: Permanent Curse Mark Stage 2 with clawed wings, +20% Speed, +45 HP & Dark Chidori!" },
-      { id: "evolved_base", stage: "evolved", label: "RINNEGAN", evolved: true, desc: "Evolved Base (10k Gold): Rinnegan + EMS, Susanoo Ribcage aura & Amaterasu Black Flames! Ult: Armored Susanoo!" },
+      { id: "evolved_base", stage: "evolved", label: "RINNEGAN", evolved: true, desc: "Evolved Base (25k Gold): Rinnegan + EMS, Susanoo Ribcage aura & Amaterasu Black Flames! Ult: Armored Susanoo!" },
       { id: "ult", stage: "evolved", label: "ARMORED SUSANOO (ULT)", evolved: true, ult: true, previewArmoredSusanoo: true, desc: "Evolved Ult (HP > 150): Summons Armored Susanoo around Sasuke & fires 3 Kagutsuchi Flame Arrows!" },
       { id: "susanoo_armor", stage: "evolved", label: "SUSANOO ARMOR (HP≤150)", evolved: true, susanooArmorMode: true, desc: "Evolved HP <= 150: Permanent Susanoo Samurai Armor (+55 HP, Amenotejikara & Bansho Ten'in)!" },
       { id: "indra_ult", stage: "evolved", label: "INDRA SUSANOO (ULT)", evolved: true, ult: true, susanooArmorMode: true, previewIndraSusanoo: true, desc: "Susanoo Armor Ult: Sasuke leaps out of the arena as Giant Indra Susanoo fires Indra's Arrow across the entire map!" },
