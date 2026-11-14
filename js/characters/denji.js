@@ -518,7 +518,7 @@
 
   const SKILL_CHAIN_GRAPPLE = {
     name: "Revving Saw Dash",
-    cooldown: 7.5,
+    cooldown: 12.5,
     onTick(ball, g) {
       if (ball.denjiDashTimer > 0) return false;
       const target = g.balls.find((b) => b !== ball && b.alive);
