@@ -1835,7 +1835,7 @@ body.rec-mode .arena-wrap {
   cursor: pointer;
 }
 .col-tile canvas { width: 100%; height: auto; display: block; }
-.col-name { font-size: 11px; text-align: center; line-height: 1.05; }
+.col-name { font-size: 9.5px; text-align: center; line-height: 1.05; padding: 0 3px; word-break: break-word; }
 .col-tile.locked { background: #e7e2d6; }
 
 /* Gacha overlay */

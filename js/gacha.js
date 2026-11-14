@@ -1074,7 +1074,7 @@
         const t = document.createElement("div");
         t.className = `col-tile${has ? "" : " locked"}`;
         const cv = document.createElement("canvas"); cv.width = 84; cv.height = 84;
-        const nm = document.createElement("span"); nm.className = "col-name"; nm.textContent = has ? (cfg.shortName || cfg.name) : "???";
+        const nm = document.createElement("span"); nm.className = "col-name"; nm.textContent = has ? cfg.name : "???";
         t.appendChild(cv); t.appendChild(nm);
         grid.appendChild(t);
         deps.drawAvatar(cv, cfg);
