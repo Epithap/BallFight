@@ -34,6 +34,27 @@
 
 ---
 
+## 📣 Minor Update News — Version 1.3 (New Fighters, Cosmic Moon Arena & Reworks)
+
+> **v1.3 brings 4 new/revamped anime fighters (`Garou`, `Denji`, `Sung Jin-Woo`, `Killua`), the Cosmic Moon Sanctuary Arena, and Stand Clash 2.0!**
+
+- 🌌 **Garou (`One-Punch Man` — Hero Hunter, Monster Form & Cosmic Fear)**:
+  - **Base & Monster Ult**: Red-orange twin-horn hair, *Whirlwind Iron & Water Stream* twin spiral waves, and *Water Stream Counter* (projectile deflect + counter-throw). Activating **Monster Form** transforms Skill 1 into **God Slayer Dash + 4-Hit Barrage** with *Extreme Fa Jin* (`+4` bonus collision DMG).
+  - **Cosmic Fear Awakening (`HP < 100`, 1× per match)**: Freezes time (`2.4s`) as Garou ascends to the Moon, receives God's power, and descends in **Cosmic Fear Form** with **+50 HP heal**.
+  - **Moon Sanctuary Arena & Full-Arena Gamma Ray Burst**: 1st skill after Awakening (*Hyperspace Lock*) auto-locks onto the enemy and drags both fighters through a portal to the **Moon Sanctuary Arena** (featuring Earth, Saturn, starfields & lunar craters). On the Moon, Skill 1 opens **Subspace Portals** beneath Garou to teleport & unleash a **6-Hit Cosmic Rampage**, while Cosmic Ultimate morphs Garou into a **Quasar Singularity Sphere** to detonate a **100% Full-Arena Gamma Ray Burst**!
+- 🪚 **Denji (`Chainsaw Man` — Base & Hero of Hell)**:
+  - Angled `/()\` twin chainsaw arms with animated spinning teeth (4 chainsaw arms in **Hero of Hell** Ultimate + *Blood Lifesteal*).
+  - **Skill 1 (`Twin Chainsaw Launch`)**: Fires twin spinning sawblades.
+  - **Skill 2 (`Revving Saw Rush`, `15s` CD)**: `0.78s` engine rev-up charge followed by a straight dash that shreds nearby enemies and **bounces off arena walls for 5 full seconds**.
+- 🗡️ **Sung Jin-Woo (`Solo Leveling`) & ⚡ Killua Zoldyck (`Hunter x Hunter`)**:
+  - **Sung Jin-Woo**: Redesigned *Knight Killer & Baruka's Dagger* dual blades, *Vital-Point Mutilation*, *Ruler's Authority* telekinetic pull + slam, and *ARISE: Monarch's Domain* Ultimate summoning **Igris**, **Tank**, **Beru**, and a **Kaisel Sky-Dive Finale**.
+  - **Killua**: *50-Kg Alloy Yo-Yo* out-and-back sweep, *Rhythm Echo + Izutsushi* lightning palm, and *Godspeed: Kanmuru* Ultimate with *Whirlwind Auto-Counter* & *Shippujinrai*.
+- 👊 **Stand Clash 2.0, Jotaro & Guts Rework**:
+  - Upgraded **DIO vs Jotaro Stand Clash** visuals with a *Stand-Crush Knockback Finisher*.
+  - Reworked **Jotaro** (*Star Finger*, *Yare Yare Daze*, *Star Catch*, *Time-Step Beatdown*) and **Guts** (*Arm Cannon*, *Bleed Cleave*, *Struggler's Grit*).
+
+---
+
 ## 📣 Major Update News — Version 1.2 (UI & Character Overhaul)
 
 > **v1.2 is a full visual & gameplay overhaul of Ball Fight!**
