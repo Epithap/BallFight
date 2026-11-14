@@ -327,18 +327,21 @@
     };
   }
 
-  // ---- Adult Gon Ultimate Skill (ONLY 1 VARIANT): Dash -> Grab & Lift -> Ground Slam ----
+  // ---- Adult Gon Ultimate Skill (ONLY 1 VARIANT): Dash -> Grab & Lift -> Ground Slam -> Adult Rock Cutscene ----
   function spawnAdultGonDashSlam(owner, target) {
     return {
+      isCosmicCutsceneEntity: true,
       owner,
       target,
-      phase: "dash", // "dash" -> "lift" -> "slam"
+      phase: "dash", // "dash" -> "lift" -> "slam" -> "rock_charge" -> "rock_impact"
       elapsed: 0,
       phaseElapsed: 0,
       grabX: 0,
       grabY: 0,
       liftHeight: 118,
       slammed: false,
+      rockHit: false,
+      rockAng: 0,
       trail: [],
       dead: false,
       update(dt, g) {
@@ -346,6 +349,7 @@
         this.phaseElapsed += dt;
 
         if (!this.owner.alive || !this.target.alive) {
+          g._cosmicCutsceneTimer = 0;
           if (this.owner.alive && Math.hypot(this.owner.vx, this.owner.vy) < 40) {
             const spd = this.owner.baseSpeed || 356;
             this.owner.vx = Math.cos(0.7) * spd;
@@ -427,21 +431,23 @@
             this.slammed = true;
             this.phase = "rock_charge";
             this.phaseElapsed = 0;
+            g._cosmicCutsceneTimer = 1.15;
 
             const pad = this.owner.radius + 10;
-            this.owner.x = Math.min(WORLD_SIZE - pad, Math.max(pad, this.grabX - 28));
+            this.owner.x = Math.min(WORLD_SIZE - pad, Math.max(pad, this.grabX - 36));
             this.owner.y = Math.min(WORLD_SIZE - pad, Math.max(pad, this.grabY));
             this.owner.vx = 0;
             this.owner.vy = 0;
-            this.target.x = Math.min(WORLD_SIZE - this.target.radius - 10, Math.max(this.target.radius + 10, this.grabX + 18));
+            this.target.x = Math.min(WORLD_SIZE - this.target.radius - 10, Math.max(this.target.radius + 10, this.grabX + 26));
             this.target.y = Math.min(WORLD_SIZE - this.target.radius - 10, Math.max(this.target.radius + 10, this.grabY));
             this.target.vx = 0;
             this.target.vy = 0;
+            this.rockAng = Math.atan2(this.target.y - this.owner.y, this.target.x - this.owner.x) || 0;
 
             const dealt = g.applyDamage(this.target, 12);
             this.target.flashTimer = 0.2;
             this.target.squash = 0.65;
-            g.addEffect(this.target, "stun", 0.55);
+            g.addEffect(this.target, "stun", 1.2);
 
             g.entities.push(spawnGroundCrater(this.grabX, this.grabY + 8));
             g.entities.push(rt.spawnShockRing(this.grabX, this.grabY, "#09090b", 135, 0.32));
@@ -452,35 +458,50 @@
             if (g.sound && g.sound.playBallHit) g.sound.playBallHit();
           }
         } else if (this.phase === "rock_charge") {
-          const chargeDur = 0.22;
+          const chargeDur = 0.72;
+          g._cosmicCutsceneTimer = Math.max(0.4, 1.15 - this.phaseElapsed);
           this.owner.vx = 0;
           this.owner.vy = 0;
           this.target.vx = 0;
           this.target.vy = 0;
 
           if (this.phaseElapsed >= chargeDur) {
-            this.dead = true;
-            const ang = Math.atan2(this.target.y - this.owner.y, this.target.x - this.owner.x) || 0;
-            const dealt = g.applyDamage(this.target, 14);
-            this.target.flashTimer = 0.24;
-            this.target.squash = 0.58;
-            // Send enemy flying far across the arena!
-            this.target.vx = Math.cos(ang) * 740;
-            this.target.vy = Math.sin(ang) * 740;
-            g.addEffect(this.target, "stun", 0.45);
+            this.phase = "rock_impact";
+            this.phaseElapsed = 0;
+          }
+        } else if (this.phase === "rock_impact") {
+          const impactDur = 0.38;
+          g._cosmicCutsceneTimer = Math.max(0, impactDur - this.phaseElapsed);
 
-            // Restore Adult Gon movement velocity with clean recoil
-            const spd = this.owner.baseSpeed || 356;
-            this.owner.vx = -Math.cos(ang) * spd;
-            this.owner.vy = -Math.sin(ang) * spd;
+          if (!this.rockHit) {
+            this.rockHit = true;
+            const ang = this.rockAng;
+            const shield = this.target.getEffect && this.target.getEffect("shield");
+            const red = shield ? (shield.data?.reduction ?? 0.35) : 0;
+            const dealt = Math.max(1, Math.round(16 * (1 - red)));
+            this.target.hp = Math.max(0, this.target.hp - dealt);
+            this.target.flashTimer = 0.26;
+            this.target.squash = 0.55;
+            // Launch enemy flying far across the arena!
+            this.target.vx = Math.cos(ang) * 820;
+            this.target.vy = Math.sin(ang) * 820;
+            g.addEffect(this.target, "stun", 0.55);
 
-            g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#09090b", 165, 0.38));
-            g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#ffffff", 125, 0.3));
-            g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#dc2626", 92, 0.24));
-            g.spawnSparks(this.target.x, this.target.y, "#ffffff", "#dc2626");
-            g.spawnDamageText(this.target.x, this.target.y - this.target.radius - 22, dealt, "#f97316", true, "ADULT ROCK!!");
-            g.shake = Math.max(g.shake || 0, 16);
+            g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#09090b", 185, 0.42));
+            g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#ffffff", 145, 0.32));
+            g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#f97316", 110, 0.26));
+            g.spawnSparks(this.target.x, this.target.y, "#fde047", "#dc2626");
+            g.spawnDamageText(this.target.x, this.target.y - this.target.radius - 24, dealt, "#f97316", true, "JAJANKEN: ROCK!!");
+            g.shake = Math.max(g.shake || 0, 20);
             if (g.sound && g.sound.playBallHit) g.sound.playBallHit();
+          }
+
+          if (this.phaseElapsed >= impactDur) {
+            g._cosmicCutsceneTimer = 0;
+            const spd = this.owner.baseSpeed || 356;
+            this.owner.vx = -Math.cos(this.rockAng) * spd;
+            this.owner.vy = -Math.sin(this.rockAng) * spd;
+            this.dead = true;
           }
         }
       },
@@ -517,17 +538,97 @@
         }
 
         if (this.phase === "rock_charge") {
-          const p = Math.min(1, this.phaseElapsed / 0.22);
-          const coreR = 26 + p * 18;
-          const fistGrad = c.createRadialGradient(this.owner.x, this.owner.y, 4, this.owner.x, this.owner.y, coreR);
+          const p = Math.min(1, this.phaseElapsed / 0.72);
+          const fx = this.owner.x - Math.cos(this.rockAng) * 16;
+          const fy = this.owner.y - Math.sin(this.rockAng) * 16;
+
+          // Dark dramatic anime backdrop + converging manga speedlines
+          c.fillStyle = `rgba(3, 3, 8, ${0.68 * Math.min(1, p * 2)})`;
+          c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+          c.strokeStyle = `rgba(255, 255, 255, ${0.22 + p * 0.35})`;
+          c.lineWidth = 2;
+          for (let i = 0; i < 16; i++) {
+            const a = (i * Math.PI) / 8 + this.phaseElapsed * 1.4;
+            c.beginPath();
+            c.moveTo(fx + Math.cos(a) * (95 - p * 45), fy + Math.sin(a) * (95 - p * 45));
+            c.lineTo(fx + Math.cos(a) * 320, fy + Math.sin(a) * 320);
+            c.stroke();
+          }
+
+          // Colossal blazing Nen sun on Adult Gon's pulled-back fist
+          const coreR = 26 + p * 46;
+          const fistGrad = c.createRadialGradient(fx, fy, 4, fx, fy, coreR);
           fistGrad.addColorStop(0, "#ffffff");
-          fistGrad.addColorStop(0.45, "#f97316");
-          fistGrad.addColorStop(0.75, "rgba(220, 38, 38, 0.85)");
+          fistGrad.addColorStop(0.32, "#fde047");
+          fistGrad.addColorStop(0.65, "rgba(249, 115, 22, 0.92)");
+          fistGrad.addColorStop(0.88, "rgba(220, 38, 38, 0.65)");
           fistGrad.addColorStop(1, "rgba(9, 9, 11, 0)");
           c.fillStyle = fistGrad;
           c.beginPath();
-          c.arc(this.owner.x, this.owner.y, coreR, 0, Math.PI * 2);
+          c.arc(fx, fy, coreR, 0, Math.PI * 2);
           c.fill();
+
+          // Dark-red lightning & white-ink shock rings
+          c.strokeStyle = "#ffffff";
+          c.lineWidth = 2.6;
+          c.beginPath();
+          c.arc(fx, fy, coreR * 0.65, this.phaseElapsed * 12, this.phaseElapsed * 12 + Math.PI * 1.3);
+          c.stroke();
+
+          // Anime battle cry callout banner
+          const jx = (Math.random() - 0.5) * 4 * p;
+          const jy = (Math.random() - 0.5) * 4 * p;
+          c.font = "900 22px Impact, system-ui, sans-serif";
+          c.textAlign = "center";
+          c.strokeStyle = "#09090b";
+          c.lineWidth = 5;
+          const txt = p < 0.55 ? "FIRST COMES ROCK..." : "JAJANKEN...";
+          c.strokeText(txt, WORLD_SIZE * 0.5 + jx, 76 + jy);
+          c.fillStyle = p < 0.55 ? "#fde047" : "#ffffff";
+          c.fillText(txt, WORLD_SIZE * 0.5 + jx, 76 + jy);
+        }
+
+        if (this.phase === "rock_impact") {
+          const p = Math.min(1, this.phaseElapsed / 0.38);
+          const a = Math.max(0, 1 - p);
+
+          // Inverted black-and-white manga impact flash in the first 0.08s
+          if (this.phaseElapsed < 0.09) {
+            c.fillStyle = "rgba(255, 255, 255, 0.82)";
+            c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+          }
+
+          // Massive blazing Rock impact cone blasting across the arena
+          c.save();
+          c.translate(this.owner.x, this.owner.y);
+          c.rotate(this.rockAng);
+          c.globalAlpha = a;
+          const coneGrad = c.createLinearGradient(0, 0, 340, 0);
+          coneGrad.addColorStop(0, "#ffffff");
+          coneGrad.addColorStop(0.35, "rgba(253, 224, 71, 0.9)");
+          coneGrad.addColorStop(0.75, "rgba(249, 115, 22, 0.6)");
+          coneGrad.addColorStop(1, "rgba(220, 38, 38, 0)");
+          c.fillStyle = coneGrad;
+          c.beginPath();
+          c.moveTo(0, -18);
+          c.lineTo(340, -95);
+          c.lineTo(340, 95);
+          c.lineTo(0, 18);
+          c.closePath();
+          c.fill();
+          c.restore();
+
+          c.save();
+          c.globalAlpha = a;
+          c.font = "900 32px Impact, system-ui, sans-serif";
+          c.textAlign = "center";
+          c.strokeStyle = "#09090b";
+          c.lineWidth = 6;
+          c.strokeText("R O C K ! !", WORLD_SIZE * 0.5, 82);
+          c.fillStyle = "#f97316";
+          c.fillText("R O C K ! !", WORLD_SIZE * 0.5, 82);
+          c.restore();
         }
         c.restore();
       },
