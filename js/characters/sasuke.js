@@ -652,40 +652,54 @@
     g.entities.push(ent);
   };
 
-  // ---- Evolved Base Ultimate: Armored Susanoo + Kagutsuchi Flame Arrows ----
+  // ---- Evolved Base Ultimate: Armored Susanoo + Homing Kagutsuchi Flame Arrows ----
   function spawnSusanooFlameArrow(owner, x, y, angle) {
-    const speed = 640;
+    const speed = 760;
     return {
       owner,
       x,
       y,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      radius: 16,
-      life: 1.15,
+      radius: 18,
+      life: 1.8,
       t: 0,
       dead: false,
       update(dt, g) {
         this.life -= dt;
         this.t += dt;
         if (this.life <= 0) { this.dead = true; return; }
+        const target = pickEnemy(this.owner, g);
+        if (target) {
+          // Strong auto-homing lock-on so Susanoo arrows curve and reliably hit moving targets
+          const dx = target.x - this.x;
+          const dy = target.y - this.y;
+          const dist = Math.hypot(dx, dy) || 1;
+          const desiredVx = (dx / dist) * speed;
+          const desiredVy = (dy / dist) * speed;
+          const steer = Math.min(1, dt * 18);
+          this.vx += (desiredVx - this.vx) * steer;
+          this.vy += (desiredVy - this.vy) * steer;
+          const curSpd = Math.hypot(this.vx, this.vy) || 1;
+          this.vx = (this.vx / curSpd) * speed;
+          this.vy = (this.vy / curSpd) * speed;
+        }
         this.x += this.vx * dt;
         this.y += this.vy * dt;
-        if (this.x < -30 || this.x > WORLD_SIZE + 30 || this.y < -30 || this.y > WORLD_SIZE + 30) {
+        if (!target && (this.x < -30 || this.x > WORLD_SIZE + 30 || this.y < -30 || this.y > WORLD_SIZE + 30)) {
           this.dead = true; return;
         }
-        const target = pickEnemy(this.owner, g);
-        if (target && Math.hypot(target.x - this.x, target.y - this.y) <= target.radius + this.radius + 4) {
+        if (target && Math.hypot(target.x - this.x, target.y - this.y) <= target.radius + this.radius + 6) {
           this.dead = true;
-          const dealt = g.applyDamage(target, 12);
-          target.flashTimer = 0.2;
-          target.squash = 0.78;
-          g.addEffect(target, "stun", 0.28);
-          g.entities.push(rt.spawnShockRing(this.x, this.y, "#a855f7", 105, 0.3));
-          g.entities.push(rt.spawnShockRing(this.x, this.y, "#09090b", 70, 0.22));
+          const dealt = g.applyDamage(target, 24);
+          target.flashTimer = 0.22;
+          target.squash = 0.76;
+          g.addEffect(target, "stun", 0.4);
+          g.entities.push(rt.spawnShockRing(this.x, this.y, "#a855f7", 120, 0.34));
+          g.entities.push(rt.spawnShockRing(this.x, this.y, "#09090b", 80, 0.24));
           g.spawnSparks(this.x, this.y, "#e9d5ff", "#a855f7");
           g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#c084fc", true, "SUSANOO ARROW!");
-          g.shake = Math.max(g.shake || 0, 10);
+          g.shake = Math.max(g.shake || 0, 11);
           if (g.sound && g.sound.playBallHit) g.sound.playBallHit();
         }
       },
@@ -995,8 +1009,8 @@
   }
 
   BF.spawnArmoredSusanooUltimate = (owner, g) => {
-    g.addEffect(owner, "shield", 7.0, { reduction: 0.25 });
-    const shotTimes = [0.45, 2.35, 4.35];
+    g.addEffect(owner, "shield", 7.0, { reduction: 0.3 });
+    const shotTimes = [0.4, 1.85, 3.3, 4.85];
     let shotsFired = 0;
 
     const ent = {
