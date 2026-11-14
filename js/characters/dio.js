@@ -545,17 +545,31 @@
       const dirY = Math.sin(faceAngle);
       const perpX = -dirY;
       const perpY = dirX;
-      for (let i = 0; i < 6; i++) {
-        const wave = ((rt.elapsed * 26 + i * 1.15) % 1);
-        const reach = sr * (0.65 + wave * 1.55);
-        const spread = Math.sin(i * 2.4 + rt.elapsed * 18) * sr * 0.58;
+      const count = st.phase === "clashing" ? 9 : 6;
+      for (let i = 0; i < count; i++) {
+        const wave = ((rt.elapsed * 30 + i * 0.85) % 1);
+        const reach = sr * (0.65 + wave * 1.75);
+        const spread = Math.sin(i * 2.4 + rt.elapsed * 22) * sr * 0.65;
         const fx = dirX * reach + perpX * spread;
         const fy = dirY * reach + perpY * spread;
         c.save();
-        c.globalAlpha = Math.max(0.35, 1 - wave * 0.45);
-        rt.drawStandFist(c, fx, fy, sr * 0.31, true, faceAngle + Math.PI * 0.5);
+        c.globalAlpha = Math.max(0.4, 1 - wave * 0.45);
+        rt.drawStandFist(c, fx, fy, sr * 0.33, true, faceAngle + Math.PI * 0.5);
         c.restore();
       }
+    } else if (st && st.phase === "clash_finisher") {
+      const dirX = Math.cos(faceAngle);
+      const dirY = Math.sin(faceAngle);
+      const fx = dirX * sr * 1.45;
+      const fy = dirY * sr * 1.45;
+      c.save();
+      c.strokeStyle = COLORS.gold;
+      c.lineWidth = 4;
+      c.beginPath();
+      c.arc(fx, fy, sr * 0.85, 0, Math.PI * 2);
+      c.stroke();
+      rt.drawStandFist(c, fx, fy, sr * 0.62, true, faceAngle + Math.PI * 0.5);
+      c.restore();
     } else if (st && st.phase === "dashing") {
       const dirX = Math.cos(faceAngle);
       const dirY = Math.sin(faceAngle);

@@ -875,7 +875,7 @@
     timeStopOwner = null;
   }
 
-  function spawnStandClashEffect(x, y, duration = 2.2, b1 = null, b2 = null, getMeter = null) {
+  function spawnStandClashEffect(x, y, duration = 2.4, b1 = null, b2 = null, getMeter = null) {
     return {
       x,
       y,
@@ -889,71 +889,164 @@
       },
       render(c) {
         const t = 1 - Math.max(0, this.life / this.maxLife);
-        const pulse = 1 + Math.sin(t * 58) * 0.28;
+        const pulse = 1 + Math.sin(t * 64) * 0.28;
         const meter = getMeter ? Math.max(0.1, Math.min(0.9, getMeter())) : 0.5;
         const p1Pct = Math.round(meter * 100);
         const p2Pct = 100 - p1Pct;
-        const c1 = b1 ? b1.color : COLORS.gold;
-        const c2 = b2 ? b2.color : "#9b59b6";
+        const c1 = b1 ? (b1.costume === "dio" ? COLORS.gold : b1.color) : COLORS.gold;
+        const c2 = b2 ? (b2.costume === "jotaro" ? "#a855f7" : b2.color) : "#a855f7";
+
+        const s1 = b1 && b1.standState ? b1.standState : null;
+        const clashAng = s1 ? s1.angle : 0;
+        const dirX = Math.cos(clashAng);
+        const dirY = Math.sin(clashAng);
+        const perpX = -dirY;
+        const perpY = dirX;
+        // Shift clash front dynamically toward the losing side
+        const pushOffset = (meter - 0.5) * 44;
+        const frontX = this.x + dirX * pushOffset;
+        const frontY = this.y + dirY * pushOffset;
 
         c.save();
 
-        // Subtle dramatic arena dim during Stand Clash
-        c.fillStyle = "rgba(18, 12, 32, 0.26)";
+        // 1. JoJo Theatrical Arena Dim + Split Stand Aura Field
+        c.fillStyle = "rgba(12, 8, 24, 0.38)";
         c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
-        // Anime clash core at collision midpoint
+        // Radial speedlines from the clash front
         c.save();
-        c.translate(this.x, this.y);
-
-        const grad = c.createRadialGradient(0, 0, 2, 0, 0, 62 * pulse);
-        grad.addColorStop(0, "rgba(255, 255, 255, 0.98)");
-        grad.addColorStop(0.32, "rgba(255, 215, 0, 0.8)");
-        grad.addColorStop(0.7, "rgba(155, 89, 182, 0.35)");
-        grad.addColorStop(1, "rgba(255, 215, 0, 0)");
-        c.fillStyle = grad;
-        c.beginPath();
-        c.arc(0, 0, 62 * pulse, 0, Math.PI * 2);
-        c.fill();
-
-        // Sharp rotating anime speed rays
-        c.strokeStyle = COLORS.white;
-        c.lineWidth = 2.6;
-        for (let i = 0; i < 12; i++) {
-          const ang = (Math.PI * 2 * i) / 12 + t * 18;
-          const len = (28 + ((i % 2) * 22)) * pulse;
+        c.translate(frontX, frontY);
+        for (let i = 0; i < 24; i++) {
+          const a = (Math.PI * 2 * i) / 24 + (i % 2 ? t * 2.5 : -t * 2.5);
+          const r0 = 56 + (i % 3) * 18;
+          const r1 = 290;
+          c.strokeStyle = i % 2 === 0 ? c1 : c2;
+          c.globalAlpha = 0.22;
+          c.lineWidth = i % 2 === 0 ? 3 : 1.8;
           c.beginPath();
-          c.moveTo(Math.cos(ang) * 9, Math.sin(ang) * 9);
-          c.lineTo(Math.cos(ang) * len, Math.sin(ang) * len);
+          c.moveTo(Math.cos(a) * r0, Math.sin(a) * r0);
+          c.lineTo(Math.cos(a) * r1, Math.sin(a) * r1);
           c.stroke();
         }
+        c.restore();
 
-        // Expanding clash shockwave ring
-        const ringProg = (t * 5.2) % 1;
-        const ringR = 18 + ringProg * 54;
-        c.strokeStyle = `rgba(255, 215, 0, ${0.9 * (1 - ringProg)})`;
-        c.lineWidth = 3.2;
+        // 2. Colliding Stand Fist Storm & Shockwave Core at (frontX, frontY)
+        c.save();
+        c.translate(frontX, frontY);
+
+        const grad = c.createRadialGradient(0, 0, 4, 0, 0, 78 * pulse);
+        grad.addColorStop(0, "rgba(255, 255, 255, 0.98)");
+        grad.addColorStop(0.35, "rgba(250, 204, 21, 0.85)");
+        grad.addColorStop(0.7, "rgba(168, 85, 247, 0.45)");
+        grad.addColorStop(1, "rgba(250, 204, 21, 0)");
+        c.fillStyle = grad;
         c.beginPath();
-        c.arc(0, 0, ringR, 0, Math.PI * 2);
+        c.arc(0, 0, 78 * pulse, 0, Math.PI * 2);
+        c.fill();
+
+        // Dual expanding shockwave rings
+        for (let rIdx = 0; rIdx < 2; rIdx++) {
+          const ringProg = (t * 6.5 + rIdx * 0.5) % 1;
+          const ringR = 16 + ringProg * 72;
+          c.strokeStyle = rIdx === 0 ? c1 : c2;
+          c.globalAlpha = 0.9 * (1 - ringProg);
+          c.lineWidth = 4 * (1 - ringProg) + 1.5;
+          c.beginPath();
+          c.arc(0, 0, ringR, 0, Math.PI * 2);
+          c.stroke();
+        }
+        c.globalAlpha = 1;
+
+        // 8 Colliding Fists from both sides slamming into the center line
+        for (let i = 0; i < 4; i++) {
+          const cyc = (t * 14 + i * 0.25) % 1;
+          const dist = (1 - cyc) * 42 + 6;
+          const spread = (i - 1.5) * 16 + Math.sin(t * 36 + i) * 5;
+
+          // Left / Fighter 1 Fist
+          const f1x = -dirX * dist + perpX * spread;
+          const f1y = -dirY * dist + perpY * spread;
+          drawStandFist(
+            c,
+            f1x,
+            f1y,
+            10.5,
+            true,
+            clashAng + Math.PI * 0.5,
+            b1 && b1.costume === "jotaro" ? "#9b59b6" : COLORS.gold,
+            b1 && b1.costume === "jotaro" ? COLORS.gold : "#2ecc71",
+            COLORS.gold
+          );
+
+          // Right / Fighter 2 Fist
+          const f2x = dirX * dist - perpX * spread;
+          const f2y = dirY * dist - perpY * spread;
+          drawStandFist(
+            c,
+            f2x,
+            f2y,
+            10.5,
+            true,
+            clashAng - Math.PI * 0.5,
+            b2 && b2.costume === "jotaro" ? "#9b59b6" : COLORS.gold,
+            b2 && b2.costume === "jotaro" ? COLORS.gold : "#2ecc71",
+            COLORS.gold
+          );
+        }
+
+        // Sharp comic impact star at exact collision point
+        c.rotate(t * 22);
+        c.fillStyle = COLORS.white;
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 3;
+        c.beginPath();
+        for (let i = 0; i < 16; i++) {
+          const a = (Math.PI * 2 * i) / 16;
+          const rr = (i % 2 === 0 ? 28 : 11) * pulse;
+          if (i === 0) c.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
+          else c.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+        }
+        c.closePath();
+        c.fill();
         c.stroke();
         c.restore();
 
-        // Chunky Anime Tug-of-War Clash Meter at top-center
-        const barW = 320;
-        const barH = 26;
+        // Floating Battle Cry Clash Text ("ORA ORA!!" vs "MUDA MUDA!!")
+        c.save();
+        const cry1 = b1 && b1.costume === "jotaro" ? "ORA ORA ORA!!" : "MUDA MUDA MUDA!!";
+        const cry2 = b2 && b2.costume === "dio" ? "MUDA MUDA MUDA!!" : "ORA ORA ORA!!";
+        const jitterX = Math.sin(t * 90) * 3;
+        const jitterY = Math.cos(t * 85) * 3;
+        c.font = `bold 15px ${FONT}`;
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+        c.lineWidth = 4.5;
+        c.strokeStyle = COLORS.ink;
+        c.strokeText(cry1, frontX - dirX * 52 + jitterX, frontY - 52 + jitterY);
+        c.fillStyle = c1;
+        c.fillText(cry1, frontX - dirX * 52 + jitterX, frontY - 52 + jitterY);
+
+        c.strokeText(cry2, frontX + dirX * 52 - jitterX, frontY + 52 - jitterY);
+        c.fillStyle = c2;
+        c.fillText(cry2, frontX + dirX * 52 - jitterX, frontY + 52 - jitterY);
+        c.restore();
+
+        // 3. Upgraded JoJo Tug-of-War Clash Meter at Top-Center
+        const barW = 350;
+        const barH = 30;
         const barX = (WORLD_SIZE - barW) * 0.5;
-        const barY = 74;
+        const barY = 72;
         const splitX = barX + barW * meter;
 
         // Header pill
-        c.font = `bold 14px ${FONT}`;
+        c.font = `bold 15px ${FONT}`;
         c.textAlign = "center";
         c.textBaseline = "middle";
-        c.lineWidth = 4;
+        c.lineWidth = 4.5;
         c.strokeStyle = COLORS.ink;
-        c.strokeText("STAND CLASH!", WORLD_SIZE * 0.5, barY - 17);
+        c.strokeText("⚡ STAND BARRAGE CLASH! ⚡", WORLD_SIZE * 0.5, barY - 18);
         c.fillStyle = COLORS.gold;
-        c.fillText("STAND CLASH!", WORLD_SIZE * 0.5, barY - 17);
+        c.fillText("⚡ STAND BARRAGE CLASH! ⚡", WORLD_SIZE * 0.5, barY - 18);
 
         // Drop shadow
         c.fillStyle = COLORS.ink;
@@ -973,8 +1066,8 @@
         c.fillRect(splitX, barY, barW * (1 - meter), barH);
 
         // Gloss highlight
-        c.fillStyle = "rgba(255, 255, 255, 0.22)";
-        c.fillRect(barX, barY, barW, barH * 0.42);
+        c.fillStyle = "rgba(255, 255, 255, 0.25)";
+        c.fillRect(barX, barY, barW, barH * 0.44);
         c.restore();
 
         // Thick ink border
@@ -989,16 +1082,16 @@
         c.strokeStyle = COLORS.ink;
         c.lineWidth = 2.5;
         c.beginPath();
-        c.roundRect(splitX - 4, barY - 4, 8, barH + 8, 3);
+        c.roundRect(splitX - 5, barY - 5, 10, barH + 10, 4);
         c.fill();
         c.stroke();
 
-        // Percentage & fighter labels inside/beside meter
+        // Percentage & fighter labels inside meter
         c.font = `bold 13px ${FONT}`;
         c.lineWidth = 3.5;
         c.strokeStyle = COLORS.ink;
-        const n1 = b1 ? (b1.shortName || b1.name) : "P1";
-        const n2 = b2 ? (b2.shortName || b2.name) : "P2";
+        const n1 = b1 ? b1.name : "P1";
+        const n2 = b2 ? b2.name : "P2";
 
         c.textAlign = "left";
         const leftText = `${n1} ${p1Pct}%`;
@@ -1034,13 +1127,23 @@
         const dx = s2.x - s1.x;
         const dy = s2.y - s1.y;
         const dist = Math.hypot(dx, dy);
-        if (dist <= 58) {
-          const midX = (s1.x + s2.x) * 0.5;
-          const midY = (s1.y + s2.y) * 0.5;
-          const clashAng = Math.atan2(dy, dx);
-          const sep = 20;
-          const clashDuration = 2.2;
+        if (dist <= 64) {
+          // Center the clash safely away from walls so both Stands and Users have room for the standoff & knockback
+          const rawMidX = (s1.x + s2.x) * 0.5;
+          const rawMidY = (s1.y + s2.y) * 0.5;
+          const midX = Math.max(120, Math.min(WORLD_SIZE - 120, rawMidX));
+          const midY = Math.max(130, Math.min(WORLD_SIZE - 110, rawMidY));
+          const clashAng = Math.atan2(b2.y - b1.y, b2.x - b1.x) || 0;
+          const sep = 34;
+          const userDist = 80;
+          const clashDuration = 2.4;
           const winnerIdx = rng() < 0.5 ? 0 : 1;
+
+          // Position Users behind their Stands so User 1 -> Stand 1 ⚡ Stand 2 <- User 2 is clearly visible!
+          b1.x = Math.max(b1.radius + 8, Math.min(WORLD_SIZE - b1.radius - 8, midX - Math.cos(clashAng) * userDist));
+          b1.y = Math.max(b1.radius + 8, Math.min(WORLD_SIZE - b1.radius - 8, midY - Math.sin(clashAng) * userDist));
+          b2.x = Math.max(b2.radius + 8, Math.min(WORLD_SIZE - b2.radius - 8, midX + Math.cos(clashAng) * userDist));
+          b2.y = Math.max(b2.radius + 8, Math.min(WORLD_SIZE - b2.radius - 8, midY + Math.sin(clashAng) * userDist));
 
           s1.phase = "clashing";
           s1.x = midX - Math.cos(clashAng) * sep;
@@ -1072,8 +1175,8 @@
           s2.clashPartner = b1;
           s2.clashPrimary = false;
 
-          b1.standAttackTimer = clashDuration;
-          b2.standAttackTimer = clashDuration;
+          b1.standAttackTimer = clashDuration + 0.5;
+          b2.standAttackTimer = clashDuration + 0.5;
 
           entities.push(spawnStandClashEffect(midX, midY, clashDuration, b1, b2, () => s1.clashMeter));
           hitStop = 0.08;
@@ -2893,6 +2996,16 @@
       ball.squash = Math.max(ball.squash, 0.6);
       ball.preventAxisLock();
       sound.playWallBounce();
+      if (ball.knockbackTimer > 0) {
+        // Dramatic wall-crater slam when sent flying from a Stand Clash Finisher!
+        entities.push(spawnShockRing(ball.x, ball.y, COLORS.red, 110, 0.38));
+        spawnSparks(ball.x, ball.y, COLORS.red, COLORS.gold);
+        spawnDamageText(ball.x, ball.y - ball.radius - 12, 0, COLORS.red, true, "WALL SLAM!");
+        shakeTime = Math.max(shakeTime, 0.28);
+        shakeIntensity = Math.max(shakeIntensity, 9);
+        sound.playCritHit();
+        ball.knockbackTimer = Math.min(ball.knockbackTimer, 0.15);
+      }
       if (ball.apeMode && ball.apeRushTimer > 0 && BF.triggerApeWallSlam) {
         const sp = ball.baseSpeed * 2.45;
         const bAng = Math.atan2(ball.vy, ball.vx);
@@ -3307,23 +3420,29 @@
       st.clashTimer -= dt;
       st.clashPulseTimer -= dt;
 
-      // Intense anime vibration during Stand Clash
-      st.x = st.clashBaseX + (rng() - 0.5) * 6;
-      st.y = st.clashBaseY + (rng() - 0.5) * 6;
+      // Dynamic push of the two Stands based on the tug-of-war meter + intense anime vibration
+      const primarySt = st.clashPrimary ? st : (st.clashPartner && st.clashPartner.standState ? st.clashPartner.standState : st);
+      const curMeter = primarySt.clashMeter ?? 0.5;
+      const pushShift = (curMeter - 0.5) * 44;
+      const mainAng = primarySt.angle || 0;
+      st.x = st.clashBaseX + Math.cos(mainAng) * pushShift + (rng() - 0.5) * 6;
+      st.y = st.clashBaseY + Math.sin(mainAng) * pushShift + (rng() - 0.5) * 6;
 
       if (st.clashPulseTimer <= 0) {
         st.clashPulseTimer = 0.09;
         if (st.clashPrimary) {
-          const prog = 1 - Math.max(0, st.clashTimer / (st.clashDuration || 2.2));
+          const prog = 1 - Math.max(0, st.clashTimer / (st.clashDuration || 2.4));
           if (prog < 0.62) {
             // Dramatic tug-of-war back-and-forth swings
             st.clashMeter = Math.max(0.24, Math.min(0.76, st.clashMeter + (rng() - 0.5) * 0.22));
           } else {
             // Final push toward the 50/50 clash winner
-            const targetMeter = st.clashWinnerIdx === 0 ? 0.68 + rng() * 0.12 : 0.20 + rng() * 0.12;
-            st.clashMeter += (targetMeter - st.clashMeter) * 0.42;
+            const targetMeter = st.clashWinnerIdx === 0 ? 0.74 + rng() * 0.12 : 0.14 + rng() * 0.12;
+            st.clashMeter += (targetMeter - st.clashMeter) * 0.44;
           }
-          spawnSparks(st.clashMidX, st.clashMidY, COLORS.gold, COLORS.white);
+          const fxX = st.clashMidX + Math.cos(mainAng) * pushShift;
+          const fxY = st.clashMidY + Math.sin(mainAng) * pushShift;
+          spawnSparks(fxX, fxY, COLORS.gold, "#a855f7");
           shakeTime = Math.max(shakeTime, 0.1);
           shakeIntensity = Math.max(shakeIntensity, 6);
           sound.playBallHit();
@@ -3332,41 +3451,116 @@
 
       if (st.clashTimer <= 0) {
         if (st.clashPrimary) {
-          const midX = st.clashMidX;
-          const midY = st.clashMidY;
-          entities.push(spawnShockRing(midX, midY, COLORS.gold, 175, 0.5));
-          entities.push(spawnShockRing(midX, midY, COLORS.white, 125, 0.38));
-          spawnCritBurst(midX, midY);
-          spawnDamageText(midX, midY - 26, 0, COLORS.gold, true, "CLASH IMPACT!");
-          hitStop = 0.12;
-          shakeTime = 0.45;
-          shakeIntensity = 13;
-          sound.playCritHit();
-
-          // Winner = higher meter percentage; loser takes heavy damage and is sent flying
           const fighters = [ball, st.clashPartner].filter((f) => f && f.alive);
           if (fighters.length === 2) {
             const winnerIdx = st.clashMeter >= 0.5 ? 0 : 1;
             const winner = fighters[winnerIdx];
             const loser = fighters[1 - winnerIdx];
+            const winSt = winner.standState;
+            const loseSt = loser.standState;
 
-            const winAng = Math.atan2(winner.y - midY, winner.x - midX);
-            winner.vx = Math.cos(winAng) * 160;
-            winner.vy = Math.sin(winAng) * 160;
-            chargeUlt(winner);
-            spawnDamageText(winner.x, winner.y - winner.radius - 14, 0, COLORS.gold, false, "CLASH WIN! +ULT");
+            if (winSt && loseSt) {
+              // Transition into Finisher Animation: Winning Stand punches the Losing Stand into the Losing User!
+              const finAng = Math.atan2(loser.y - winSt.y, loser.x - winSt.x);
+              winSt.phase = "clash_finisher";
+              winSt.angle = finAng;
+              winSt.finisherTimer = 0.42;
+              winSt.finisherMax = 0.42;
+              winSt.finisherStartX = winSt.x;
+              winSt.finisherStartY = winSt.y;
+              winSt.finisherTargetStandX = loseSt.x;
+              winSt.finisherTargetStandY = loseSt.y;
+              winSt.finisherLoser = loser;
+              winSt.finisherStage = 0;
 
-            const loseAng = Math.atan2(loser.y - midY, loser.x - midX);
-            loser.vx = Math.cos(loseAng) * 560;
-            loser.vy = Math.sin(loseAng) * 560;
-            const clashDmg = applyDamage(loser, Math.round(14 + rng() * 5));
-            loser.flashTimer = 0.22;
+              loseSt.phase = "clash_broken";
+              loseSt.brokenStartX = loseSt.x;
+              loseSt.brokenStartY = loseSt.y;
+              loseSt.brokenTimer = 0.42;
+
+              // Immediate first impact on the losing Stand!
+              entities.push(spawnShockRing(loseSt.x, loseSt.y, winner.color, 135, 0.36));
+              spawnCritBurst(loseSt.x, loseSt.y);
+              const winCry = winner.costume === "jotaro" ? "STAR BREAKER: ORA!!" : "THE WORLD: MUDA!!";
+              spawnDamageText(loseSt.x, loseSt.y - 26, 0, winner.color, true, winCry);
+              sound.playCritHit();
+              hitStop = 0.08;
+              shakeTime = 0.35;
+              shakeIntensity = 11;
+              return;
+            }
+          }
+          st.phase = "returning";
+        }
+      }
+    } else if (st.phase === "clash_finisher") {
+      ball.standAttackTimer = 0.3;
+      st.finisherTimer -= dt;
+      const p = 1 - Math.max(0, st.finisherTimer / (st.finisherMax || 0.42));
+      const loser = st.finisherLoser;
+
+      if (loser && loser.alive) {
+        const loseSt = loser.standState;
+        if (p < 0.48) {
+          // Stage 1: Winning Stand lunges into Losing Stand & punches it backward toward the Losing User!
+          const k = easeOut(p / 0.48);
+          st.x = st.finisherStartX + (st.finisherTargetStandX - st.finisherStartX) * k;
+          st.y = st.finisherStartY + (st.finisherTargetStandY - st.finisherStartY) * k;
+          if (loseSt && loseSt.phase === "clash_broken") {
+            loseSt.x = loseSt.brokenStartX + (loser.x - loseSt.brokenStartX) * k;
+            loseSt.y = loseSt.brokenStartY + (loser.y - loseSt.brokenStartY) * k;
+          }
+        } else {
+          // Stage 2: Losing Stand shatters into the Losing User & Winning Stand follows through, blasting the User across the arena!
+          if (st.finisherStage === 0) {
+            st.finisherStage = 1;
+            if (loseSt) loser.standState = null;
+
+            const loseAng = Math.atan2(loser.y - ball.y, loser.x - ball.x);
+            st.x = loser.x - Math.cos(loseAng) * (loser.radius + 14);
+            st.y = loser.y - Math.sin(loseAng) * (loser.radius + 14);
+            st.angle = loseAng;
+
+            // Recoil on winner + Ult charge
+            winnerRecoil: {
+              const winAng = loseAng + Math.PI;
+              ball.vx = Math.cos(winAng) * 180;
+              ball.vy = Math.sin(winAng) * 180;
+              chargeUlt(ball);
+              spawnDamageText(ball.x, ball.y - ball.radius - 14, 0, COLORS.gold, false, "CLASH WIN! +ULT");
+            }
+
+            // Massive knockback sends the losing user flying far across the arena!
+            const launchSpeed = 1120;
+            loser.vx = Math.cos(loseAng) * launchSpeed;
+            loser.vy = Math.sin(loseAng) * launchSpeed;
+            loser.knockbackTimer = 0.68;
+            const clashDmg = applyDamage(loser, Math.round(16 + rng() * 5));
+            loser.flashTimer = 0.28;
             loser.squash = 1.0;
+
+            entities.push(spawnShockRing(loser.x, loser.y, COLORS.gold, 185, 0.5));
+            entities.push(spawnShockRing(loser.x, loser.y, COLORS.red, 135, 0.38));
+            spawnCritBurst(loser.x, loser.y);
             spawnSparks(loser.x, loser.y, COLORS.red, COLORS.gold);
-            spawnDamageText(loser.x, loser.y - loser.radius - 14, clashDmg, COLORS.red, true, "CLASH LOST!");
+            spawnDamageText(loser.x, loser.y - loser.radius - 18, clashDmg, COLORS.red, true, "STAND CRUSHED!!");
+            hitStop = 0.12;
+            shakeTime = 0.48;
+            shakeIntensity = 14;
+            sound.playCritHit();
+            checkKO(loser.x, loser.y);
           }
         }
+      }
+
+      if (st.finisherTimer <= 0) {
         st.phase = "returning";
+      }
+    } else if (st.phase === "clash_broken") {
+      ball.standAttackTimer = 0.25;
+      st.brokenTimer -= dt;
+      if (st.brokenTimer <= 0) {
+        ball.standState = null;
       }
     } else if (st.phase === "returning") {
       let backAng = Math.atan2(ball.vy, ball.vx);
@@ -3533,6 +3727,9 @@
       if (ball.apeRushHitCooldown > 0) {
         ball.apeRushHitCooldown = Math.max(0, ball.apeRushHitCooldown - scaledDt);
       }
+      if (ball.knockbackTimer > 0) {
+        ball.knockbackTimer = Math.max(0, ball.knockbackTimer - scaledDt);
+      }
       ball.updateEffects(scaledDt);
 
       if (ball.channelTimer > 0) {
@@ -3555,7 +3752,10 @@
       }
 
       // Freeze both fighters in place while their Stands or Domains are clashing
-      if ((ball.standState && ball.standState.phase === "clashing") || ball.domainClashTimer > 0) {
+      if (
+        (ball.standState && (ball.standState.phase === "clashing" || ball.standState.phase === "clash_finisher" || ball.standState.phase === "clash_broken")) ||
+        ball.domainClashTimer > 0
+      ) {
         if (ball.domainClashTimer > 0) ball.domainClashTimer = Math.max(0, ball.domainClashTimer - scaledDt);
         continue;
       }
@@ -3600,7 +3800,16 @@
       if (speedFactor > 0) {
         ball.x += ball.vx * speedFactor * scaledDt;
         ball.y += ball.vy * speedFactor * scaledDt;
-        if (ball.rocketTimer <= 0 && ball.rasenganTimer <= 0 && ball.kyuubiSlashTimer <= 0 && ball.shunpoDashTimer <= 0 && ball.dragonRushTimer <= 0 && ball.cleaveDashTimer <= 0 && !ball.apeMode) {
+        if (
+          ball.rocketTimer <= 0 &&
+          ball.rasenganTimer <= 0 &&
+          ball.kyuubiSlashTimer <= 0 &&
+          ball.shunpoDashTimer <= 0 &&
+          ball.dragonRushTimer <= 0 &&
+          ball.cleaveDashTimer <= 0 &&
+          ball.knockbackTimer <= 0 &&
+          !ball.apeMode
+        ) {
           ball.normalizeSpeed();
         }
         handleWallCollisions(ball);
@@ -3609,7 +3818,9 @@
 
     checkStandClash();
 
-    const anyClashing = balls.some((b) => b.alive && b.standState && b.standState.phase === "clashing");
+    const anyClashing = balls.some(
+      (b) => b.alive && b.standState && (b.standState.phase === "clashing" || b.standState.phase === "clash_finisher" || b.standState.phase === "clash_broken")
+    );
     if (!anyClashing && balls[0].alive && balls[1].alive) {
       handleBallCollision(balls[0], balls[1]);
     }
