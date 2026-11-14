@@ -23,6 +23,10 @@
       { id: "starter", label: "BASE (SHIKAI)", evolved: false, defaultForm: "shikai" },
       { id: "evolved", label: "BANKAI (EVO)", evolved: true, defaultForm: "base" },
     ],
+    sasuke: [
+      { id: "starter", label: "BASE (SHARINGAN)", evolved: false, defaultForm: "base" },
+      { id: "evolved", label: "RINNEGAN (EVO)", evolved: true, defaultForm: "evolved_base" },
+    ],
   };
 
   // flags are copied onto the preview ball (ult => ultTimer, others as-is)
@@ -80,11 +84,12 @@
       { id: "ult", label: "ADULT GON", ult: true, desc: "Pitch-black Restriction & Pledge form! Replaces Jajanken with 1 brutal skill: dashes to the enemy, lifts them into the air, and slams them into the ground!" },
     ],
     sasuke: [
-      { id: "base", label: "SHARINGAN", starterOnly: true, desc: "Chidori dash (triggers Rasengan vs Chidori Clash against Naruto!) and Katon: Fireball Jutsu." },
-      { id: "curse_mark", label: "CURSE MARK STAGE 2", starterOnly: true, curseMarkMode: true, desc: "Starter Permanent Form at HP <= 150! Clawed wings, +20% Speed, +45 HP burst & Dark Chidori!" },
-      { id: "evolved_base", label: "RINNEGAN (EVOLVED)", evolved: true, desc: "Evolved Form! Rinnegan + EMS, Susanoo Ribcage aura & Amaterasu Black Flames." },
-      { id: "susanoo_armor", label: "SUSANOO ARMOR", evolved: true, susanooArmorMode: true, desc: "Evolved Permanent Form at HP <= 150! Purple Susanoo Samurai Armor, +55 HP, +22% Shield & Rinnegan-enhanced Amenotejikara + Bansho Ten'in!" },
-      { id: "ult", label: "INDRA'S ARROW", evolved: true, ult: true, desc: "Rinnegan Ult! Sasuke leaps up as Giant Indra Susanoo draws a Lightning Bow, hitting the entire map & electrifying the arena!" },
+      { id: "base", stage: "starter", label: "SHARINGAN", starterOnly: true, desc: "Starter Base: Chidori dash (triggers Rasengan vs Chidori Clash against Naruto!) & Katon: Fireball Jutsu." },
+      { id: "kirin", stage: "starter", label: "KIRIN (ULT)", ult: true, starterOnly: true, desc: "Starter Ult: Summons thunderstorm clouds over the arena and calls down the Kirin Thunder Dragon!" },
+      { id: "curse_mark", stage: "starter", label: "CURSE MARK (HP≤150)", starterOnly: true, curseMarkMode: true, desc: "Starter HP <= 150: Permanent Curse Mark Stage 2 with clawed wings, +20% Speed, +45 HP & Dark Chidori!" },
+      { id: "evolved_base", stage: "evolved", label: "RINNEGAN", evolved: true, desc: "Evolved Base (10k Gold): Rinnegan + EMS, Susanoo Ribcage aura & Amaterasu Black Flames!" },
+      { id: "ult", stage: "evolved", label: "INDRA'S ARROW (ULT)", evolved: true, ult: true, desc: "Evolved Ult: Leaps up as Giant Indra Susanoo draws a Lightning Bow, hitting the entire map & electrifying the arena!" },
+      { id: "susanoo_armor", stage: "evolved", label: "SUSANOO ARMOR (HP≤150)", evolved: true, susanooArmorMode: true, desc: "Evolved HP <= 150: Permanent Purple Susanoo Samurai Armor, +55 HP, +22% Shield & Amenotejikara + Bansho Ten'in!" },
     ],
     jinwoo: [
       { id: "base", label: "HUNTER", desc: "Kamish's Wrath twin daggers, Mutilate cross-slash dash and Ruler's Authority gravity pull." },
