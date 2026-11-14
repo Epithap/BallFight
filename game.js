@@ -2378,7 +2378,7 @@
       godspeed: ["GODSPEED: KANMURU!", "#38bdf8"],
       arise: ["ARISE: SHADOW ARMY!", "#a855f7"],
       hero_of_hell: ["HERO OF HELL!", "#ea580c"],
-      cosmic_fear: ["COSMIC FEAR: GAMMA RAY BURST!", "#c084fc"],
+      cosmic_fear: ["MONSTER CALAMITY!", "#ef4444"],
     }[ball.ult];
     if (fx) {
       if (ball.ult !== "time_stop" && ball.ult !== "star_time_stop") {
@@ -2721,38 +2721,16 @@
     } else if (ball.ult === "cosmic_fear") {
       beginCast(ball, {
         kind: "powerup",
-        duration: 0.55,
-        color: "#c084fc",
+        duration: 0.48,
+        color: "#ef4444",
         fire(b, g) {
           b.ultTimer = 8.0;
-          addEffect(b, "haste", 8.0, { factor: 1.25 });
-          addEffect(b, "shield", 8.0, { reduction: 0.2 });
+          addEffect(b, "haste", 8.0, { factor: 1.28 });
+          addEffect(b, "shield", 8.0, { reduction: 0.22 });
           if (b.skills[0]) b.skills[0]._cd = 0;
-          entities.push(spawnShockRing(b.x, b.y, "#c084fc", 135, 0.45));
-          const t = g.balls.find((x) => x !== b && x.alive);
-          if (t) {
-            const ang = Math.atan2(t.y - b.y, t.x - b.x);
-            const m = castMuzzle(b, ang, 22);
-            g.entities.push(
-              spawnProjectile({
-                owner: b,
-                target: t,
-                x: m.x,
-                y: m.y,
-                speed: 590,
-                radius: 30,
-                damage: Math.round(20 + rng() * 4),
-                color: "#c084fc",
-                label: "GAMMA RAY BURST!",
-                onImpact(tt, gg, proj) {
-                  gg.addEffect(tt, "stun", 0.45);
-                  gg.entities.push(spawnShockRing(proj.x, proj.y, "#fde047", 115, 0.4));
-                  gg.entities.push(spawnShockRing(proj.x, proj.y, "#38bdf8", 85, 0.3));
-                  gg.spawnSparks(proj.x, proj.y, "#fde047", "#c084fc");
-                },
-              })
-            );
-          }
+          if (BF.triggerGarouMonsterOpener) BF.triggerGarouMonsterOpener(b, g);
+          entities.push(spawnShockRing(b.x, b.y, "#ef4444", 135, 0.45));
+          entities.push(spawnShockRing(b.x, b.y, "#fb923c", 96, 0.34));
         },
       });
     }
