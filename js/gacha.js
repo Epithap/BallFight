@@ -1313,25 +1313,6 @@
       drawModernSplashBanner(rateUpCv, featCfg, performance.now() * 0.001);
     }
 
-    const feat = $("banner-feat");
-    if (feat) {
-      feat.innerHTML = "";
-      for (const id of FIGHTERS) {
-        const cfg = BF.CHARACTER_ROSTER[id]; if (!cfg) continue;
-        const has = owned(id);
-        const isRateUp = id === featuredId;
-        const t = document.createElement("div");
-        t.className = `feat-tile rarity-fighter${isRateUp ? " is-rateup" : ""}${has ? " has" : ""}`;
-        const cv = document.createElement("canvas"); cv.width = 96; cv.height = 96;
-        t.appendChild(cv);
-        const tag = document.createElement("span");
-        tag.textContent = isRateUp ? "5.0%" : (has ? "OWNED" : "FIGHTER");
-        t.appendChild(tag);
-        feat.appendChild(t);
-        deps.drawAvatar(cv, cfg);
-      }
-    }
-
     const grid = $("shop-items-grid");
     if (grid) {
       grid.innerHTML = "";
