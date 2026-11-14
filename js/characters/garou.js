@@ -1478,27 +1478,55 @@
         // Downward Gamma Ray Burst erupting from outside/above arena straight into the arena floor
         const downBeam = extCtx.createLinearGradient(curX, curY, curX, rect.top + rect.height);
         downBeam.addColorStop(0, "rgba(255, 255, 255, 0.98)");
-        downBeam.addColorStop(0.28, "rgba(240, 171, 252, 0.85)");
-        downBeam.addColorStop(0.7, "rgba(56, 189, 248, 0.52)");
-        downBeam.addColorStop(1, "rgba(56, 189, 248, 0.15)");
+        downBeam.addColorStop(0.22, "rgba(240, 171, 252, 0.92)");
+        downBeam.addColorStop(0.62, "rgba(56, 189, 248, 0.58)");
+        downBeam.addColorStop(1, "rgba(56, 189, 248, 0.08)");
         extCtx.fillStyle = downBeam;
         extCtx.beginPath();
-        extCtx.moveTo(curX - 28, curY);
-        extCtx.lineTo(curX + 28, curY);
-        extCtx.lineTo(rect.left + rect.width + 24, rect.top + rect.height * 0.55);
-        extCtx.lineTo(rect.left - 24, rect.top + rect.height * 0.55);
+        extCtx.moveTo(curX - 32, curY);
+        extCtx.lineTo(curX + 32, curY);
+        extCtx.lineTo(rect.left + rect.width + 36, rect.top + rect.height * 0.65);
+        extCtx.lineTo(rect.left - 36, rect.top + rect.height * 0.65);
         extCtx.closePath();
         extCtx.fill();
 
-        // Sharp white plasma core rays from Quasar down into the Moon Arena
-        extCtx.strokeStyle = "rgba(255, 255, 255, 0.9)";
+        // Inner intense magenta-white core beam
+        const coreBeam = extCtx.createLinearGradient(curX, curY, curX, rect.top + rect.height * 0.72);
+        coreBeam.addColorStop(0, "rgba(255, 255, 255, 1)");
+        coreBeam.addColorStop(0.35, "rgba(253, 224, 71, 0.85)");
+        coreBeam.addColorStop(0.75, "rgba(232, 121, 249, 0.45)");
+        coreBeam.addColorStop(1, "rgba(56, 189, 248, 0)");
+        extCtx.fillStyle = coreBeam;
+        extCtx.beginPath();
+        extCtx.moveTo(curX - 12, curY);
+        extCtx.lineTo(curX + 12, curY);
+        extCtx.lineTo(targetSX + rect.width * 0.28, rect.top + rect.height * 0.65);
+        extCtx.lineTo(targetSX - rect.width * 0.28, rect.top + rect.height * 0.65);
+        extCtx.closePath();
+        extCtx.fill();
+
+        // Traveling relativistic shockwave ellipses descending down the Gamma beam
+        const burstProg = (tNow - 0.55) / 0.93;
+        for (let r = 0; r < 3; r++) {
+          const rp = (burstProg * 2.4 + r * 0.33) % 1;
+          const ry = curY + rp * (rect.top + rect.height * 0.52 - curY);
+          const rx = 24 + rp * (rect.width * 0.46);
+          extCtx.strokeStyle = r % 2 === 0 ? "rgba(255, 255, 255, 0.85)" : "rgba(56, 189, 248, 0.8)";
+          extCtx.lineWidth = 2.8 * (1 - rp * 0.5);
+          extCtx.beginPath();
+          extCtx.ellipse(curX + (targetSX - curX) * rp, ry, rx, rx * 0.22, 0, 0, Math.PI * 2);
+          extCtx.stroke();
+        }
+
+        // Sharp white-gold plasma core rays from Quasar down into the Moon Arena
         extCtx.lineWidth = 3.2;
-        for (let i = -2; i <= 2; i++) {
+        for (let i = -3; i <= 3; i++) {
+          extCtx.strokeStyle = i === 0 ? "rgba(255, 255, 255, 0.96)" : i % 2 === 0 ? "rgba(240, 171, 252, 0.85)" : "rgba(125, 211, 252, 0.82)";
           extCtx.beginPath();
           extCtx.moveTo(curX, curY);
           extCtx.lineTo(
-            targetSX + i * (rect.width * 0.22) + Math.sin(tNow * 35 + i) * 14,
-            rect.top + rect.height * 0.45
+            targetSX + i * (rect.width * 0.16) + Math.sin(tNow * 38 + i) * 12,
+            rect.top + rect.height * 0.54
           );
           extCtx.stroke();
         }
@@ -1519,20 +1547,36 @@
       extCtx.arc(0, 0, coreR * 2.6, 0, Math.PI * 2);
       extCtx.fill();
 
-      // Tilted Gold & Cyan Accretion Disk Rings
+      // Tilted Gold, Magenta & Cyan Accretion Disk Rings + Orbiting Stars
       extCtx.save();
       extCtx.rotate(tNow * 7.5);
       extCtx.strokeStyle = "#fde047";
-      extCtx.lineWidth = 3.6;
+      extCtx.lineWidth = 3.8;
       extCtx.beginPath();
-      extCtx.ellipse(0, 0, coreR * 2.0, coreR * 0.54, 0.35, 0, Math.PI * 2);
+      extCtx.ellipse(0, 0, coreR * 2.15, coreR * 0.58, 0.35, 0, Math.PI * 2);
+      extCtx.stroke();
+
+      extCtx.strokeStyle = "#e879f9";
+      extCtx.lineWidth = 3.2;
+      extCtx.beginPath();
+      extCtx.ellipse(0, 0, coreR * 1.9, coreR * 0.52, -0.35, 0, Math.PI * 2);
       extCtx.stroke();
 
       extCtx.strokeStyle = "#38bdf8";
-      extCtx.lineWidth = 3.0;
+      extCtx.lineWidth = 2.6;
       extCtx.beginPath();
-      extCtx.ellipse(0, 0, coreR * 1.75, coreR * 0.48, -0.35, 0, Math.PI * 2);
+      extCtx.ellipse(0, 0, coreR * 1.6, coreR * 0.44, 1.05, 0, Math.PI * 2);
       extCtx.stroke();
+
+      for (let s = 0; s < 6; s++) {
+        const sa = tNow * 5 + (Math.PI * 2 * s) / 6;
+        const sx = Math.cos(sa) * coreR * 1.9;
+        const sy = Math.sin(sa) * coreR * 0.72;
+        extCtx.fillStyle = s % 2 === 0 ? "#ffffff" : "#fde047";
+        extCtx.beginPath();
+        extCtx.arc(sx, sy, 2.6, 0, Math.PI * 2);
+        extCtx.fill();
+      }
       extCtx.restore();
 
       // Black-Gold Singularity Sphere Core
@@ -1622,7 +1666,8 @@
               // Direct HP reduction during cutscene (since applyDamage is guarded by _cosmicCutsceneTimer)
               const shield = enemy.getEffect && enemy.getEffect("shield");
               const red = shield ? (shield.data?.reduction ?? 0.35) : 0;
-              const dealt = Math.max(1, Math.round(17 * (1 - red)));
+              const baseBurst = isFinal ? 30 : 22;
+              const dealt = Math.max(1, Math.round(baseBurst * (1 - red)));
               enemy.hp = Math.max(0, enemy.hp - dealt);
               enemy.flashTimer = 0.2;
               enemy.squash = 0.72;
