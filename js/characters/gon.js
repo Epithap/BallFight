@@ -971,8 +971,8 @@
 
   BF.CHARACTER_ROSTER.gon = {
     id: "gon",
-    name: "GON FREECSS",
-    shortName: "GON",
+    name: "ENHANCER PRODIGY",
+    shortName: "PRODIGY",
     title: "Enhancer • Jajanken & Adult Gon",
     role: "ENHANCER • BRAWLER",
     color: "#16a34a",

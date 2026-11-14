@@ -637,13 +637,13 @@
   // ---- Skill 1: Chidori (Dash + Final Valley Clash vs Naruto's Rasengan!) ----
   const SKILL_CHIDORI = {
     name: "Chidori",
-    cooldown: 3.0,
+    cooldown: 3.8,
     onTick(ball, g) {
       const target = pickEnemy(ball, g);
       if (!target) return false;
       rt.beginCast(ball, {
         kind: "powerup",
-        duration: 0.22,
+        duration: 0.36,
         color: "#38bdf8",
         fire(b, gg) {
           const t = pickEnemy(b, gg);
@@ -668,13 +668,13 @@
   // ---- Skill 2: Fireball Jutsu ----
   const SKILL_FIREBALL = {
     name: "Fireball Jutsu",
-    cooldown: 4.4,
+    cooldown: 5.8,
     onTick(ball, g) {
       const target = pickEnemy(ball, g);
       if (!target) return false;
       rt.beginCast(ball, {
         kind: "fireball",
-        duration: 0.2,
+        duration: 0.32,
         color: "#f97316",
         fire(b, gg) {
           const t = pickEnemy(b, gg);
