@@ -143,170 +143,337 @@
     },
   };
 
-  // ---- Weapon Drawer: Spinning Arm Chainsaw Blade ----
+      // ---- Weapon Drawer: Forearm Chainsaw (orange engine housing + steel bar + running chain) ----
   BF.WEAPON_DRAWERS.chainsaw_blade = (ball, c) => {
     const isHeroOfHell = ball.ultTimer > 0;
-    const sawTick = Math.floor(performance.now() * 0.045) % 2;
-
+    const tick = Math.floor(performance.now() * 0.05) % 2;
     c.save();
-    // Engine housing guard at base
-    c.fillStyle = isHeroOfHell ? "#1e293b" : "#c2410c";
+    c.lineJoin = "round";
+    // Engine housing fused to the forearm
+    c.fillStyle = isHeroOfHell ? "#18181b" : "#c2410c";
     c.strokeStyle = COLORS.ink;
     c.lineWidth = 2.4;
     c.beginPath();
-    c.roundRect(-8, 2, 16, 12, 3);
+    c.roundRect(-8, 1, 16, 15, 4);
     c.fill();
     c.stroke();
-
-    // Main steel chainsaw bar pointing along -Y (like other melee weapons in drawWeapon)
-    c.fillStyle = "#94a3b8";
-    c.strokeStyle = isHeroOfHell ? "#ef4444" : COLORS.ink;
-    c.lineWidth = 2.4;
+    c.fillStyle = isHeroOfHell ? "#ef4444" : "#7c2d12";
+    c.fillRect(-5, 5, 10, 2.5);
+    c.fillRect(-5, 10, 10, 2.5);
+    // Steel guide bar
+    c.fillStyle = "#cbd5e1";
     c.beginPath();
-    c.roundRect(-6, -34, 12, 38, 6);
+    c.moveTo(-5.8, 2);
+    c.lineTo(-5.8, -32);
+    c.arc(0, -32, 5.8, Math.PI, 0);
+    c.lineTo(5.8, 2);
+    c.closePath();
     c.fill();
     c.stroke();
-
-    // Crimson groove down the center of the bar
+    // Blood groove down center of chainsaw bar
     c.strokeStyle = "#dc2626";
-    c.lineWidth = 2.2;
+    c.lineWidth = 2;
     c.beginPath();
     c.moveTo(0, 0);
-    c.lineTo(0, -29);
+    c.lineTo(0, -30);
     c.stroke();
-
-    // Animated reciprocating saw teeth along both sides
+    // Running chain teeth
     c.fillStyle = "#f8fafc";
-    const shift = sawTick * 3;
-    for (let y = -30 + shift; y < 0; y += 6.5) {
-      c.beginPath();
-      c.moveTo(-6, y); c.lineTo(-11, y + 2.5); c.lineTo(-6, y + 5);
-      c.moveTo(6, y); c.lineTo(11, y + 2.5); c.lineTo(6, y + 5);
-      c.fill();
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 1.2;
+    for (let y = -33 + tick * 3; y < 0; y += 6) {
+      for (const s of [-1, 1]) {
+        c.beginPath();
+        c.moveTo(s * 5.8, y);
+        c.lineTo(s * 10.5, y + 1.5);
+        c.lineTo(s * 5.8, y + 4.2);
+        c.closePath();
+        c.fill();
+        c.stroke();
+      }
     }
     c.restore();
   };
 
-  // ---- Costume Drawer: Denji (Full Chainsaw Devil Hybrid Helmet + Hero of Hell Ult) ----
+  // ---- Costume Drawer: Denji / Chainsaw Man ----
+  // Authentic Chainsaw Devil Hybrid helmet: angular burnt-orange/crimson mechanical cowling, black top handlebar,
+  // side exhaust vents, glowing yellow/crimson mechanical slit visors, interlock shark fangs, and Public Safety tie.
   BF.COSTUME_DRAWERS.denji = (ball, r, c) => {
-    const isHeroOfHell = ball.ultTimer > 0;
-    const sawTick = Math.floor(performance.now() * 0.04) % 2;
+    const hell = ball.ultTimer > 0;
+    const tick = Math.floor(performance.now() * 0.05) % 2;
+    const t = performance.now() * 0.001;
+
+    // Hero of Hell: flowing dark-crimson intestinal scarf behind body + 4-arm black devil armor spikes
+    if (hell) {
+      c.save();
+      c.lineCap = "round";
+      for (const s of [-1, 1]) {
+        const w = Math.sin(t * 6 + s) * r * 0.12;
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = r * 0.24;
+        c.beginPath();
+        c.moveTo(s * r * 0.5, r * 0.58);
+        c.quadraticCurveTo(s * r * 1.28, r * 0.45 + w, s * r * 1.44, -r * 0.05 - w);
+        c.stroke();
+        c.strokeStyle = "#be123c";
+        c.lineWidth = r * 0.16;
+        c.stroke();
+      }
+      c.restore();
+    }
+
+    // Iconic Black Chainsaw Handlebar arching over top of helmet (behind center blade)
+    c.save();
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 6.5;
+    c.lineCap = "round";
+    c.lineJoin = "round";
+    c.beginPath();
+    c.moveTo(-r * 0.44, -r * 0.78);
+    c.lineTo(-r * 0.36, -r * 1.08);
+    c.lineTo(r * 0.36, -r * 1.08);
+    c.lineTo(r * 0.44, -r * 0.78);
+    c.stroke();
+    c.strokeStyle = "#27272a";
+    c.lineWidth = 3.2;
+    c.stroke();
+    c.restore();
 
     c.save();
-    // Hero of Hell floating dark-crimson scarf behind body
-    if (isHeroOfHell) {
-      const wave = Math.sin((rt.elapsed || 0) * 9) * 7;
-      c.strokeStyle = "#991b1b";
-      c.lineWidth = 6.5;
-      c.lineCap = "round";
+    c.beginPath();
+    c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
+    c.clip();
+
+    // 1. Lower Body: Public Safety White Shirt & Black Tie (Base) or Jet-Black Armored Torso (Hero of Hell)
+    c.fillStyle = hell ? "#09090b" : "#f8fafc";
+    c.fillRect(-r, r * 0.54, r * 2, r * 0.56);
+
+    if (!hell) {
+      // White shirt collar & black tie
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 2;
+      c.fillStyle = "#e2e8f0";
+      for (const s of [-1, 1]) {
+        c.beginPath();
+        c.moveTo(s * r * 0.05, r * 0.62);
+        c.lineTo(s * r * 0.38, r * 0.58);
+        c.lineTo(s * r * 0.22, r * 0.82);
+        c.closePath();
+        c.fill();
+        c.stroke();
+      }
+      c.fillStyle = "#0f172a";
       c.beginPath();
-      c.moveTo(-r * 0.6, r * 0.2);
-      c.quadraticCurveTo(-r * 1.35, -r * 0.2 + wave, -r * 1.15, -r * 0.95);
-      c.moveTo(r * 0.6, r * 0.2);
-      c.quadraticCurveTo(r * 1.35, -r * 0.2 - wave, r * 1.15, -r * 0.95);
+      c.moveTo(-r * 0.08, r * 0.62);
+      c.lineTo(r * 0.08, r * 0.62);
+      c.lineTo(r * 0.12, r * 1.05);
+      c.lineTo(-r * 0.12, r * 1.05);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    } else {
+      // Hero of Hell intestinal scarf wrapped across chest
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = r * 0.22;
+      c.beginPath();
+      c.moveTo(-r * 0.85, r * 0.68);
+      c.quadraticCurveTo(0, r * 0.84, r * 0.85, r * 0.68);
+      c.stroke();
+      c.strokeStyle = "#be123c";
+      c.lineWidth = r * 0.14;
       c.stroke();
     }
 
-    // Full Devil Helmet Shell (Burnt Orange in Hybrid Form, Jet-Black Armor in Hero of Hell)
-    const helmGrad = c.createRadialGradient(-r * 0.25, -r * 0.3, r * 0.1, 0, 0, r);
-    if (isHeroOfHell) {
-      helmGrad.addColorStop(0, "#334155");
-      helmGrad.addColorStop(0.55, "#0f172a");
-      helmGrad.addColorStop(1, "#020617");
-    } else {
-      helmGrad.addColorStop(0, "#fb923c");
-      helmGrad.addColorStop(0.6, "#ea580c");
-      helmGrad.addColorStop(1, "#7c2d12");
-    }
-    c.fillStyle = helmGrad;
-    c.beginPath();
-    c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
-    c.fill();
-
-    // Glowing Devil Visor Slits
-    c.fillStyle = isHeroOfHell ? "#ef4444" : "#fde047";
+    // Yellow triangular rip-cord pull tab on chest
+    c.fillStyle = "#facc15";
     c.strokeStyle = COLORS.ink;
     c.lineWidth = 1.8;
     c.beginPath();
-    c.moveTo(-r * 0.62, -r * 0.28);
-    c.lineTo(-r * 0.18, -r * 0.14);
-    c.lineTo(-r * 0.26, -r * 0.02);
-    c.lineTo(-r * 0.66, -r * 0.14);
-    c.closePath();
-    c.moveTo(r * 0.62, -r * 0.28);
-    c.lineTo(r * 0.18, -r * 0.14);
-    c.lineTo(r * 0.26, -r * 0.02);
-    c.lineTo(r * 0.66, -r * 0.14);
+    c.moveTo(-r * 0.11, r * 0.92);
+    c.lineTo(r * 0.11, r * 0.92);
+    c.lineTo(0, r * 0.74);
     c.closePath();
     c.fill();
     c.stroke();
 
-    // Savage Devil Jaw & Interlocking White Fangs
+    // 2. Angular Mechanical Devil Helmet Cowling (Covers upper & middle head down to the jaw)
+    const hg = c.createLinearGradient(0, -r, 0, r * 0.6);
+    if (hell) {
+      hg.addColorStop(0, "#3f3f46");
+      hg.addColorStop(0.5, "#18181b");
+      hg.addColorStop(1, "#09090b");
+    } else {
+      hg.addColorStop(0, "#f97316");
+      hg.addColorStop(0.55, "#c2410c");
+      hg.addColorStop(1, "#7c2d12");
+    }
+    c.fillStyle = hg;
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2.6;
+    c.beginPath();
+    c.moveTo(-r, -r);
+    c.lineTo(r, -r);
+    c.lineTo(r, r * 0.28);
+    c.lineTo(r * 0.58, r * 0.62);
+    c.lineTo(-r * 0.58, r * 0.62);
+    c.lineTo(-r, r * 0.28);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    // Side mechanical air-intake vents & rivets on helmet cheeks
+    c.strokeStyle = hell ? "#52525b" : "#431407";
+    c.lineWidth = 2.2;
+    for (const s of [-1, 1]) {
+      for (let k = 0; k < 3; k++) {
+        const vy = -r * 0.36 + k * r * 0.11;
+        c.beginPath();
+        c.moveTo(s * r * 0.72, vy);
+        c.lineTo(s * r * 0.92, vy + r * 0.05);
+        c.stroke();
+      }
+    }
+
+    // 3. Recessed Black Visor Channels + Sharp Glowing Mechanical Slit Eyes (NO round eyeballs!)
+    for (const s of [-1, 1]) {
+      // Dark armored eye socket recess
+      c.fillStyle = "#09090b";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(s * r * 0.14, -r * 0.18);
+      c.lineTo(s * r * 0.66, -r * 0.36);
+      c.lineTo(s * r * 0.6, -r * 0.12);
+      c.lineTo(s * r * 0.18, -r * 0.04);
+      c.closePath();
+      c.fill();
+      c.stroke();
+
+      // Glowing narrow mechanical visor slit inside socket
+      c.fillStyle = hell ? "#ef4444" : "#fef08a";
+      c.shadowColor = hell ? "#dc2626" : "#facc15";
+      c.shadowBlur = 8;
+      c.beginPath();
+      c.moveTo(s * r * 0.18, -r * 0.15);
+      c.lineTo(s * r * 0.58, -r * 0.29);
+      c.lineTo(s * r * 0.54, -r * 0.16);
+      c.lineTo(s * r * 0.2, -r * 0.08);
+      c.closePath();
+      c.fill();
+      c.shadowBlur = 0;
+    }
+
+    // 4. Savage Metallic Maw with Long Interlocking Razor Fangs
     c.fillStyle = "#18181b";
     c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2;
+    c.lineWidth = 2.6;
     c.beginPath();
-    c.moveTo(-r * 0.68, r * 0.14);
-    c.quadraticCurveTo(0, r * 0.04, r * 0.68, r * 0.14);
-    c.quadraticCurveTo(r * 0.55, r * 0.68, 0, r * 0.72);
-    c.quadraticCurveTo(-r * 0.55, r * 0.68, -r * 0.68, r * 0.14);
+    c.moveTo(-r * 0.68, r * 0.04);
+    c.quadraticCurveTo(0, r * 0.14, r * 0.68, r * 0.04);
+    c.lineTo(r * 0.52, r * 0.54);
+    c.quadraticCurveTo(0, r * 0.62, -r * 0.52, r * 0.54);
     c.closePath();
     c.fill();
     c.stroke();
 
+    c.save();
+    c.clip();
     c.fillStyle = "#f8fafc";
-    const teethCount = 6;
-    for (let i = 0; i < teethCount; i++) {
-      const tx = -r * 0.5 + (i * (r * 1.0)) / teethCount;
-      const tw = (r * 0.95) / teethCount;
-      c.beginPath();
-      c.moveTo(tx, r * 0.14);
-      c.lineTo(tx + tw * 0.5, r * 0.42);
-      c.lineTo(tx + tw, r * 0.14);
-      c.closePath();
-      c.fill();
-      c.beginPath();
-      c.moveTo(tx + tw * 0.15, r * 0.58);
-      c.lineTo(tx + tw * 0.5, r * 0.34);
-      c.lineTo(tx + tw * 0.85, r * 0.58);
-      c.closePath();
-      c.fill();
-    }
-
-    // Forehead Chainsaw Horn jutting out from top-center of helmet
-    c.fillStyle = "#94a3b8";
     c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2;
+    c.lineWidth = 1.5;
+    const nTeeth = 8;
+    for (let i = 0; i < nTeeth; i++) {
+      const x0 = -0.64 + (i * 1.28) / nTeeth;
+      const x1 = x0 + 1.28 / nTeeth;
+      const xm = (x0 + x1) * 0.5;
+      // Upper long fang
+      c.beginPath();
+      c.moveTo(x0 * r, r * 0.02);
+      c.lineTo(xm * r, r * 0.36);
+      c.lineTo(x1 * r, r * 0.02);
+      c.closePath();
+      c.fill();
+      c.stroke();
+      // Lower interlocking fang
+      c.beginPath();
+      c.moveTo(x0 * r + r * 0.03, r * 0.6);
+      c.lineTo(xm * r + r * 0.03, r * 0.28);
+      c.lineTo(x1 * r + r * 0.03, r * 0.6);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    }
+    c.restore();
+
+    // Re-stroke mouth rim cleanly
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2.6;
     c.beginPath();
-    c.roundRect(-4.5, -r * 1.32, 9, r * 0.56, 4);
+    c.moveTo(-r * 0.68, r * 0.04);
+    c.quadraticCurveTo(0, r * 0.14, r * 0.68, r * 0.04);
+    c.lineTo(r * 0.52, r * 0.54);
+    c.quadraticCurveTo(0, r * 0.62, -r * 0.52, r * 0.54);
+    c.closePath();
+    c.stroke();
+    c.restore();
+
+    // 5. Center Forehead Chainsaw Blade & Engine Cowling
+    c.save();
+    c.lineJoin = "round";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2.5;
+    const bw = r * 0.135;
+    c.fillStyle = "#cbd5e1";
+    c.beginPath();
+    c.moveTo(-bw, -r * 0.68);
+    c.lineTo(-bw, -r * 1.56);
+    c.arc(0, -r * 1.56, bw, Math.PI, 0);
+    c.lineTo(bw, -r * 0.68);
+    c.closePath();
     c.fill();
     c.stroke();
 
-    // Animated revving saw teeth on forehead blade
-    c.fillStyle = "#f8fafc";
-    const toothOffset = sawTick * 2.5;
-    for (let y = -r * 1.26 + toothOffset; y < -r * 0.8; y += 5.5) {
-      c.beginPath();
-      c.moveTo(-4.5, y); c.lineTo(-9.5, y + 2.2); c.lineTo(-4.5, y + 4.4);
-      c.moveTo(4.5, y); c.lineTo(9.5, y + 2.2); c.lineTo(4.5, y + 4.4);
-      c.fill();
+    // Crimson blood groove on forehead blade
+    c.strokeStyle = "#dc2626";
+    c.lineWidth = 2;
+    c.beginPath();
+    c.moveTo(0, -r * 0.78);
+    c.lineTo(0, -r * 1.52);
+    c.stroke();
+
+    // Reciprocating saw teeth
+    c.fillStyle = "#ffffff";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 1.2;
+    const step = r * 0.12;
+    for (let y = -r * 1.58 + tick * step * 0.5; y < -r * 0.82; y += step) {
+      for (const s of [-1, 1]) {
+        c.beginPath();
+        c.moveTo(s * bw, y);
+        c.lineTo(s * (bw + r * 0.095), y + step * 0.26);
+        c.lineTo(s * bw, y + step * 0.66);
+        c.closePath();
+        c.fill();
+        c.stroke();
+      }
     }
 
-    // Yellow Triangular Rip-Cord on Lower Chest
-    c.fillStyle = "#facc15";
+    // Forehead housing ridge where blade erupts from the skull
+    c.fillStyle = hell ? "#27272a" : "#9a3412";
     c.strokeStyle = COLORS.ink;
-    c.lineWidth = 1.6;
+    c.lineWidth = 2.4;
     c.beginPath();
-    c.moveTo(-6, r * 0.86);
-    c.lineTo(6, r * 0.86);
-    c.lineTo(0, r * 0.72);
+    c.moveTo(-r * 0.24, -r * 0.52);
+    c.lineTo(-r * 0.2, -r * 0.88);
+    c.lineTo(r * 0.2, -r * 0.88);
+    c.lineTo(r * 0.24, -r * 0.52);
     c.closePath();
     c.fill();
     c.stroke();
     c.restore();
   };
 
-  BF.CHARACTER_ROSTER.denji = {
+BF.CHARACTER_ROSTER.denji = {
     id: "denji",
     name: "CHAINSAW DEVIL",
     shortName: "CHAINSAW",

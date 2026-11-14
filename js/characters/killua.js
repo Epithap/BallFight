@@ -200,118 +200,171 @@
     },
   };
 
-  // ---- Weapon Drawer: 50kg Alloy Yo-Yo ----
+      // ---- Shared polygon helper (points in radius units) ----
+  function hairPoly(c, r, pts) {
+    c.beginPath();
+    pts.forEach(([x, y], i) => (i === 0 ? c.moveTo(x * r, y * r) : c.lineTo(x * r, y * r)));
+    c.closePath();
+  }
+
+  // ---- Weapon Drawer: 50kg Alloy Yo-Yo (steel disc + taut wire + Star of David Zoldyck emblem) ----
   BF.WEAPON_DRAWERS.alloy_yoyo = (ball, c) => {
-    // High-tension metallic wire back toward Killua
+    const hot = ball.ultTimer > 0;
     c.save();
-    c.strokeStyle = "#bae6fd";
+    // High-tension metallic wire back to Killua's hand
+    c.strokeStyle = hot ? "#7dd3fc" : "#cbd5e1";
     c.lineWidth = 2;
     c.beginPath();
-    c.moveTo(-14, 10);
-    c.lineTo(0, 0);
+    c.moveTo(-4, 18);
+    c.lineTo(0, -14);
     c.stroke();
 
-    // Heavy silver-blue 50kg Alloy Yo-Yo disc
-    c.fillStyle = "#334155";
+    // Heavy 50kg Alloy Yo-Yo disc extended out past hair spikes
+    c.fillStyle = "#475569";
     c.strokeStyle = COLORS.ink;
     c.lineWidth = 2.8;
     c.beginPath();
-    c.arc(0, -4, 12, 0, Math.PI * 2);
+    c.arc(0, -16, 13.5, 0, Math.PI * 2);
     c.fill();
     c.stroke();
 
-    c.fillStyle = "#94a3b8";
+    const g = c.createLinearGradient(-10, -26, 10, -6);
+    g.addColorStop(0, "#f8fafc");
+    g.addColorStop(0.5, "#94a3b8");
+    g.addColorStop(1, "#e2e8f0");
+    c.fillStyle = g;
+    c.lineWidth = 1.8;
     c.beginPath();
-    c.arc(0, -4, 8.5, 0, Math.PI * 2);
+    c.arc(0, -16, 9.5, 0, Math.PI * 2);
     c.fill();
     c.stroke();
 
-    // Zoldyck electric star emblem in center of Yo-Yo
-    c.fillStyle = "#38bdf8";
+    // Iconic 6-pointed star emblem on Killua's Yo-Yo
+    c.strokeStyle = hot ? "#0284c7" : "#334155";
+    c.lineWidth = 1.5;
+    for (let s = 0; s < 2; s++) {
+      c.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const a = s * Math.PI + (i * Math.PI * 2) / 3 - Math.PI * 0.5;
+        const px = Math.cos(a) * 6.5;
+        const py = -16 + Math.sin(a) * 6.5;
+        if (i === 0) c.moveTo(px, py);
+        else c.lineTo(px, py);
+      }
+      c.closePath();
+      c.stroke();
+    }
+
+    c.fillStyle = hot ? "#38bdf8" : "#1e293b";
     c.beginPath();
-    c.arc(0, -4, 4, 0, Math.PI * 2);
+    c.arc(0, -16, 2.5, 0, Math.PI * 2);
     c.fill();
     c.restore();
   };
 
-  // ---- Costume Drawer: Killua Zoldyck ----
+  // ---- Costume Drawer: Killua Zoldyck (fluffy silver hair, navy-purple shirt, Godspeed lightning) ----
   BF.COSTUME_DRAWERS.killua = (ball, r, c) => {
     const isGodspeed = ball.ultTimer > 0;
+    const t = performance.now() * 0.001;
+
+    // Godspeed: crackling blue-white electric aura around the whole body
+    if (isGodspeed) {
+      c.save();
+      c.fillStyle = "rgba(125, 211, 252, 0.22)";
+      c.beginPath();
+      c.arc(0, 0, r * 1.38, 0, Math.PI * 2);
+      c.fill();
+      c.lineCap = "round";
+      c.lineJoin = "round";
+      for (let i = 0; i < 7; i++) {
+        const a = (i / 7) * Math.PI * 2 + Math.floor(t * 12) * 0.9;
+        c.strokeStyle = i % 2 ? "#e0f2fe" : "#38bdf8";
+        c.lineWidth = i % 2 ? 1.8 : 2.6;
+        c.beginPath();
+        c.moveTo(Math.cos(a) * r * 1.02, Math.sin(a) * r * 1.02);
+        c.lineTo(Math.cos(a + 0.12) * r * 1.2, Math.sin(a + 0.12) * r * 1.2);
+        c.lineTo(Math.cos(a - 0.06) * r * 1.3, Math.sin(a - 0.06) * r * 1.3);
+        c.lineTo(Math.cos(a + 0.1) * r * 1.46, Math.sin(a + 0.1) * r * 1.46);
+        c.stroke();
+      }
+      c.restore();
+    }
+
     rt.drawSkinFace(ball, r, c);
 
-    // High-neck dark navy assassin turtleneck + white short-sleeve top
+    // Outfit: navy-purple turtleneck under white V-trimmed short-sleeve top
     c.save();
     c.beginPath();
     c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
     c.clip();
-
-    c.fillStyle = "#1e1b4b";
-    c.fillRect(-r, r * 0.34, r * 2, r * 0.7);
-
-    c.fillStyle = "#f8fafc";
+    c.fillStyle = "#312e81";
     c.strokeStyle = COLORS.ink;
     c.lineWidth = 2.5;
     c.beginPath();
-    c.moveTo(-r, r * 0.48);
-    c.lineTo(-r * 0.36, r * 0.42);
-    c.lineTo(-r * 0.22, r);
-    c.lineTo(-r, r);
+    c.moveTo(-r, r * 0.52);
+    c.quadraticCurveTo(0, r * 0.4, r, r * 0.52);
+    c.lineTo(r, r * 1.1);
+    c.lineTo(-r, r * 1.1);
     c.closePath();
-    c.moveTo(r, r * 0.48);
-    c.lineTo(r * 0.36, r * 0.42);
-    c.lineTo(r * 0.22, r);
-    c.lineTo(r, r);
+    c.fill();
+    c.stroke();
+
+    // White outer tunic shoulders
+    c.fillStyle = "#f8fafc";
+    c.beginPath();
+    c.moveTo(-r, r * 0.52);
+    c.lineTo(-r * 0.34, r * 0.48);
+    c.lineTo(-r * 0.22, r * 1.08);
+    c.lineTo(-r, r * 1.08);
+    c.closePath();
+    c.moveTo(r, r * 0.52);
+    c.lineTo(r * 0.34, r * 0.48);
+    c.lineTo(r * 0.22, r * 1.08);
+    c.lineTo(r, r * 1.08);
     c.closePath();
     c.fill();
     c.stroke();
     c.restore();
 
-    // Fluffy spiky silver-white Zoldyck hair
+    // Fluffy, untamed silver-white hair (wide volume + spiky bangs)
+    const hair = [
+      [-0.95, 0.06], [-1.2, -0.22], [-1.0, -0.36], [-1.3, -0.6], [-0.98, -0.7], [-1.14, -1.02],
+      [-0.72, -0.94], [-0.68, -1.32], [-0.38, -1.04], [-0.12, -1.44], [0.1, -1.08], [0.4, -1.38],
+      [0.52, -1.0], [0.88, -1.2], [0.82, -0.84], [1.24, -0.82], [0.98, -0.56], [1.28, -0.3],
+      [0.98, -0.2], [1.0, 0.06],
+      // inner side lock + bangs (right -> left)
+      [0.8, -0.1], [0.7, -0.4], [0.56, -0.28], [0.44, -0.48], [0.22, -0.32], [0.1, -0.5],
+      [-0.04, -0.18], [-0.14, -0.48], [-0.26, -0.32], [-0.42, -0.5], [-0.56, -0.3], [-0.68, -0.44],
+      [-0.8, -0.1],
+    ];
     c.save();
-    c.fillStyle = isGodspeed ? "#e0f2fe" : "#f1f5f9";
-    c.strokeStyle = isGodspeed ? "#38bdf8" : COLORS.ink;
+    c.lineJoin = "round";
+    const hg = c.createLinearGradient(0, -r * 1.4, 0, -r * 0.1);
+    hg.addColorStop(0, "#ffffff");
+    hg.addColorStop(1, isGodspeed ? "#bae6fd" : "#d5dbe6");
+    c.fillStyle = hg;
+    c.strokeStyle = isGodspeed ? "#0284c7" : COLORS.ink;
     c.lineWidth = 2.8;
-    c.beginPath();
-    c.moveTo(-r * 0.92, -r * 0.18);
-    c.lineTo(-r * 1.24, -r * 0.46);
-    c.lineTo(-r * 0.9, -r * 0.62);
-    c.lineTo(-r * 1.12, -r * 1.02);
-    c.lineTo(-r * 0.62, -r * 0.88);
-    c.lineTo(-r * 0.44, -r * 1.32);
-    c.lineTo(-r * 0.12, -r * 0.96);
-    c.lineTo(r * 0.16, -r * 1.36);
-    c.lineTo(r * 0.46, -r * 0.92);
-    c.lineTo(r * 0.88, -r * 1.18);
-    c.lineTo(r * 0.78, -r * 0.72);
-    c.lineTo(r * 1.22, -r * 0.56);
-    c.lineTo(r * 0.92, -r * 0.18);
-    // Forehead bangs
-    c.lineTo(r * 0.52, -r * 0.46);
-    c.lineTo(r * 0.28, -r * 0.16);
-    c.lineTo(r * 0.04, -r * 0.48);
-    c.lineTo(-r * 0.18, -r * 0.15);
-    c.lineTo(-r * 0.48, -r * 0.46);
-    c.closePath();
+    hairPoly(c, r, hair);
     c.fill();
     c.stroke();
-
-    // Crackling Godspeed lightning halo around hair during Ult
-    if (isGodspeed) {
-      c.strokeStyle = "#38bdf8";
-      c.lineWidth = 2.2;
-      const t = (rt.elapsed || 0) * 16;
-      for (let i = 0; i < 4; i++) {
-        const a = (i / 4) * Math.PI * 2 + t;
-        c.beginPath();
-        c.moveTo(Math.cos(a) * (r * 0.95), Math.sin(a) * (r * 0.95));
-        c.lineTo(Math.cos(a + 0.22) * (r * 1.26), Math.sin(a + 0.22) * (r * 1.26));
-        c.stroke();
-      }
+    // Soft grey strand shading
+    c.strokeStyle = isGodspeed ? "rgba(14, 165, 233, 0.55)" : "rgba(100, 116, 139, 0.55)";
+    c.lineWidth = 1.6;
+    c.lineCap = "round";
+    c.beginPath();
+    for (const [x0, y0, x1, y1] of [
+      [-0.62, -1.0, -0.42, -0.6], [-0.12, -1.2, -0.06, -0.62], [0.38, -1.12, 0.26, -0.66],
+      [0.76, -0.84, 0.58, -0.56], [-0.92, -0.6, -0.74, -0.38], [0.94, -0.4, 0.8, -0.24],
+    ]) {
+      c.moveTo(x0 * r, y0 * r);
+      c.lineTo(x1 * r, y1 * r);
     }
+    c.stroke();
     c.restore();
   };
 
-  BF.CHARACTER_ROSTER.killua = {
+BF.CHARACTER_ROSTER.killua = {
     id: "killua",
     name: "LIGHTNING ASSASSIN",
     shortName: "ASSASSIN",

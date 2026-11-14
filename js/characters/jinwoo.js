@@ -264,117 +264,180 @@
     },
   };
 
-  // ---- Weapon Drawer: Kamish's Wrath Dragon-Fang Dagger ----
+      // ---- Shared polygon helper (points in radius units) ----
+  function hairPoly(c, r, pts) {
+    c.beginPath();
+    pts.forEach(([x, y], i) => (i === 0 ? c.moveTo(x * r, y * r) : c.lineTo(x * r, y * r)));
+    c.closePath();
+  }
+
+  // ---- Weapon Drawer: Kamish's Wrath (curved dragon-fang black-violet dagger) ----
   BF.WEAPON_DRAWERS.kamish_dagger = (ball, c) => {
     const isArise = ball.ultTimer > 0;
     c.save();
-    c.shadowColor = isArise ? "#c084fc" : "#9333ea";
-    c.shadowBlur = isArise ? 14 : 8;
-
-    // Golden pommel ring & guard
+    c.lineJoin = "round";
+    // Wrapped grip
+    c.fillStyle = "#1f2937";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2.2;
+    c.beginPath();
+    c.roundRect(-2.8, 6, 5.6, 13, 2);
+    c.fill();
+    c.stroke();
+    // Golden pommel ring
     c.strokeStyle = "#f59e0b";
     c.lineWidth = 2.2;
     c.beginPath();
-    c.arc(0, 16, 3.5, 0, Math.PI * 2);
+    c.arc(0, 21.5, 3, 0, Math.PI * 2);
     c.stroke();
-
-    c.fillStyle = "#1e1b4b";
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.2;
-    c.fillRect(-3, 5, 6, 9);
-    c.strokeRect(-3, 5, 6, 9);
-
+    // Swept crossguard
     c.fillStyle = "#d97706";
-    c.beginPath();
-    c.moveTo(-9, 5);
-    c.lineTo(0, 1);
-    c.lineTo(9, 5);
-    c.lineTo(0, 8);
-    c.closePath();
-    c.fill();
-    c.stroke();
-
-    // Curved purple-black dragon fang dagger blade
-    const grad = c.createLinearGradient(0, 4, 0, -28);
-    grad.addColorStop(0, "#1e1b4b");
-    grad.addColorStop(0.55, "#7e22ce");
-    grad.addColorStop(1, "#f3e8ff");
-    c.fillStyle = grad;
     c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.5;
+    c.lineWidth = 2;
     c.beginPath();
-    c.moveTo(-5.5, 3);
-    c.quadraticCurveTo(-7.5, -14, 0, -28);
-    c.quadraticCurveTo(4.5, -12, 4.5, 3);
+    c.moveTo(-9.5, 7); c.quadraticCurveTo(-4, 2, 0, 3.5); c.quadraticCurveTo(4, 2, 9.5, 7);
+    c.lineTo(7.5, 2.5); c.quadraticCurveTo(0, -1.5, -7.5, 2.5);
     c.closePath();
     c.fill();
     c.stroke();
-
-    // Glowing cyan/violet core vein
-    c.strokeStyle = "#38bdf8";
+    // Curved dragon-fang blade
+    c.shadowColor = isArise ? "#a855f7" : "#7c3aed";
+    c.shadowBlur = isArise ? 14 : 8;
+    const g = c.createLinearGradient(-4, 0, 4, -36);
+    g.addColorStop(0, "#0b0d12");
+    g.addColorStop(0.5, "#581c87");
+    g.addColorStop(1, "#e9d5ff");
+    c.fillStyle = g;
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2.3;
+    c.beginPath();
+    c.moveTo(-4.5, 3);
+    c.quadraticCurveTo(-6.5, -18, 1.5, -36);
+    c.quadraticCurveTo(5.2, -20, 4.5, 3);
+    c.closePath();
+    c.fill();
+    c.stroke();
+    c.shadowBlur = 0;
+    // Glowing cyan/violet vein along blade
+    c.strokeStyle = isArise ? "#38bdf8" : "#c084fc";
     c.lineWidth = 1.6;
     c.beginPath();
-    c.moveTo(-1, 0);
-    c.lineTo(0, -22);
+    c.moveTo(0, 1);
+    c.quadraticCurveTo(-1, -18, 1, -31);
     c.stroke();
     c.restore();
   };
 
-  // ---- Costume Drawer: Sung Jin-Woo ----
+  // ---- Costume Drawer: Sung Jin-Woo (sharp layered undercut black hair, high-collar Monarch coat, shadow flames) ----
   BF.COSTUME_DRAWERS.jinwoo = (ball, r, c) => {
     const isArise = ball.ultTimer > 0;
+    const t = performance.now() * 0.001;
+
+    // Arise: dark-violet shadow flames licking up around the Monarch
+    if (isArise) {
+      c.save();
+      for (let i = 0; i < 9; i++) {
+        const a = -Math.PI * 0.5 + (i - 4) * 0.36;
+        const flick = Math.sin(t * 9 + i * 1.7) * 0.12;
+        const baseR = r * 0.92;
+        const tipR = r * (1.42 + flick + (i % 2) * 0.14);
+        c.fillStyle = i % 2 ? "rgba(88, 28, 135, 0.55)" : "rgba(168, 85, 247, 0.42)";
+        c.beginPath();
+        c.moveTo(Math.cos(a - 0.2) * baseR, Math.sin(a - 0.2) * baseR);
+        c.quadraticCurveTo(Math.cos(a) * r * 1.2, Math.sin(a) * r * 1.2, Math.cos(a + flick) * tipR, Math.sin(a + flick) * tipR);
+        c.quadraticCurveTo(Math.cos(a) * r * 1.15, Math.sin(a) * r * 1.15, Math.cos(a + 0.2) * baseR, Math.sin(a + 0.2) * baseR);
+        c.closePath();
+        c.fill();
+      }
+      c.restore();
+    }
+
     rt.drawSkinFace(ball, r, c);
 
-    // High-collared dark Shadow Monarch coat
+    // Black long hunter coat with a tall stand collar
     c.save();
     c.beginPath();
     c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
     c.clip();
-
-    c.fillStyle = isArise ? "#090514" : "#0f172a";
-    c.fillRect(-r, r * 0.34, r * 2, r * 0.7);
-
-    c.strokeStyle = isArise ? "#c084fc" : "#7c3aed";
+    // Dark inner shirt
+    c.fillStyle = "#1e1b4b";
+    c.fillRect(-r, r * 0.5, r * 2, r * 0.6);
+    // Coat body (two panels leaving a V opening)
+    c.fillStyle = "#090a10";
+    c.strokeStyle = COLORS.ink;
     c.lineWidth = 2.4;
+    for (const s of [-1, 1]) {
+      c.beginPath();
+      c.moveTo(s * r * 0.1, r * 1.1);
+      c.lineTo(s * r * 0.2, r * 0.58);
+      c.lineTo(s * r * 0.3, r * 0.44);
+      c.lineTo(s * r * 1.05, r * 0.4);
+      c.lineTo(s * r * 1.05, r * 1.1);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    }
+    // Tall flared Monarch collar
+    c.fillStyle = "#141622";
+    for (const s of [-1, 1]) {
+      c.beginPath();
+      c.moveTo(s * r * 0.24, r * 0.6);
+      c.lineTo(s * r * 0.32, r * 0.28);
+      c.lineTo(s * r * 0.8, r * 0.18);
+      c.lineTo(s * r * 0.88, r * 0.44);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    }
+    // Glowing Monarch lapel trim
+    c.strokeStyle = isArise ? "#c084fc" : "#6366f1";
+    c.lineWidth = 1.8;
     c.beginPath();
-    c.moveTo(-r * 0.55, r * 0.36);
-    c.lineTo(-r * 0.16, r);
-    c.moveTo(r * 0.55, r * 0.36);
-    c.lineTo(r * 0.16, r);
+    c.moveTo(-r * 0.58, r * 0.56); c.lineTo(-r * 0.52, r * 1.0);
+    c.moveTo(r * 0.58, r * 0.56); c.lineTo(r * 0.52, r * 1.0);
     c.stroke();
     c.restore();
 
-    // Sharp black Monarch undercut hair with bangs
+    // Sharp, spiky layered Korean Hunter undercut hair with long jagged bangs dipping between the eyes
+    const hair = [
+      [-0.96, 0.08], [-1.06, -0.28], [-0.94, -0.44], [-1.14, -0.78], [-0.88, -0.86],
+      [-0.96, -1.18], [-0.62, -1.06], [-0.48, -1.38], [-0.22, -1.12],
+      [0.02, -1.44], [0.22, -1.14], [0.54, -1.36], [0.64, -1.04],
+      [0.98, -1.14], [0.88, -0.84], [1.14, -0.74], [0.94, -0.42], [1.06, -0.24], [0.96, 0.08],
+      // Sharp layered bangs framing the brow & long central lock between the eyes
+      [0.82, -0.14], [0.68, -0.42], [0.5, -0.22], [0.34, -0.48],
+      [0.16, -0.2], [0.02, -0.46], [-0.04, -0.08], [-0.16, -0.48],
+      [-0.34, -0.22], [-0.5, -0.46], [-0.68, -0.24], [-0.82, -0.14],
+    ];
     c.save();
-    c.fillStyle = "#090d16";
-    c.strokeStyle = isArise ? "#a855f7" : COLORS.ink;
+    c.lineJoin = "round";
+    const hg = c.createLinearGradient(0, -r * 1.44, 0, 0);
+    hg.addColorStop(0, "#1e2436");
+    hg.addColorStop(1, "#07090e");
+    c.fillStyle = hg;
+    c.strokeStyle = isArise ? "#9333ea" : COLORS.ink;
     c.lineWidth = 2.8;
-    c.beginPath();
-    c.moveTo(-r * 0.92, -r * 0.2);
-    c.lineTo(-r * 1.05, -r * 0.66);
-    c.lineTo(-r * 0.68, -r * 0.62);
-    c.lineTo(-r * 0.54, -r * 1.12);
-    c.lineTo(-r * 0.22, -r * 0.84);
-    c.lineTo(0, -r * 1.22);
-    c.lineTo(r * 0.24, -r * 0.84);
-    c.lineTo(r * 0.56, -r * 1.12);
-    c.lineTo(r * 0.68, -r * 0.62);
-    c.lineTo(r * 1.05, -r * 0.66);
-    c.lineTo(r * 0.92, -r * 0.2);
-    // Sharp bangs between eyes
-    c.lineTo(r * 0.52, -r * 0.46);
-    c.lineTo(r * 0.28, -r * 0.14);
-    c.lineTo(r * 0.08, -r * 0.48);
-    c.lineTo(-r * 0.04, -r * 0.12);
-    c.lineTo(-r * 0.26, -r * 0.46);
-    c.lineTo(-r * 0.48, -r * 0.16);
-    c.closePath();
+    hairPoly(c, r, hair);
     c.fill();
+    c.stroke();
+
+    // Subtle violet/slate hair highlights
+    c.strokeStyle = isArise ? "rgba(192, 132, 252, 0.65)" : "rgba(100, 116, 160, 0.6)";
+    c.lineWidth = 1.7;
+    c.lineCap = "round";
+    c.beginPath();
+    for (const [x0, y0, x1, y1] of [
+      [-0.46, -1.18, -0.32, -0.62], [0.02, -1.24, 0.0, -0.6], [0.46, -1.16, 0.3, -0.62],
+      [0.82, -0.92, 0.62, -0.54], [-0.82, -0.92, -0.62, -0.54],
+    ]) {
+      c.moveTo(x0 * r, y0 * r);
+      c.lineTo(x1 * r, y1 * r);
+    }
     c.stroke();
     c.restore();
   };
 
-  BF.CHARACTER_ROSTER.jinwoo = {
+BF.CHARACTER_ROSTER.jinwoo = {
     id: "jinwoo",
     name: "SHADOW MONARCH",
     shortName: "MONARCH",

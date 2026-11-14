@@ -408,69 +408,88 @@
     mouth(c, r, hot ? "demon" : "sukunaSmirk");
   };
 
-  // Lightning Assassin (Killua). Sharp sapphire-cyan cat eyes and a mischievous assassin smirk.
+  // Lightning Assassin (Killua). Big deep-sapphire cat eyes, playful ':3' cat smirk in Base, electric slit eyes in Godspeed.
   F.killua = (ball, r, c, s) => {
     const isGodspeed = s.ult || s.cast;
     for (const side of [-1, 1]) {
       eye(c, r, side, {
-        rx: 0.185, ry: 0.19, slant: isGodspeed ? 0.34 : 0.22,
-        iris: 0.145, color: isGodspeed ? "#38bdf8" : "#1d4ed8",
-        innerRing: "#bae6fd", slit: isGodspeed, lid: isGodspeed ? 0.08 : 0.2,
+        rx: 0.19, ry: 0.2, slant: isGodspeed ? 0.32 : 0.18,
+        iris: 0.155, color: isGodspeed ? "#38bdf8" : "#1e40af",
+        innerRing: isGodspeed ? "#e0f2fe" : "#60a5fa",
+        hl2: true, slit: isGodspeed, lid: isGodspeed ? 0.1 : 0.14,
         blink: blinkAmt(ball) * 0.6, ex: s.ex, ey: s.ey,
       });
-      brow(c, side, r, 0.38, 0.1, 3.6, 0.44, "#cbd5e1");
+      brow(c, side, r, 0.29, isGodspeed ? 0.14 : 0.06, 3.2, 0.38, INK);
     }
-    mouth(c, r, isGodspeed ? "fang" : "smug");
+    if (isGodspeed) {
+      mouth(c, r, "fang");
+    } else {
+      // Killua's iconic ':3' mischievous cat mouth
+      c.save();
+      c.strokeStyle = INK;
+      c.lineWidth = 2.8;
+      c.lineCap = "round";
+      c.lineJoin = "round";
+      c.beginPath();
+      c.moveTo(-r * 0.24, r * 0.24);
+      c.quadraticCurveTo(-r * 0.12, r * 0.36, 0, r * 0.25);
+      c.quadraticCurveTo(r * 0.12, r * 0.36, r * 0.24, r * 0.22);
+      c.stroke();
+      c.restore();
+    }
   };
 
-  // Shadow Monarch (Sung Jin-Woo). Cold glowing cyan/violet hunter eyes with rising monarch aura trail.
+  // Shadow Monarch (Sung Jin-Woo). Narrow, razor-sharp glowing cyan/purple Monarch eyes with outward aura flare.
   F.jinwoo = (ball, r, c, s) => {
     const isArise = s.ult || s.cast;
     const eyeCol = isArise ? "#c084fc" : "#38bdf8";
     for (const side of [-1, 1]) {
       eye(c, r, side, {
-        rx: 0.175, ry: 0.14, slant: 0.34, iris: 0.125,
-        color: eyeCol, innerRing: "#f3e8ff", lid: 0.24,
+        rx: 0.18, ry: 0.125, slant: 0.32, iris: 0.115,
+        color: eyeCol, innerRing: "#ffffff", lid: 0.22,
         blink: blinkAmt(ball) * 0.5, ex: s.ex, ey: s.ey,
       });
-      // Glowing Monarch eye trail flare
+      // Sleek lateral Monarch eye-glow wisp from outer corner of the eye
       c.save();
-      c.strokeStyle = isArise ? "#a855f7" : "rgba(56,189,248,0.75)";
-      c.lineWidth = isArise ? 2.6 : 1.8;
+      c.fillStyle = isArise ? "#a855f7" : "#38bdf8";
       c.shadowColor = eyeCol;
       c.shadowBlur = 8;
       c.beginPath();
-      c.moveTo(side * r * 0.44, -r * 0.12);
-      c.quadraticCurveTo(side * r * 0.64, -r * 0.26, side * r * 0.58, -r * 0.44);
-      c.stroke();
+      c.moveTo(side * r * 0.46, -r * 0.11);
+      c.quadraticCurveTo(side * r * 0.66, -r * 0.16, side * r * 0.76, -r * 0.28);
+      c.quadraticCurveTo(side * r * 0.62, -r * 0.06, side * r * 0.45, -r * 0.06);
+      c.closePath();
+      c.fill();
       c.restore();
-      brow(c, side, r, 0.44, 0.14, 4.2);
+      brow(c, side, r, 0.26, 0.14, 3.8, 0.42);
     }
     mouth(c, r, s.cast ? "grit" : "flat");
   };
 
-  // Hero Hunter (Garou). Fierce golden-amber predator eyes, facial scar over right eye, and a fanged smirk.
+  // Hero Hunter (Garou). Intense golden-yellow wolf-predator eyes (bloodshot right eye), battle scar, and fanged grin.
   F.garou = (ball, r, c, s) => {
-    for (const side of [-1, 1]) {
-      eye(c, r, side, {
-        rx: 0.175, ry: 0.15, slant: 0.38, iris: 0.125,
-        color: side === 1 ? "#ef4444" : "#f59e0b",
-        sclera: side === 1 ? "#fee2e2" : WHITE,
-        slit: true, lid: 0.18,
-        blink: blinkAmt(ball) * 0.6, ex: s.ex, ey: s.ey,
-      });
-      brow(c, side, r, 0.48, 0.18, 4.4);
-    }
-    // Scar across viewer-right eye
+    // Vertical battle scar over viewer-right eye (drawn behind eye & brow)
     c.save();
     c.strokeStyle = "#991b1b";
-    c.lineWidth = 2.2;
+    c.lineWidth = 2.4;
     c.lineCap = "round";
     c.beginPath();
-    c.moveTo(r * 0.28, -r * 0.32);
-    c.lineTo(r * 0.36, r * 0.12);
+    c.moveTo(r * 0.3, -r * 0.26);
+    c.lineTo(r * 0.35, r * 0.17);
     c.stroke();
     c.restore();
+
+    for (const side of [-1, 1]) {
+      eye(c, r, side, {
+        rx: 0.18, ry: 0.14, slant: 0.36, iris: 0.12,
+        color: "#f59e0b",
+        innerRing: "#fef08a",
+        sclera: side === 1 ? "#fecaca" : WHITE,
+        slit: true, lid: 0.16,
+        blink: blinkAmt(ball) * 0.6, ex: s.ex, ey: s.ey,
+      });
+      brow(c, side, r, 0.26, 0.16, 4.0, 0.42);
+    }
     mouth(c, r, s.cast ? "demon" : "fang");
   };
 })();
