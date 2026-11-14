@@ -155,6 +155,7 @@
       angle,
       radius: 13,
       bounces: 1,
+      castState,
       life: 1.45,
       dead: false,
       update(dt, g) {
