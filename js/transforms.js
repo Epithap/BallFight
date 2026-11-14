@@ -360,8 +360,17 @@
             const ang = Math.atan2(enemy.y - b.y, enemy.x - b.x);
             b.vx = Math.cos(ang) * b.baseSpeed * 1.4;
             b.vy = Math.sin(ang) * b.baseSpeed * 1.4;
+            const dist = Math.hypot(enemy.x - b.x, enemy.y - b.y);
+            if (dist <= 165 + enemy.radius) {
+              const burst = rt().applyDamage(enemy, Math.round(18 + rt().rng() * 6));
+              enemy.vx += Math.cos(ang) * 320;
+              enemy.vy += Math.sin(ang) * 320;
+              enemy.flashTimer = 0.14;
+              rt().spawnSparks(enemy.x, enemy.y, COLORS.red, "#1c1d24");
+              rt().spawnDamageText(enemy.x, enemy.y - enemy.radius - 14, burst, COLORS.red, true, "BERSERKER ERUPTION!!");
+            }
           }
-          rt().entities.push(rt().spawnShockRing(b.x, b.y, COLORS.red, 135, 0.45));
+          rt().entities.push(rt().spawnShockRing(b.x, b.y, COLORS.red, 165, 0.45));
         },
       });
     } else if (ball.ult === "hollow_purple") {
