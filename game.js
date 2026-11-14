@@ -2493,7 +2493,8 @@
     b.curseMarkMode = true;
     b.radius = Math.round(b.baseRadius * 1.07);
     b.baseSpeed = Math.round(b.baseSpeed * 1.2);
-    b.damage = [b.damage[0] + 3, b.damage[1] + 4];
+    const dr = Array.isArray(b.damageRange) ? b.damageRange : [6, 9];
+    b.damageRange = [dr[0] + 3, dr[1] + 4];
     b.hp = Math.min(b.maxHp, b.hp + 45);
     if (b.skills && b.skills[0]) {
       b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.15);
