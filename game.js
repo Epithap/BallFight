@@ -2381,6 +2381,7 @@
       cosmic_fear: ball._isCosmicGarou
         ? ["GAMMA RAY BURST!", "#c084fc"]
         : ["MONSTER CALAMITY!", "#ef4444"],
+      adult_gon: ["RESTRICTION & PLEDGE!", "#09090b"],
     }[ball.ult];
     if (fx) {
       if (ball.ult !== "time_stop" && ball.ult !== "star_time_stop") {
@@ -2739,6 +2740,21 @@
           },
         });
       }
+    } else if (ball.ult === "adult_gon") {
+      beginCast(ball, {
+        kind: "powerup",
+        duration: 0.45,
+        color: "#09090b",
+        fire(b, g) {
+          b.ultTimer = 9.0;
+          addEffect(b, "haste", 9.0, { factor: 1.24 });
+          addEffect(b, "shield", 9.0, { reduction: 0.25 });
+          if (b.skills[0]) b.skills[0]._cd = 0;
+          if (BF.triggerAdultGonOpener) BF.triggerAdultGonOpener(b, g);
+          entities.push(spawnShockRing(b.x, b.y, "#09090b", 130, 0.44));
+          entities.push(spawnShockRing(b.x, b.y, "#ffffff", 95, 0.32));
+        },
+      });
     }
   }
 
@@ -4478,6 +4494,7 @@
       (ball.costume === "ichigo" && (ball.vastoLordeMode || ball.innerDemonMode || (ball.evolved && ball.ultTimer > 0))) ||
       (ball.costume === "goku" && ball.apeMode) ||
       ball.costume === "denji" ||
+      (ball.costume === "gon" && ball.ultTimer > 0) ||
       (ball.costume === "garou" && (ball.ultTimer > 0 || ball._isCosmicGarou));
     if (!hasFullFaceMask) {
       c.fillStyle = "rgba(255, 255, 255, 0.55)";

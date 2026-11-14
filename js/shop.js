@@ -2,7 +2,7 @@
   const BF = (window.BallFight = window.BallFight || {});
   const { COLORS } = BF;
 
-  const DEFAULT_UNLOCKED_FIGHTERS = new Set(["goku", "naruto", "luffy", "ichigo"]);
+  const DEFAULT_UNLOCKED_FIGHTERS = new Set(["goku", "naruto", "luffy", "ichigo", "gon"]);
   const WALLET_STORAGE_KEY = "anime_ball_wallet_v3";
 
   const playerWallet = {

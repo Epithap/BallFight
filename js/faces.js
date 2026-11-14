@@ -439,6 +439,21 @@
     }
   };
 
+  // Enhancer Prodigy (Gon Freecss). Big determined amber-hazel eyes and bright grin.
+  F.gon = (ball, r, c, s) => {
+    for (const side of [-1, 1]) {
+      eye(c, r, side, {
+        rx: 0.2, ry: 0.22, slant: 0.12,
+        iris: 0.16, color: "#b45309",
+        innerRing: "#f59e0b",
+        hl2: true, lid: s.cast ? 0.1 : 0.08,
+        blink: blinkAmt(ball), ex: s.ex, ey: s.ey,
+      });
+      brow(c, side, r, 0.28, s.cast ? 0.14 : 0.04, 3.2, 0.38, INK);
+    }
+    mouth(c, r, s.cast ? "shout" : "grin");
+  };
+
   // Shadow Monarch (Sung Jin-Woo). Narrow, razor-sharp glowing cyan/purple Monarch eyes with outward aura flare.
   F.jinwoo = (ball, r, c, s) => {
     const isArise = s.ult || s.cast;

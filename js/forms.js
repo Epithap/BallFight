@@ -5,12 +5,12 @@
   BF.SERIES = {
     goku: "DRAGON BALL", naruto: "NARUTO", luffy: "ONE PIECE", ichigo: "BLEACH",
     dio: "JOJO", jotaro: "JOJO", guts: "BERSERK", gojo: "JUJUTSU KAISEN", sukuna: "JUJUTSU KAISEN",
-    killua: "HUNTER X HUNTER", jinwoo: "SOLO LEVELING", denji: "CHAINSAW MAN", garou: "ONE-PUNCH MAN",
+    killua: "HUNTER X HUNTER", gon: "HUNTER X HUNTER", jinwoo: "SOLO LEVELING", denji: "CHAINSAW MAN", garou: "ONE-PUNCH MAN",
   };
   BF.RARITY = {
     goku: "fighter", naruto: "fighter", luffy: "fighter", ichigo: "fighter",
     jotaro: "fighter", guts: "fighter", dio: "fighter", gojo: "fighter", sukuna: "fighter",
-    killua: "fighter", jinwoo: "fighter", denji: "fighter", garou: "fighter",
+    killua: "fighter", gon: "fighter", jinwoo: "fighter", denji: "fighter", garou: "fighter",
   };
 
   // Evolution stage tabs shown on the top row of Fighter Detail when a character has evolution branches
@@ -74,6 +74,10 @@
     killua: [
       { id: "base", label: "ASSASSIN", desc: "50kg Alloy Yo-Yo, Narukami Thunderbolt and Rhythm Echo afterimage clones." },
       { id: "ult", label: "GODSPEED (KANMURU)", ult: true, desc: "Electric aura, +38% Speed, 20% Shield and Whirlwind Reflex auto-counter lightning." },
+    ],
+    gon: [
+      { id: "base", label: "HUNTER EXAM", desc: "Jajanken Enhancer! Cycles Rock (heavy Nen fist dash), Scissors (golden blade slash), and Paper (Nen orb)." },
+      { id: "ult", label: "ADULT GON", ult: true, desc: "Pitch-black Restriction & Pledge form! Replaces Jajanken with 1 brutal skill: dashes to the enemy, lifts them into the air, and slams them into the ground!" },
     ],
     jinwoo: [
       { id: "base", label: "HUNTER", desc: "Kamish's Wrath twin daggers, Mutilate cross-slash dash and Ruler's Authority gravity pull." },
