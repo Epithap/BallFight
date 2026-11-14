@@ -8,7 +8,7 @@
   const HOUR_MS = 3600 * 1000;
 
   // All characters are equal tier (no character rarity)
-  const FIGHTERS = ["gojo", "sukuna", "guts", "dio", "jotaro", "killua", "jinwoo", "denji", "garou"];
+  const FIGHTERS = ["gojo", "sukuna", "guts", "dio", "jotaro", "killua", "jinwoo", "denji", "garou", "gon", "sasuke"];
   const RATE_UP_CHANCE = 5.0;    // 5.0% featured Rate-Up character
   const OTHER_CHAR_CHANCE = 1.5; // 1.5% other characters (split equally)
 
@@ -112,6 +112,26 @@
       battleCry: "FIST OF FLOWING WATER, CRUSHING ROCK!!",
       quote: "TIME TO HUNT SOME HEROES.",
       motif: "cosmic",
+    },
+    gon: {
+      bg1: "#031209", bg2: "#0a2e16", bg3: "#14532d",
+      c1: "#22c55e", c2: "#facc15", c3: "#fef08a",
+      watermark: "JAJANKEN • ROCK",
+      epithet: "HUNTER PRODIGY • ENHANCER",
+      ultTag: "ADULT GON",
+      battleCry: "FIRST COMES ROCK!! JAJANKEN!!",
+      quote: "I DON'T CARE WHAT HAPPENS TO ME AFTER THIS!",
+      motif: "cosmic",
+    },
+    sasuke: {
+      bg1: "#050717", bg2: "#17143b", bg3: "#1e1b4b",
+      c1: "#38bdf8", c2: "#a855f7", c3: "#f97316",
+      watermark: "KIRIN • SHARINGAN",
+      epithet: "UCHIHA AVENGER • CHIDORI",
+      ultTag: "KIRIN",
+      battleCry: "BEGONE WITH THE THUNDERCLAP!!",
+      quote: "THIS IS THE END, NARUTO!",
+      motif: "godspeed",
     },
   };
 
