@@ -149,57 +149,24 @@
         c.fillStyle = color;
 
         if (shape === "crescent") {
-          // Sleek razor-sharp Getsuga Tensho crescent slash wave with trailing energy
-          const rOut = this.radius * 1.65;
-          const span = Math.PI * 0.56;
-          const tipX = Math.cos(-span) * rOut;
-          const tipY = Math.sin(-span) * rOut;
-
-          // Trailing speed wisps
-          c.save();
-          c.globalAlpha = 0.45;
-          c.strokeStyle = color;
-          c.lineCap = "round";
-          c.lineWidth = 3.2;
+          // Getsuga Tensho crimson-black crescent slash
           c.beginPath();
-          c.moveTo(-this.radius * 0.1, -this.radius * 0.85);
-          c.lineTo(-this.radius * 1.25, -this.radius * 0.95);
-          c.moveTo(-this.radius * 0.25, 0);
-          c.lineTo(-this.radius * 1.55, 0);
-          c.moveTo(-this.radius * 0.1, this.radius * 0.85);
-          c.lineTo(-this.radius * 1.25, this.radius * 0.95);
-          c.stroke();
-          c.restore();
-
-          // Outer aura glow
-          c.save();
-          c.globalAlpha = 0.32;
-          c.fillStyle = color;
-          c.beginPath();
-          c.arc(0, 0, rOut * 1.14, -span, span);
-          c.quadraticCurveTo(this.radius * 0.92, 0, Math.cos(-span) * rOut * 1.14, Math.sin(-span) * rOut * 1.14);
+          c.arc(0, 0, this.radius * 1.45, -Math.PI * 0.48, Math.PI * 0.48);
+          c.quadraticCurveTo(
+            this.radius * 0.3,
+            0,
+            Math.cos(-Math.PI * 0.48) * this.radius * 1.45,
+            Math.sin(-Math.PI * 0.48) * this.radius * 1.45
+          );
           c.closePath();
           c.fill();
-          c.restore();
-
-          // Main sharp crescent blade
-          c.fillStyle = color;
-          c.strokeStyle = COLORS.ink;
-          c.lineWidth = 3.5;
-          c.lineJoin = "round";
-          c.beginPath();
-          c.arc(0, 0, rOut, -span, span);
-          c.quadraticCurveTo(this.radius * 1.05, 0, tipX, tipY);
-          c.closePath();
-          c.fill();
+          c.lineWidth = 4;
           c.stroke();
-
-          // White-hot leading razor edge
+          // Inner bright edge
           c.strokeStyle = COLORS.white;
-          c.lineWidth = 2.4;
-          c.lineCap = "round";
+          c.lineWidth = 2;
           c.beginPath();
-          c.arc(0, 0, rOut * 0.86, -span * 0.72, span * 0.72);
+          c.arc(0, 0, this.radius * 1.18, -Math.PI * 0.35, Math.PI * 0.35);
           c.stroke();
         } else if (shape === "rasenshuriken") {
           if (BF.drawRasenshurikenDisc) {
