@@ -87,9 +87,9 @@
       { id: "base", stage: "starter", label: "SHARINGAN", starterOnly: true, desc: "Starter Base: Chidori dash (triggers Rasengan vs Chidori Clash against Naruto!) & Katon: Fireball Jutsu." },
       { id: "kirin", stage: "starter", label: "KIRIN (ULT)", ult: true, starterOnly: true, desc: "Starter Ult: Summons thunderstorm clouds over the arena and calls down the Kirin Thunder Dragon!" },
       { id: "curse_mark", stage: "starter", label: "CURSE MARK (HP≤150)", starterOnly: true, curseMarkMode: true, desc: "Starter HP <= 150: Permanent Curse Mark Stage 2 with clawed wings, +20% Speed, +45 HP & Dark Chidori!" },
-      { id: "evolved_base", stage: "evolved", label: "RINNEGAN", evolved: true, desc: "Evolved Base (10k Gold): Rinnegan + EMS, Susanoo Ribcage aura & Amaterasu Black Flames!" },
-      { id: "ult", stage: "evolved", label: "INDRA'S ARROW (ULT)", evolved: true, ult: true, desc: "Evolved Ult: Leaps up as Giant Indra Susanoo draws a Lightning Bow, hitting the entire map & electrifying the arena!" },
-      { id: "susanoo_armor", stage: "evolved", label: "SUSANOO ARMOR (HP≤150)", evolved: true, susanooArmorMode: true, desc: "Evolved HP <= 150: Permanent Purple Susanoo Samurai Armor, +55 HP, +22% Shield & Amenotejikara + Bansho Ten'in!" },
+      { id: "evolved_base", stage: "evolved", label: "RINNEGAN", evolved: true, desc: "Evolved Base (10k Gold): Rinnegan + EMS, Susanoo Ribcage aura & Amaterasu Black Flames! Ult: Armored Susanoo!" },
+      { id: "ult", stage: "evolved", label: "ARMORED SUSANOO (ULT)", evolved: true, ult: true, desc: "Evolved Ult (HP > 150): Summons Armored Susanoo around Sasuke & fires 3 Kagutsuchi Flame Arrows!" },
+      { id: "susanoo_armor", stage: "evolved", label: "SUSANOO ARMOR (HP≤150)", evolved: true, ult: true, susanooArmorMode: true, desc: "Evolved HP <= 150: Permanent Susanoo Samurai Armor (+55 HP, Amenotejikara & Bansho Ten'in)! Ult upgrades to Giant INDRA'S ARROW!" },
     ],
     jinwoo: [
       { id: "base", label: "HUNTER", desc: "Kamish's Wrath twin daggers, Mutilate cross-slash dash and Ruler's Authority gravity pull." },

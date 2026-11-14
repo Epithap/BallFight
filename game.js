@@ -2595,7 +2595,7 @@
         ? ["GAMMA RAY BURST!", "#c084fc"]
         : ["MONSTER CALAMITY!", "#ef4444"],
       adult_gon: ["RESTRICTION & PLEDGE!", "#09090b"],
-      kirin: ball.evolved ? ["INDRA'S ARROW!!", "#38bdf8"] : ["KIRIN: THUNDER DRAGON!", "#38bdf8"],
+      kirin: ball.susanooArmorMode ? ["INDRA'S ARROW!!", "#38bdf8"] : ball.evolved ? ["ARMORED SUSANOO!", "#a855f7"] : ["KIRIN: THUNDER DRAGON!", "#38bdf8"],
     }[ball.ult];
     if (fx) {
       if (ball.ult !== "time_stop" && ball.ult !== "star_time_stop") {
@@ -2973,12 +2973,14 @@
       beginCast(ball, {
         kind: "powerup",
         duration: 0.4,
-        color: ball.evolved ? "#a855f7" : "#38bdf8",
+        color: ball.susanooArmorMode ? "#38bdf8" : ball.evolved ? "#a855f7" : "#38bdf8",
         fire(b, g) {
           b.ultTimer = 7.0;
           addEffect(b, "haste", 7.0, { factor: 1.18 });
-          if (b.evolved && BF.spawnIndraArrowUltimate) {
+          if (b.susanooArmorMode && BF.spawnIndraArrowUltimate) {
             BF.spawnIndraArrowUltimate(b, g);
+          } else if (b.evolved && BF.spawnArmoredSusanooUltimate) {
+            BF.spawnArmoredSusanooUltimate(b, g);
           } else if (BF.spawnKirinUltimate) {
             BF.spawnKirinUltimate(b, g);
           }
@@ -3056,7 +3058,7 @@
   }
 
   function applyDamage(ball, rawAmount) {
-    if (game._cosmicCutsceneTimer > 0) return 0;
+    if (game._cosmicCutsceneTimer > 0 || ball._hiddenOffScreen) return 0;
     let dmg = rawAmount;
     const shield = ball.getEffect("shield");
     if (shield && dmg > 0) {
@@ -4589,6 +4591,7 @@
 
 
   function drawBall(ball, c = ctx, showExtras = true) {
+    if (ball._hiddenOffScreen) return;
     const r = ball.radius;
     if (showExtras) {
       if (ball.apeMode) {
