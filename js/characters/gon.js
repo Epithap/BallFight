@@ -145,37 +145,77 @@
         }
       },
       render(c) {
-        const a = Math.max(0, this.life / this.maxLife);
+        const p = 1 - Math.max(0, this.life / this.maxLife);
+        const alpha = Math.max(0, Math.min(1, (this.life / this.maxLife) * 1.4));
+        // Scissor blades start open at ±0.58 rad and snap shut to ±0.03 rad around p = 0.55
+        const snapP = Math.min(1, p / 0.55);
+        const bladeSpread = 0.58 * (1 - snapP) + 0.03;
+        const bladeLen = this.radius + 14;
+
         c.save();
         c.translate(this.x, this.y);
         c.rotate(this.angle);
-        c.globalAlpha = a;
+        c.globalAlpha = alpha;
 
-        // Outer golden aura arc
-        c.strokeStyle = "#f97316";
-        c.shadowColor = "#facc15";
-        c.shadowBlur = 16;
-        c.lineWidth = 11;
-        c.lineCap = "round";
-        c.beginPath();
-        c.arc(0, 0, this.radius * 0.86, -1.12, 1.12);
-        c.stroke();
+        // Draw two long glowing golden Nen scissor blades snapping shut
+        for (const side of [-1, 1]) {
+          c.save();
+          c.rotate(side * bladeSpread);
 
-        // Dual scissor-blade energy arcs
-        c.strokeStyle = "#fde047";
-        c.lineWidth = 6;
-        c.beginPath();
-        c.arc(4, -5, this.radius * 0.78, -0.95, 0.95);
-        c.stroke();
-        c.beginPath();
-        c.arc(4, 5, this.radius * 0.78, -0.95, 0.95);
-        c.stroke();
+          // Outer orange-gold Nen glow
+          c.shadowColor = "#facc15";
+          c.shadowBlur = 18;
+          c.fillStyle = "rgba(249, 115, 22, 0.48)";
+          c.beginPath();
+          c.moveTo(this.owner.radius * 0.5, -side * 4);
+          c.lineTo(bladeLen * 0.72, side * 14);
+          c.lineTo(bladeLen + 8, 0);
+          c.lineTo(bladeLen * 0.45, -side * 5);
+          c.closePath();
+          c.fill();
 
-        c.strokeStyle = "#ffffff";
-        c.lineWidth = 2.8;
-        c.beginPath();
-        c.arc(8, 0, this.radius * 0.72, -0.82, 0.82);
-        c.stroke();
+          // Sharp golden Nen blade body
+          const bGrad = c.createLinearGradient(this.owner.radius * 0.5, 0, bladeLen, 0);
+          bGrad.addColorStop(0, "#fbbf24");
+          bGrad.addColorStop(0.55, "#fde047");
+          bGrad.addColorStop(1, "#ffffff");
+          c.fillStyle = bGrad;
+          c.beginPath();
+          c.moveTo(this.owner.radius * 0.55, 0);
+          c.lineTo(bladeLen * 0.7, side * 9);
+          c.lineTo(bladeLen, 0);
+          c.lineTo(bladeLen * 0.5, -side * 2.5);
+          c.closePath();
+          c.fill();
+
+          // Razor-white cutting edge highlight
+          c.strokeStyle = "#ffffff";
+          c.lineWidth = 2.2;
+          c.beginPath();
+          c.moveTo(this.owner.radius * 0.6, 0);
+          c.lineTo(bladeLen, 0);
+          c.stroke();
+          c.restore();
+        }
+
+        // Shear flash & cross-cut sparks right when the scissor blades snap shut
+        if (p >= 0.45) {
+          const flashA = Math.max(0, 1 - (p - 0.45) / 0.55);
+          c.save();
+          c.globalAlpha = flashA;
+          c.strokeStyle = "#ffffff";
+          c.shadowColor = "#fde047";
+          c.shadowBlur = 16;
+          c.lineWidth = 3.5;
+          for (const ang of [-0.45, 0.45]) {
+            c.beginPath();
+            c.moveTo(this.owner.radius * 0.8, 0);
+            c.lineTo(bladeLen * 1.08, Math.sin(ang) * 34);
+            c.stroke();
+          }
+          c.restore();
+        }
+
         c.restore();
       },
     };
@@ -385,31 +425,61 @@
 
           if (t >= 1 && !this.slammed) {
             this.slammed = true;
-            this.dead = true;
+            this.phase = "rock_charge";
+            this.phaseElapsed = 0;
 
-            // Clamp Gon inside arena and restore movement velocity so he never stands still after slam
             const pad = this.owner.radius + 10;
-            this.owner.x = Math.min(WORLD_SIZE - pad, Math.max(pad, this.grabX - 22));
-            this.owner.y = Math.min(WORLD_SIZE - pad, Math.max(pad, this.grabY - 12));
-            const bounceAng = Math.atan2(this.owner.y - this.grabY, this.owner.x - this.grabX) || -0.8;
-            const spd = this.owner.baseSpeed || 356;
-            this.owner.vx = Math.cos(bounceAng) * spd;
-            this.owner.vy = Math.sin(bounceAng) * spd;
+            this.owner.x = Math.min(WORLD_SIZE - pad, Math.max(pad, this.grabX - 28));
+            this.owner.y = Math.min(WORLD_SIZE - pad, Math.max(pad, this.grabY));
+            this.owner.vx = 0;
+            this.owner.vy = 0;
+            this.target.x = Math.min(WORLD_SIZE - this.target.radius - 10, Math.max(this.target.radius + 10, this.grabX + 18));
+            this.target.y = Math.min(WORLD_SIZE - this.target.radius - 10, Math.max(this.target.radius + 10, this.grabY));
+            this.target.vx = 0;
+            this.target.vy = 0;
 
-            const dealt = g.applyDamage(this.target, 18);
-            this.target.flashTimer = 0.22;
+            const dealt = g.applyDamage(this.target, 12);
+            this.target.flashTimer = 0.2;
             this.target.squash = 0.65;
-            this.target.vx = (Math.random() - 0.5) * 260;
-            this.target.vy = 140;
-            g.addEffect(this.target, "stun", 0.5);
+            g.addEffect(this.target, "stun", 0.55);
 
             g.entities.push(spawnGroundCrater(this.grabX, this.grabY + 8));
-            g.entities.push(rt.spawnShockRing(this.grabX, this.grabY, "#09090b", 145, 0.36));
-            g.entities.push(rt.spawnShockRing(this.grabX, this.grabY, "#ffffff", 112, 0.28));
-            g.entities.push(rt.spawnShockRing(this.grabX, this.grabY, "#dc2626", 82, 0.22));
+            g.entities.push(rt.spawnShockRing(this.grabX, this.grabY, "#09090b", 135, 0.32));
+            g.entities.push(rt.spawnShockRing(this.grabX, this.grabY, "#ffffff", 100, 0.24));
             g.spawnSparks(this.grabX, this.grabY, "#ffffff", "#dc2626");
             g.spawnDamageText(this.grabX, this.grabY - 34, dealt, "#ef4444", true, "ADULT SLAM!");
-            g.shake = Math.max(g.shake || 0, 14);
+            g.shake = Math.max(g.shake || 0, 11);
+            if (g.sound && g.sound.playBallHit) g.sound.playBallHit();
+          }
+        } else if (this.phase === "rock_charge") {
+          const chargeDur = 0.22;
+          this.owner.vx = 0;
+          this.owner.vy = 0;
+          this.target.vx = 0;
+          this.target.vy = 0;
+
+          if (this.phaseElapsed >= chargeDur) {
+            this.dead = true;
+            const ang = Math.atan2(this.target.y - this.owner.y, this.target.x - this.owner.x) || 0;
+            const dealt = g.applyDamage(this.target, 14);
+            this.target.flashTimer = 0.24;
+            this.target.squash = 0.58;
+            // Send enemy flying far across the arena!
+            this.target.vx = Math.cos(ang) * 740;
+            this.target.vy = Math.sin(ang) * 740;
+            g.addEffect(this.target, "stun", 0.45);
+
+            // Restore Adult Gon movement velocity with clean recoil
+            const spd = this.owner.baseSpeed || 356;
+            this.owner.vx = -Math.cos(ang) * spd;
+            this.owner.vy = -Math.sin(ang) * spd;
+
+            g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#09090b", 165, 0.38));
+            g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#ffffff", 125, 0.3));
+            g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#dc2626", 92, 0.24));
+            g.spawnSparks(this.target.x, this.target.y, "#ffffff", "#dc2626");
+            g.spawnDamageText(this.target.x, this.target.y - this.target.radius - 22, dealt, "#f97316", true, "ADULT ROCK!!");
+            g.shake = Math.max(g.shake || 0, 16);
             if (g.sound && g.sound.playBallHit) g.sound.playBallHit();
           }
         }
@@ -445,6 +515,20 @@
             c.stroke();
           }
         }
+
+        if (this.phase === "rock_charge") {
+          const p = Math.min(1, this.phaseElapsed / 0.22);
+          const coreR = 26 + p * 18;
+          const fistGrad = c.createRadialGradient(this.owner.x, this.owner.y, 4, this.owner.x, this.owner.y, coreR);
+          fistGrad.addColorStop(0, "#ffffff");
+          fistGrad.addColorStop(0.45, "#f97316");
+          fistGrad.addColorStop(0.75, "rgba(220, 38, 38, 0.85)");
+          fistGrad.addColorStop(1, "rgba(9, 9, 11, 0)");
+          c.fillStyle = fistGrad;
+          c.beginPath();
+          c.arc(this.owner.x, this.owner.y, coreR, 0, Math.PI * 2);
+          c.fill();
+        }
         c.restore();
       },
     };
@@ -467,12 +551,14 @@
       const enemy = pickEnemy(ball, g);
       if (!enemy) return false;
 
-      // Adult Gon Ultimate: ONLY 1 skill variant (Dash -> Lift -> Ground Slam)
+      // Adult Gon Ultimate: ONLY 1 skill variant (Dash -> Lift -> Ground Slam -> Adult Rock) with longer CD (4.8s)
       if (ball.ultTimer > 0) {
+        this.cooldown = 4.8;
         g.entities.push(spawnAdultGonDashSlam(ball, enemy));
         g.spawnDamageText(ball.x, ball.y - ball.radius - 14, 0, "#ffffff", true, "ADULT RUSH!");
         return true;
       }
+      this.cooldown = 2.8;
 
       const forms = ["rock", "scissors", "paper"];
       const idx = (ball._jajankenIdx || 0) % forms.length;
