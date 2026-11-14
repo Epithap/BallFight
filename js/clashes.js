@@ -1,6 +1,6 @@
 (() => {
   const BF = (window.BallFight = window.BallFight || {});
-  const { WORLD_SIZE, COLORS, FONT } = BF;
+  const { WORLD_SIZE, COLORS, FONT, easeOut } = BF;
   const rt = () => BF._rt;
 
   function spawnStandClashEffect(x, y, duration = 2.4, b1 = null, b2 = null, getMeter = null) {
@@ -544,8 +544,8 @@
             color: rt().rng() < 0.5 ? leftSpec.color : rightSpec.color,
           });
         }
-        rt().rt().shakeTime = Math.max(rt().shakeTime, 0.06);
-        rt().rt().shakeIntensity = Math.max(rt().shakeIntensity, 1.5);
+        rt().shakeTime = Math.max(rt().shakeTime, 0.06);
+        rt().shakeIntensity = Math.max(rt().shakeIntensity, 1.5);
 
         if (this.life <= 0 && !resolved) {
           resolved = true;
@@ -564,16 +564,16 @@
           loser.flashTimer = 0.22;
           loser.squash = 1.0;
 
-          g.rt().entities.push(rt().spawnShockRing(splitX, WORLD_SIZE * 0.5, winSpec.color, 220, 0.55));
-          g.rt().entities.push(rt().spawnShockRing(splitX, WORLD_SIZE * 0.5, COLORS.white, 150, 0.38));
-          g.rt().entities.push(rt().spawnBanner(`DOMAIN OVERPOWER: ${winSpec.name}!`, winSpec.color));
+          g.entities.push(rt().spawnShockRing(splitX, WORLD_SIZE * 0.5, winSpec.color, 220, 0.55));
+          g.entities.push(rt().spawnShockRing(splitX, WORLD_SIZE * 0.5, COLORS.white, 150, 0.38));
+          g.entities.push(rt().spawnBanner(`DOMAIN OVERPOWER: ${winSpec.name}!`, winSpec.color));
           g.spawnDamageText(loser.x, loser.y - loser.radius - 16, dealt, winSpec.color, true, "DOMAIN SHATTERED!");
           g.sound.playCritHit();
-          rt().rt().shakeTime = Math.max(rt().shakeTime, 0.48);
-          rt().rt().shakeIntensity = Math.max(rt().shakeIntensity, 11);
+          rt().shakeTime = Math.max(rt().shakeTime, 0.48);
+          rt().shakeIntensity = Math.max(rt().shakeIntensity, 11);
 
           if (winSpec.createDomain) {
-            g.rt().entities.push(winSpec.createDomain());
+            g.entities.push(winSpec.createDomain());
           }
           if (winSpec.onStart) {
             winSpec.onStart(g);
@@ -894,7 +894,7 @@
               ? () => BF.spawnUnlimitedVoidDomain({ owner: enemy, duration: 6.0 })
               : null,
             onStart(gg) {
-              gg.rt().addEffect(owner, "stun", 6.0);
+              gg.addEffect(owner, "stun", 6.0);
               owner.vx = 0;
               owner.vy = 0;
               gg.spawnDamageText(owner.x, owner.y - owner.radius - 18, 0, "#7dd3fc", true, "INFINITE VOID (6S)!");
@@ -916,17 +916,17 @@
         g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 18, 0, enemySpec.color, true, `${enemySpec.name}!`);
       }
       g.spawnDamageText(owner.x, owner.y - owner.radius - 18, 0, spec.color, true, `${spec.name}!`);
-      g.rt().entities.push(rt().spawnBanner("DOMAIN CLASH!", COLORS.gold));
-      g.rt().entities.push(spawnDomainClashEffect(midX, midY, clashDuration, owner, enemy || owner, spec, enemySpec, g));
+      g.entities.push(rt().spawnBanner("DOMAIN CLASH!", COLORS.gold));
+      g.entities.push(spawnDomainClashEffect(midX, midY, clashDuration, owner, enemy || owner, spec, enemySpec, g));
       if (g.sound && g.sound.playTimeStop) g.sound.playTimeStop();
       g.sound.playCritHit();
-      rt().rt().shakeTime = Math.max(rt().shakeTime, 0.45);
-      rt().rt().shakeIntensity = Math.max(rt().shakeIntensity, 9);
+      rt().shakeTime = Math.max(rt().shakeTime, 0.45);
+      rt().shakeIntensity = Math.max(rt().shakeIntensity, 9);
       return;
     }
 
     if (spec.createDomain) {
-      g.rt().entities.push(spec.createDomain());
+      g.entities.push(spec.createDomain());
     }
     if (spec.onStart) {
       spec.onStart(g);

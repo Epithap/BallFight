@@ -1,6 +1,6 @@
 (() => {
   const BF = (window.BallFight = window.BallFight || {});
-  const { WORLD_SIZE, COLORS, FONT } = BF;
+  const { WORLD_SIZE, COLORS, FONT, easeOut } = BF;
   const rt = () => BF._rt;
 
   function getInfinitySlowFactor(targetBall, px, py) {
@@ -42,7 +42,7 @@
         if (infFactor <= 0) {
           if (!this.infinityTagged) {
             this.infinityTagged = true;
-            game.rt().spawnDamageText(this.x, this.y - 16, 0, "#7dd3fc", false, "INFINITY!");
+            game.spawnDamageText(this.x, this.y - 16, 0, "#7dd3fc", false, "INFINITY!");
           }
           this.infinityHoldTimer += dt;
           if (this.infinityHoldTimer >= 1.1) {
@@ -89,12 +89,12 @@
         const dist = Math.hypot(target.x - this.x, target.y - this.y);
         if (dist <= target.radius + this.radius) {
           this.dead = true;
-          const dealt = game.rt().applyDamage(target, damage);
+          const dealt = game.applyDamage(target, damage);
           target.flashTimer = 0.12;
           target.squash = 0.9;
-          game.rt().spawnSparks(this.x, this.y, color, target.color);
-          game.rt().spawnDamageText(target.x, target.y - target.radius * 0.5, dealt, color, false, label);
-          game.rt().sound.playBallHit();
+          game.spawnSparks(this.x, this.y, color, target.color);
+          game.spawnDamageText(target.x, target.y - target.radius * 0.5, dealt, color, false, label);
+          game.sound.playBallHit();
           if (onImpact) onImpact(target, game, this);
         }
       },
@@ -1027,7 +1027,7 @@
         skills: [],
         effects: [],
       };
-      drawBall(mockBall, c, false);
+      BF.drawBall(mockBall, c, false);
 
       // Name tag inside inner edge of cut-in
       const tagName = (ball.shortName || ball.costume || ball.name || "P").toUpperCase();

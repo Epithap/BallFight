@@ -1,6 +1,6 @@
 (() => {
   const BF = (window.BallFight = window.BallFight || {});
-  const { WORLD_SIZE, COLORS, FONT } = BF;
+  const { WORLD_SIZE, COLORS, FONT, easeOut } = BF;
   const rt = () => BF._rt;
 
   function triggerGokuApeTransform(b) {
@@ -19,8 +19,8 @@
     rt().entities.push(rt().spawnShockRing(b.x, b.y, "#f59e0b", 155, 0.52));
     rt().spawnDamageText(b.x, b.y - b.radius - 16, 0, "#ef4444", true, "OOZARU RAMPAGE!");
     rt().sound.playCritHit();
-    rt().rt().shakeTime = Math.max(rt().shakeTime, 0.4);
-    rt().rt().shakeIntensity = Math.max(rt().shakeIntensity, 9);
+    rt().shakeTime = Math.max(rt().shakeTime, 0.4);
+    rt().shakeIntensity = Math.max(rt().shakeIntensity, 9);
   }
 
   function triggerNarutoKyuubiTransform(b) {
@@ -38,8 +38,8 @@
     rt().spawnSparks(b.x, b.y, "#ef4444", "#140407");
     rt().spawnDamageText(b.x, b.y - b.radius - 16, 0, "#ef4444", true, isBoneSkin ? "SIX-TAILS BONE CLOAK!" : "NINE-TAILS AWAKENED!");
     rt().sound.playCritHit();
-    rt().rt().shakeTime = Math.max(rt().shakeTime, 0.42);
-    rt().rt().shakeIntensity = Math.max(rt().shakeIntensity, 10);
+    rt().shakeTime = Math.max(rt().shakeTime, 0.42);
+    rt().shakeIntensity = Math.max(rt().shakeIntensity, 10);
   }
 
   function triggerSasukeCurseMarkTransform(b) {
@@ -59,8 +59,8 @@
     rt().spawnSparks(b.x, b.y, "#a855f7", "#09090b");
     rt().spawnDamageText(b.x, b.y - b.radius - 16, 0, "#c084fc", true, "CURSED FORM (+45 HP)!");
     rt().sound.playCritHit();
-    rt().rt().shakeTime = Math.max(rt().shakeTime, 0.42);
-    rt().rt().shakeIntensity = Math.max(rt().shakeIntensity, 10);
+    rt().shakeTime = Math.max(rt().shakeTime, 0.42);
+    rt().shakeIntensity = Math.max(rt().shakeIntensity, 10);
   }
 
   function triggerSasukeSusanooArmorTransform(b) {
@@ -80,8 +80,8 @@
     rt().spawnSparks(b.x, b.y, "#c084fc", "#38bdf8");
     rt().spawnDamageText(b.x, b.y - b.radius - 16, 0, "#c084fc", true, "SUSANOO ARMORED (+55 HP)!");
     rt().sound.playCritHit();
-    rt().rt().shakeTime = Math.max(rt().shakeTime, 0.46);
-    rt().rt().shakeIntensity = Math.max(rt().shakeIntensity, 12);
+    rt().shakeTime = Math.max(rt().shakeTime, 0.46);
+    rt().shakeIntensity = Math.max(rt().shakeIntensity, 12);
   }
 
   function triggerIchigoInnerDemonTransform(b) {
@@ -98,8 +98,8 @@
     rt().spawnSparks(b.x, b.y, "#ef4444", "#f8fafc");
     rt().spawnDamageText(b.x, b.y - b.radius - 16, 0, "#ef4444", true, "INNER DEMON AWAKENED!");
     rt().sound.playCritHit();
-    rt().rt().shakeTime = Math.max(rt().shakeTime, 0.4);
-    rt().rt().shakeIntensity = Math.max(rt().shakeIntensity, 9);
+    rt().shakeTime = Math.max(rt().shakeTime, 0.4);
+    rt().shakeIntensity = Math.max(rt().shakeIntensity, 9);
   }
 
   function triggerIchigoVastoTransform(b) {
@@ -118,8 +118,8 @@
     rt().spawnSparks(b.x, b.y, "#ef4444", "#090205");
     rt().spawnDamageText(b.x, b.y - b.radius - 16, 0, "#ef4444", true, "VASTO LORDE AWAKENED!");
     rt().sound.playCritHit();
-    rt().rt().shakeTime = Math.max(rt().shakeTime, 0.42);
-    rt().rt().shakeIntensity = Math.max(rt().shakeIntensity, 10);
+    rt().shakeTime = Math.max(rt().shakeTime, 0.42);
+    rt().shakeIntensity = Math.max(rt().shakeIntensity, 10);
   }
 
   function activateUltimate(ball) {
@@ -197,14 +197,14 @@
         rt().beginCast(ball, {
           kind: "bijuudama", duration: 1.05, color: "#dc2626", maxR: 34,
           fire(b, g) {
-            const t = g.rt().balls.find((x) => x !== b && x.alive);
+            const t = g.balls.find((x) => x !== b && x.alive);
             if (!t) return;
             const ang = Math.atan2(t.y - b.y, t.x - b.x);
             const m = rt().castMuzzle(b, ang, 24);
-            g.rt().entities.push(rt().spawnShockRing(m.x, m.y, "#ef4444", 130, 0.45));
-            rt().rt().shakeTime = Math.max(rt().shakeTime, 0.35);
-            rt().rt().shakeIntensity = Math.max(rt().shakeIntensity, 8);
-            g.rt().entities.push(rt().spawnProjectile({
+            g.entities.push(rt().spawnShockRing(m.x, m.y, "#ef4444", 130, 0.45));
+            rt().shakeTime = Math.max(rt().shakeTime, 0.35);
+            rt().shakeIntensity = Math.max(rt().shakeIntensity, 8);
+            g.entities.push(rt().spawnProjectile({
               owner: b,
               target: t,
               x: m.x,
@@ -232,27 +232,27 @@
         rt().beginCast(ball, {
           kind: "orb", blades: true, duration: 1.15, color: COLORS.blue, maxR: 30,
           fire(b, g) {
-            const t = g.rt().balls.find((x) => x !== b && x.alive);
+            const t = g.balls.find((x) => x !== b && x.alive);
             if (!t) return;
             const m = rt().castMuzzle(b, Math.atan2(t.y - b.y, t.x - b.x), 20);
-            g.rt().entities.push(rt().spawnShockRing(m.x, m.y, COLORS.blue, 90, 0.4));
+            g.entities.push(rt().spawnShockRing(m.x, m.y, COLORS.blue, 90, 0.4));
             rt().shakeTime = 0.2; rt().shakeIntensity = 5;
-            g.rt().entities.push(rt().spawnProjectile({
+            g.entities.push(rt().spawnProjectile({
               owner: b, target: t, x: m.x, y: m.y, speed: 520, radius: 28, damage: 28,
               color: COLORS.blue, label: "RASENSHURIKEN!", shape: "rasenshuriken",
               onImpact(tt, gg, proj) {
-                gg.rt().addEffect(tt, "stun", 0.9);
-                gg.rt().entities.push(BF.spawnRasenganVisual(proj.x, proj.y, 82));
+                gg.addEffect(tt, "stun", 0.9);
+                gg.entities.push(BF.spawnRasenganVisual(proj.x, proj.y, 82));
                 if (BF.spawnRasenshurikenVortex) {
-                  gg.rt().entities.push(BF.spawnRasenshurikenVortex({ x: proj.x, y: proj.y, owner: b, duration: 2.2, radius: 155 }));
+                  gg.entities.push(BF.spawnRasenshurikenVortex({ x: proj.x, y: proj.y, owner: b, duration: 2.2, radius: 155 }));
                 }
-                gg.rt().entities.push(rt().spawnShockRing(proj.x, proj.y, COLORS.white, 125, 0.5));
-                gg.rt().spawnSparks(proj.x, proj.y, COLORS.white, COLORS.blue);
+                gg.entities.push(rt().spawnShockRing(proj.x, proj.y, COLORS.white, 125, 0.5));
+                gg.spawnSparks(proj.x, proj.y, COLORS.white, COLORS.blue);
                 rt().shakeTime = 0.35; rt().shakeIntensity = 8;
               },
               onOutOfBounds(gg, proj) {
                 if (BF.spawnRasenshurikenVortex) {
-                  gg.rt().entities.push(BF.spawnRasenshurikenVortex({ x: proj.x, y: proj.y, owner: b, duration: 2.0, radius: 145 }));
+                  gg.entities.push(BF.spawnRasenshurikenVortex({ x: proj.x, y: proj.y, owner: b, duration: 2.0, radius: 145 }));
                 }
               },
             }));
@@ -265,14 +265,14 @@
         rt().beginCast(ball, {
           kind: "gran_rey_cero", duration: 0.98, color: "#dc2626", maxR: 35,
           fire(b, g) {
-            const t = g.rt().balls.find((x) => x !== b && x.alive);
+            const t = g.balls.find((x) => x !== b && x.alive);
             if (!t) return;
             const ang = Math.atan2(t.y - b.y, t.x - b.x);
             const m = rt().castMuzzle(b, ang, 24);
-            g.rt().entities.push(rt().spawnShockRing(m.x, m.y, "#ef4444", 130, 0.45));
-            rt().rt().shakeTime = Math.max(rt().shakeTime, 0.35);
-            rt().rt().shakeIntensity = Math.max(rt().shakeIntensity, 8);
-            g.rt().entities.push(rt().spawnProjectile({
+            g.entities.push(rt().spawnShockRing(m.x, m.y, "#ef4444", 130, 0.45));
+            rt().shakeTime = Math.max(rt().shakeTime, 0.35);
+            rt().shakeIntensity = Math.max(rt().shakeIntensity, 8);
+            g.entities.push(rt().spawnProjectile({
               owner: b,
               target: t,
               x: m.x,
@@ -374,14 +374,14 @@
           b.ultTimer = 13.0;
           b.domainUsedInUlt = false;
           rt().addEffect(b, "haste", 13.0, { factor: 1.15 });
-          const t = g.rt().balls.find((x) => x !== b && x.alive);
+          const t = g.balls.find((x) => x !== b && x.alive);
           if (!t) return;
           const ang = Math.atan2(t.y - b.y, t.x - b.x);
           const m = rt().castMuzzle(b, ang, 24);
-          g.rt().entities.push(rt().spawnShockRing(m.x, m.y, "#e5b8ff", 135, 0.45));
-          rt().rt().shakeTime = Math.max(rt().shakeTime, 0.35);
-          rt().rt().shakeIntensity = Math.max(rt().shakeIntensity, 8);
-          g.rt().entities.push(rt().spawnProjectile({
+          g.entities.push(rt().spawnShockRing(m.x, m.y, "#e5b8ff", 135, 0.45));
+          rt().shakeTime = Math.max(rt().shakeTime, 0.35);
+          rt().shakeIntensity = Math.max(rt().shakeIntensity, 8);
+          g.entities.push(rt().spawnProjectile({
             owner: b,
             target: t,
             x: m.x,
@@ -411,14 +411,14 @@
           b.ultTimer = 13.0;
           b.domainUsedInUlt = false;
           rt().addEffect(b, "haste", 13.0, { factor: 1.15 });
-          const t = g.rt().balls.find((x) => x !== b && x.alive);
+          const t = g.balls.find((x) => x !== b && x.alive);
           if (!t) return;
           const ang = Math.atan2(t.y - b.y, t.x - b.x);
           const m = rt().castMuzzle(b, ang, 24);
-          g.rt().entities.push(rt().spawnShockRing(m.x, m.y, "#fb923c", 135, 0.45));
-          rt().rt().shakeTime = Math.max(rt().shakeTime, 0.35);
-          rt().rt().shakeIntensity = Math.max(rt().shakeIntensity, 8);
-          g.rt().entities.push(rt().spawnProjectile({
+          g.entities.push(rt().spawnShockRing(m.x, m.y, "#fb923c", 135, 0.45));
+          rt().shakeTime = Math.max(rt().shakeTime, 0.35);
+          rt().shakeIntensity = Math.max(rt().shakeIntensity, 8);
+          g.entities.push(rt().spawnProjectile({
             owner: b,
             target: t,
             x: m.x,
@@ -489,7 +489,7 @@
       });
     } else if (ball.ult === "cosmic_fear") {
       if (ball._isCosmicGarou && BF.triggerCosmicGammaRayBurstUlt) {
-        BF.triggerCosmicGammaRayBurstUlt(ball, game);
+        BF.triggerCosmicGammaRayBurstUlt(ball, rt().makeGameProxy());
       } else {
         rt().beginCast(ball, {
           kind: "powerup",
