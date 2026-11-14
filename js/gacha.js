@@ -21,38 +21,6 @@
     { type: "gems", amount: 12, tier: "epic", label: "EPIC", w: 5.5 },
   ];
 
-  // Splash art cache (local pitch-black anime portraits blended transparently via screen mode)
-  const splashCache = {};
-  function getSplashImage(key) {
-    if (typeof Image === "undefined") return null;
-    if (!splashCache[key]) {
-      const img = new Image();
-      img.src = `assets/splash/${key}.jpg`;
-      splashCache[key] = img;
-    }
-    return splashCache[key];
-  }
-
-  function drawTransparentSplashArt(c, key, dx, dy, dw, dh, alpha) {
-    const img = getSplashImage(key);
-    if (!img || !img.complete || !img.naturalWidth) return;
-    c.save();
-    const iw = img.naturalWidth;
-    const ih = img.naturalHeight;
-    const scale = Math.max(dw / iw, dh / ih);
-    const rw = iw * scale;
-    const rh = ih * scale;
-    const ox = dx + (dw - rw) * 0.5;
-    const oy = dy + (dh - rh) * 0.35;
-    c.beginPath();
-    c.rect(dx, dy, dw, dh);
-    c.clip();
-    c.globalAlpha = alpha;
-    c.globalCompositeOperation = "screen";
-    c.drawImage(img, ox, oy, rw, rh);
-    c.restore();
-  }
-
   // Per-character splash banner & MUGEN pull reveal themes
   const CHAR_THEMES = {
     naruto: {
