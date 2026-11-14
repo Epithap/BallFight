@@ -1,35 +1,258 @@
 // ============================================================
 //  DENJI (CHAINSAW DEVIL)
-//  Chainsaw Man — Berserker / Blood Lifesteal & Chain Grapple
+//  Chainsaw Man — Twin Fixed Chainsaw Arms, Chain Tether & Hero of Hell
 // ============================================================
 
 (() => {
   "use strict";
 
   const BF = (window.BallFight = window.BallFight || {});
-  const { COLORS } = BF;
+  const { COLORS, WORLD_SIZE } = BF;
   const rt = BF.rt;
 
-  function spawnChainGrappleVisual(owner, target) {
+  // ---- Shared Chainsaw Blade Drawer (Fixed orientation, rapidly spinning saw teeth!) ----
+  function drawChainsawArmBlade(c, length = 34, isHeroOfHell = false, scale = 1) {
+    const tick = (performance.now() * 0.03) % 6;
+    c.save();
+    c.scale(scale, scale);
+    c.lineJoin = "round";
+
+    // Forearm engine housing
+    c.fillStyle = isHeroOfHell ? "#18181b" : "#c2410c";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2.3;
+    c.beginPath();
+    c.roundRect(-7.5, -2, 15, 13, 4);
+    c.fill();
+    c.stroke();
+
+    // Cooling vents on engine
+    c.fillStyle = isHeroOfHell ? "#ef4444" : "#7c2d12";
+    c.fillRect(-4.5, 2, 9, 2.2);
+    c.fillRect(-4.5, 6.5, 9, 2.2);
+
+    // Steel guide bar (stationary blade body)
+    c.fillStyle = "#cbd5e1";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2.2;
+    c.beginPath();
+    c.moveTo(-5.2, -1);
+    c.lineTo(-5.2, -length);
+    c.arc(0, -length, 5.2, Math.PI, 0);
+    c.lineTo(5.2, -1);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    // Glowing blood groove down center
+    c.strokeStyle = isHeroOfHell ? "#ef4444" : "#dc2626";
+    c.lineWidth = 2;
+    c.beginPath();
+    c.moveTo(0, -3);
+    c.lineTo(0, -length + 1);
+    c.stroke();
+
+    // Rapidly running saw teeth ("gerigi berputar-putar") along both edges + tip
+    c.fillStyle = "#f8fafc";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 1.15;
+    for (let y = -length + tick; y < -2; y += 6) {
+      for (const s of [-1, 1]) {
+        c.beginPath();
+        c.moveTo(s * 5.2, y);
+        c.lineTo(s * 9.8, y + (s === -1 ? 1.2 : 3.2));
+        c.lineTo(s * 5.2, y + 4.2);
+        c.closePath();
+        c.fill();
+        c.stroke();
+      }
+    }
+    // Tip teeth spinning around rounded nose
+    const tipSpin = (performance.now() * 0.025) % (Math.PI * 2);
+    for (let i = 0; i < 3; i++) {
+      const a = Math.PI + ((tipSpin + (i * Math.PI) / 3) % Math.PI);
+      const tx = Math.cos(a) * 5.2;
+      const ty = -length + Math.sin(a) * 5.2;
+      c.beginPath();
+      c.arc(tx * 1.35, ty - 1.5, 2.2, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  // ---- Blood Siphon Orb returning to Denji ----
+  function spawnBloodOrb(owner, x, y, healAmt) {
     return {
       owner,
-      target,
-      life: 0.26,
-      maxLife: 0.26,
+      x,
+      y,
+      life: 1.2,
       dead: false,
-      update(dt) {
+      update(dt, g) {
         this.life -= dt;
-        if (this.life <= 0 || !this.owner.alive || !this.target.alive) {
+        if (this.life <= 0 || !this.owner || !this.owner.alive) {
+          this.dead = true;
+          return;
+        }
+        const dx = this.owner.x - this.x;
+        const dy = this.owner.y - this.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        this.x += (dx / dist) * 480 * dt;
+        this.y += (dy / dist) * 480 * dt;
+        if (dist <= this.owner.radius + 10) {
+          if (this.owner.hp < this.owner.maxHp) {
+            const actual = Math.min(healAmt, this.owner.maxHp - this.owner.hp);
+            this.owner.hp += actual;
+            g.spawnDamageText(this.owner.x, this.owner.y - this.owner.radius - 12, 0, COLORS.green, false, `+${actual} BLOOD`);
+          }
+          g.spawnSparks(this.owner.x, this.owner.y, "#ef4444", "#fbbf24");
           this.dead = true;
         }
       },
       render(c) {
-        const a = Math.max(0, this.life / this.maxLife);
         c.save();
-        c.globalAlpha = a;
+        c.translate(this.x, this.y);
+        c.fillStyle = "#ef4444";
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 2;
+        c.shadowColor = "#ef4444";
+        c.shadowBlur = 10;
+        c.beginPath();
+        c.arc(0, 0, 7, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+        c.fillStyle = "#fecaca";
+        c.beginPath();
+        c.arc(-2, -2, 2.4, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+      },
+    };
+  }
+
+  // ---- Skill 1 Projectile: Twin Chainsaw Arm Blades (Fixed forward angle, spinning teeth!) ----
+  function spawnTwinSawbladeProjectile(owner, angle, lateralOffset, castState, inUlt) {
+    const ux = Math.cos(angle);
+    const uy = Math.sin(angle);
+    const px = -uy * lateralOffset;
+    const py = ux * lateralOffset;
+    const speed = inUlt ? 600 : 540;
+    return {
+      owner,
+      x: owner.x + ux * (owner.radius + 12) + px,
+      y: owner.y + uy * (owner.radius + 12) + py,
+      vx: ux * speed,
+      vy: uy * speed,
+      angle,
+      radius: 13,
+      bounces: 1,
+      life: 1.45,
+      dead: false,
+      update(dt, g) {
+        this.life -= dt;
+        if (this.life <= 0) {
+          this.dead = true;
+          return;
+        }
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+
+        // Bounce once off arena wall
+        let bounced = false;
+        if (this.x < this.radius) { this.x = this.radius; this.vx = Math.abs(this.vx); bounced = true; }
+        if (this.x > WORLD_SIZE - this.radius) { this.x = WORLD_SIZE - this.radius; this.vx = -Math.abs(this.vx); bounced = true; }
+        if (this.y < this.radius) { this.y = this.radius; this.vy = Math.abs(this.vy); bounced = true; }
+        if (this.y > WORLD_SIZE - this.radius) { this.y = WORLD_SIZE - this.radius; this.vy = -Math.abs(this.vy); bounced = true; }
+        if (bounced) {
+          if (this.bounces <= 0) {
+            this.dead = true;
+            return;
+          }
+          this.bounces--;
+          this.angle = Math.atan2(this.vy, this.vx);
+          g.spawnSparks(this.x, this.y, "#f97316", "#f8fafc");
+        }
+
+        const t = g.balls.find((b) => b !== this.owner && b.alive);
+        if (t && Math.hypot(t.x - this.x, t.y - this.y) <= t.radius + this.radius) {
+          const base = inUlt ? Math.round(6 + rt.rng() * 2) : Math.round(5 + rt.rng());
+          const dmg = t._denjiShredTimer > 0 ? Math.round(base * 1.15) : base;
+          const dealt = g.applyDamage(t, dmg);
+          t.flashTimer = 0.11;
+          t.squash = 0.8;
+          t._denjiBleedTimer = 2.0;
+          t._denjiBleedTick = 0.5;
+          g.spawnSparks(this.x, this.y, "#ef4444", "#fbbf24");
+          g.spawnDamageText(t.x, t.y - t.radius - 12, dealt, "#f97316", false, "SAW RIP!");
+          g.sound.playBallHit();
+          if (!this.castState.bloodSpawned) {
+            this.castState.bloodSpawned = true;
+            g.entities.push(spawnBloodOrb(this.owner, this.x, this.y, inUlt ? 7 : 5));
+          }
+          if (!inUlt && !this.castState.ultCharged) {
+            this.castState.ultCharged = true;
+            g.chargeUlt(this.owner);
+          }
+          this.dead = true;
+        }
+      },
+      render(c) {
+        c.save();
+        c.translate(this.x, this.y);
+        c.rotate(this.angle + Math.PI * 0.5);
+        drawChainsawArmBlade(c, 26, inUlt, 0.72);
+        c.restore();
+      },
+    };
+  }
+
+  // ---- Skill 2 Projectile & Physical Tether Grind (No Teleport!) ----
+  function spawnChainsawTetherEntity(owner, target) {
+    return {
+      owner,
+      target,
+      life: 0.95,
+      tickCd: 0.05,
+      ticksLeft: 3,
+      dead: false,
+      update(dt, g) {
+        this.life -= dt;
+        if (this.life <= 0 || !this.owner.alive || !this.target.alive) {
+          this.dead = true;
+          return;
+        }
+        const dx = this.target.x - this.owner.x;
+        const dy = this.target.y - this.owner.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        const nx = dx / dist;
+        const ny = dy / dist;
+
+        // Physical reel-in pull (no teleport)
+        if (dist > this.owner.radius + this.target.radius + 14) {
+          this.owner.vx += nx * 560 * dt;
+          this.owner.vy += ny * 560 * dt;
+          this.target.vx -= nx * 460 * dt;
+          this.target.vy -= ny * 460 * dt;
+        }
+
+        this.tickCd -= dt;
+        if (this.tickCd <= 0 && this.ticksLeft > 0) {
+          this.tickCd = 0.28;
+          this.ticksLeft--;
+          const dealt = g.applyDamage(this.target, 3);
+          this.target.flashTimer = 0.08;
+          this.target._denjiShredTimer = 2.5;
+          g.spawnSparks(this.target.x, this.target.y, "#ef4444", "#fbbf24");
+          g.spawnDamageText(this.target.x, this.target.y - this.target.radius - 12, dealt, "#fbbf24", false, "CHAIN GRIND!");
+          g.sound.playBallHit();
+        }
+      },
+      render(c) {
+        c.save();
         c.strokeStyle = "#cbd5e1";
-        c.lineWidth = 5;
-        c.setLineDash([8, 5]);
+        c.lineWidth = 4.5;
+        c.setLineDash([9, 5]);
         c.shadowColor = "#f97316";
         c.shadowBlur = 10;
         c.beginPath();
@@ -41,101 +264,156 @@
     };
   }
 
-  // ---- Skill 1: Rip & Tear Rev (Primary +1 Ult Charge + Blood Lifesteal) ----
+  function spawnChainHookProjectile(owner, angle) {
+    const speed = 640;
+    const m = rt.castMuzzle(owner, angle, 12);
+    return {
+      owner,
+      x: m.x,
+      y: m.y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      angle,
+      radius: 11,
+      life: 0.72,
+      dead: false,
+      update(dt, g) {
+        this.life -= dt;
+        if (this.life <= 0 || !this.owner.alive) {
+          this.dead = true;
+          return;
+        }
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+        if (this.x < this.radius || this.x > WORLD_SIZE - this.radius || this.y < this.radius || this.y > WORLD_SIZE - this.radius) {
+          this.dead = true;
+          return;
+        }
+        const t = g.balls.find((b) => b !== this.owner && b.alive);
+        if (t && Math.hypot(t.x - this.x, t.y - this.y) <= t.radius + this.radius) {
+          t._denjiShredTimer = 2.5;
+          g.entities.push(spawnChainsawTetherEntity(this.owner, t));
+          g.entities.push(spawnBloodOrb(this.owner, this.x, this.y, 4));
+          g.spawnSparks(this.x, this.y, "#f97316", "#f8fafc");
+          g.sound.playCritHit();
+          this.dead = true;
+        }
+      },
+      render(c) {
+        if (!this.owner || !this.owner.alive) return;
+        c.save();
+        c.strokeStyle = "#94a3b8";
+        c.lineWidth = 3.5;
+        c.setLineDash([7, 5]);
+        c.beginPath();
+        c.moveTo(this.owner.x, this.owner.y);
+        c.lineTo(this.x, this.y);
+        c.stroke();
+        c.setLineDash([]);
+
+        c.translate(this.x, this.y);
+        c.rotate(this.angle + Math.PI * 0.5);
+        drawChainsawArmBlade(c, 20, false, 0.65);
+        c.restore();
+      },
+    };
+  }
+
+  // ---- Hero of Hell Opener ("VROOM-VAAAM!") ----
+  BF.triggerHeroOfHellOpener = (b, g) => {
+    b._hellGrindCd = 0;
+    b._hellBarrageCd = 0.7;
+    const enemy = g.balls.find((x) => x !== b && x.alive);
+    if (enemy && Math.hypot(enemy.x - b.x, enemy.y - b.y) <= b.radius + enemy.radius + 115) {
+      const dealt = g.applyDamage(enemy, 10);
+      const ang = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+      enemy.vx += Math.cos(ang) * 280;
+      enemy.vy += Math.sin(ang) * 280;
+      enemy.flashTimer = 0.14;
+      g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 16, dealt, "#ef4444", true, "VROOM-VAAAM!");
+    }
+    rt.addShake(0.22, 6);
+  };
+
+  // ---- Skill 1: Twin Chainsaw Launch (Primary +1 Ult Charge + Blood Siphon) ----
   const SKILL_CHAINSAW_REV = {
-    name: "Rip & Tear Rev",
-    cooldown: 2.4,
-    onTick(ball, g) {
-      const target = g.balls.find((b) => b !== ball && b.alive);
-      if (!target) return false;
-      const dist = Math.hypot(target.x - ball.x, target.y - ball.y);
-      if (dist > 275) return false;
+    name: "Twin Chainsaw Launch",
+    cooldown: 2.8,
+    onTick(ball, g, dt) {
+      const enemy = g.balls.find((b) => b !== ball && b.alive);
+      if (enemy && dt) {
+        if (enemy._denjiShredTimer > 0) enemy._denjiShredTimer = Math.max(0, enemy._denjiShredTimer - dt);
+        if (enemy._denjiBleedTimer > 0) {
+          enemy._denjiBleedTimer -= dt;
+          enemy._denjiBleedTick -= dt;
+          if (enemy._denjiBleedTick <= 0) {
+            enemy._denjiBleedTick = 0.5;
+            const dealt = g.applyDamage(enemy, 1);
+            g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 8, dealt, "#ef4444", false, "BLEED");
+          }
+        }
+      }
+
+      // Hero of Hell Active Mechanics: 4-Arm Close Grind Aura + Chain Barrage
+      if (ball.ultTimer > 0 && dt && enemy) {
+        ball._hellGrindCd = Math.max(0, (ball._hellGrindCd || 0) - dt);
+        ball._hellBarrageCd = (ball._hellBarrageCd || 0) - dt;
+        const d = Math.hypot(enemy.x - ball.x, enemy.y - ball.y);
+        if (d <= ball.radius + enemy.radius + 20 && ball._hellGrindCd <= 0) {
+          ball._hellGrindCd = 0.45;
+          const dealt = g.applyDamage(enemy, 3);
+          g.spawnSparks(enemy.x, enemy.y, "#ef4444", "#fbbf24");
+          g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 12, dealt, "#ef4444", false, "4-ARM GRIND!");
+          if (ball.hp < ball.maxHp) {
+            ball.hp = Math.min(ball.maxHp, ball.hp + 2);
+          }
+        }
+        if (ball._hellBarrageCd <= 0) {
+          ball._hellBarrageCd = 1.6;
+          const aim = Math.atan2(enemy.y - ball.y, enemy.x - ball.x);
+          const state = { bloodSpawned: true, ultCharged: true };
+          g.entities.push(spawnTwinSawbladeProjectile(ball, aim, 0, state, true));
+          g.spawnDamageText(ball.x, ball.y - ball.radius - 14, 0, "#ef4444", false, "HELL BARRAGE!");
+        }
+      }
+
+      if (this._cd > 0 || !enemy) return false;
+      const dist = Math.hypot(enemy.x - ball.x, enemy.y - ball.y);
+      if (dist > 330) return false;
 
       const inUlt = ball.ultTimer > 0;
       rt.beginCast(ball, {
         kind: "slash",
         duration: 0.2,
         color: inUlt ? "#ef4444" : "#f97316",
+        renderCast(b, c, p, ang) {
+          // Ripcord starter pull & revving exhaust sparks
+          c.save();
+          c.translate(b.x, b.y);
+          c.strokeStyle = "#facc15";
+          c.lineWidth = 2.5;
+          c.beginPath();
+          c.moveTo(0, b.radius * 0.4);
+          c.lineTo(0, b.radius * 0.4 + 14 * p);
+          c.stroke();
+          for (let i = 0; i < 4; i++) {
+            const a = ang + (i - 1.5) * 0.45;
+            const d = b.radius + 10 + p * 18;
+            c.fillStyle = i % 2 === 0 ? "#fb923c" : "#fef08a";
+            c.beginPath();
+            c.arc(Math.cos(a) * d, Math.sin(a) * d, 3.2 * (1 - p * 0.4), 0, Math.PI * 2);
+            c.fill();
+          }
+          c.restore();
+        },
         fire(b, gg) {
           const t = gg.balls.find((x) => x !== b && x.alive);
           if (!t) return;
           const aim = Math.atan2(t.y - b.y, t.x - b.x);
-          const nx = Math.cos(aim);
-          const ny = Math.sin(aim);
-
-          b.denjiDashTimer = 0.26;
-          b.vx = nx * Math.max(b.baseSpeed * 1.46, 505);
-          b.vy = ny * Math.max(b.baseSpeed * 1.46, 505);
-          gg.entities.push(rt.spawnShockRing(b.x, b.y, "#ea580c", 76, 0.25));
-
-          const curDist = Math.hypot(t.x - b.x, t.y - b.y);
-          if (curDist <= b.radius + t.radius + 115) {
-            const rawDmg = inUlt ? Math.round(18 + rt.rng() * 4) : Math.round(15 + rt.rng() * 4);
-            const dealt = gg.applyDamage(t, rawDmg);
-            t.flashTimer = 0.15;
-            t.squash = 0.9;
-            t.vx += nx * 220;
-            t.vy += ny * 220;
-
-            if (!inUlt) {
-              gg.chargeUlt(b);
-            }
-
-            // Balanced Blood Lifesteal (+6 HP in base, +9 HP in Hero of Hell)
-            const healAmt = inUlt ? 9 : 6;
-            if (b.hp < b.maxHp) {
-              const actualHeal = Math.min(healAmt, b.maxHp - b.hp);
-              b.hp += actualHeal;
-              gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, COLORS.green, false, `+${actualHeal} BLOOD`);
-            }
-
-            gg.spawnSparks(t.x, t.y, "#ef4444", "#fbbf24");
-            gg.spawnDamageText(t.x, t.y - t.radius - 14, dealt, "#f97316", inUlt, inUlt ? "HERO OF HELL RIP!" : "RIP & TEAR!");
-            gg.sound.playCritHit();
-            rt.setHitStop(0.055);
-            rt.addShake(0.16, 4.5);
-          }
-        },
-      });
-      return true;
-    },
-  };
-
-  // ---- Skill 2: Devil Chain Grapple (Hook & Collision Pull — No Ult Charge) ----
-  const SKILL_CHAIN_GRAPPLE = {
-    name: "Chain Grapple",
-    cooldown: 4.5,
-    onTick(ball, g) {
-      const target = g.balls.find((b) => b !== ball && b.alive);
-      if (!target) return false;
-      const dist = Math.hypot(target.x - ball.x, target.y - ball.y);
-      if (dist > 325 || dist < 60) return false;
-
-      rt.beginCast(ball, {
-        kind: "slash",
-        duration: 0.2,
-        color: "#fbbf24",
-        fire(b, gg) {
-          const t = gg.balls.find((x) => x !== b && x.alive);
-          if (!t) return;
-          const dx = t.x - b.x;
-          const dy = t.y - b.y;
-          const d = Math.hypot(dx, dy) || 1;
-          const nx = dx / d;
-          const ny = dy / d;
-
-          const rawDmg = Math.round(10 + rt.rng() * 3);
-          const dealt = gg.applyDamage(t, rawDmg);
-          t.flashTimer = 0.12;
-          b.denjiDashTimer = 0.24;
-          b.vx = nx * 360;
-          b.vy = ny * 360;
-          t.vx = -nx * 260;
-          t.vy = -ny * 260;
-
-          gg.entities.push(spawnChainGrappleVisual(b, t));
-          gg.spawnSparks(t.x, t.y, "#f97316", "#cbd5e1");
-          gg.spawnDamageText(t.x, t.y - t.radius - 14, dealt, "#fbbf24", false, "CHAIN HOOK!");
+          const castState = { bloodSpawned: false, ultCharged: false };
+          gg.entities.push(spawnTwinSawbladeProjectile(b, aim, -13, castState, inUlt));
+          gg.entities.push(spawnTwinSawbladeProjectile(b, aim, 13, castState, inUlt));
+          gg.entities.push(rt.spawnShockRing(b.x, b.y, inUlt ? "#ef4444" : "#f97316", 62, 0.22));
           gg.sound.playBallHit();
         },
       });
@@ -143,56 +421,49 @@
     },
   };
 
-      // ---- Weapon Drawer: Forearm Chainsaw (orange engine housing + steel bar + running chain) ----
+  // ---- Skill 2: Chainsaw Tether & Grind (Physical Hook & Reel-In, No Ult Charge) ----
+  const SKILL_CHAIN_GRAPPLE = {
+    name: "Chain Tether",
+    cooldown: 4.6,
+    onTick(ball, g) {
+      const target = g.balls.find((b) => b !== ball && b.alive);
+      if (!target) return false;
+      const dist = Math.hypot(target.x - ball.x, target.y - ball.y);
+      if (dist > 335 || dist < 55) return false;
+
+      rt.beginCast(ball, {
+        kind: "slash",
+        duration: 0.2,
+        color: "#fbbf24",
+        renderCast(b, c, p, ang, tg) {
+          if (tg) {
+            c.save();
+            c.setLineDash([8, 6]);
+            c.strokeStyle = "#fbbf24";
+            c.lineWidth = 2.6;
+            c.globalAlpha = 0.72;
+            c.beginPath();
+            c.moveTo(b.x, b.y);
+            c.lineTo(b.x + (tg.x - b.x) * p, b.y + (tg.y - b.y) * p);
+            c.stroke();
+            c.restore();
+          }
+        },
+        fire(b, gg) {
+          const t = gg.balls.find((x) => x !== b && x.alive);
+          if (!t) return;
+          const aim = Math.atan2(t.y - b.y, t.x - b.x);
+          gg.entities.push(spawnChainHookProjectile(b, aim));
+          gg.sound.playBallHit();
+        },
+      });
+      return true;
+    },
+  };
+
+  // ---- Weapon Drawer fallback (unused when weapon: null) ----
   BF.WEAPON_DRAWERS.chainsaw_blade = (ball, c) => {
-    const isHeroOfHell = ball.ultTimer > 0;
-    const tick = Math.floor(performance.now() * 0.05) % 2;
-    c.save();
-    c.lineJoin = "round";
-    // Engine housing fused to the forearm
-    c.fillStyle = isHeroOfHell ? "#18181b" : "#c2410c";
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.4;
-    c.beginPath();
-    c.roundRect(-8, 1, 16, 15, 4);
-    c.fill();
-    c.stroke();
-    c.fillStyle = isHeroOfHell ? "#ef4444" : "#7c2d12";
-    c.fillRect(-5, 5, 10, 2.5);
-    c.fillRect(-5, 10, 10, 2.5);
-    // Steel guide bar
-    c.fillStyle = "#cbd5e1";
-    c.beginPath();
-    c.moveTo(-5.8, 2);
-    c.lineTo(-5.8, -32);
-    c.arc(0, -32, 5.8, Math.PI, 0);
-    c.lineTo(5.8, 2);
-    c.closePath();
-    c.fill();
-    c.stroke();
-    // Blood groove down center of chainsaw bar
-    c.strokeStyle = "#dc2626";
-    c.lineWidth = 2;
-    c.beginPath();
-    c.moveTo(0, 0);
-    c.lineTo(0, -30);
-    c.stroke();
-    // Running chain teeth
-    c.fillStyle = "#f8fafc";
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 1.2;
-    for (let y = -33 + tick * 3; y < 0; y += 6) {
-      for (const s of [-1, 1]) {
-        c.beginPath();
-        c.moveTo(s * 5.8, y);
-        c.lineTo(s * 10.5, y + 1.5);
-        c.lineTo(s * 5.8, y + 4.2);
-        c.closePath();
-        c.fill();
-        c.stroke();
-      }
-    }
-    c.restore();
+    drawChainsawArmBlade(c, 32, ball.ultTimer > 0, 1);
   };
 
   // ---- Costume Drawer: Denji / Chainsaw Man ----
@@ -202,6 +473,23 @@
     const hell = ball.ultTimer > 0;
     const tick = Math.floor(performance.now() * 0.05) % 2;
     const t = performance.now() * 0.001;
+
+    // 2 Fixed Forearm Chainsaw Arms (4 Arms in Hero of Hell!) — stationary arms, spinning saw teeth!
+    for (const s of [-1, 1]) {
+      c.save();
+      c.translate(s * r * 0.96, r * 0.12);
+      c.rotate(s * 0.34);
+      drawChainsawArmBlade(c, 28, hell, 0.78);
+      c.restore();
+
+      if (hell) {
+        c.save();
+        c.translate(s * r * 0.88, r * 0.56);
+        c.rotate(s * 0.72);
+        drawChainsawArmBlade(c, 26, true, 0.72);
+        c.restore();
+      }
+    }
 
     // Hero of Hell: flowing dark-crimson intestinal scarf behind body + 4-arm black devil armor spikes
     if (hell) {
@@ -486,12 +774,12 @@ BF.CHARACTER_ROSTER.denji = {
     damage: [6, 9],
     mass: 1.05,
     costume: "denji",
-    weapon: "chainsaw_blade",
+    weapon: null,
     ult: "hero_of_hell",
     ultName: "HERO OF HELL (BLACK CHAINSAW)",
-    ultDesc: "Awakens the true Black Chainsaw Devil armor for 8s! Grants +28% Speed, 22% Shield, and boosts Rip & Tear damage and Blood Lifesteal.",
-    skillName: "RIP & TEAR REV + CHAIN HOOK",
-    skillDesc: "Pulls his chest cord to lunge and shred the enemy (healing HP from their blood), or fires a Chainsaw Chain Grapple to reel targets in!",
+    ultDesc: "Awakens 4-arm Black Chainsaw Devil form for 8s! Deals automatic close-range 4-Arm Grind damage with Blood Lifesteal and fires Hellish Chain Barrage!",
+    skillName: "TWIN CHAINSAW LAUNCH & CHAIN TETHER",
+    skillDesc: "Launches twin forward-slicing Chainsaw Blades that bleed enemies & siphon Blood Orbs, or fires a Chain Tether to physically reel and shred targets!",
     skills: [SKILL_CHAINSAW_REV, SKILL_CHAIN_GRAPPLE],
   };
 })();

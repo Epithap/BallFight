@@ -2708,11 +2708,12 @@
         kind: "powerup",
         duration: 0.42,
         color: "#ea580c",
-        fire(b) {
+        fire(b, g) {
           b.ultTimer = 8.0;
           addEffect(b, "haste", 8.0, { factor: 1.28 });
           addEffect(b, "shield", 8.0, { reduction: 0.22 });
           if (b.skills[0]) b.skills[0]._cd = 0;
+          if (BF.triggerHeroOfHellOpener) BF.triggerHeroOfHellOpener(b, g);
           entities.push(spawnShockRing(b.x, b.y, "#ef4444", 130, 0.44));
           entities.push(spawnShockRing(b.x, b.y, "#fbbf24", 94, 0.32));
         },
