@@ -341,7 +341,7 @@
     weapon: "nyoibo",
     ult: "kaioken",
     ultName: "KAIOKEN BURST / GREAT APE",
-    ultDesc: "Enters Kaioken boosting Kamehameha & Dragon Rush! If HP <= 200 while in Ult, transforms into Great Ape (Oozaru) with 4s Wall-Bouncing Ape Rush!",
+    ultDesc: "Enters Kaioken boosting Kamehameha & Dragon Rush! If HP < 50 while in Ult, transforms into Great Ape (Oozaru) with 4s Wall-Bouncing Ape Rush!",
     skillName: "KAMEHAMEHA / DRAGON RUSH",
     skillDesc: "Alternates Kamehameha blast and Dragon Rush (in Great Ape mode, transforms into 4s Ape Rush dealing 15 DMG per hit + 30 DMG AoE wall slams!).",
     skills: [SKILL_KAMEHAMEHA],
@@ -352,10 +352,10 @@
     speedMult: 1.25,
     radiusMult: 1.0,
     powerText: "32-42 BEAM / 30 WALL SLAM",
-    hpNote: "HP <= 200 = GREAT APE",
+    hpNote: "HP < 50 = GREAT APE",
     ultSkillName: "KAIOKEN BEAM & RUSH / APE RUSH",
     ultSkillCd: "CD: 3.4S",
-    ultSkillDesc: "Speed +25%! Empowers Kamehameha & Dragon Rush. At <=200 HP transforms into Great Ape: skill becomes 4s Ape Rush (15 DMG/hit + 30 DMG AoE on wall bounce)!",
+    ultSkillDesc: "Speed +25%! Empowers Kamehameha & Dragon Rush. At < 50 HP transforms into Great Ape: skill becomes 4s Ape Rush (15 DMG/hit + 30 DMG AoE on wall bounce)!",
   };
 
   BF.WEAPON_DRAWERS.nyoibo = (ball, c) => {

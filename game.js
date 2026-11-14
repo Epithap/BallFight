@@ -2634,7 +2634,7 @@
           addEffect(b, "haste", 8.0, { factor: 1.25 });
           if (b.skills[0]) b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.3);
           entities.push(spawnShockRing(b.x, b.y, COLORS.red, 100, 0.4));
-          if (b.hp <= 200 && !b.apeMode) {
+          if (b.hp < 50 && !b.apeMode) {
             triggerGokuApeTransform(b);
           }
         },
@@ -4171,7 +4171,7 @@
       }
       if (ball.ultTimer > 0) {
         ball.ultTimer = Math.max(0, ball.ultTimer - scaledDt);
-        if (ball.costume === "goku" && ball.hp <= 200 && !ball.apeMode) {
+        if (ball.costume === "goku" && ball.hp < 50 && !ball.apeMode) {
           triggerGokuApeTransform(ball);
         }
         if (ball.ultTimer <= 0) {

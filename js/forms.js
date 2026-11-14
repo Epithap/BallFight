@@ -34,7 +34,7 @@
     goku: [
       { id: "base", label: "BASE", desc: "Orange gi, blue sash and a confident smirk." },
       { id: "kaioken", label: "KAIOKEN", ult: true, desc: "Blazing crimson ki flame aura, scarlet eyes, Speed +25% and empowered Kamehameha & Dragon Rush." },
-      { id: "ape", label: "GREAT APE", ult: true, apeMode: true, desc: "Triggers at HP <= 200 during Ult. 35% shield & transforms skill into 4s Ape Rush (15 DMG/hit + 30 DMG AoE wall slams)!" },
+      { id: "ape", label: "GREAT APE", ult: true, apeMode: true, desc: "Triggers at HP < 50 during Ult. 35% shield & transforms skill into 4s Ape Rush (15 DMG/hit + 30 DMG AoE wall slams)!" },
     ],
     naruto: [
       { id: "base", stage: "starter", label: "BASE", starterOnly: true, desc: "Starter Base: Classic orange jumpsuit, Rasengan dash & Shadow Clone (Nine-Tails locked)." },
