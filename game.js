@@ -2621,17 +2621,16 @@
         kind: "powerup",
         duration: 0.45,
         color: "#a855f7",
-        fire(b) {
-          b.ultTimer = 8.0;
-          addEffect(b, "haste", 8.0, { factor: 1.2 });
-          addEffect(b, "shield", 8.0, { reduction: 0.18 });
+        fire(b, g) {
+          b.ultTimer = 7.5;
+          addEffect(b, "haste", 7.5, { factor: 1.22 });
+          addEffect(b, "shield", 7.5, { reduction: 0.18 });
           if (b.skills[0]) b.skills[0]._cd = 0;
-          if (BF.spawnShadowSoldier) {
-            entities.push(BF.spawnShadowSoldier(b, "igris"));
-            entities.push(BF.spawnShadowSoldier(b, "beru"));
+          if (BF.triggerAriseDomain) {
+            BF.triggerAriseDomain(b, g);
           }
-          entities.push(spawnShockRing(b.x, b.y, "#a855f7", 130, 0.45));
-          entities.push(spawnShockRing(b.x, b.y, "#38bdf8", 92, 0.34));
+          entities.push(spawnShockRing(b.x, b.y, "#a855f7", 135, 0.48));
+          entities.push(spawnShockRing(b.x, b.y, "#38bdf8", 96, 0.36));
         },
       });
     } else if (ball.ult === "hero_of_hell") {
