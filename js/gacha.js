@@ -1,28 +1,90 @@
-// Fighter gacha: Modern Rate-Up Splash Banner (1H rotation), 5% Rate-Up / 1.5% Off-Banner, Pity 100 & MUGEN Character Reveal FX
+// Fighter gacha: HSR-style Dual Banner (Standard Coin Banner + 1H Rate-Up Gem Banner with 50/50 & Guarantee)
 (() => {
   const BF = (window.BallFight = window.BallFight || {});
-  const KEY = "bf_gacha_v2";
-  const COSTS = { one: 160, ten: 1500, gem: 50 };
+  const KEY = "bf_gacha_v3";
+  const STD_COSTS = { one: 300, ten: 3000 };
+  const RU_COSTS = { one: 50, ten: 500 };
   const PITY = 100;
   const DUPE_GEMS = 50;
   const HOUR_MS = 3600 * 1000;
 
-  // All characters are equal tier (no character rarity)
-  const FIGHTERS = ["gojo", "sukuna", "guts", "dio", "jotaro", "killua", "jinwoo", "denji", "garou", "gon", "sasuke"];
-  const RATE_UP_CHANCE = 5.0;    // 5.0% featured Rate-Up character
-  const OTHER_CHAR_CHANCE = 1.5; // 1.5% other characters (split equally)
+  const STANDARD_POOL = ["naruto", "luffy", "ichigo"];
+  const RATE_UP_POOL = ["gojo", "sukuna", "guts", "dio", "jotaro", "killua", "jinwoo", "denji", "garou", "gon", "sasuke"];
+  const CHAR_CHANCE = 0.5; // 0.5% character drop rate
 
   const PRIZES = [
-    { type: "coins", amount: 20, tier: "common", label: "COMMON", w: 30.0 },
-    { type: "coins", amount: 100, tier: "rare", label: "RARE", w: 13.5 },
-    { type: "coins", amount: 250, tier: "epic", label: "EPIC", w: 5.0 },
-    { type: "gems", amount: 1, tier: "common", label: "COMMON", w: 28.0 },
-    { type: "gems", amount: 5, tier: "rare", label: "RARE", w: 12.0 },
-    { type: "gems", amount: 10, tier: "epic", label: "EPIC", w: 5.0 },
+    { type: "coins", amount: 25, tier: "common", label: "COMMON", w: 32.0 },
+    { type: "coins", amount: 120, tier: "rare", label: "RARE", w: 14.5 },
+    { type: "coins", amount: 300, tier: "epic", label: "EPIC", w: 5.0 },
+    { type: "gems", amount: 2, tier: "common", label: "COMMON", w: 30.0 },
+    { type: "gems", amount: 6, tier: "rare", label: "RARE", w: 12.5 },
+    { type: "gems", amount: 12, tier: "epic", label: "EPIC", w: 5.5 },
   ];
+
+  // Splash art cache (local pitch-black anime portraits blended transparently via screen mode)
+  const splashCache = {};
+  function getSplashImage(key) {
+    if (typeof Image === "undefined") return null;
+    if (!splashCache[key]) {
+      const img = new Image();
+      img.src = `assets/splash/${key}.jpg`;
+      splashCache[key] = img;
+    }
+    return splashCache[key];
+  }
+
+  function drawTransparentSplashArt(c, key, dx, dy, dw, dh, alpha) {
+    const img = getSplashImage(key);
+    if (!img || !img.complete || !img.naturalWidth) return;
+    c.save();
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const scale = Math.max(dw / iw, dh / ih);
+    const rw = iw * scale;
+    const rh = ih * scale;
+    const ox = dx + (dw - rw) * 0.5;
+    const oy = dy + (dh - rh) * 0.35;
+    c.beginPath();
+    c.rect(dx, dy, dw, dh);
+    c.clip();
+    c.globalAlpha = alpha;
+    c.globalCompositeOperation = "screen";
+    c.drawImage(img, ox, oy, rw, rh);
+    c.restore();
+  }
 
   // Per-character splash banner & MUGEN pull reveal themes
   const CHAR_THEMES = {
+    naruto: {
+      bg1: "#160a02", bg2: "#3b1804", bg3: "#1e1b4b",
+      c1: "#fb923c", c2: "#38bdf8", c3: "#fde047",
+      watermark: "RASENGAN • HOKAGE",
+      epithet: "CHILD OF PROPHECY • SAGE",
+      ultTag: "SAGE MODE",
+      battleCry: "RASENSHURIKEN!! BELIEVE IT!!",
+      quote: "I NEVER GO BACK ON MY WORD. THAT'S MY NINJA WAY!",
+      motif: "cosmic",
+    },
+    luffy: {
+      bg1: "#170407", bg2: "#3d0912", bg3: "#451a03",
+      c1: "#ef4444", c2: "#fde047", c3: "#ffffff",
+      watermark: "SUN GOD • GEAR 5",
+      epithet: "STRAW HAT • EMPEROR",
+      ultTag: "GEAR 5",
+      battleCry: "GOMU GOMU NO... BAJRANG GUN!!",
+      quote: "I'M GONNA BECOME KING OF THE PIRATES!",
+      motif: "eclipse",
+    },
+    ichigo: {
+      bg1: "#07060d", bg2: "#1d0c2e", bg3: "#2e0814",
+      c1: "#f97316", c2: "#e11d48", c3: "#38bdf8",
+      watermark: "BANKAI • ZANGETSU",
+      epithet: "SUBSTITUTE REAPER • HOLLOW",
+      ultTag: "BANKAI",
+      battleCry: "BANKAI!! TENSA ZANGETSU!!",
+      quote: "IF YOU GIVE ME WINGS, I WILL SOAR FOR YOU.",
+      motif: "chainsaw",
+    },
     gojo: {
       bg1: "#060919", bg2: "#17113c", bg3: "#2e1065",
       c1: "#38bdf8", c2: "#c084fc", c3: "#ff1e42",
@@ -136,11 +198,17 @@
   };
 
   const RANK = { common: 0, rare: 1, epic: 2, fighter: 3 };
-  const state = { pity: 0, total: 0 };
+  const state = {
+    standardPity: 0,
+    rateUpPity: 0,
+    rateUpGuaranteed: false,
+    activeSlide: 0,
+    total: 0,
+  };
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (_) {}
   const saveState = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {} };
 
-  let deps = null, busy = false, ctl = null, lastHourSlot = -1;
+  let deps = null, busy = false, ctl = null, lastHourSlot = -1, scheduleOpen = false;
   const $ = (id) => document.getElementById(id);
   const owned = (id) => deps.isUnlocked(id);
 
@@ -150,7 +218,7 @@
 
   function getFeaturedId(now = Date.now()) {
     const slot = getHourSlot(now);
-    return FIGHTERS[((slot % FIGHTERS.length) + FIGHTERS.length) % FIGHTERS.length];
+    return RATE_UP_POOL[((slot % RATE_UP_POOL.length) + RATE_UP_POOL.length) % RATE_UP_POOL.length];
   }
 
   function getRemainingTimeText(now = Date.now()) {
@@ -167,44 +235,64 @@
     return list[list.length - 1];
   }
 
-  // Roll a character following 5.0% Rate-Up vs 1.5% Off-Banner odds (used for both normal drops & Pity 100)
-  function rollFighterByChance(featuredId) {
-    const others = FIGHTERS.filter((id) => id !== featuredId);
-    const otherEach = others.length ? OTHER_CHAR_CHANCE / others.length : 0;
-    const pool = FIGHTERS.map((id) => ({
-      id,
-      w: id === featuredId ? RATE_UP_CHANCE : otherEach,
-    }));
-    return weighted(pool).id;
+  function grantFighter(charId, isRateUp, isRateOff = false) {
+    if (owned(charId)) {
+      deps.wallet.gems += DUPE_GEMS;
+      return { kind: "dupe", id: charId, tier: "fighter", isRateUp, isRateOff, gems: DUPE_GEMS };
+    }
+    deps.wallet.unlockedFighters.add(charId);
+    return { kind: "fighter", id: charId, tier: "fighter", isRateUp, isRateOff };
   }
 
-  function rollOne() {
+  function rollOne(bannerType) {
     state.total++;
-    state.pity++;
-    const featuredId = getFeaturedId();
-    const isPityGuaranteed = state.pity >= PITY;
+    const isRateUpBanner = bannerType === "rateup";
 
-    let isChar = isPityGuaranteed;
+    if (!isRateUpBanner) {
+      // Standard Banner: 300/3000 Coins, 0.5% char (Naruto/Luffy/Ichigo), Pity 100
+      state.standardPity++;
+      const isPity = state.standardPity >= PITY;
+      let prizePick = null;
+      let isChar = isPity;
+      if (!isChar) {
+        const roll = weighted([{ type: "fighter", w: CHAR_CHANCE }, ...PRIZES]);
+        if (roll.type === "fighter") isChar = true;
+        else prizePick = roll;
+      }
+      if (isChar) {
+        state.standardPity = 0;
+        const charId = STANDARD_POOL[Math.floor(Math.random() * STANDARD_POOL.length)];
+        return grantFighter(charId, false, false);
+      }
+      deps.wallet[prizePick.type] += prizePick.amount;
+      return { kind: prizePick.type, amount: prizePick.amount, tier: prizePick.tier, label: prizePick.label };
+    }
+
+    // Rate-Up Banner: 50/500 Gems, 0.5% char, Pity 100 shared, HSR 50/50 + Guarantee
+    state.rateUpPity++;
+    const featuredId = getFeaturedId();
+    const isPity = state.rateUpPity >= PITY;
     let prizePick = null;
+    let isChar = isPity;
     if (!isChar) {
-      const roll = weighted([
-        { type: "fighter", w: RATE_UP_CHANCE + OTHER_CHAR_CHANCE },
-        ...PRIZES,
-      ]);
+      const roll = weighted([{ type: "fighter", w: CHAR_CHANCE }, ...PRIZES]);
       if (roll.type === "fighter") isChar = true;
       else prizePick = roll;
     }
 
     if (isChar) {
-      state.pity = 0;
-      const charId = rollFighterByChance(featuredId);
-      const isRateUp = charId === featuredId;
-      if (owned(charId)) {
-        deps.wallet.gems += DUPE_GEMS;
-        return { kind: "dupe", id: charId, tier: "fighter", isRateUp, gems: DUPE_GEMS };
+      state.rateUpPity = 0;
+      if (state.rateUpGuaranteed) {
+        state.rateUpGuaranteed = false;
+        return grantFighter(featuredId, true, false);
       }
-      deps.wallet.unlockedFighters.add(charId);
-      return { kind: "fighter", id: charId, tier: "fighter", isRateUp };
+      if (Math.random() < 0.5) {
+        return grantFighter(featuredId, true, false);
+      }
+      // Lost 50/50 -> Standard Trio + next char guaranteed Rate-Up!
+      state.rateUpGuaranteed = true;
+      const offId = STANDARD_POOL[Math.floor(Math.random() * STANDARD_POOL.length)];
+      return grantFighter(offId, false, true);
     }
 
     deps.wallet[prizePick.type] += prizePick.amount;
@@ -223,7 +311,7 @@
     el.className = `g-card rarity-${r.tier === "fighter" ? "legend" : r.tier}`;
     if (r.kind === "fighter" || r.kind === "dupe") {
       const cfg = BF.CHARACTER_ROSTER[r.id];
-      const badgeText = r.isRateUp ? "RATE-UP!" : "FIGHTER";
+      const badgeText = r.isRateUp ? "RATE-UP!" : r.isRateOff ? "RATE-OFF" : "FIGHTER";
       el.innerHTML = `<span class="g-rarity">${badgeText}</span><canvas class="g-canvas" width="168" height="168"></canvas>` +
         `<h3 class="g-name">${cfg.name}</h3><p class="g-sub">${BF.SERIES[r.id] || ""}</p>` +
         `<span class="g-tag ${r.kind === "dupe" ? "dupe" : "new"}">${r.kind === "dupe" ? `DUPLICATE +${r.gems} GEMS` : "NEW FIGHTER!"}</span>`;
@@ -949,10 +1037,12 @@
     ov.classList.add("hidden"); ov.innerHTML = "";
   }
 
-  async function pull(n, mode) {
+  async function pull(n, bannerType) {
     if (busy) return;
-    const cost = mode === "gem" ? COSTS.gem : n === 10 ? COSTS.ten : COSTS.one;
-    const cur = mode === "gem" ? "gems" : "coins";
+    const isRateUp = bannerType === "rateup";
+    const costs = isRateUp ? RU_COSTS : STD_COSTS;
+    const cost = n === 10 ? costs.ten : costs.one;
+    const cur = isRateUp ? "gems" : "coins";
     if (deps.wallet[cur] < cost) {
       deps.say(`"Not enough ${cur}, brat! Win some matches first!"`);
       deps.sound.playBallHit();
@@ -961,18 +1051,23 @@
     busy = true;
     deps.wallet[cur] -= cost;
     const results = [];
-    for (let i = 0; i < n; i++) results.push(rollOne());
+    for (let i = 0; i < n; i++) results.push(rollOne(bannerType));
     deps.save(); saveState();
     await sequence(results);
     const gotChar = results.find((r) => r.kind === "fighter");
     const gotDupe = results.find((r) => r.kind === "dupe");
+    const gotOff = results.find((r) => r.isRateOff);
     deps.say(
       gotChar
         ? (gotChar.isRateUp
             ? `"JACKPOT! Rate-Up ${BF.CHARACTER_ROSTER[gotChar.id].name} answered your pull!"`
-            : `"Whoa! ${BF.CHARACTER_ROSTER[gotChar.id].name} popped out! Lucky brat!"`)
+            : gotChar.isRateOff
+              ? `"Rate-Off ${BF.CHARACTER_ROSTER[gotChar.id].name}! Your NEXT Rate-Up 5★ is GUARANTEED!"`
+              : `"Whoa! ${BF.CHARACTER_ROSTER[gotChar.id].name} popped out! Lucky brat!"`)
         : gotDupe
-          ? `"Duplicate fighter! Here's +${DUPE_GEMS} Gems instead, gaki!"`
+          ? (gotOff
+              ? `"Duplicate Rate-Off (+${DUPE_GEMS} Gems)! Next Rate-Up char is 100% GUARANTEED!"`
+              : `"Duplicate fighter! Here's +${DUPE_GEMS} Gems instead, gaki!"`)
           : `"Heh! Keep pulling — Pity 100 guarantees a fighter!"`
     );
     busy = false;
@@ -1007,6 +1102,9 @@
     bg.addColorStop(1, theme.bg3 || theme.bg1);
     c.fillStyle = bg;
     c.fillRect(0, 0, w, h);
+
+    // 1b. Semi-Transparent Original Character Splash Art blended into backdrop
+    drawTransparentSplashArt(c, featCfg.id, w * 0.28, 0, w * 0.72, h, 0.56);
 
     // Subtle cyber-grid perspective lines on left/bottom
     c.save();
@@ -1307,6 +1405,137 @@
     c.restore();
   }
 
+  // Standard Banner Renderer (Transparent Trio Splash Art behind Naruto, Luffy, Ichigo Mascot Balls)
+  function drawStandardSplashBanner(cv, t) {
+    if (!cv) return;
+    const c = cv.getContext("2d");
+    const W = cv.width, H = cv.height;
+    const scale = W / 440;
+    const w = 440, h = 210;
+
+    c.save();
+    c.clearRect(0, 0, W, H);
+    c.scale(scale, scale);
+
+    // 1. Deep Cosmic Standard Warp Backdrop
+    const bg = c.createLinearGradient(0, 0, w, h);
+    bg.addColorStop(0, "#05091c");
+    bg.addColorStop(0.5, "#111b3b");
+    bg.addColorStop(1, "#2a0e3b");
+    c.fillStyle = bg;
+    c.fillRect(0, 0, w, h);
+
+    // 2. Semi-Transparent Original Big Three Splash Art behind the 3 Mascot Balls
+    drawTransparentSplashArt(c, "standard", w * 0.08, 0, w * 0.92, h, 0.55);
+
+    // Soft left vignette so overlay text stays crisp
+    const vig = c.createLinearGradient(0, 0, w * 0.45, 0);
+    vig.addColorStop(0, "rgba(5, 9, 28, 0.78)");
+    vig.addColorStop(1, "rgba(5, 9, 28, 0)");
+    c.fillStyle = vig;
+    c.fillRect(0, 0, w * 0.45, h);
+
+    // Subtle cyber grid & watermark
+    c.save();
+    c.strokeStyle = "#38bdf8";
+    c.globalAlpha = 0.1;
+    c.lineWidth = 1;
+    for (let x = 0; x < w; x += 26) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x - 32, h); c.stroke(); }
+    c.font = "900 38px 'Lilita One', Impact, sans-serif";
+    c.strokeStyle = "#67e8f9";
+    c.globalAlpha = 0.12;
+    c.lineWidth = 2;
+    c.strokeText("STANDARD WARP", 14, 86);
+    c.restore();
+
+    // 3. Floating Ambient Particles
+    c.save();
+    for (let i = 0; i < 14; i++) {
+      const px = ((i * 37 + t * 18) % (w - 20)) + 10;
+      const py = h - (((i * 23 + t * 24) % (h - 16)) + 8);
+      c.fillStyle = i % 3 === 0 ? "#fb923c" : i % 3 === 1 ? "#ef4444" : "#38bdf8";
+      c.globalAlpha = 0.45 + Math.sin(t * 3 + i) * 0.25;
+      c.beginPath();
+      c.arc(px, py, 2 + (i % 2), 0, Math.PI * 2);
+      c.fill();
+    }
+    c.restore();
+
+    // 4. Three Standard Mascot Balls (Naruto, Ichigo, Luffy) on Glowing Pedestals
+    const trio = [
+      { id: "naruto", x: w * 0.52, y: h * 0.54, col: "#fb923c", r: 30, phase: 0 },
+      { id: "ichigo", x: w * 0.71, y: h * 0.46, col: "#38bdf8", r: 34, phase: 1.4 },
+      { id: "luffy", x: w * 0.89, y: h * 0.56, col: "#ef4444", r: 30, phase: 2.8 },
+    ];
+    for (const m of trio) {
+      const cfg = BF.CHARACTER_ROSTER[m.id];
+      if (!cfg) continue;
+      const bobY = m.y + Math.sin(t * 3 + m.phase) * 3.5;
+
+      c.save();
+      c.fillStyle = "rgba(4, 6, 18, 0.65)";
+      c.beginPath(); c.ellipse(m.x, bobY + m.r + 6, m.r * 1.05, 8, 0, 0, Math.PI * 2); c.fill();
+      c.strokeStyle = m.col;
+      c.lineWidth = 2;
+      c.beginPath(); c.ellipse(m.x, bobY + m.r + 6, m.r * 1.15, 9, 0, 0, Math.PI * 2); c.stroke();
+      c.restore();
+
+      const demoBall = {
+        x: m.x, y: bobY, radius: m.r,
+        color: cfg.color, costume: cfg.costume,
+        evolved: false, weapon: cfg.weapon, weaponAngle: t * 1.4 + m.phase,
+        vx: -1, vy: 0, flashTimer: 0, ultTimer: 0,
+        squash: 0, skills: [], effects: [],
+      };
+      if (BF.drawBall) BF.drawBall(demoBall, c, true);
+    }
+
+    c.restore();
+  }
+
+  function setSlide(idx) {
+    state.activeSlide = idx === 1 ? 1 : 0;
+    const track = $("gacha-carousel-track");
+    if (track) track.style.transform = `translateX(${state.activeSlide === 1 ? "-50%" : "0%"})`;
+    const tStd = $("btn-tab-std");
+    const tRu = $("btn-tab-rateup");
+    if (tStd) tStd.classList.toggle("active", state.activeSlide === 0);
+    if (tRu) tRu.classList.toggle("active", state.activeSlide === 1);
+    saveState();
+  }
+
+  function renderScheduleDrawer(now) {
+    const drawer = $("gacha-schedule-drawer");
+    if (!drawer) return;
+    drawer.classList.toggle("hidden", !scheduleOpen);
+    if (!scheduleOpen) return;
+    drawer.innerHTML = "";
+    const baseSlot = getHourSlot(now);
+    for (let offset = 1; offset <= 4; offset++) {
+      const slot = baseSlot + offset;
+      const charId = RATE_UP_POOL[((slot % RATE_UP_POOL.length) + RATE_UP_POOL.length) % RATE_UP_POOL.length];
+      const cfg = BF.CHARACTER_ROSTER[charId];
+      if (!cfg) continue;
+      const d = new Date(slot * HOUR_MS);
+      const hh = String(d.getHours()).padStart(2, "0");
+      const item = document.createElement("div");
+      item.className = "sched-item";
+      const cv = document.createElement("canvas");
+      cv.width = 64; cv.height = 64;
+      const timeSpan = document.createElement("span");
+      timeSpan.className = "sched-time";
+      timeSpan.textContent = `+${offset}H (${hh}:00)`;
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "sched-name";
+      nameSpan.textContent = cfg.shortName || cfg.name;
+      item.appendChild(timeSpan);
+      item.appendChild(cv);
+      item.appendChild(nameSpan);
+      drawer.appendChild(item);
+      deps.drawAvatar(cv, cfg);
+    }
+  }
+
   function refresh() {
     if (!deps) return;
     const now = Date.now();
@@ -1317,16 +1546,42 @@
     lastHourSlot = getHourSlot(now);
 
     const set = (id, v) => { const e = $(id); if (e) e.textContent = v; };
-    set("gacha-pity-text", `${Math.min(state.pity, PITY)} / ${PITY}`);
+    // Standard Banner UI
+    set("gacha-std-pity-text", `${Math.min(state.standardPity, PITY)} / ${PITY}`);
+    const stdFill = $("gacha-std-pity-fill");
+    if (stdFill) stdFill.style.width = `${Math.min(100, (state.standardPity / PITY) * 100)}%`;
+
+    // Rate-Up Banner UI
+    set("gacha-rateup-pity-text", `${Math.min(state.rateUpPity, PITY)} / ${PITY}`);
+    const ruFill = $("gacha-rateup-pity-fill");
+    if (ruFill) ruFill.style.width = `${Math.min(100, (state.rateUpPity / PITY) * 100)}%`;
+
+    const gBadge = $("banner-guarantee-badge");
+    if (gBadge) {
+      gBadge.textContent = state.rateUpGuaranteed ? "100% GUARANTEED" : "50 / 50";
+      gBadge.classList.toggle("is-guaranteed", Boolean(state.rateUpGuaranteed));
+    }
+
     set("banner-timer", getRemainingTimeText(now));
     if (featCfg) {
       set("banner-rateup-name", featCfg.name);
       set("banner-rateup-series", `${BF.SERIES[featuredId] || "ANIME"} • ${theme.epithet}`);
     }
-    const fill = $("gacha-pity-fill"); if (fill) fill.style.width = `${Math.min(100, (state.pity / PITY) * 100)}%`;
-    for (const [id, cost, cur] of [["btn-pull-1", COSTS.one, "coins"], ["btn-pull-10", COSTS.ten, "coins"], ["btn-pull-gem", COSTS.gem, "gems"]]) {
+
+    for (const [id, cost, cur] of [
+      ["btn-std-pull-1", STD_COSTS.one, "coins"],
+      ["btn-std-pull-10", STD_COSTS.ten, "coins"],
+      ["btn-ru-pull-1", RU_COSTS.one, "gems"],
+      ["btn-ru-pull-10", RU_COSTS.ten, "gems"],
+    ]) {
       const b = $(id); if (b) b.classList.toggle("poor", w[cur] < cost);
     }
+
+    setSlide(state.activeSlide);
+    renderScheduleDrawer(now);
+
+    const stdCv = $("banner-standard-canvas");
+    if (stdCv) drawStandardSplashBanner(stdCv, performance.now() * 0.001);
 
     const rateUpCv = $("banner-rateup-canvas");
     if (rateUpCv && featCfg) {
@@ -1364,6 +1619,9 @@
     const timerEl = $("banner-timer");
     if (timerEl) timerEl.textContent = getRemainingTimeText(now);
 
+    const stdCv = $("banner-standard-canvas");
+    if (stdCv) drawStandardSplashBanner(stdCv, t);
+
     const rateUpCv = $("banner-rateup-canvas");
     const featuredId = getFeaturedId(now);
     const featCfg = BF.CHARACTER_ROSTER[featuredId];
@@ -1373,10 +1631,14 @@
   }
 
   function reset() {
-    state.pity = 0;
+    state.standardPity = 0;
+    state.rateUpPity = 0;
+    state.rateUpGuaranteed = false;
+    state.activeSlide = 0;
     state.total = 0;
     try {
       localStorage.removeItem("bf_gacha_v1");
+      localStorage.removeItem("bf_gacha_v2");
       localStorage.removeItem(KEY);
     } catch (_) {}
     saveState();
@@ -1387,13 +1649,37 @@
     init(d) {
       deps = d;
       const bind = (id, fn) => { const b = $(id); if (b) b.addEventListener("click", () => { deps.sound.unlock(); fn(); }); };
-      bind("btn-pull-1", () => pull(1, "coins"));
-      bind("btn-pull-10", () => pull(10, "coins"));
-      bind("btn-pull-gem", () => pull(1, "gem"));
+      bind("btn-std-pull-1", () => pull(1, "standard"));
+      bind("btn-std-pull-10", () => pull(10, "standard"));
+      bind("btn-ru-pull-1", () => pull(1, "rateup"));
+      bind("btn-ru-pull-10", () => pull(10, "rateup"));
+      bind("btn-tab-std", () => setSlide(0));
+      bind("btn-tab-rateup", () => setSlide(1));
+      bind("btn-banner-prev", () => setSlide(state.activeSlide === 0 ? 1 : 0));
+      bind("btn-banner-next", () => setSlide(state.activeSlide === 1 ? 0 : 1));
+      bind("btn-schedule-toggle", () => {
+        scheduleOpen = !scheduleOpen;
+        renderScheduleDrawer(Date.now());
+      });
+
+      const vp = $("gacha-carousel-viewport");
+      if (vp) {
+        let touchX = null;
+        vp.addEventListener("touchstart", (e) => { touchX = e.touches && e.touches[0] ? e.touches[0].clientX : null; }, { passive: true });
+        vp.addEventListener("touchend", (e) => {
+          if (touchX === null) return;
+          const endX = e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : touchX;
+          const dx = endX - touchX;
+          touchX = null;
+          if (dx < -40) setSlide(1);
+          else if (dx > 40) setSlide(0);
+        }, { passive: true });
+      }
       refresh();
     },
     refresh,
     tick,
     reset,
+    _test: { rollOne, state, getFeaturedId, STANDARD_POOL, RATE_UP_POOL },
   };
 })();

@@ -323,34 +323,85 @@
             </div>
           </div>
 
-          <div class="banner">
-            <div class="banner-head">
-              <div class="stamp stamp-red">RATE-UP BANNER</div>
-              <span id="banner-timer" class="banner-timer">NEXT: 59:59</span>
+          <div class="banner gacha-hsr-shell">
+            <div class="gacha-banner-nav">
+              <button id="btn-banner-prev" class="gacha-arrow-btn" type="button" aria-label="Previous Banner">◀</button>
+              <div class="gacha-banner-tabs">
+                <button id="btn-tab-std" class="gacha-tab-btn active" type="button">🪙 STANDARD</button>
+                <button id="btn-tab-rateup" class="gacha-tab-btn" type="button">💎 RATE-UP</button>
+              </div>
+              <button id="btn-banner-next" class="gacha-arrow-btn" type="button" aria-label="Next Banner">▶</button>
             </div>
-            <div class="rateup-hero modern-gacha-banner">
-              <canvas id="banner-rateup-canvas" class="rateup-splash-canvas" width="880" height="420"></canvas>
-              <div class="rateup-overlay-ui">
-                <div class="rateup-top-tags">
-                  <span class="rateup-boost-chip">RATE-UP 5.0%</span>
-                  <span class="rateup-rot-chip">1H ROTATION</span>
+
+            <div id="gacha-carousel-viewport" class="gacha-carousel-viewport">
+              <div id="gacha-carousel-track" class="gacha-carousel-track">
+                <!-- SLIDE 0: STANDARD BANNER (COINS) -->
+                <div class="gacha-slide">
+                  <div class="banner-head">
+                    <div class="stamp stamp-blue">STANDARD BANNER</div>
+                    <span class="banner-timer">PERMANENT • COINS</span>
+                  </div>
+                  <div class="rateup-hero modern-gacha-banner">
+                    <canvas id="banner-standard-canvas" class="rateup-splash-canvas" width="880" height="420"></canvas>
+                    <div class="rateup-overlay-ui">
+                      <div class="rateup-top-tags">
+                        <span class="rateup-boost-chip std-chip">CHAR 0.5%</span>
+                        <span class="rateup-rot-chip">NARUTO • LUFFY • ICHIGO</span>
+                      </div>
+                      <div class="rateup-bottom-plate">
+                        <h3 class="rateup-name">STANDARD WARP</h3>
+                        <p class="rateup-series">BIG THREE POOL • PITY 100 GUARANTEED</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="pity">
+                    <span class="pity-label">PITY</span>
+                    <div class="pity-track"><div id="gacha-std-pity-fill" class="pity-fill std-fill" style="width:0%"></div></div>
+                    <span id="gacha-std-pity-text" class="pity-text">0 / 100</span>
+                  </div>
+                  <p class="rates">CHAR 0.5% (NARUTO / LUFFY / ICHIGO) • COINS &amp; GEMS 99.5% • PITY 100 GUARANTEED</p>
+                  <div class="pull-row pull-row-2">
+                    <button id="btn-std-pull-1" class="btn btn-pull" type="button"><span>PULL x1</span><b><svg><use href="#i-coin"/></svg>300</b></button>
+                    <button id="btn-std-pull-10" class="btn btn-green btn-pull" type="button"><span>PULL x10</span><b><svg><use href="#i-coin"/></svg>3,000</b></button>
+                  </div>
                 </div>
-                <div class="rateup-bottom-plate">
-                  <h3 id="banner-rateup-name" class="rateup-name">HONORED SORCERER</h3>
-                  <p id="banner-rateup-series" class="rateup-series">JUJUTSU KAISEN • FEATURED RESONATOR</p>
+
+                <!-- SLIDE 1: RATE-UP BANNER (GEMS) -->
+                <div class="gacha-slide">
+                  <div class="banner-head">
+                    <div class="banner-head-left">
+                      <div class="stamp stamp-red">RATE-UP BANNER</div>
+                      <span id="banner-guarantee-badge" class="guarantee-pill">50/50</span>
+                    </div>
+                    <span id="banner-timer" class="banner-timer">NEXT: 59:59</span>
+                  </div>
+                  <div class="rateup-hero modern-gacha-banner">
+                    <canvas id="banner-rateup-canvas" class="rateup-splash-canvas" width="880" height="420"></canvas>
+                    <div class="rateup-overlay-ui">
+                      <div class="rateup-top-tags">
+                        <span class="rateup-boost-chip">CHAR 0.5%</span>
+                        <span class="rateup-rot-chip">1H ROTATION</span>
+                        <button id="btn-schedule-toggle" class="schedule-toggle-btn" type="button">📅 NEXT</button>
+                      </div>
+                      <div class="rateup-bottom-plate">
+                        <h3 id="banner-rateup-name" class="rateup-name">HONORED SORCERER</h3>
+                        <p id="banner-rateup-series" class="rateup-series">JUJUTSU KAISEN • FEATURED RESONATOR</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="gacha-schedule-drawer" class="gacha-schedule-drawer hidden"></div>
+                  <div class="pity">
+                    <span class="pity-label">PITY</span>
+                    <div class="pity-track"><div id="gacha-rateup-pity-fill" class="pity-fill" style="width:0%"></div></div>
+                    <span id="gacha-rateup-pity-text" class="pity-text">0 / 100</span>
+                  </div>
+                  <p class="rates">CHAR 0.5% (50/50 FEATURED OR TRIO) • RATE-OFF = NEXT GUARANTEED • PITY 100 SHARED</p>
+                  <div class="pull-row pull-row-2">
+                    <button id="btn-ru-pull-1" class="btn btn-pull btn-gem-pull" type="button"><span>PULL x1</span><b><svg><use href="#i-gem"/></svg>50</b></button>
+                    <button id="btn-ru-pull-10" class="btn btn-purple btn-pull btn-gem-pull" type="button"><span>PULL x10</span><b><svg><use href="#i-gem"/></svg>500</b></button>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="pity">
-              <span class="pity-label">PITY</span>
-              <div class="pity-track"><div id="gacha-pity-fill" class="pity-fill" style="width:0%"></div></div>
-              <span id="gacha-pity-text" class="pity-text">0 / 100</span>
-            </div>
-            <p class="rates">RATE-UP 5.0% • OTHER CHARS 1.5% • COINS 48.5% • GEMS 45% • PITY 100 GUARANTEED CHAR</p>
-            <div class="pull-row">
-              <button id="btn-pull-1" class="btn btn-pull" type="button"><span>PULL x1</span><b><svg><use href="#i-coin"/></svg>160</b></button>
-              <button id="btn-pull-10" class="btn btn-green btn-pull" type="button"><span>PULL x10</span><b><svg><use href="#i-coin"/></svg>1,500</b></button>
-              <button id="btn-pull-gem" class="btn btn-pull" type="button"><span>GEM PULL</span><b><svg><use href="#i-gem"/></svg>50</b></button>
             </div>
           </div>
 

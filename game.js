@@ -1487,7 +1487,7 @@
     };
   }
 
-  const selectedRosterIds = ["goku", "naruto"];
+  const selectedRosterIds = ["goku", "goku"];
   const BALL_CONFIGS = [
     getEffectiveCharConfig(selectedRosterIds[0], 0),
     getEffectiveCharConfig(selectedRosterIds[1], 1),
@@ -6843,10 +6843,10 @@
       btnResetAll.addEventListener("click", () => {
         sound.unlock();
         sound.playWallBounce();
-        // Reset wallet, unlocked fighters (back to 4 starters), evolutions & skins
+        // Reset wallet, unlocked fighters (back to Goku starter), evolutions & skins
         playerWallet.coins = 0;
         playerWallet.gems = 0;
-        playerWallet.unlockedFighters = new Set(["goku", "naruto", "luffy", "ichigo"]);
+        playerWallet.unlockedFighters = new Set(["goku"]);
         playerWallet.evolvedFighters = new Set();
         playerWallet.equippedEvolutions = {};
         playerWallet.unlockedSkins = new Set();
@@ -6854,7 +6854,7 @@
         slotEvoOverrides[0] = {};
         slotEvoOverrides[1] = {};
         selectedRosterIds[0] = "goku";
-        selectedRosterIds[1] = "naruto";
+        selectedRosterIds[1] = "goku";
 
         // Reset profile stats & preferences
         sessionStats.matches = 0;
