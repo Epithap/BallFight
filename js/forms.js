@@ -84,8 +84,9 @@
       { id: "ult", label: "HERO OF HELL", ult: true, desc: "Black Chainsaw Devil armor, +28% Speed, 22% Shield and boosted Blood Lifesteal." },
     ],
     garou: [
-      { id: "base", label: "HERO HUNTER", desc: "Cross Fang Dragon Slayer Fist (Water Stream + Whirlwind Iron) and Water Stream Counter." },
-      { id: "ult", label: "COSMIC FEAR", ult: true, desc: "Galaxy starfield body, Gamma Ray Burst blast, +25% Speed and Nuclear Fission punches." },
+      { id: "base", label: "HERO HUNTER", desc: "Whirlwind Iron Cutting Fist spiral waves and Water Stream Rock Smashing Counter." },
+      { id: "monster", label: "MONSTER FORM", ult: true, desc: "Awakened Monster carapace! God Slayer Dash + 4-hit Barrage and Extreme Fa Jin strikes." },
+      { id: "cosmic", label: "COSMIC FEAR", ult: true, cosmicMode: true, desc: "Triggers below 50 HP! God's Moon Awakening (+50 HP), Black Hole Moon Arena Rampage, and Gamma Ray Burst!" },
     ],
   };
 })();

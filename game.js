@@ -5188,6 +5188,7 @@
         vastoLordeMode: Boolean(fl.vastoLordeMode),
         innerDemonMode: Boolean(fl.innerDemonMode),
         gear4Mode: fl.gear4Mode || null,
+        _isCosmicGarou: Boolean(fl.cosmicMode),
         cast: null,
         squash: Math.max(0, Math.sin(t * 7.6 + phaseOffset) * 0.14),
         skills: cfg.skills,
