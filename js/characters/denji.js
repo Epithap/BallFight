@@ -430,33 +430,38 @@
     },
   };
 
-  // ---- Skill 2: Straight Chainsaw Dash + Around-Self Saw Shred (No Auto-Lock, No Ult Charge) ----
+  // ---- Skill 2: Long-Charge 5s Wall-Bouncing Chainsaw Dash + Around-Self Saw Shred (No Auto-Lock, No Ult Charge) ----
   function spawnAroundSawStorm(owner, dashAng) {
     return {
       owner,
       dashAng,
-      life: 0.48,
-      maxLife: 0.48,
-      tickCd: 0.02,
-      healsLeft: 2,
+      life: 5.0,
+      maxLife: 5.0,
+      tickCd: 0.04,
+      healsLeft: 3,
       spin: 0,
       dead: false,
       update(dt, g) {
         this.life -= dt;
         this.spin += dt * 24;
-        if (this.life <= 0 || !this.owner || !this.owner.alive) {
+        if (this.life <= 0 || !this.owner || !this.owner.alive || this.owner.denjiDashTimer <= 0) {
           this.dead = true;
           return;
         }
+        // Maintain high-speed ricochet momentum across wall bounces for the full 5s
+        const spd = Math.hypot(this.owner.vx, this.owner.vy) || 1;
+        this.owner.vx = (this.owner.vx / spd) * 640;
+        this.owner.vy = (this.owner.vy / spd) * 640;
+
         this.tickCd -= dt;
         if (this.tickCd <= 0) {
-          this.tickCd = 0.13;
-          const auraR = this.owner.radius + 34;
+          this.tickCd = 0.36;
+          const auraR = this.owner.radius + 32;
           for (const enemy of g.balls) {
             if (enemy === this.owner || !enemy.alive) continue;
             const d = Math.hypot(enemy.x - this.owner.x, enemy.y - this.owner.y);
             if (d <= auraR + enemy.radius) {
-              const dealt = g.applyDamage(enemy, 3);
+              const dealt = g.applyDamage(enemy, 2);
               enemy.flashTimer = 0.08;
               enemy._denjiShredTimer = 2.5;
               g.spawnSparks(enemy.x, enemy.y, "#ef4444", "#fbbf24");
@@ -513,12 +518,11 @@
 
   const SKILL_CHAIN_GRAPPLE = {
     name: "Revving Saw Dash",
-    cooldown: 4.5,
+    cooldown: 7.5,
     onTick(ball, g) {
+      if (ball.denjiDashTimer > 0) return false;
       const target = g.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
-      const dist = Math.hypot(target.x - ball.x, target.y - ball.y);
-      if (dist > 340) return false;
 
       // Lock straight forward along Denji's current heading (NO auto-lock onto enemy!)
       const lockedAng =
@@ -526,7 +530,7 @@
 
       rt.beginCast(ball, {
         kind: "dash",
-        duration: 0.42,
+        duration: 0.78,
         color: "#fb923c",
         renderCast(b, c, p) {
           const ux = Math.cos(lockedAng);
@@ -575,12 +579,12 @@
         fire(b, gg) {
           const ux = Math.cos(lockedAng);
           const uy = Math.sin(lockedAng);
-          b.denjiDashTimer = 0.34;
-          b.vx = ux * 700;
-          b.vy = uy * 700;
-          gg.entities.push(rt.spawnShockRing(b.x, b.y, "#f97316", 82, 0.28));
+          b.denjiDashTimer = 5.0;
+          b.vx = ux * 640;
+          b.vy = uy * 640;
+          gg.entities.push(rt.spawnShockRing(b.x, b.y, "#f97316", 92, 0.32));
           gg.entities.push(spawnAroundSawStorm(b, lockedAng));
-          gg.spawnDamageText(b.x, b.y - b.radius - 14, 0, "#fb923c", false, "SAW DASH!");
+          gg.spawnDamageText(b.x, b.y - b.radius - 14, 0, "#fb923c", false, "5S SAW RUSH!");
           gg.sound.playCritHit();
         },
       });
