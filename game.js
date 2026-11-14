@@ -2482,7 +2482,29 @@
     }
   }
 
-  function computeCollisionDamage(attacker, impactSpeed, maxImpact) {
+  function isDashingAttack(ball) {
+    return Boolean(
+      ball && (
+        ball.rocketTimer > 0 ||
+        ball.rasenganTimer > 0 ||
+        ball.kyuubiSlashTimer > 0 ||
+        ball.shunpoDashTimer > 0 ||
+        ball.dragonRushTimer > 0 ||
+        ball.cleaveDashTimer > 0 ||
+        ball.apeRushTimer > 0
+      )
+    );
+  }
+
+  function computeCollisionDamage(attacker, impactSpeed, maxImpact, defender = null) {
+    // Frozen (Time Stop) or stunned (e.g. Unlimited Void) fighters cannot deal collision damage
+    if ((timeStopTimer > 0 && attacker !== timeStopOwner) || attacker.getEffect("stun")) {
+      return { amount: 0, isCrit: false };
+    }
+    // Non-dashing defenders cannot counter-damage an opponent who is mid-dash skill
+    if (defender && isDashingAttack(defender) && !isDashingAttack(attacker)) {
+      return { amount: 0, isCrit: false };
+    }
     const [minDmg, maxDmg] = attacker.damageRange;
     if (maxDmg <= 0) {
       return { amount: 0, isCrit: false };
@@ -2950,19 +2972,23 @@
       totalHits += 1;
 
       const maxImpact = b1.baseSpeed + b2.baseSpeed;
-      const hitB2 = computeCollisionDamage(b1, impactSpeed, maxImpact);
-      const hitB1 = computeCollisionDamage(b2, impactSpeed, maxImpact);
+      const hitB2 = computeCollisionDamage(b1, impactSpeed, maxImpact, b2);
+      const hitB1 = computeCollisionDamage(b2, impactSpeed, maxImpact, b1);
 
       const dmgToB1 = applyDamage(b1, hitB1.amount);
       const dmgToB2 = applyDamage(b2, hitB2.amount);
       const anyCrit = hitB1.isCrit || hitB2.isCrit;
 
-      b1.flashTimer = anyCrit ? 0.14 : 0.085;
-      b2.flashTimer = anyCrit ? 0.14 : 0.085;
-      b1.squash = 1;
-      b2.squash = 1;
-      pulse(hpBar1.closest(".hp"), "hit");
-      pulse(hpBar2.closest(".hp"), "hit");
+      if (dmgToB1 > 0) {
+        b1.flashTimer = hitB1.isCrit ? 0.14 : 0.085;
+        b1.squash = 1;
+        pulse(hpBar1.closest(".hp"), "hit");
+      }
+      if (dmgToB2 > 0) {
+        b2.flashTimer = hitB2.isCrit ? 0.14 : 0.085;
+        b2.squash = 1;
+        pulse(hpBar2.closest(".hp"), "hit");
+      }
       pulse(statusHits, "bump");
       if (navigator.vibrate) navigator.vibrate(anyCrit ? [30, 20, 40] : 18);
 
