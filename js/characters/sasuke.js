@@ -1,7 +1,7 @@
 // Sasuke Uchiha: Chidori (with Rasengan Clash!), Fireball Jutsu, and Kirin Thunderstorm Ultimate.
 (() => {
   const BF = (window.BallFight = window.BallFight || {});
-  const { COLORS, WORLD_SIZE } = BF;
+  const { COLORS, WORLD_SIZE, FONT } = BF;
   const rt = BF.rt;
 
   function pickEnemy(owner, g) {
@@ -637,7 +637,7 @@
   // ---- Skill 1: Chidori (Dash + Final Valley Clash vs Naruto's Rasengan!) ----
   const SKILL_CHIDORI = {
     name: "Chidori",
-    cooldown: 3.8,
+    cooldown: 3.4,
     onTick(ball, g) {
       const target = pickEnemy(ball, g);
       if (!target) return false;
