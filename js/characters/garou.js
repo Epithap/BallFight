@@ -1362,15 +1362,8 @@
 
     let extCanvas = null;
     let extCtx = null;
-    if (typeof document !== "undefined" && document.body && document.createElement) {
-      extCanvas = document.createElement("canvas");
-      extCanvas.style.cssText =
-        "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:95;";
-      extCanvas.width = window.innerWidth || 1280;
-      extCanvas.height = window.innerHeight || 720;
-      document.body.appendChild(extCanvas);
-      extCtx = extCanvas.getContext("2d");
-    }
+    let lastActiveTs = typeof performance !== "undefined" ? performance.now() : Date.now();
+    let entRef = null;
 
     const cleanupExt = () => {
       owner._hiddenOffScreen = false;
@@ -1382,8 +1375,42 @@
       extCtx = null;
     };
 
+    if (typeof document !== "undefined" && document.body && document.createElement) {
+      const oldExt = document.getElementById("garou-gamma-ext-canvas");
+      if (oldExt && oldExt.parentNode) oldExt.parentNode.removeChild(oldExt);
+      extCanvas = document.createElement("canvas");
+      extCanvas.id = "garou-gamma-ext-canvas";
+      extCanvas.style.cssText =
+        "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:95;";
+      extCanvas.width = window.innerWidth || 1280;
+      extCanvas.height = window.innerHeight || 720;
+      document.body.appendChild(extCanvas);
+      extCtx = extCanvas.getContext("2d");
+
+      if (typeof requestAnimationFrame === "function") {
+        const tickExtWatchdog = () => {
+          if (!extCanvas || !extCanvas.parentNode) return;
+          const sb = document.getElementById("screen-battle");
+          const battleHidden = Boolean(sb && sb.classList.contains("hidden"));
+          const stale = (typeof performance !== "undefined" ? performance.now() : Date.now()) - lastActiveTs > 220;
+          const detached = Boolean(entRef && g && Array.isArray(g.entities) && !g.entities.includes(entRef));
+          if (battleHidden || stale || detached || !owner.alive || (entRef && entRef.dead)) {
+            cleanupExt();
+            return;
+          }
+          requestAnimationFrame(tickExtWatchdog);
+        };
+        requestAnimationFrame(tickExtWatchdog);
+      }
+    }
+
     const drawExternalGammaQuasar = (tNow) => {
       if (!extCtx || !extCanvas) return;
+      const sb = typeof document !== "undefined" ? document.getElementById("screen-battle") : null;
+      if (sb && sb.classList.contains("hidden")) {
+        cleanupExt();
+        return;
+      }
       const vw = window.innerWidth || extCanvas.width;
       const vh = window.innerHeight || extCanvas.height;
       if (extCanvas.width !== vw) extCanvas.width = vw;
@@ -1537,7 +1564,7 @@
       extCtx.restore();
     };
 
-    return {
+    entRef = {
       isCosmicCutsceneEntity: true,
       owner,
       startX,
@@ -1550,6 +1577,7 @@
       pulseTimes: [0.62, 0.92, 1.22],
       dead: false,
       update(dt, game) {
+        lastActiveTs = typeof performance !== "undefined" ? performance.now() : Date.now();
         this.elapsed += dt;
         game._cosmicCutsceneTimer = Math.max(0, this.totalDur - this.elapsed);
 
@@ -1656,6 +1684,7 @@
         }
       },
       renderOverlay(c) {
+        lastActiveTs = typeof performance !== "undefined" ? performance.now() : Date.now();
         drawExternalGammaQuasar(this.elapsed);
 
         // Phase 2: Colossal Full-Arena Gamma Ray Burst entering from outside/above the arena
@@ -1709,6 +1738,7 @@
         }
       },
     };
+    return entRef;
   }
 
   BF.triggerCosmicGammaRayBurstUlt = (ball, g) => {
