@@ -297,6 +297,7 @@
     const totalDur = 2.4;
 
     return {
+      isCosmicCutsceneEntity: true,
       owner: ball,
       origX,
       origY,
@@ -680,10 +681,20 @@
     };
   }
 
+  // ---- Cosmic Awakening Trigger (called from applyDamage or onTick) ----
+  BF.triggerGarouCosmicAwakening = (ball, g) => {
+    if (!ball || !g || ball._cosmicAwakened || !ball.alive || ball.hp <= 0) return;
+    ball._cosmicAwakened = true;
+    g._cosmicCutsceneTimer = 2.4;
+    if (ball.skills && ball.skills[0]) ball.skills[0]._cd = 0;
+    g.entities.push(spawnCosmicMoonAwakeningCutscene(ball, g));
+  };
+
   // ---- Monster Ult Opener ----
   BF.triggerGarouMonsterOpener = (ball, g) => {
     if (!ball || !g || ball._garouMonsterIntroDone) return;
     ball._garouMonsterIntroDone = true;
+    if (ball.skills && ball.skills[0]) ball.skills[0]._cd = 0;
     g.addEffect(ball, "haste", 12, { mult: 1.16 });
     g.entities.push(rt.spawnShockRing(ball.x, ball.y, "#ef4444", 92, 0.3));
     g.spawnSparks(ball.x, ball.y, "#ef4444", "#fb923c");
@@ -694,16 +705,10 @@
   const SKILL_WHIRLWIND_FIST = {
     name: "Whirlwind Iron Cutting Fist",
     cooldown: 2.6,
-    onTick(ball, g, dt) {
-      if (ball._godSlayerCd > 0) {
-        ball._godSlayerCd = Math.max(0, ball._godSlayerCd - dt);
-      }
-
+    onTick(ball, g) {
       // Cosmic Fear Awakening when HP < 50 (once per match)
       if (ball.alive && ball.hp > 0 && ball.hp < 50 && !ball._cosmicAwakened) {
-        ball._cosmicAwakened = true;
-        g._cosmicCutsceneTimer = 2.4;
-        g.entities.push(spawnCosmicMoonAwakeningCutscene(ball, g));
+        BF.triggerGarouCosmicAwakening(ball, g);
         return false;
       }
 
@@ -722,8 +727,7 @@
       }
 
       const isMonster = ball.ultTimer > 0;
-      if (isMonster && (ball._godSlayerCd || 0) <= 0) {
-        ball._godSlayerCd = 3.2;
+      if (isMonster) {
         g.entities.push(spawnGodSlayerBarrage(ball, enemy));
         g.spawnDamageText(ball.x, ball.y - ball.radius - 16, 0, "#ef4444", true, "GOD SLAYER BARRAGE!");
         return true;

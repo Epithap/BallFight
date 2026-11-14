@@ -2804,6 +2804,7 @@
   }
 
   function applyDamage(ball, rawAmount) {
+    if (game._cosmicCutsceneTimer > 0) return 0;
     let dmg = rawAmount;
     const shield = ball.getEffect("shield");
     if (shield && dmg > 0) {
@@ -2813,6 +2814,9 @@
     const amount = Math.max(0, Math.round(dmg));
     if (amount <= 0) return 0;
     ball.hp = Math.max(0, ball.hp - amount);
+    if (ball.alive && ball.hp > 0 && ball.costume === "garou" && ball.hp < 50 && !ball._cosmicAwakened && BF.triggerGarouCosmicAwakening) {
+      BF.triggerGarouCosmicAwakening(ball, game);
+    }
     if (ball.alive && ball.hp > 0 && ball.costume === "naruto" && ball.evolved && ball.hp <= 200 && !ball.kyuubiMode) {
       triggerNarutoKyuubiTransform(ball);
     }
@@ -4030,13 +4034,16 @@
     const anyClashing = balls.some(
       (b) => b.alive && b.standState && (b.standState.phase === "clashing" || b.standState.phase === "clash_finisher" || b.standState.phase === "clash_broken")
     );
-    if (!anyClashing && balls[0].alive && balls[1].alive) {
+    if (!anyClashing && !(game._cosmicCutsceneTimer > 0) && balls[0].alive && balls[1].alive) {
       handleBallCollision(balls[0], balls[1]);
     }
 
     // Update extra entities
     for (let i = entities.length - 1; i >= 0; i--) {
       const ent = entities[i];
+      if (game._cosmicCutsceneTimer > 0 && !ent.isCosmicCutsceneEntity) {
+        continue;
+      }
       if (timeStopTimer > 0 && !ent.isTimeStopEntity && !ent.isKnife && !ent.isDioEntity) {
         continue;
       }
