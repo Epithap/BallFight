@@ -906,6 +906,16 @@
     const isMonster = ball.ultTimer > 0 && !isCosmic;
     const t = performance.now() * 0.003;
 
+    const hair = [
+      [-0.95, -0.06], [-1.2, -0.34], [-0.95, -0.48], [-1.36, -0.82], [-0.98, -0.88],
+      [-1.24, -1.52], [-0.6, -1.16], [-0.42, -1.28],
+      [-0.18, -1.08], [0, -1.01], [0.18, -1.08],
+      [0.42, -1.28], [0.6, -1.16], [1.24, -1.52], [0.98, -0.88], [1.36, -0.82],
+      [0.95, -0.48], [1.2, -0.34], [0.95, -0.06],
+      [0.74, -0.26], [0.46, -0.46], [0.18, -0.38], [0, -0.22],
+      [-0.18, -0.38], [-0.46, -0.46], [-0.74, -0.26],
+    ];
+
     if (isCosmic) {
       c.save();
       for (let i = 0; i < 8; i++) {
@@ -919,19 +929,16 @@
       c.restore();
 
       c.save();
+      c.beginPath();
+      c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
+      c.clip();
+
       const grad = c.createRadialGradient(-r * 0.2, -r * 0.2, 2, 0, 0, r);
       grad.addColorStop(0, "#1e1b4b");
       grad.addColorStop(0.55, "#0f172a");
       grad.addColorStop(1, "#020617");
       c.fillStyle = grad;
-      c.beginPath();
-      c.arc(0, 0, r, 0, Math.PI * 2);
-      c.fill();
-
-      c.save();
-      c.beginPath();
-      c.arc(0, 0, r - 1, 0, Math.PI * 2);
-      c.clip();
+      c.fillRect(-r, -r, r * 2, r * 2);
 
       const neb = c.createRadialGradient(0, 0, 2, 0, 0, r * 0.85);
       neb.addColorStop(0, "rgba(192, 132, 252, 0.65)");
@@ -962,12 +969,15 @@
       }
       c.restore();
 
-      const hair = [
-        [-0.88, -0.18], [-1.18, -0.94], [-0.36, -0.68], [0, -1.04], [0.36, -0.68], [1.18, -0.94], [0.88, -0.18],
-      ];
-      c.fillStyle = "#1e1b4b";
+      c.save();
+      c.lineJoin = "round";
+      const cGrad = c.createLinearGradient(0, -r * 0.2, 0, -r * 1.52);
+      cGrad.addColorStop(0, "#020617");
+      cGrad.addColorStop(0.55, "#1e1b4b");
+      cGrad.addColorStop(1, "#7c3aed");
+      c.fillStyle = cGrad;
       c.strokeStyle = "#38bdf8";
-      c.lineWidth = 2.4;
+      c.lineWidth = 2.6;
       hairPoly(c, r, hair);
       c.fill();
       c.stroke();
@@ -976,6 +986,7 @@
     }
 
     if (isMonster) {
+      // Awakened Monster Form: Black-Crimson Calamity Aura + Cracked Obsidian Carapace
       c.save();
       for (let i = 0; i < 8; i++) {
         const a = t * 0.8 + (i * Math.PI) / 4;
@@ -988,48 +999,104 @@
       c.restore();
 
       c.save();
-      c.fillStyle = "#09090b";
       c.beginPath();
-      c.arc(0, 0, r * 0.96, 0, Math.PI * 2);
-      c.fill();
+      c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
+      c.clip();
 
+      const shellGrad = c.createRadialGradient(-r * 0.2, -r * 0.2, r * 0.1, 0, 0, r);
+      shellGrad.addColorStop(0, "#27272a");
+      shellGrad.addColorStop(0.55, "#09090b");
+      shellGrad.addColorStop(1, "#030305");
+      c.fillStyle = shellGrad;
+      c.fillRect(-r, -r, r * 2, r * 2);
+
+      // Glowing crimson-orange magma cracks across Monster Garou's face & chest
       c.strokeStyle = "#ef4444";
-      c.lineWidth = 2.2;
+      c.shadowColor = "#fb923c";
+      c.shadowBlur = 8;
+      c.lineWidth = 2.4;
+      c.lineCap = "round";
       c.beginPath();
-      c.moveTo(-r * 0.65, -r * 0.12); c.lineTo(-r * 0.25, r * 0.12); c.lineTo(-r * 0.44, r * 0.54);
-      c.moveTo(r * 0.65, -r * 0.16); c.lineTo(r * 0.25, r * 0.16); c.lineTo(r * 0.44, r * 0.54);
+      c.moveTo(-r * 0.72, -r * 0.12); c.lineTo(-r * 0.3, r * 0.12); c.lineTo(-r * 0.45, r * 0.48);
+      c.moveTo(r * 0.72, -r * 0.12); c.lineTo(r * 0.3, r * 0.12); c.lineTo(r * 0.45, r * 0.48);
+      c.moveTo(-r * 0.18, r * 0.28); c.lineTo(0, r * 0.55); c.lineTo(r * 0.18, r * 0.28);
+      c.moveTo(0, r * 0.55); c.lineTo(0, r * 0.92);
       c.stroke();
 
-      c.fillStyle = "#ef4444";
+      // Glowing yellow-red monster eyes
+      c.fillStyle = "#facc15";
       c.beginPath();
-      c.ellipse(-r * 0.28, -r * 0.08, r * 0.14, r * 0.08, 0.22, 0, Math.PI * 2);
-      c.ellipse(r * 0.28, -r * 0.08, r * 0.14, r * 0.08, -0.22, 0, Math.PI * 2);
+      c.moveTo(-r * 0.45, -r * 0.08); c.lineTo(-r * 0.14, r * 0.02); c.lineTo(-r * 0.4, r * 0.08); c.closePath();
+      c.moveTo(r * 0.45, -r * 0.08); c.lineTo(r * 0.14, r * 0.02); c.lineTo(r * 0.4, r * 0.08); c.closePath();
       c.fill();
       c.restore();
     } else {
+      rt.drawSkinFace(ball, r, c);
+
+      // Base Awakening Outfit: Tight black martial-arts shirt + white bandages + crimson sash
       c.save();
-      c.fillStyle = "#09090b";
       c.beginPath();
-      c.arc(0, 0, r * 0.94, 0, Math.PI * 2);
-      c.fill();
-      c.fillStyle = "#f5d0a9";
+      c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
+      c.clip();
+
+      c.fillStyle = "#111318";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 2.5;
       c.beginPath();
-      c.arc(0, r * 0.06, r * 0.68, 0, Math.PI * 2);
+      c.moveTo(-r, r * 0.44);
+      c.lineTo(-r * 0.24, r * 0.42);
+      c.lineTo(0, r * 0.58);
+      c.lineTo(r * 0.24, r * 0.42);
+      c.lineTo(r, r * 0.44);
+      c.lineTo(r, r * 1.1);
+      c.lineTo(-r, r * 1.1);
+      c.closePath();
       c.fill();
+      c.stroke();
+
+      c.strokeStyle = "#27272a";
+      c.lineWidth = 1.8;
+      c.beginPath();
+      c.moveTo(0, r * 0.58); c.lineTo(0, r * 0.96);
+      c.moveTo(-r * 0.48, r * 0.56); c.quadraticCurveTo(-r * 0.22, r * 0.7, -r * 0.04, r * 0.66);
+      c.moveTo(r * 0.48, r * 0.56); c.quadraticCurveTo(r * 0.22, r * 0.7, r * 0.04, r * 0.66);
+      c.stroke();
+
+      c.fillStyle = "#f1f5f9";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 1.8;
+      c.beginPath();
+      c.moveTo(-r * 0.44, r * 0.45);
+      c.lineTo(r * 0.44, r * 0.45);
+      c.lineTo(r * 0.34, r * 0.56);
+      c.lineTo(-r * 0.34, r * 0.56);
+      c.closePath();
+      c.fill();
+      c.stroke();
+
+      c.fillStyle = "#be123c";
+      c.beginPath();
+      c.moveTo(-r * 0.85, r * 0.82);
+      c.quadraticCurveTo(0, r * 0.94, r * 0.85, r * 0.82);
+      c.lineTo(r * 0.85, r * 1.02);
+      c.quadraticCurveTo(0, r * 1.08, -r * 0.85, r * 1.02);
+      c.closePath();
+      c.fill();
+      c.stroke();
       c.restore();
     }
 
     c.save();
-    const hair = [
-      [-0.86, -0.15], [-1.14, -0.84], [-0.34, -0.6], [0, -0.92], [0.34, -0.6], [1.14, -0.84], [0.86, -0.15],
-    ];
-    const hGrad = c.createLinearGradient(0, -r, 0, r * 0.2);
+    c.lineJoin = "round";
+    const hGrad = c.createLinearGradient(0, -r * 0.2, 0, -r * 1.52);
     if (isMonster) {
-      hGrad.addColorStop(0, "#18181b");
-      hGrad.addColorStop(1, "#450a0a");
+      hGrad.addColorStop(0, "#09090b");
+      hGrad.addColorStop(0.55, "#450a0a");
+      hGrad.addColorStop(1, "#ef4444");
     } else {
-      hGrad.addColorStop(0, "#ea580c");
-      hGrad.addColorStop(1, "#9a3412");
+      hGrad.addColorStop(0, "#fb923c");
+      hGrad.addColorStop(0.55, "#ea580c");
+      hGrad.addColorStop(1, "#dc2626");
     }
     c.fillStyle = hGrad;
     c.strokeStyle = isMonster ? "#ef4444" : COLORS.ink;
