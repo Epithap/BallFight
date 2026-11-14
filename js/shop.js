@@ -82,6 +82,19 @@
       bonusHp: 25,
       bonusSpeed: 10,
     },
+    sasuke: {
+      charId: "sasuke",
+      evolvedName: "UCHIHA AVENGER (RINNEGAN)",
+      evolvedRole: "RINNEGAN • SUSANOO & INDRA'S ARROW",
+      starterLabel: "STARTER (SHARINGAN)",
+      evolvedLabel: "EVOLVED (RINNEGAN)",
+      cost: 10000,
+      currency: "coins",
+      requirementText: "10,000 GOLD",
+      desc: "Awakens Sasuke's Rinnegan + EMS (Amaterasu flames), UNLOCKS permanent Susanoo Armor form at HP <= 150 (Amenotejikara + Bansho Ten'in), and upgrades Ult to Giant Susanoo INDRA'S ARROW!",
+      bonusHp: 25,
+      bonusSpeed: 10,
+    },
   };
 
   function loadWallet() {

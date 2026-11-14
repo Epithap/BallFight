@@ -829,15 +829,17 @@
       c.restore();
     }
 
+    const ev = Boolean(ball.evolved || ball.susanooArmorMode);
     for (const side of [-1, 1]) {
+      const isRinnegan = ev && side === -1 && !cm;
       eye(c, r, side, {
         rx: 0.245,
         ry: 0.24,
         slant: 0.2,
         iris: 0.15,
         sclera: cm ? "#1c1917" : "#ffffff",
-        color: cm ? "#f59e0b" : "#dc2626",
-        innerRing: cm ? "#b91c1c" : "#7f1d1d",
+        color: isRinnegan ? "#c4b5fd" : (cm ? "#f59e0b" : "#dc2626"),
+        innerRing: isRinnegan ? "#7c3aed" : (cm ? "#b91c1c" : "#7f1d1d"),
         lidArc: true,
         blink: bl,
         ex: s.ex,
@@ -848,7 +850,16 @@
         const py = -r * 0.08 + (s.ey || 0) * 0.45;
         c.save();
         c.translate(px, py);
-        if (ms) {
+        if (isRinnegan) {
+          // Concentric Rinnegan rings
+          c.strokeStyle = INK;
+          c.lineWidth = 1.2;
+          for (const rr of [0.055, 0.105]) {
+            c.beginPath();
+            c.arc(0, 0, r * rr, 0, TAU);
+            c.stroke();
+          }
+        } else if (ms || ev) {
           // Mangekyou Sharingan star spokes
           c.strokeStyle = INK;
           c.lineWidth = 1.6;

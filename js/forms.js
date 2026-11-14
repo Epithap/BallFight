@@ -80,9 +80,11 @@
       { id: "ult", label: "ADULT GON", ult: true, desc: "Pitch-black Restriction & Pledge form! Replaces Jajanken with 1 brutal skill: dashes to the enemy, lifts them into the air, and slams them into the ground!" },
     ],
     sasuke: [
-      { id: "base", label: "SHARINGAN", desc: "Chidori dash (triggers Rasengan vs Chidori Clash against Naruto!) and Katon: Fireball Jutsu." },
-      { id: "curse_mark", label: "CURSE MARK STAGE 2", curseMarkMode: true, desc: "Permanent Cursed Form at HP <= 150! Sprouts clawed wings, +20% Speed, +45 HP burst, Dark Chidori & Cursed Dragon Flame!" },
-      { id: "ult", label: "KIRIN (THUNDERSTORM)", ult: true, desc: "Mangekyou Sharingan! Summons dark storm clouds over the arena and calls down the Kirin Lightning Dragon!" },
+      { id: "base", label: "SHARINGAN", starterOnly: true, desc: "Chidori dash (triggers Rasengan vs Chidori Clash against Naruto!) and Katon: Fireball Jutsu." },
+      { id: "curse_mark", label: "CURSE MARK STAGE 2", starterOnly: true, curseMarkMode: true, desc: "Starter Permanent Form at HP <= 150! Clawed wings, +20% Speed, +45 HP burst & Dark Chidori!" },
+      { id: "evolved_base", label: "RINNEGAN (EVOLVED)", evolved: true, desc: "Evolved Form! Rinnegan + EMS, Susanoo Ribcage aura & Amaterasu Black Flames." },
+      { id: "susanoo_armor", label: "SUSANOO ARMOR", evolved: true, susanooArmorMode: true, desc: "Evolved Permanent Form at HP <= 150! Purple Susanoo Samurai Armor, +55 HP, +22% Shield & Rinnegan-enhanced Amenotejikara + Bansho Ten'in!" },
+      { id: "ult", label: "INDRA'S ARROW", evolved: true, ult: true, desc: "Rinnegan Ult! Sasuke leaps up as Giant Indra Susanoo draws a Lightning Bow, hitting the entire map & electrifying the arena!" },
     ],
     jinwoo: [
       { id: "base", label: "HUNTER", desc: "Kamish's Wrath twin daggers, Mutilate cross-slash dash and Ruler's Authority gravity pull." },

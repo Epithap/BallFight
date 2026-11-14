@@ -1061,6 +1061,7 @@
         apeMode: Boolean(ball.apeMode),
         kyuubiMode: Boolean(ball.kyuubiMode),
         curseMarkMode: Boolean(ball.curseMarkMode),
+        susanooArmorMode: Boolean(ball.susanooArmorMode),
         vastoLordeMode: Boolean(ball.vastoLordeMode),
         innerDemonMode: Boolean(ball.innerDemonMode),
         _isCosmicGarou: Boolean(ball._isCosmicGarou),
@@ -1533,6 +1534,7 @@
       this.apeErraticTimer = 0;
       this.kyuubiMode = false;
       this.curseMarkMode = false;
+      this.susanooArmorMode = false;
       this.kyuubiSlashTimer = 0;
       this.kyuubiSlashHit = false;
       this.vastoLordeMode = false;
@@ -2509,6 +2511,27 @@
     shakeIntensity = Math.max(shakeIntensity, 10);
   }
 
+  function triggerSasukeSusanooArmorTransform(b) {
+    if (!b || !b.alive || b.susanooArmorMode) return;
+    b.susanooArmorMode = true;
+    b.radius = Math.round(b.baseRadius * 1.1);
+    b.baseSpeed = Math.round(b.baseSpeed * 1.24);
+    const dr = Array.isArray(b.damageRange) ? b.damageRange : [6, 9];
+    b.damageRange = [dr[0] + 4, dr[1] + 5];
+    b.hp = Math.min(b.maxHp, b.hp + 55);
+    addEffect(b, "shield", 99, { reduction: 0.22 });
+    if (b.skills && b.skills[0]) b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.15);
+    if (b.skills && b.skills[1]) b.skills[1]._cd = Math.min(b.skills[1]._cd, 0.25);
+    entities.push(spawnBanner("SUSANOO ARMOR: RINNEGAN!", "#a855f7"));
+    entities.push(spawnShockRing(b.x, b.y, "#a855f7", 175, 0.55));
+    entities.push(spawnShockRing(b.x, b.y, "#38bdf8", 130, 0.42));
+    spawnSparks(b.x, b.y, "#c084fc", "#38bdf8");
+    spawnDamageText(b.x, b.y - b.radius - 16, 0, "#c084fc", true, "SUSANOO ARMORED (+55 HP)!");
+    sound.playCritHit();
+    shakeTime = Math.max(shakeTime, 0.46);
+    shakeIntensity = Math.max(shakeIntensity, 12);
+  }
+
   function triggerIchigoInnerDemonTransform(b) {
     if (!b || !b.alive || b.innerDemonMode || b.vastoLordeMode) return;
     b.innerDemonMode = true;
@@ -2572,7 +2595,7 @@
         ? ["GAMMA RAY BURST!", "#c084fc"]
         : ["MONSTER CALAMITY!", "#ef4444"],
       adult_gon: ["RESTRICTION & PLEDGE!", "#09090b"],
-      kirin: ["KIRIN: THUNDER DRAGON!", "#38bdf8"],
+      kirin: ball.evolved ? ["INDRA'S ARROW!!", "#38bdf8"] : ["KIRIN: THUNDER DRAGON!", "#38bdf8"],
     }[ball.ult];
     if (fx) {
       if (ball.ult !== "time_stop" && ball.ult !== "star_time_stop") {
@@ -2950,11 +2973,15 @@
       beginCast(ball, {
         kind: "powerup",
         duration: 0.4,
-        color: "#38bdf8",
+        color: ball.evolved ? "#a855f7" : "#38bdf8",
         fire(b, g) {
           b.ultTimer = 7.0;
           addEffect(b, "haste", 7.0, { factor: 1.18 });
-          if (BF.spawnKirinUltimate) BF.spawnKirinUltimate(b, g);
+          if (b.evolved && BF.spawnIndraArrowUltimate) {
+            BF.spawnIndraArrowUltimate(b, g);
+          } else if (BF.spawnKirinUltimate) {
+            BF.spawnKirinUltimate(b, g);
+          }
         },
       });
     }
@@ -3045,8 +3072,12 @@
     if (ball.alive && ball.hp > 0 && ball.costume === "naruto" && ball.evolved && ball.hp <= 200 && !ball.kyuubiMode) {
       triggerNarutoKyuubiTransform(ball);
     }
-    if (ball.alive && ball.hp > 0 && ball.costume === "sasuke" && ball.hp <= 150 && !ball.curseMarkMode) {
-      triggerSasukeCurseMarkTransform(ball);
+    if (ball.alive && ball.hp > 0 && ball.costume === "sasuke" && ball.hp <= 150) {
+      if (ball.evolved && !ball.susanooArmorMode) {
+        triggerSasukeSusanooArmorTransform(ball);
+      } else if (!ball.evolved && !ball.curseMarkMode) {
+        triggerSasukeCurseMarkTransform(ball);
+      }
     }
     if (ball.alive && ball.hp > 0 && ball.costume === "ichigo") {
       if (ball.evolved && ball.hp <= 200 && !ball.vastoLordeMode) {
@@ -3568,14 +3599,16 @@
         if (attacker.chidoriTimer > 0 && !attacker.chidoriHit) {
           attacker.chidoriHit = true;
           attacker.chidoriTimer = 0;
+          const isSA = Boolean(attacker.susanooArmorMode);
           const isCM = Boolean(attacker.curseMarkMode);
-          const chiDmg = applyDamage(defender, isCM ? 17 : 11);
-          addEffect(defender, isCM ? "stun" : "slow", isCM ? 0.4 : 0.6, isCM ? undefined : { factor: 0.72 });
-          const cCol = isCM ? "#a855f7" : "#38bdf8";
-          spawnDamageText(defender.x, defender.y - defender.radius - 14, chiDmg, cCol, true, isCM ? "DARK CHIDORI!" : "CHIDORI!");
-          entities.push(spawnShockRing(midX, midY, cCol, isCM ? 105 : 88, 0.34));
-          spawnSparks(midX, midY, isCM ? "#09090b" : "#ffffff", cCol);
-          shakeTime = isCM ? 0.24 : 0.18; shakeIntensity = isCM ? 7 : 5;
+          const chiDmg = applyDamage(defender, isSA ? 18 : isCM ? 17 : 11);
+          addEffect(defender, (isSA || isCM) ? "stun" : "slow", isSA ? 0.45 : isCM ? 0.4 : 0.6, (isSA || isCM) ? undefined : { factor: 0.72 });
+          const cCol = isSA ? "#c084fc" : isCM ? "#a855f7" : "#38bdf8";
+          const cLbl = isSA ? "ONYX RINNEGAN CHIDORI!" : isCM ? "DARK CHIDORI!" : "CHIDORI!";
+          spawnDamageText(defender.x, defender.y - defender.radius - 14, chiDmg, cCol, true, cLbl);
+          entities.push(spawnShockRing(midX, midY, cCol, (isSA || isCM) ? 112 : 88, 0.34));
+          spawnSparks(midX, midY, (isSA || isCM) ? "#09090b" : "#ffffff", cCol);
+          shakeTime = (isSA || isCM) ? 0.25 : 0.18; shakeIntensity = (isSA || isCM) ? 8 : 5;
           chargeUlt(attacker);
         }
         if (attacker.kyuubiSlashTimer > 0 && !attacker.kyuubiSlashHit) {
@@ -4113,8 +4146,12 @@
       if (ball.costume === "naruto" && ball.evolved && ball.hp > 0 && ball.hp <= 200 && !ball.kyuubiMode) {
         triggerNarutoKyuubiTransform(ball);
       }
-      if (ball.costume === "sasuke" && ball.hp > 0 && ball.hp <= 150 && !ball.curseMarkMode) {
-        triggerSasukeCurseMarkTransform(ball);
+      if (ball.costume === "sasuke" && ball.hp > 0 && ball.hp <= 150) {
+        if (ball.evolved && !ball.susanooArmorMode) {
+          triggerSasukeSusanooArmorTransform(ball);
+        } else if (!ball.evolved && !ball.curseMarkMode) {
+          triggerSasukeCurseMarkTransform(ball);
+        }
       }
       if (ball.costume === "ichigo" && ball.hp > 0) {
         if (ball.evolved && ball.hp <= 200 && !ball.vastoLordeMode) {
@@ -4129,7 +4166,9 @@
           triggerGokuApeTransform(ball);
         }
         if (ball.ultTimer <= 0) {
-          ball.radius = (ball.kyuubiMode || ball.vastoLordeMode)
+          ball.radius = ball.susanooArmorMode
+            ? Math.round(ball.baseRadius * 1.1)
+            : (ball.kyuubiMode || ball.vastoLordeMode)
             ? Math.round(ball.baseRadius * 1.08)
             : (ball.curseMarkMode ? Math.round(ball.baseRadius * 1.07)
             : (ball.innerDemonMode ? Math.round(ball.baseRadius * 1.05) : ball.baseRadius));
@@ -5457,6 +5496,7 @@
         apeMode: Boolean(fl.apeMode),
         kyuubiMode: Boolean(fl.kyuubiMode),
         curseMarkMode: Boolean(fl.curseMarkMode),
+        susanooArmorMode: Boolean(fl.susanooArmorMode),
         vastoLordeMode: Boolean(fl.vastoLordeMode),
         innerDemonMode: Boolean(fl.innerDemonMode),
         gear4Mode: fl.gear4Mode || null,
@@ -5510,6 +5550,7 @@
             evolved: pf.evolved !== undefined ? Boolean(pf.evolved) : true,
             kyuubiMode: Boolean(pf.kyuubiMode),
             curseMarkMode: Boolean(pf.curseMarkMode),
+            susanooArmorMode: Boolean(pf.susanooArmorMode),
             vastoLordeMode: Boolean(pf.vastoLordeMode),
             innerDemonMode: Boolean(pf.innerDemonMode),
             ultTimer: pf.ult ? 5 : 0,

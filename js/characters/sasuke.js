@@ -34,7 +34,7 @@
 
         c.save();
         c.translate(hx, hy);
-        const cm = Boolean(this.owner.curseMarkMode);
+        const cm = Boolean(this.owner.curseMarkMode || this.owner.susanooArmorMode);
         const grad = c.createRadialGradient(0, 0, 2, 0, 0, cm ? 28 : 24);
         grad.addColorStop(0, cm ? "#09090b" : "#ffffff");
         grad.addColorStop(0.4, cm ? "#a855f7" : "#38bdf8");
@@ -107,7 +107,7 @@
         this.sasuke.vy = 0;
 
         this.meterVel += (Math.random() - 0.5) * 4.5 * dt;
-        if (this.sasuke.curseMarkMode) this.meterVel -= 1.2 * dt;
+        if (this.sasuke.curseMarkMode || this.sasuke.susanooArmorMode) this.meterVel -= 1.4 * dt;
         this.meterVel *= 0.94;
         this.meter = Math.max(0.22, Math.min(0.78, this.meter + this.meterVel * dt));
 
@@ -341,19 +341,22 @@
     }
   };
 
-  // ---- Skill 2: Fireball Jutsu (Katon: Gokakyu no Jutsu) ----
+  // ---- Skill 2: Fireball Jutsu / Amaterasu Black Flame (Evolved) ----
   function spawnFireballJutsu(owner, x, y, angle) {
     const cm = Boolean(owner.curseMarkMode);
-    const speed = cm ? 530 : 470;
-    const dmg = cm ? 13 : 8;
+    const ev = Boolean(owner.evolved || owner.susanooArmorMode);
+    const speed = owner.susanooArmorMode ? 550 : cm ? 530 : ev ? 500 : 470;
+    const dmg = owner.susanooArmorMode ? 14 : cm ? 13 : ev ? 11 : 8;
     return {
       owner,
       cm,
+      ev,
+      dmg,
       x,
       y,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      radius: cm ? 23 : 20,
+      radius: (cm || owner.susanooArmorMode) ? 23 : 20,
       life: 1.25,
       t: 0,
       dead: false,
@@ -373,16 +376,18 @@
         const target = pickEnemy(this.owner, g);
         if (target && Math.hypot(target.x - this.x, target.y - this.y) <= target.radius + this.radius) {
           this.dead = true;
-          const dealt = g.applyDamage(target, this.cm ? 13 : 8);
+          const dealt = g.applyDamage(target, this.dmg || (this.cm ? 13 : 8));
           target.flashTimer = 0.16;
           target.squash = 0.82;
           g.chargeUlt(this.owner);
-          const rCol = this.cm ? "#a855f7" : "#f97316";
-          g.entities.push(rt.spawnShockRing(this.x, this.y, rCol, this.cm ? 110 : 92, 0.28));
-          g.entities.push(rt.spawnShockRing(this.x, this.y, "#ef4444", 64, 0.22));
-          g.spawnSparks(this.x, this.y, this.cm ? "#c084fc" : "#fde047", "#dc2626");
-          g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, rCol, true, this.cm ? "CURSED DRAGON FLAME!" : "KATON: FIREBALL!");
-          g.shake = Math.max(g.shake || 0, this.cm ? 10 : 7);
+          const isBlackFlame = this.ev && !this.cm;
+          const rCol = isBlackFlame ? "#09090b" : this.cm ? "#a855f7" : "#f97316";
+          const lbl = isBlackFlame ? "AMATERASU!" : this.cm ? "CURSED DRAGON FLAME!" : "KATON: FIREBALL!";
+          g.entities.push(rt.spawnShockRing(this.x, this.y, isBlackFlame ? "#a855f7" : rCol, (this.cm || this.ev) ? 112 : 92, 0.28));
+          g.entities.push(rt.spawnShockRing(this.x, this.y, isBlackFlame ? "#09090b" : "#ef4444", 68, 0.22));
+          g.spawnSparks(this.x, this.y, isBlackFlame ? "#09090b" : (this.cm ? "#c084fc" : "#fde047"), isBlackFlame ? "#a855f7" : "#dc2626");
+          g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, isBlackFlame ? "#c084fc" : rCol, true, lbl);
+          g.shake = Math.max(g.shake || 0, (this.cm || this.ev) ? 10 : 7);
           if (g.sound && g.sound.playBallHit) g.sound.playBallHit();
         }
       },
@@ -405,14 +410,21 @@
         c.closePath();
         c.fill();
 
-        // Fireball core
+        // Fireball core (or Black-Violet Amaterasu Flame when Evolved)
         const fg = c.createRadialGradient(4, 0, 2, 0, 0, this.radius);
-        fg.addColorStop(0, "#ffffff");
-        fg.addColorStop(0.35, "#fde047");
-        fg.addColorStop(0.75, "#f97316");
-        fg.addColorStop(1, "#b91c1c");
+        if (this.ev && !this.cm) {
+          fg.addColorStop(0, "#09090b");
+          fg.addColorStop(0.55, "#18181b");
+          fg.addColorStop(0.85, "#a855f7");
+          fg.addColorStop(1, "#581c87");
+        } else {
+          fg.addColorStop(0, "#ffffff");
+          fg.addColorStop(0.35, "#fde047");
+          fg.addColorStop(0.75, "#f97316");
+          fg.addColorStop(1, "#b91c1c");
+        }
         c.fillStyle = fg;
-        c.strokeStyle = COLORS.ink;
+        c.strokeStyle = (this.ev && !this.cm) ? "#c084fc" : COLORS.ink;
         c.lineWidth = 2.6;
         c.beginPath();
         c.arc(0, 0, this.radius, 0, Math.PI * 2);
@@ -640,6 +652,228 @@
     g.entities.push(ent);
   };
 
+  // ---- Evolved Ultimate: Giant Indra Susanoo & Indra's Arrow (Map-Wide + Electrified Arena) ----
+  BF.spawnIndraArrowUltimate = (owner, g) => {
+    const startX = owner.x;
+    const startY = owner.y;
+    const skyX = WORLD_SIZE * 0.5;
+    const skyY = 44;
+    const totalDur = 3.45;
+    let arrowFired = false;
+    let shockTick = 0;
+
+    const ent = {
+      owner,
+      isTimeStopEntity: true,
+      t: 0,
+      life: totalDur,
+      dead: false,
+      update(dt, gg) {
+        this.t += dt;
+        this.life -= dt;
+        if (!this.owner.alive || this.life <= 0) {
+          this.dead = true;
+          return;
+        }
+
+        // Phase 1 (0 -> 0.55s): Sasuke leaps up toward the sky outside the arena
+        if (this.t < 0.55) {
+          const p = Math.min(1, this.t / 0.55);
+          const ease = 1 - Math.pow(1 - p, 3);
+          this.owner.x = startX + (skyX - startX) * ease;
+          this.owner.y = startY + (skyY - startY) * ease;
+          this.owner.vx = 0;
+          this.owner.vy = 0;
+        }
+        // Phase 2 (0.55 -> 1.85s): Giant Indra Susanoo appears above arena & fires Indra's Arrow across entire map
+        else if (this.t < 1.85) {
+          this.owner.x = skyX;
+          this.owner.y = skyY;
+          this.owner.vx = 0;
+          this.owner.vy = 0;
+
+          if (!arrowFired && this.t >= 1.25) {
+            arrowFired = true;
+            for (const enemy of gg.balls) {
+              if (enemy !== this.owner && enemy.alive) {
+                const dealt = gg.applyDamage(enemy, 42);
+                enemy.flashTimer = 0.38;
+                enemy.squash = 0.72;
+                gg.addEffect(enemy, "stun", 1.0);
+                gg.spawnDamageText(enemy.x, enemy.y - enemy.radius - 18, dealt, "#38bdf8", true, "INDRA'S ARROW!!");
+              }
+            }
+            gg.entities.push(rt.spawnShockRing(WORLD_SIZE * 0.5, WORLD_SIZE * 0.54, "#38bdf8", 320, 0.55));
+            gg.entities.push(rt.spawnShockRing(WORLD_SIZE * 0.5, WORLD_SIZE * 0.54, "#a855f7", 250, 0.45));
+            gg.spawnSparks(WORLD_SIZE * 0.5, WORLD_SIZE * 0.54, "#ffffff", "#38bdf8");
+            gg.shake = Math.max(gg.shake || 0, 26);
+            if (gg.sound && gg.sound.playCritHit) gg.sound.playCritHit();
+          }
+        }
+        // Phase 3 (1.85 -> 3.45s): Sasuke lands back in arena while residual lightning crackles across the entire map!
+        else {
+          if (this.t < 2.2) {
+            const p = Math.min(1, (this.t - 1.85) / 0.35);
+            const ease = 1 - Math.pow(1 - p, 2);
+            this.owner.x = skyX + (startX - skyX) * ease;
+            this.owner.y = skyY + (startY - skyY) * ease;
+            this.owner.vx = 0;
+            this.owner.vy = 0;
+          }
+          shockTick += dt;
+          if (shockTick >= 0.48) {
+            shockTick = 0;
+            for (const enemy of gg.balls) {
+              if (enemy !== this.owner && enemy.alive) {
+                const tickDmg = gg.applyDamage(enemy, 2);
+                enemy.flashTimer = 0.08;
+                gg.spawnSparks(enemy.x, enemy.y, "#38bdf8", "#a855f7");
+                gg.spawnDamageText(enemy.x, enemy.y - enemy.radius - 8, tickDmg, "#7dd3fc", false);
+              }
+            }
+          }
+        }
+      },
+      render() {},
+      renderOverlay(c) {
+        c.save();
+        // Dark storm sky backdrop
+        const bgAlpha = this.t < 1.85 ? 0.48 : Math.max(0, 0.42 * (1 - (this.t - 1.85) / 1.6));
+        c.fillStyle = `rgba(9, 6, 28, ${bgAlpha})`;
+        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+        // Giant Indra Susanoo rising above/outside the top of the arena (Phase 1 & 2)
+        if (this.t >= 0.25 && this.t < 2.05) {
+          const rise = Math.min(1, (this.t - 0.25) / 0.45);
+          const fadeOut = this.t > 1.75 ? Math.max(0, 1 - (this.t - 1.75) / 0.3) : 1;
+          c.save();
+          c.globalAlpha = rise * fadeOut;
+          const sx = WORLD_SIZE * 0.5;
+          const sy = 118 + (1 - rise) * 40;
+
+          // Cyan Indra Lightning Wings (6 sweeping jagged wings behind Susanoo)
+          c.strokeStyle = "#38bdf8";
+          c.lineWidth = 4.5;
+          c.lineCap = "round";
+          for (const side of [-1, 1]) {
+            for (let w = 0; w < 3; w++) {
+              const ang = -0.35 - w * 0.32;
+              const len = 115 + w * 24;
+              c.beginPath();
+              c.moveTo(sx + side * 26, sy - 10);
+              c.lineTo(sx + side * Math.cos(ang) * len * 0.55, sy + Math.sin(ang) * len * 0.55);
+              c.lineTo(sx + side * Math.cos(ang - 0.14) * len, sy + Math.sin(ang - 0.14) * len);
+              c.stroke();
+            }
+          }
+
+          // Giant Purple Armored Susanoo Torso & Tengu Helm
+          c.fillStyle = "rgba(126, 34, 206, 0.85)";
+          c.strokeStyle = "#e9d5ff";
+          c.lineWidth = 3;
+          c.beginPath();
+          c.moveTo(sx - 68, sy + 52);
+          c.lineTo(sx - 82, sy - 24);
+          c.lineTo(sx - 44, sy - 58);
+          c.lineTo(sx, sy - 76);
+          c.lineTo(sx + 44, sy - 58);
+          c.lineTo(sx + 82, sy - 24);
+          c.lineTo(sx + 68, sy + 52);
+          c.closePath();
+          c.fill();
+          c.stroke();
+
+          // Glowing cyan Susanoo eyes
+          c.fillStyle = "#67e8f9";
+          c.beginPath();
+          c.ellipse(sx - 16, sy - 34, 8, 4.5, -0.2, 0, Math.PI * 2);
+          c.ellipse(sx + 16, sy - 34, 8, 4.5, 0.2, 0, Math.PI * 2);
+          c.fill();
+
+          // Giant Cyan Lightning Bow drawn in front of Susanoo
+          c.strokeStyle = "#38bdf8";
+          c.lineWidth = 6;
+          c.beginPath();
+          c.arc(sx, sy + 6, 86, -0.35, Math.PI + 0.35, true);
+          c.stroke();
+          c.strokeStyle = "#ffffff";
+          c.lineWidth = 2.5;
+          c.stroke();
+
+          // Indra's Arrow shaft ready / firing
+          const drawPull = this.t < 1.25 ? Math.min(1, (this.t - 0.55) / 0.65) : 1;
+          c.strokeStyle = "#67e8f9";
+          c.lineWidth = 8;
+          c.beginPath();
+          c.moveTo(sx, sy - 42 - drawPull * 18);
+          c.lineTo(sx, sy + 58);
+          c.stroke();
+          c.restore();
+        }
+
+        // Giant Indra's Arrow Map-Wide Beam (1.25s -> 1.85s)
+        if (this.t >= 1.25 && this.t <= 1.88) {
+          const bp = 1 - (this.t - 1.25) / 0.63;
+          c.save();
+          c.globalAlpha = bp;
+          const bx = WORLD_SIZE * 0.5;
+          const beamW = 86 + (1 - bp) * 60;
+          const bg = c.createLinearGradient(bx - beamW, 0, bx + beamW, 0);
+          bg.addColorStop(0, "rgba(56, 189, 248, 0)");
+          bg.addColorStop(0.3, "rgba(168, 85, 247, 0.78)");
+          bg.addColorStop(0.5, "#ffffff");
+          bg.addColorStop(0.7, "rgba(168, 85, 247, 0.78)");
+          bg.addColorStop(1, "rgba(56, 189, 248, 0)");
+          c.fillStyle = bg;
+          c.fillRect(bx - beamW, 0, beamW * 2, WORLD_SIZE);
+
+          // Full-map flash shockwave
+          c.fillStyle = `rgba(103, 232, 249, ${bp * 0.35})`;
+          c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+          c.restore();
+        }
+
+        // Residual Map-Wide Electric Lightning Bolts across the arena (Phase 3: 1.3s -> 3.45s)
+        if (this.t >= 1.3) {
+          const fade = this.t > 2.8 ? Math.max(0, 1 - (this.t - 2.8) / 0.65) : 1;
+          c.save();
+          c.globalAlpha = 0.85 * fade;
+          c.lineCap = "round";
+          const seed = Math.floor(this.t * 18);
+          for (let i = 0; i < 8; i++) {
+            const x1 = ((seed * 97 + i * 131) % (WORLD_SIZE - 80)) + 40;
+            const y1 = ((seed * 53 + i * 179) % (WORLD_SIZE - 80)) + 40;
+            const x2 = x1 + (((seed + i) % 2 === 0 ? 1 : -1) * (50 + (i % 3) * 24));
+            const y2 = y1 + (((seed + i * 3) % 2 === 0 ? 1 : -1) * (45 + (i % 2) * 28));
+            c.strokeStyle = i % 2 === 0 ? "#38bdf8" : "#c084fc";
+            c.lineWidth = 3.2;
+            c.beginPath();
+            c.moveTo(x1, y1);
+            c.lineTo((x1 + x2) * 0.5 + 14, (y1 + y2) * 0.5 - 12);
+            c.lineTo(x2, y2);
+            c.stroke();
+            c.strokeStyle = "#ffffff";
+            c.lineWidth = 1.4;
+            c.stroke();
+          }
+          c.restore();
+        }
+
+        if (this.t >= 0.45 && this.t <= 1.75) {
+          c.font = "900 30px Impact, system-ui, sans-serif";
+          c.textAlign = "center";
+          c.strokeStyle = "#09090b";
+          c.lineWidth = 6;
+          c.strokeText("INDRA'S ARROW !!", WORLD_SIZE * 0.5, 86);
+          c.fillStyle = "#67e8f9";
+          c.fillText("INDRA'S ARROW !!", WORLD_SIZE * 0.5, 86);
+        }
+        c.restore();
+      },
+    };
+    g.entities.push(ent);
+  };
+
   // ---- Skill 1: Chidori (Dash + Final Valley Clash vs Naruto's Rasengan!) ----
   const SKILL_CHIDORI = {
     name: "Chidori",
@@ -654,18 +888,29 @@
         fire(b, gg) {
           const t = pickEnemy(b, gg);
           if (!t) return;
+          const sa = Boolean(b.susanooArmorMode);
+          const cm = Boolean(b.curseMarkMode);
+          if (sa) {
+            // Rinnegan Amenotejikara: swap/teleport near enemy before Onyx Chidori!
+            const angOff = Math.atan2(b.y - t.y, b.x - t.x);
+            gg.entities.push(rt.spawnShockRing(b.x, b.y, "#a855f7", 70, 0.25));
+            b.x = Math.max(b.radius + 8, Math.min(WORLD_SIZE - b.radius - 8, t.x + Math.cos(angOff) * (t.radius + b.radius + 44)));
+            b.y = Math.max(b.radius + 8, Math.min(WORLD_SIZE - b.radius - 8, t.y + Math.sin(angOff) * (t.radius + b.radius + 44)));
+            gg.entities.push(rt.spawnShockRing(b.x, b.y, "#c084fc", 78, 0.28));
+          }
           const dx = t.x - b.x;
           const dy = t.y - b.y;
           const len = Math.hypot(dx, dy) || 1;
-          const cm = Boolean(b.curseMarkMode);
-          const dashSpd = cm ? 720 : 610;
+          const dashSpd = sa ? 750 : cm ? 720 : 610;
           b.vx = (dx / len) * dashSpd;
           b.vy = (dy / len) * dashSpd;
           b.chidoriTimer = 0.52;
           b.chidoriHit = false;
           gg.entities.push(spawnChidoriHandFX(b));
-          gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, cm ? "#a855f7" : "#38bdf8", true, cm ? "DARK CHIDORI!" : "CHIDORI!");
-          gg.spawnSparks(b.x, b.y, cm ? "#09090b" : "#ffffff", cm ? "#a855f7" : "#38bdf8");
+          const col = sa ? "#c084fc" : cm ? "#a855f7" : "#38bdf8";
+          const lbl = sa ? "AMENOTEJIKARA: CHIDORI!" : cm ? "DARK CHIDORI!" : "CHIDORI!";
+          gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, col, true, lbl);
+          gg.spawnSparks(b.x, b.y, (sa || cm) ? "#09090b" : "#ffffff", col);
         },
       });
       return true;
@@ -686,6 +931,15 @@
         fire(b, gg) {
           const t = pickEnemy(b, gg);
           if (!t) return;
+          if (b.susanooArmorMode) {
+            // Rinnegan Bansho Ten'in (Universal Pull): yanks enemy inward before firing Amaterasu!
+            const pAng = Math.atan2(b.y - t.y, b.x - t.x);
+            t.vx += Math.cos(pAng) * 340;
+            t.vy += Math.sin(pAng) * 340;
+            const pullDmg = gg.applyDamage(t, 4);
+            gg.entities.push(rt.spawnShockRing(t.x, t.y, "#a855f7", 86, 0.28));
+            gg.spawnDamageText(t.x, t.y - t.radius - 12, pullDmg, "#c084fc", true, "BANSHO TEN'IN!");
+          }
           const aim = Math.atan2(t.y - b.y, t.x - b.x);
           const m = rt.castMuzzle(b, aim, 14);
           gg.entities.push(spawnFireballJutsu(b, m.x, m.y, aim));
@@ -705,9 +959,28 @@
   BF.COSTUME_DRAWERS.sasuke = (ball, r, c) => {
     const isUlt = ball.ultTimer > 0;
     const isCM = Boolean(ball.curseMarkMode);
+    const isSA = Boolean(ball.susanooArmorMode);
+    const isEv = Boolean(ball.evolved);
     const t = performance.now() * 0.004;
 
-    if (isCM) {
+    if (isSA) {
+      // Susanoo Samurai Armor: Translucent purple Susanoo shoulder armor & ribcage aura
+      c.save();
+      c.fillStyle = "rgba(168, 85, 247, 0.42)";
+      c.strokeStyle = "#c084fc";
+      c.lineWidth = 2.6;
+      c.beginPath();
+      c.moveTo(-r * 1.32, r * 0.45);
+      c.lineTo(-r * 1.44, -r * 0.35);
+      c.lineTo(-r * 0.96, -r * 0.58);
+      c.lineTo(r * 0.96, -r * 0.58);
+      c.lineTo(r * 1.44, -r * 0.35);
+      c.lineTo(r * 1.32, r * 0.45);
+      c.closePath();
+      c.fill();
+      c.stroke();
+      c.restore();
+    } else if (isCM) {
       // Curse Mark Stage 2: Massive clawed hand-wings behind Sasuke + dark purple chakra aura
       const flap = Math.sin(t * 2.2) * 0.08;
       for (const side of [-1, 1]) {
@@ -752,12 +1025,12 @@
         c.stroke();
       }
       c.restore();
-    } else if (isUlt) {
-      // Subtle electric-purple Susanoo & Kirin static aura
+    } else if (isUlt || isEv) {
+      // Subtle electric-purple Susanoo Ribcage & Kirin static aura
       c.save();
       for (let i = 0; i < 6; i++) {
         const a = t + (i * Math.PI) / 3;
-        c.strokeStyle = i % 2 === 0 ? "rgba(168, 85, 247, 0.7)" : "rgba(56, 189, 248, 0.7)";
+        c.strokeStyle = i % 2 === 0 ? "rgba(168, 85, 247, 0.72)" : "rgba(56, 189, 248, 0.72)";
         c.lineWidth = 2.5;
         c.beginPath();
         c.arc(0, 0, r * 1.2, a, a + 0.55);
@@ -835,6 +1108,51 @@
     c.fill();
     c.stroke();
     c.restore();
+
+    if (isSA) {
+      // Susanoo Samurai Helmet Crest + Slatted Lower Face Mask (matching reference!)
+      c.save();
+      c.fillStyle = "rgba(168, 85, 247, 0.82)";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 2.4;
+      c.lineJoin = "round";
+
+      // Horned forehead crest
+      c.beginPath();
+      c.moveTo(-r * 0.78, -r * 0.44);
+      c.lineTo(-r * 0.42, -r * 0.62);
+      c.lineTo(0, -r * 0.88);
+      c.lineTo(r * 0.42, -r * 0.62);
+      c.lineTo(r * 0.78, -r * 0.44);
+      c.lineTo(r * 0.44, -r * 0.34);
+      c.lineTo(0, -r * 0.48);
+      c.lineTo(-r * 0.44, -r * 0.34);
+      c.closePath();
+      c.fill();
+      c.stroke();
+
+      // Lower Susanoo face mask with 3 vertical vents
+      c.beginPath();
+      c.moveTo(-r * 0.52, r * 0.16);
+      c.lineTo(0, r * 0.06);
+      c.lineTo(r * 0.52, r * 0.16);
+      c.lineTo(r * 0.44, r * 0.56);
+      c.lineTo(0, r * 0.66);
+      c.lineTo(-r * 0.44, r * 0.56);
+      c.closePath();
+      c.fill();
+      c.stroke();
+
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 2;
+      for (const vx of [-0.14, 0, 0.14]) {
+        c.beginPath();
+        c.moveTo(r * vx, r * 0.24);
+        c.lineTo(r * vx, r * 0.48);
+        c.stroke();
+      }
+      c.restore();
+    }
   };
 
   BF.CHARACTER_ROSTER.sasuke = {
