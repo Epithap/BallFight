@@ -1082,7 +1082,81 @@
     x.globalCompositeOperation = "source-over";
   }
 
-  // Professional Modern Gacha & MUGEN Widescreen Banner Renderer (Hi-DPI 880x420 internal canvas)
+  // Shared Solid Comic-Book Two-Tone Banner Backdrop (matches Ball Fight's cartoon UI)
+  function drawComicPanelBackdrop(c, w, h, leftBg, rightBg, accentCol, dotCol, splitTopX, splitBotX) {
+    // 1. Solid Left Comic Panel (high-contrast #2b1b3d ink plum for crisp white/gold overlay text)
+    c.fillStyle = leftBg;
+    c.fillRect(0, 0, w, h);
+
+    // Subtle polka-dot halftone on left panel
+    c.save();
+    c.fillStyle = accentCol;
+    c.globalAlpha = 0.08;
+    for (let gx = 10; gx < splitTopX + 12; gx += 18) {
+      for (let gy = 10; gy < h; gy += 18) {
+        const ox = ((Math.floor(gy / 18) % 2) * 9);
+        c.beginPath();
+        c.arc(gx + ox, gy, 2.2, 0, Math.PI * 2);
+        c.fill();
+      }
+    }
+    c.restore();
+
+    // 2. Solid Right Angled Showcase Panel (bright character / banner theme color)
+    c.save();
+    c.beginPath();
+    c.moveTo(splitTopX, 0);
+    c.lineTo(w, 0);
+    c.lineTo(w, h);
+    c.lineTo(splitBotX, h);
+    c.closePath();
+    c.fillStyle = rightBg;
+    c.fill();
+
+    // Clip to right panel for clean halftone dots & comic speed stripes
+    c.clip();
+    c.fillStyle = dotCol;
+    c.globalAlpha = 0.16;
+    for (let gx = splitBotX - 10; gx < w + 10; gx += 18) {
+      for (let gy = 8; gy < h; gy += 18) {
+        const ox = ((Math.floor(gy / 18) % 2) * 9);
+        c.beginPath();
+        c.arc(gx + ox, gy, 2.6, 0, Math.PI * 2);
+        c.fill();
+      }
+    }
+
+    // Crisp flat comic sunbeams / diagonal highlight band
+    c.fillStyle = "#ffffff";
+    c.globalAlpha = 0.14;
+    c.beginPath();
+    c.moveTo(splitTopX + 26, 0);
+    c.lineTo(splitTopX + 74, 0);
+    c.lineTo(splitBotX + 74, h);
+    c.lineTo(splitBotX + 26, h);
+    c.closePath();
+    c.fill();
+    c.restore();
+
+    // 3. Chunky Comic Ink Diagonal Divider + Accent Stripe
+    c.save();
+    c.strokeStyle = accentCol;
+    c.lineWidth = 5;
+    c.beginPath();
+    c.moveTo(splitTopX + 5, 0);
+    c.lineTo(splitBotX + 5, h);
+    c.stroke();
+
+    c.strokeStyle = "#2b1b3d";
+    c.lineWidth = 4;
+    c.beginPath();
+    c.moveTo(splitTopX, 0);
+    c.lineTo(splitBotX, h);
+    c.stroke();
+    c.restore();
+  }
+
+  // Cohesive Comic-Book Widescreen Banner Renderer (Hi-DPI 880x420 internal canvas)
   function drawModernSplashBanner(cv, featCfg, t) {
     if (!cv || !featCfg) return;
     const c = cv.getContext("2d");
@@ -1095,75 +1169,38 @@
     c.clearRect(0, 0, W, H);
     c.scale(scale, scale);
 
-    // 1. Multi-stop Deep Atmospheric Backdrop
-    const bg = c.createLinearGradient(0, 0, w, h);
-    bg.addColorStop(0, theme.bg1);
-    bg.addColorStop(0.55, theme.bg2);
-    bg.addColorStop(1, theme.bg3 || theme.bg1);
-    c.fillStyle = bg;
-    c.fillRect(0, 0, w, h);
+    // 1. Solid Two-Tone Comic Backdrop matching Ball Fight UI
+    drawComicPanelBackdrop(c, w, h, "#2b1b3d", theme.c1, theme.c2, "#ffffff", w * 0.48, w * 0.34);
 
-    // 1b. Semi-Transparent Original Character Splash Art blended into backdrop
-    drawTransparentSplashArt(c, featCfg.id, w * 0.28, 0, w * 0.72, h, 0.56);
-
-    // Subtle cyber-grid perspective lines on left/bottom
+    // 2. Subtle Comic Watermark Typography on Left Panel
     c.save();
-    c.strokeStyle = theme.c1;
-    c.globalAlpha = 0.12;
-    c.lineWidth = 1;
-    for (let x = 0; x < w; x += 24) {
-      c.beginPath(); c.moveTo(x, 0); c.lineTo(x - 35, h); c.stroke();
-    }
-    for (let y = 0; y < h; y += 22) {
-      c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke();
-    }
-    c.restore();
-
-    // 2. Giant Outlined Watermark Typography in Background
-    c.save();
-    c.font = "900 44px 'Lilita One', Impact, sans-serif";
-    c.strokeStyle = theme.c1;
-    c.globalAlpha = 0.13;
-    c.lineWidth = 2;
-    c.strokeText(theme.watermark, 12, 92);
-    c.globalAlpha = 0.07;
+    c.font = "900 36px 'Lilita One', Impact, sans-serif";
     c.fillStyle = "#ffffff";
-    c.fillText(theme.watermark, 12, 136);
+    c.globalAlpha = 0.06;
+    c.fillText(theme.watermark, 12, 96);
     c.restore();
 
-    // 3. Angled Split-Panel Showcase Backdrop on Right Side
-    c.save();
-    const panelGrad = c.createLinearGradient(w * 0.45, 0, w, h);
-    panelGrad.addColorStop(0, "rgba(255,255,255,0.02)");
-    panelGrad.addColorStop(0.5, `${theme.c1}33`);
-    panelGrad.addColorStop(1, `${theme.c2}55`);
-    c.fillStyle = panelGrad;
-    c.beginPath();
-    c.moveTo(w * 0.50, 0);
-    c.lineTo(w, 0);
-    c.lineTo(w, h);
-    c.lineTo(w * 0.34, h);
-    c.closePath();
-    c.fill();
-
-    // Sharp diagonal comic separator slash
-    c.strokeStyle = theme.c1;
-    c.lineWidth = 3;
-    c.beginPath();
-    c.moveTo(w * 0.50, 0);
-    c.lineTo(w * 0.34, h);
-    c.stroke();
-
-    c.strokeStyle = theme.c2;
-    c.lineWidth = 1.5;
-    c.beginPath();
-    c.moveTo(w * 0.53, 0);
-    c.lineTo(w * 0.37, h);
-    c.stroke();
-    c.restore();
-
+    // 3. Comic Starburst behind Hero Ball on Right Panel
     const hx = w * 0.73;
     const hy = h * 0.52 + Math.sin(t * 2.8) * 3.5;
+    c.save();
+    c.translate(hx, hy);
+    c.rotate(t * 0.18);
+    c.fillStyle = theme.c2;
+    c.strokeStyle = "#2b1b3d";
+    c.lineWidth = 3;
+    const spikes = 14;
+    c.beginPath();
+    for (let i = 0; i < spikes * 2; i++) {
+      const r = i % 2 === 0 ? 78 : 54;
+      const a = (i / (spikes * 2)) * Math.PI * 2;
+      if (i === 0) c.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+      else c.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+    }
+    c.closePath();
+    c.fill();
+    c.stroke();
+    c.restore();
 
     // 4. CHARACTER-SPECIFIC SIGNATURE DOMAIN / STAND / WEAPON ART BEHIND HERO
     c.save();
@@ -1417,35 +1454,35 @@
     c.clearRect(0, 0, W, H);
     c.scale(scale, scale);
 
-    // 1. Deep Cosmic Standard Warp Backdrop
-    const bg = c.createLinearGradient(0, 0, w, h);
-    bg.addColorStop(0, "#05091c");
-    bg.addColorStop(0.5, "#111b3b");
-    bg.addColorStop(1, "#2a0e3b");
-    c.fillStyle = bg;
-    c.fillRect(0, 0, w, h);
+    // 1. Solid Two-Tone Comic Backdrop matching Ball Fight Standard Banner UI
+    drawComicPanelBackdrop(c, w, h, "#2b1b3d", "#3da5ff", "#9ee8c5", "#ffffff", w * 0.44, w * 0.30);
 
-    // 2. Semi-Transparent Original Big Three Splash Art behind the 3 Mascot Balls
-    drawTransparentSplashArt(c, "standard", w * 0.08, 0, w * 0.92, h, 0.55);
-
-    // Soft left vignette so overlay text stays crisp
-    const vig = c.createLinearGradient(0, 0, w * 0.45, 0);
-    vig.addColorStop(0, "rgba(5, 9, 28, 0.78)");
-    vig.addColorStop(1, "rgba(5, 9, 28, 0)");
-    c.fillStyle = vig;
-    c.fillRect(0, 0, w * 0.45, h);
-
-    // Subtle cyber grid & watermark
+    // 2. Subtle Comic Watermark Typography on Left Panel
     c.save();
-    c.strokeStyle = "#38bdf8";
-    c.globalAlpha = 0.1;
-    c.lineWidth = 1;
-    for (let x = 0; x < w; x += 26) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x - 32, h); c.stroke(); }
-    c.font = "900 38px 'Lilita One', Impact, sans-serif";
-    c.strokeStyle = "#67e8f9";
-    c.globalAlpha = 0.12;
-    c.lineWidth = 2;
-    c.strokeText("STANDARD WARP", 14, 86);
+    c.font = "900 34px 'Lilita One', Impact, sans-serif";
+    c.fillStyle = "#ffffff";
+    c.globalAlpha = 0.06;
+    c.fillText("STANDARD WARP", 12, 92);
+    c.restore();
+
+    // 3. Soft Comic Starburst behind Trio Showcase
+    c.save();
+    c.translate(w * 0.71, h * 0.50);
+    c.rotate(-t * 0.14);
+    c.fillStyle = "#ffe047";
+    c.strokeStyle = "#2b1b3d";
+    c.lineWidth = 3;
+    const spikes = 16;
+    c.beginPath();
+    for (let i = 0; i < spikes * 2; i++) {
+      const r = i % 2 === 0 ? 112 : 84;
+      const a = (i / (spikes * 2)) * Math.PI * 2;
+      if (i === 0) c.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+      else c.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+    }
+    c.closePath();
+    c.fill();
+    c.stroke();
     c.restore();
 
     // 3. Floating Ambient Particles
