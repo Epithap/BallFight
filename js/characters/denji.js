@@ -67,14 +67,22 @@
         c.stroke();
       }
     }
-    // Tip teeth spinning around rounded nose
-    const tipSpin = (performance.now() * 0.025) % (Math.PI * 2);
-    for (let i = 0; i < 3; i++) {
-      const a = Math.PI + ((tipSpin + (i * Math.PI) / 3) % Math.PI);
-      const tx = Math.cos(a) * 5.2;
-      const ty = -length + Math.sin(a) * 5.2;
+    // Tip teeth spinning around rounded nose (sharp triangular teeth, not dots)
+    const tipSpin = (performance.now() * 0.025) % (Math.PI / 3);
+    for (let i = 0; i < 4; i++) {
+      const a = Math.PI + tipSpin + (i * Math.PI) / 4;
+      if (a > Math.PI * 2) continue;
+      const nx = Math.cos(a);
+      const ny = Math.sin(a);
+      const tx = -ny;
+      const ty = nx;
+      const bx = nx * 5.2;
+      const by = -length + ny * 5.2;
       c.beginPath();
-      c.arc(tx * 1.35, ty - 1.5, 2.2, 0, Math.PI * 2);
+      c.moveTo(bx - tx * 2, by - ty * 2);
+      c.lineTo(nx * 9.5, -length + ny * 9.5);
+      c.lineTo(bx + tx * 2, by + ty * 2);
+      c.closePath();
       c.fill();
       c.stroke();
     }
@@ -474,18 +482,26 @@
     const tick = Math.floor(performance.now() * 0.05) % 2;
     const t = performance.now() * 0.001;
 
-    // 2 Fixed Forearm Chainsaw Arms (4 Arms in Hero of Hell!) — stationary arms, spinning saw teeth!
+    // 2 Fixed Forearm Chainsaw Arms at lower sides forming / ( ) \ (4 Arms in Hero of Hell!)
     for (const s of [-1, 1]) {
       c.save();
-      c.translate(s * r * 0.96, r * 0.12);
-      c.rotate(s * 0.34);
+      c.translate(s * r * 0.88, r * 0.42);
+      c.rotate(s * Math.PI * 0.72);
+      // Forearm connector sleeve
+      c.fillStyle = hell ? "#18181b" : "#f8fafc";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 2.2;
+      c.beginPath();
+      c.roundRect(-5, 6, 10, 9, 3);
+      c.fill();
+      c.stroke();
       drawChainsawArmBlade(c, 28, hell, 0.78);
       c.restore();
 
       if (hell) {
         c.save();
-        c.translate(s * r * 0.88, r * 0.56);
-        c.rotate(s * 0.72);
+        c.translate(s * r * 0.98, r * 0.04);
+        c.rotate(s * Math.PI * 0.52);
         drawChainsawArmBlade(c, 26, true, 0.72);
         c.restore();
       }
