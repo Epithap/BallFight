@@ -482,6 +482,8 @@
       owner,
       x: owner.x,
       y: owner.y,
+      lastEnemyX: WORLD_SIZE * 0.5,
+      lastEnemyY: WORLD_SIZE * 0.5,
       maxRadius: 225,
       life: 6.5,
       maxLife: 6.5,
@@ -497,14 +499,18 @@
         }
 
         const enemy = g.balls.find((b) => b !== this.owner && b.alive);
-        if (enemy && Math.hypot(enemy.x - this.x, enemy.y - this.y) <= this.maxRadius) {
-          g.addEffect(enemy, "slow", 0.25, { factor: 0.85 });
+        if (enemy) {
+          this.lastEnemyX = enemy.x;
+          this.lastEnemyY = enemy.y;
+          if (Math.hypot(enemy.x - this.x, enemy.y - this.y) <= this.maxRadius) {
+            g.addEffect(enemy, "slow", 0.25, { factor: 0.85 });
+          }
         }
 
         if (this.life <= 0) {
           if (!this.kaiselSpawned && this.owner && this.owner.alive) {
             this.kaiselSpawned = true;
-            g.entities.push(spawnKaiselDragonFlyby(this.owner, this.x, this.y));
+            g.entities.push(spawnKaiselDragonFlyby(this.owner, this.lastEnemyX, this.lastEnemyY));
           }
           this.dead = true;
         }
@@ -1152,10 +1158,11 @@
     };
   }
 
-  // ---- Kaisel (Shadow Wyvern / Dragon) Colossal Swoop & Flame Breath Finale ----
-  function spawnKaiselDragonFlyby(owner, centerX, centerY) {
-    const targetX = Math.max(120, Math.min(WORLD_SIZE - 120, (centerX + WORLD_SIZE * 0.5) * 0.5));
-    const targetY = Math.max(120, Math.min(WORLD_SIZE - 120, (centerY + WORLD_SIZE * 0.5) * 0.5));
+  // ---- Kaisel (Shadow Wyvern / Dragon) Colossal Swoop & Last-Step Flame Breath Finale ----
+  function spawnKaiselDragonFlyby(owner, lastX, lastY) {
+    const clampSpot = (v) => Math.max(95, Math.min(WORLD_SIZE - 95, v));
+    const targetX = clampSpot(lastX);
+    const targetY = clampSpot(lastY);
     return {
       owner,
       targetX,
@@ -1169,8 +1176,18 @@
       update(dt, g) {
         this.life -= dt;
         const p = 1 - Math.max(0, this.life / this.maxLife);
+
+        // Track enemy's live stepped position during wind-up approach, then lock on before breath
+        if (p < 0.34) {
+          const enemy = g.balls.find((b) => b !== this.owner && b.alive);
+          if (enemy) {
+            this.targetX = clampSpot(enemy.x);
+            this.targetY = clampSpot(enemy.y);
+          }
+        }
+
         this.x = -140 + (WORLD_SIZE + 280) * p;
-        this.y = this.targetY - 140 + Math.sin(p * Math.PI) * 105;
+        this.y = this.targetY - 150 + Math.sin(p * Math.PI) * 95;
 
         if (p >= 0.42 && !this.breathed) {
           this.breathed = true;
@@ -1199,6 +1216,29 @@
         const flap = Math.sin(t * 16) * 22;
         const p = 1 - Math.max(0, this.life / this.maxLife);
         const bank = 0.14 * Math.cos(p * Math.PI);
+
+        // 0. Glowing Dragon Target Reticle locked on enemy's last stepped position before breath lands
+        if (p < 0.45) {
+          const lockPulse = 1 - Math.min(1, p / 0.45);
+          c.save();
+          c.translate(this.targetX, this.targetY);
+          c.globalAlpha = 0.85;
+          c.strokeStyle = "#38bdf8";
+          c.lineWidth = 2.6;
+          c.setLineDash([10, 6]);
+          c.rotate(t * 2.5);
+          c.beginPath();
+          c.arc(0, 0, 42 + lockPulse * 48, 0, Math.PI * 2);
+          c.stroke();
+          c.setLineDash([]);
+          c.strokeStyle = "#a855f7";
+          c.lineWidth = 2;
+          c.beginPath();
+          c.moveTo(-26, 0); c.lineTo(26, 0);
+          c.moveTo(0, -26); c.lineTo(0, 26);
+          c.stroke();
+          c.restore();
+        }
 
         // 1. Multi-layered Torrential Shadow Dragon Breath Beam toward targetX/targetY
         if (p >= 0.32 && p <= 0.76) {
@@ -1379,8 +1419,52 @@
       const inUlt = ball.ultTimer > 0;
       rt.beginCast(ball, {
         kind: "slash",
-        duration: 0.16,
+        duration: 0.22,
         color: "#a855f7",
+        renderCast(b, c, p, ang, tg) {
+          // Twin swirling Monarch Shadow Portals summoning Kamish's Wrath & Kasaka's Venom Fang
+          for (const [sgn, isVenom, col] of [[-1, false, "#a855f7"], [1, true, "#38bdf8"]]) {
+            const portAng = ang + sgn * 0.92;
+            const px = b.x + Math.cos(portAng) * (b.radius + 20);
+            const py = b.y + Math.sin(portAng) * (b.radius + 20);
+
+            if (tg && p > 0.22) {
+              c.save();
+              c.setLineDash([7, 7]);
+              c.strokeStyle = col;
+              c.lineWidth = 2.2;
+              c.globalAlpha = 0.65;
+              c.beginPath();
+              c.moveTo(px, py);
+              c.lineTo(tg.x, tg.y);
+              c.stroke();
+              c.restore();
+            }
+
+            // Swirling dark-violet / cyan portal ellipse
+            c.save();
+            c.translate(px, py);
+            c.rotate(ang);
+            c.fillStyle = "rgba(7, 4, 18, 0.85)";
+            c.strokeStyle = col;
+            c.shadowColor = col;
+            c.shadowBlur = 12;
+            c.lineWidth = 2.4;
+            const pr = 11 * Math.min(1, p * 2.2);
+            c.beginPath();
+            c.ellipse(0, 0, pr * 0.65, pr * 1.25, 0, 0, Math.PI * 2);
+            c.fill();
+            c.stroke();
+
+            // Ornate Monarch dagger sliding forward out of portal, pointing at enemy
+            c.save();
+            c.translate(p * 14, 0);
+            c.rotate(Math.PI * 0.5);
+            drawDetailedMonarchDagger(c, isVenom, 0.78, true);
+            c.restore();
+            c.restore();
+          }
+        },
         fire(b, gg) {
           const t = gg.balls.find((x) => x !== b && x.alive);
           if (!t) return;
@@ -1432,8 +1516,52 @@
 
       rt.beginCast(ball, {
         kind: "gravity",
-        duration: 0.2,
+        duration: 0.24,
         color: "#38bdf8",
+        renderCast(b, c, p, ang, tg) {
+          // Sovereign Telekinetic Palm Sigil in front of Jin-Woo
+          const fx = b.x + Math.cos(ang) * (b.radius + 18);
+          const fy = b.y + Math.sin(ang) * (b.radius + 18);
+          c.save();
+          c.translate(fx, fy);
+          c.rotate(ang);
+          c.strokeStyle = "#a855f7";
+          c.shadowColor = "#38bdf8";
+          c.shadowBlur = 10;
+          c.lineWidth = 2.5;
+          c.beginPath();
+          c.ellipse(0, 0, 6, 16 * (0.4 + p * 0.6), 0, 0, Math.PI * 2);
+          c.stroke();
+          c.restore();
+
+          // Contracting Telekinetic Lock-On Ring & 4 clamping brackets around enemy
+          if (tg) {
+            c.save();
+            c.translate(tg.x, tg.y);
+            const rLock = tg.radius + 28 * (1 - 0.55 * p);
+            c.strokeStyle = "#38bdf8";
+            c.lineWidth = 2.6;
+            c.setLineDash([8, 6]);
+            c.rotate(p * 4);
+            c.beginPath();
+            c.arc(0, 0, rLock, 0, Math.PI * 2);
+            c.stroke();
+            c.setLineDash([]);
+
+            c.strokeStyle = "#a855f7";
+            c.lineWidth = 3;
+            for (let i = 0; i < 4; i++) {
+              const ca = (i * Math.PI) / 2;
+              const cx = Math.cos(ca) * (rLock + 4);
+              const cy = Math.sin(ca) * (rLock + 4);
+              c.beginPath();
+              c.moveTo(cx, cy);
+              c.lineTo(Math.cos(ca) * (rLock - 7), Math.sin(ca) * (rLock - 7));
+              c.stroke();
+            }
+            c.restore();
+          }
+        },
         fire(b, gg) {
           const t = gg.balls.find((x) => x !== b && x.alive);
           if (!t) return;

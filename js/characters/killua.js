@@ -447,8 +447,90 @@
       const inUlt = ball.ultTimer > 0;
       rt.beginCast(ball, {
         kind: "slash",
-        duration: 0.18,
+        duration: 0.22,
         color: "#38bdf8",
+        renderCast(b, c, p, ang, tg) {
+          // Twin V-trajectory metallic wire sightlines toward enemy
+          if (tg && p > 0.2) {
+            c.save();
+            c.setLineDash([7, 6]);
+            c.lineWidth = 2.2;
+            c.strokeStyle = "rgba(125, 211, 252, 0.72)";
+            for (const sgn of [-1, 1]) {
+              const wAng = ang + sgn * 0.28;
+              c.beginPath();
+              c.moveTo(b.x, b.y);
+              c.lineTo(b.x + Math.cos(wAng) * 145, b.y + Math.sin(wAng) * 145);
+              c.stroke();
+            }
+            c.restore();
+          }
+
+          // Orbiting twin 50kg Alloy Yo-Yo discs on taut silver wires + crackling Nen lightning
+          const orbitDist = b.radius + 16 + Math.sin(p * Math.PI) * 12;
+          for (const sgn of [-1, 1]) {
+            const yAng = ang + sgn * (0.68 - p * 0.36);
+            const yx = b.x + Math.cos(yAng) * orbitDist;
+            const yy = b.y + Math.sin(yAng) * orbitDist;
+
+            // Taut alloy wire
+            c.strokeStyle = "#e2e8f0";
+            c.lineWidth = 2.4;
+            c.beginPath();
+            c.moveTo(b.x, b.y);
+            c.lineTo(yx, yy);
+            c.stroke();
+
+            // Crackling jagged Nen lightning arc jumping along the wire
+            c.strokeStyle = "#38bdf8";
+            c.lineWidth = 2;
+            c.beginPath();
+            c.moveTo(b.x, b.y);
+            for (let s = 1; s <= 3; s++) {
+              const frac = s / 4;
+              const jx = b.x + (yx - b.x) * frac + Math.sin(p * 30 + s * 7 + sgn) * 6;
+              const jy = b.y + (yy - b.y) * frac + Math.cos(p * 26 + s * 5 + sgn) * 6;
+              c.lineTo(jx, jy);
+            }
+            c.lineTo(yx, yy);
+            c.stroke();
+
+            // Spinning 50kg Alloy Yo-Yo disc with Zoldyck Star emblem
+            c.save();
+            c.translate(yx, yy);
+            c.rotate(p * 18 * sgn);
+            c.shadowColor = "#38bdf8";
+            c.shadowBlur = 10;
+            c.fillStyle = "#334155";
+            c.strokeStyle = COLORS.ink;
+            c.lineWidth = 2.6;
+            c.beginPath();
+            c.arc(0, 0, 10, 0, Math.PI * 2);
+            c.fill();
+            c.stroke();
+
+            c.fillStyle = "#cbd5e1";
+            c.beginPath();
+            c.arc(0, 0, 6.4, 0, Math.PI * 2);
+            c.fill();
+
+            c.strokeStyle = "#0284c7";
+            c.lineWidth = 1.4;
+            for (const base of [0, Math.PI / 3]) {
+              c.beginPath();
+              for (let i = 0; i < 3; i++) {
+                const sa = base + (i * Math.PI * 2) / 3;
+                const sx = Math.cos(sa) * 4.8;
+                const sy = Math.sin(sa) * 4.8;
+                if (i === 0) c.moveTo(sx, sy);
+                else c.lineTo(sx, sy);
+              }
+              c.closePath();
+              c.stroke();
+            }
+            c.restore();
+          }
+        },
         fire(b, gg) {
           const t = gg.balls.find((x) => x !== b && x.alive);
           if (!t) return;

@@ -481,8 +481,8 @@
   }
 
   // Charge-up: ball freezes, a visual builds, then fire() runs.
-  function beginCast(ball, { kind, duration, color, maxR = 22, blades = false, fire }) {
-    ball.cast = { kind, duration, color, maxR, blades, fire, t: 0 };
+  function beginCast(ball, { kind, duration, color, maxR = 22, blades = false, fire, renderCast }) {
+    ball.cast = { kind, duration, color, maxR, blades, fire, renderCast, t: 0 };
     ball.channelTimer = duration;
     sound.playCharge(duration);
   }
@@ -503,7 +503,9 @@
     c.lineWidth = 7; c.strokeStyle = COLORS.ink; c.stroke();
     c.lineWidth = 3.5; c.strokeStyle = k.color; c.stroke();
 
-    if (k.kind === "orb") {
+    if (typeof k.renderCast === "function") {
+      k.renderCast(ball, c, p, ang, tg);
+    } else if (k.kind === "orb") {
       const R = k.maxR * (0.25 + 0.75 * easeOut(p));
       const ox = ball.x + ux * (ball.radius + R * 0.5 + 8);
       const oy = ball.y + uy * (ball.radius + R * 0.5 + 8);
@@ -764,18 +766,86 @@
       c.stroke();
       c.restore();
     } else if (k.kind === "slash") {
-      const e = easeOut(p), R = k.maxR * (0.3 + 0.7 * e);
+      const e = easeOut(p);
+      const R = k.maxR * (0.45 + 0.75 * e);
+      // Targeting streak toward opponent
+      if (tg && p > 0.25) {
+        c.save();
+        c.setLineDash([8, 7]);
+        c.lineWidth = 3;
+        c.strokeStyle = k.color;
+        c.globalAlpha = 0.6;
+        c.beginPath();
+        c.moveTo(ball.x + ux * (ball.radius + 10), ball.y + uy * (ball.radius + 10));
+        c.lineTo(tg.x, tg.y);
+        c.stroke();
+        c.restore();
+      }
+      // Sharp Cross-Blade Energy Charge & Reiatsu Sparks
       c.save();
-      c.translate(ball.x + ux * (ball.radius + 8 + R * 0.6), ball.y + uy * (ball.radius + 8 + R * 0.6));
-      c.rotate(ang - (1 - e) * 0.9);   // blade swings into place
+      c.translate(ball.x + ux * (ball.radius + 16), ball.y + uy * (ball.radius + 16));
+      c.rotate(ang);
+      for (const sgn of [-1, 1]) {
+        c.save();
+        c.rotate(sgn * (0.72 - 0.3 * e));
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 7;
+        c.beginPath();
+        c.moveTo(-R * 1.15, 0);
+        c.lineTo(R * 1.25, 0);
+        c.stroke();
+
+        c.strokeStyle = k.color;
+        c.lineWidth = 3.6;
+        c.beginPath();
+        c.moveTo(-R * 1.1, 0);
+        c.lineTo(R * 1.2, 0);
+        c.stroke();
+
+        c.strokeStyle = COLORS.white;
+        c.lineWidth = 1.6;
+        c.beginPath();
+        c.moveTo(-R * 0.75, 0);
+        c.lineTo(R * 0.95, 0);
+        c.stroke();
+        c.restore();
+      }
+      // Core reiatsu spark diamond
+      c.fillStyle = COLORS.white;
+      c.strokeStyle = k.color;
+      c.lineWidth = 2.2;
       c.beginPath();
-      c.arc(0, 0, R * 1.45, -Math.PI * 0.48, Math.PI * 0.48);
-      c.quadraticCurveTo(R * 0.3, 0, Math.cos(-Math.PI * 0.48) * R * 1.45, Math.sin(-Math.PI * 0.48) * R * 1.45);
+      c.moveTo(R * 0.55, 0);
+      c.lineTo(0, R * 0.32);
+      c.lineTo(-R * 0.4, 0);
+      c.lineTo(0, -R * 0.32);
       c.closePath();
-      c.fillStyle = k.color; c.fill();
-      c.lineWidth = 4; c.strokeStyle = COLORS.ink; c.stroke();
-      c.strokeStyle = COLORS.white; c.lineWidth = 2;
-      c.beginPath(); c.arc(0, 0, R * 1.18, -Math.PI * 0.35, Math.PI * 0.35); c.stroke();
+      c.fill();
+      c.stroke();
+      c.restore();
+    } else if (k.kind === "gravity") {
+      const e = easeOut(p);
+      if (tg) {
+        c.save();
+        c.translate(tg.x, tg.y);
+        const lockR = tg.radius + 26 * (1 - 0.55 * e);
+        c.strokeStyle = k.color;
+        c.lineWidth = 3;
+        c.setLineDash([10, 6]);
+        c.rotate(p * 3.5);
+        c.beginPath();
+        c.arc(0, 0, lockR, 0, Math.PI * 2);
+        c.stroke();
+        c.restore();
+      }
+      c.save();
+      c.translate(ball.x + ux * (ball.radius + 14), ball.y + uy * (ball.radius + 14));
+      c.rotate(ang);
+      c.strokeStyle = k.color;
+      c.lineWidth = 3;
+      c.beginPath();
+      c.arc(0, 0, 12 + e * 12, -Math.PI * 0.42, Math.PI * 0.42);
+      c.stroke();
       c.restore();
     } else if (k.kind === "inflate" || k.kind === "powerup") {
       for (let i = 0; i < 7; i++) {
