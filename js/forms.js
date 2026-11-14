@@ -88,8 +88,9 @@
       { id: "kirin", stage: "starter", label: "KIRIN (ULT)", ult: true, starterOnly: true, desc: "Starter Ult: Summons thunderstorm clouds over the arena and calls down the Kirin Thunder Dragon!" },
       { id: "curse_mark", stage: "starter", label: "CURSE MARK (HP≤150)", starterOnly: true, curseMarkMode: true, desc: "Starter HP <= 150: Permanent Curse Mark Stage 2 with clawed wings, +20% Speed, +45 HP & Dark Chidori!" },
       { id: "evolved_base", stage: "evolved", label: "RINNEGAN", evolved: true, desc: "Evolved Base (10k Gold): Rinnegan + EMS, Susanoo Ribcage aura & Amaterasu Black Flames! Ult: Armored Susanoo!" },
-      { id: "ult", stage: "evolved", label: "ARMORED SUSANOO (ULT)", evolved: true, ult: true, desc: "Evolved Ult (HP > 150): Summons Armored Susanoo around Sasuke & fires 3 Kagutsuchi Flame Arrows!" },
-      { id: "susanoo_armor", stage: "evolved", label: "SUSANOO ARMOR (HP≤150)", evolved: true, ult: true, susanooArmorMode: true, desc: "Evolved HP <= 150: Permanent Susanoo Samurai Armor (+55 HP, Amenotejikara & Bansho Ten'in)! Ult upgrades to Giant INDRA'S ARROW!" },
+      { id: "ult", stage: "evolved", label: "ARMORED SUSANOO (ULT)", evolved: true, ult: true, previewArmoredSusanoo: true, desc: "Evolved Ult (HP > 150): Summons Armored Susanoo around Sasuke & fires 3 Kagutsuchi Flame Arrows!" },
+      { id: "susanoo_armor", stage: "evolved", label: "SUSANOO ARMOR (HP≤150)", evolved: true, susanooArmorMode: true, desc: "Evolved HP <= 150: Permanent Susanoo Samurai Armor (+55 HP, Amenotejikara & Bansho Ten'in)!" },
+      { id: "indra_ult", stage: "evolved", label: "INDRA SUSANOO (ULT)", evolved: true, ult: true, susanooArmorMode: true, previewIndraSusanoo: true, desc: "Susanoo Armor Ult: Sasuke leaps out of the arena as Giant Indra Susanoo fires Indra's Arrow across the entire map!" },
     ],
     jinwoo: [
       { id: "base", label: "HUNTER", desc: "Kamish's Wrath twin daggers, Mutilate cross-slash dash and Ruler's Authority gravity pull." },

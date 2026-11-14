@@ -723,6 +723,277 @@
     };
   }
 
+  function drawArmoredSusanoo(c, sx, sy, scale, t, alpha = 0.86) {
+    c.save();
+    c.translate(sx, sy);
+    const pulse = 1 + Math.sin(t * 6) * 0.035;
+    c.scale(scale * pulse, scale * pulse);
+    c.globalAlpha = alpha;
+
+    // Lore-accurate Armored Susanoo: wide flared ribbed purple armor cloak & flaming top
+    c.fillStyle = "rgba(147, 51, 234, 0.58)";
+    c.strokeStyle = "#e9d5ff";
+    c.lineWidth = 2.6;
+    c.lineJoin = "round";
+    c.beginPath();
+    c.moveTo(-54, 34);
+    c.lineTo(-66, -24);
+    c.lineTo(-32, -38);
+    c.lineTo(-16, -66);
+    c.lineTo(0, -76);
+    c.lineTo(16, -66);
+    c.lineTo(32, -38);
+    c.lineTo(66, -24);
+    c.lineTo(54, 34);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    c.strokeStyle = "rgba(88, 28, 135, 0.85)";
+    c.lineWidth = 1.8;
+    for (const rx of [-36, -22, 22, 36]) {
+      c.beginPath();
+      c.moveTo(rx, -30);
+      c.lineTo(rx * 0.88, 30);
+      c.stroke();
+    }
+
+    // Skeletal grinning Susanoo skull face + glowing yellow eyes
+    c.fillStyle = "#581c87";
+    c.strokeStyle = "#d8b4fe";
+    c.lineWidth = 2;
+    c.beginPath();
+    c.moveTo(-16, -52);
+    c.lineTo(0, -60);
+    c.lineTo(16, -52);
+    c.lineTo(12, -26);
+    c.lineTo(0, -20);
+    c.lineTo(-12, -26);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    c.fillStyle = "#fef08a";
+    c.beginPath();
+    c.ellipse(-6.5, -43, 4.2, 2.5, 0.22, 0, Math.PI * 2);
+    c.ellipse(6.5, -43, 4.2, 2.5, -0.22, 0, Math.PI * 2);
+    c.fill();
+
+    c.strokeStyle = "#e9d5ff";
+    c.lineWidth = 1.3;
+    for (let tx = -7; tx <= 7; tx += 3.5) {
+      c.beginPath();
+      c.moveTo(tx, -30);
+      c.lineTo(tx, -24);
+      c.stroke();
+    }
+
+    // Purple Susanoo Bow & arrow
+    c.strokeStyle = "#c084fc";
+    c.lineWidth = 4;
+    c.beginPath();
+    c.arc(42, 6, 26, -Math.PI * 0.45, Math.PI * 0.45);
+    c.stroke();
+    c.strokeStyle = "#e9d5ff";
+    c.lineWidth = 1.5;
+    c.beginPath();
+    c.moveTo(46, -19);
+    c.lineTo(46, 31);
+    c.stroke();
+    c.restore();
+  }
+
+  function drawIndraSusanoo(c, sx, sy, scale, tNow, pull = 0.7, tipDist = null) {
+    c.save();
+    c.translate(sx, sy);
+    c.scale(scale, scale);
+
+    // Rich purple-cyan chakra aura halo
+    const aura = c.createRadialGradient(0, 0, 18, 0, 0, 185);
+    aura.addColorStop(0, "rgba(56, 189, 248, 0.5)");
+    aura.addColorStop(0.5, "rgba(126, 34, 206, 0.38)");
+    aura.addColorStop(1, "rgba(15, 23, 42, 0)");
+    c.fillStyle = aura;
+    c.beginPath();
+    c.arc(0, 0, 185, 0, Math.PI * 2);
+    c.fill();
+
+    // 6 Multi-Branched Jagged Cyan Indra Lightning Wings (lore accurate!)
+    c.lineCap = "round";
+    c.lineJoin = "round";
+    for (const side of [-1, 1]) {
+      for (let wg = 0; wg < 3; wg++) {
+        const flutter = Math.sin(tNow * 8 + wg) * 0.04;
+        const ang = -0.22 - wg * 0.36 + flutter;
+        const len = 136 + wg * 24;
+        const p1x = side * Math.cos(ang) * len * 0.36;
+        const p1y = -14 + Math.sin(ang) * len * 0.36;
+        const p2x = side * Math.cos(ang + 0.1) * len * 0.7;
+        const p2y = -14 + Math.sin(ang + 0.1) * len * 0.7;
+        const p3x = side * Math.cos(ang - 0.15) * len;
+        const p3y = -14 + Math.sin(ang - 0.15) * len;
+
+        c.strokeStyle = "#38bdf8";
+        c.lineWidth = 7;
+        c.beginPath();
+        c.moveTo(side * 22, -14);
+        c.lineTo(p1x, p1y);
+        c.lineTo(p2x, p2y);
+        c.lineTo(p3x, p3y);
+        c.stroke();
+
+        // Forked secondary lightning branch off wing
+        c.lineWidth = 4;
+        c.beginPath();
+        c.moveTo(p1x, p1y);
+        c.lineTo(p1x + side * 28, p1y - 26);
+        c.moveTo(p2x, p2y);
+        c.lineTo(p2x + side * 24, p2y + 18);
+        c.stroke();
+
+        c.strokeStyle = "#ffffff";
+        c.lineWidth = 2.2;
+        c.beginPath();
+        c.moveTo(side * 22, -14);
+        c.lineTo(p1x, p1y);
+        c.lineTo(p2x, p2y);
+        c.lineTo(p3x, p3y);
+        c.stroke();
+      }
+    }
+
+    // Pleated Samurai Kusazuri Waist Skirt with individual armor plates
+    c.fillStyle = "rgba(107, 33, 168, 0.92)";
+    c.strokeStyle = "#e9d5ff";
+    c.lineWidth = 2.4;
+    c.beginPath();
+    c.moveTo(-40, 22);
+    c.lineTo(40, 22);
+    c.lineTo(62, 74);
+    c.lineTo(-62, 74);
+    c.closePath();
+    c.fill();
+    c.stroke();
+    c.strokeStyle = "#c084fc";
+    c.lineWidth = 1.6;
+    for (const px of [-24, -8, 8, 24]) {
+      c.beginPath();
+      c.moveTo(px, 24);
+      c.lineTo(px * 1.4, 72);
+      c.stroke();
+    }
+
+    // Waist Sash Belt & Side Armor Plates
+    c.fillStyle = "#581c87";
+    c.strokeStyle = "#e9d5ff";
+    c.lineWidth = 2;
+    c.fillRect(-42, 16, 84, 11);
+    c.strokeRect(-42, 16, 84, 11);
+
+    // Layered Samurai Torso & Horned Shoulder Pauldrons
+    c.fillStyle = "rgba(126, 34, 206, 0.94)";
+    c.beginPath();
+    c.moveTo(-40, 18);
+    c.lineTo(-74, -20);
+    c.lineTo(-48, -42);
+    c.lineTo(-28, -36);
+    c.lineTo(28, -36);
+    c.lineTo(48, -42);
+    c.lineTo(74, -20);
+    c.lineTo(40, 18);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    // Glowing cyan/violet chest armor plates & energy lines
+    c.strokeStyle = "#67e8f9";
+    c.lineWidth = 1.8;
+    c.beginPath();
+    c.moveTo(-30, -28);
+    c.lineTo(0, -4);
+    c.lineTo(30, -28);
+    c.moveTo(-22, -8);
+    c.lineTo(0, 10);
+    c.lineTo(22, -8);
+    c.stroke();
+
+    // Horned Tengu Samurai Helm & Long Tengu Nose/Mask
+    c.fillStyle = "#581c87";
+    c.strokeStyle = "#e9d5ff";
+    c.lineWidth = 2.2;
+    c.beginPath();
+    c.moveTo(-24, -34);
+    c.lineTo(-36, -68);
+    c.lineTo(-12, -58);
+    c.lineTo(0, -80);
+    c.lineTo(12, -58);
+    c.lineTo(36, -68);
+    c.lineTo(24, -34);
+    c.lineTo(0, -24);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    // Glowing Cyan Tengu Eyes & Cheek Armor Slits
+    c.fillStyle = "#67e8f9";
+    c.beginPath();
+    c.ellipse(-10, -46, 5.5, 3, 0.22, 0, Math.PI * 2);
+    c.ellipse(10, -46, 5.5, 3, -0.22, 0, Math.PI * 2);
+    c.fill();
+    c.strokeStyle = "#e9d5ff";
+    c.lineWidth = 1.4;
+    c.beginPath();
+    c.moveTo(0, -45);
+    c.lineTo(0, -30);
+    c.stroke();
+
+    // Ornate Giant Cyan Indra Lightning Bow
+    c.strokeStyle = "#38bdf8";
+    c.lineWidth = 6.5;
+    c.beginPath();
+    c.arc(0, -6, 94, 0.14, Math.PI - 0.14);
+    c.stroke();
+    c.strokeStyle = "#ffffff";
+    c.lineWidth = 2.2;
+    c.stroke();
+
+    // Bowstring & Barbed Indra's Arrow
+    const stringPullY = -36 - pull * 22;
+    c.strokeStyle = "rgba(165, 243, 252, 0.85)";
+    c.lineWidth = 2;
+    c.beginPath();
+    c.moveTo(-92, 8);
+    c.lineTo(0, stringPullY);
+    c.lineTo(92, 8);
+    c.stroke();
+
+    const endY = tipDist !== null ? tipDist : 98;
+    c.strokeStyle = "#67e8f9";
+    c.lineWidth = tipDist !== null && tipDist > 120 ? 14 : 7;
+    c.beginPath();
+    c.moveTo(0, stringPullY);
+    c.lineTo(0, endY);
+    c.stroke();
+    c.strokeStyle = "#ffffff";
+    c.lineWidth = tipDist !== null && tipDist > 120 ? 6 : 2.4;
+    c.stroke();
+
+    // Barbed arrow head
+    c.fillStyle = "#ffffff";
+    c.strokeStyle = "#38bdf8";
+    c.lineWidth = 2.5;
+    c.beginPath();
+    c.moveTo(0, endY + 14);
+    c.lineTo(-11, endY - 6);
+    c.lineTo(0, endY);
+    c.lineTo(11, endY - 6);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    c.restore();
+  }
+
   BF.spawnArmoredSusanooUltimate = (owner, g) => {
     g.addEffect(owner, "shield", 7.0, { reduction: 0.25 });
     const shotTimes = [0.45, 2.35, 4.35];
@@ -753,87 +1024,8 @@
       },
       render(c) {
         if (!this.owner.alive) return;
-        const sx = this.owner.x;
-        const sy = this.owner.y - 8;
-        const pulse = 1 + Math.sin(this.t * 6) * 0.035;
         const fade = this.life < 0.5 ? Math.max(0, this.life / 0.5) : Math.min(1, this.t / 0.3);
-
-        c.save();
-        c.translate(sx, sy);
-        c.scale(pulse, pulse);
-        c.globalAlpha = 0.86 * fade;
-
-        // Lore-accurate Armored Susanoo: wide flared ribbed purple armor cloak & flaming top
-        c.fillStyle = "rgba(147, 51, 234, 0.58)";
-        c.strokeStyle = "#e9d5ff";
-        c.lineWidth = 2.6;
-        c.lineJoin = "round";
-        c.beginPath();
-        c.moveTo(-54, 34);
-        c.lineTo(-66, -24);
-        c.lineTo(-32, -38);
-        c.lineTo(-16, -66);
-        c.lineTo(0, -76);
-        c.lineTo(16, -66);
-        c.lineTo(32, -38);
-        c.lineTo(66, -24);
-        c.lineTo(54, 34);
-        c.closePath();
-        c.fill();
-        c.stroke();
-
-        c.strokeStyle = "rgba(88, 28, 135, 0.85)";
-        c.lineWidth = 1.8;
-        for (const rx of [-36, -22, 22, 36]) {
-          c.beginPath();
-          c.moveTo(rx, -30);
-          c.lineTo(rx * 0.88, 30);
-          c.stroke();
-        }
-
-        // Skeletal grinning Susanoo skull face + glowing yellow eyes
-        c.fillStyle = "#581c87";
-        c.strokeStyle = "#d8b4fe";
-        c.lineWidth = 2;
-        c.beginPath();
-        c.moveTo(-16, -52);
-        c.lineTo(0, -60);
-        c.lineTo(16, -52);
-        c.lineTo(12, -26);
-        c.lineTo(0, -20);
-        c.lineTo(-12, -26);
-        c.closePath();
-        c.fill();
-        c.stroke();
-
-        c.fillStyle = "#fef08a";
-        c.beginPath();
-        c.ellipse(-6.5, -43, 4.2, 2.5, 0.22, 0, Math.PI * 2);
-        c.ellipse(6.5, -43, 4.2, 2.5, -0.22, 0, Math.PI * 2);
-        c.fill();
-
-        c.strokeStyle = "#e9d5ff";
-        c.lineWidth = 1.3;
-        for (let tx = -7; tx <= 7; tx += 3.5) {
-          c.beginPath();
-          c.moveTo(tx, -30);
-          c.lineTo(tx, -24);
-          c.stroke();
-        }
-
-        // Left-side Purple Susanoo Bow
-        c.strokeStyle = "#c084fc";
-        c.lineWidth = 4;
-        c.beginPath();
-        c.arc(42, 6, 26, -Math.PI * 0.45, Math.PI * 0.45);
-        c.stroke();
-        c.strokeStyle = "#e9d5ff";
-        c.lineWidth = 1.5;
-        c.beginPath();
-        c.moveTo(46, -19);
-        c.lineTo(46, 31);
-        c.stroke();
-        c.restore();
+        drawArmoredSusanoo(c, this.owner.x, this.owner.y - 8, 1, this.t, 0.86 * fade);
       },
     };
     g.entities.push(ent);
@@ -886,115 +1078,17 @@
 
         extCtx.save();
         extCtx.globalAlpha = rise * fadeOut;
-
-        const aura = extCtx.createRadialGradient(sx, sy, 18, sx, sy, 185);
-        aura.addColorStop(0, "rgba(56, 189, 248, 0.45)");
-        aura.addColorStop(0.55, "rgba(126, 34, 206, 0.35)");
-        aura.addColorStop(1, "rgba(15, 23, 42, 0)");
-        extCtx.fillStyle = aura;
-        extCtx.beginPath();
-        extCtx.arc(sx, sy, 185, 0, Math.PI * 2);
-        extCtx.fill();
-
-        // 6 Jagged Cyan Indra Lightning Wings
-        extCtx.lineCap = "round";
-        for (const side of [-1, 1]) {
-          for (let wg = 0; wg < 3; wg++) {
-            const ang = -0.25 - wg * 0.36;
-            const len = 138 + wg * 26;
-            const mx = sx + side * Math.cos(ang) * len * 0.52;
-            const my = sy - 12 + Math.sin(ang) * len * 0.52;
-            const ex = sx + side * Math.cos(ang - 0.16) * len;
-            const ey = sy - 12 + Math.sin(ang - 0.16) * len;
-            extCtx.strokeStyle = "#38bdf8";
-            extCtx.lineWidth = 6;
-            extCtx.beginPath();
-            extCtx.moveTo(sx + side * 24, sy - 12);
-            extCtx.lineTo(mx, my);
-            extCtx.lineTo(ex, ey);
-            extCtx.stroke();
-            extCtx.strokeStyle = "#ffffff";
-            extCtx.lineWidth = 2;
-            extCtx.stroke();
-          }
-        }
-
-        // Pleated Samurai Kusazuri Waist Skirt
-        extCtx.fillStyle = "rgba(126, 34, 206, 0.9)";
-        extCtx.strokeStyle = "#e9d5ff";
-        extCtx.lineWidth = 2.5;
-        extCtx.beginPath();
-        extCtx.moveTo(sx - 38, sy + 24);
-        extCtx.lineTo(sx + 38, sy + 24);
-        extCtx.lineTo(sx + 56, sy + 72);
-        extCtx.lineTo(sx - 56, sy + 72);
-        extCtx.closePath();
-        extCtx.fill();
-        extCtx.stroke();
-
-        // Armored Samurai Torso & Shoulder Pauldrons
-        extCtx.fillStyle = "rgba(147, 51, 234, 0.92)";
-        extCtx.beginPath();
-        extCtx.moveTo(sx - 40, sy + 24);
-        extCtx.lineTo(sx - 68, sy - 18);
-        extCtx.lineTo(sx - 34, sy - 38);
-        extCtx.lineTo(sx + 34, sy - 38);
-        extCtx.lineTo(sx + 68, sy - 18);
-        extCtx.lineTo(sx + 40, sy + 24);
-        extCtx.closePath();
-        extCtx.fill();
-        extCtx.stroke();
-
-        // Tengu Helm & Horned Mask with glowing cyan eyes
-        extCtx.fillStyle = "#6b21a8";
-        extCtx.beginPath();
-        extCtx.moveTo(sx - 24, sy - 36);
-        extCtx.lineTo(sx - 32, sy - 66);
-        extCtx.lineTo(sx - 10, sy - 58);
-        extCtx.lineTo(sx, sy - 76);
-        extCtx.lineTo(sx + 10, sy - 58);
-        extCtx.lineTo(sx + 32, sy - 66);
-        extCtx.lineTo(sx + 24, sy - 36);
-        extCtx.closePath();
-        extCtx.fill();
-        extCtx.stroke();
-
-        extCtx.fillStyle = "#67e8f9";
-        extCtx.beginPath();
-        extCtx.ellipse(sx - 10, sy - 46, 5.5, 3, 0.2, 0, Math.PI * 2);
-        extCtx.ellipse(sx + 10, sy - 46, 5.5, 3, -0.2, 0, Math.PI * 2);
-        extCtx.fill();
-
-        // Giant Cyan Indra Lightning Bow aimed down into the arena
-        extCtx.strokeStyle = "#38bdf8";
-        extCtx.lineWidth = 6;
-        extCtx.beginPath();
-        extCtx.arc(sx, sy - 8, 92, 0.15, Math.PI - 0.15);
-        extCtx.stroke();
-        extCtx.strokeStyle = "#ffffff";
-        extCtx.lineWidth = 2.2;
-        extCtx.stroke();
-
         const pull = tNow < 1.25 ? Math.min(1, Math.max(0, (tNow - 0.55) / 0.65)) : 1;
-        const tipY = tNow >= 1.25 ? Math.min(arenaCY + rect.height * 0.45, sy + 95 + (tNow - 1.25) * 1900) : sy + 96 - pull * 14;
-        extCtx.strokeStyle = "#67e8f9";
-        extCtx.lineWidth = tNow >= 1.25 ? 14 : 7;
-        extCtx.beginPath();
-        extCtx.moveTo(sx, sy - 34 - pull * 20);
-        extCtx.lineTo(sx, tipY);
-        extCtx.stroke();
-        extCtx.strokeStyle = "#ffffff";
-        extCtx.lineWidth = tNow >= 1.25 ? 6 : 2.5;
-        extCtx.stroke();
+        const tipDist = tNow >= 1.25 ? Math.min(arenaCY + rect.height * 0.45 - sy, 95 + (tNow - 1.25) * 1900) : null;
+        drawIndraSusanoo(extCtx, sx, sy, 1.05, tNow, pull, tipDist);
 
         extCtx.font = "900 28px Impact, system-ui, sans-serif";
         extCtx.textAlign = "center";
         extCtx.strokeStyle = "#09090b";
         extCtx.lineWidth = 6;
-        extCtx.strokeText("INDRA'S ARROW !!", sx, sy - 92);
+        extCtx.strokeText("INDRA'S ARROW !!", sx, sy - 96);
         extCtx.fillStyle = "#67e8f9";
-        extCtx.fillText("INDRA'S ARROW !!", sx, sy - 92);
-
+        extCtx.fillText("INDRA'S ARROW !!", sx, sy - 96);
         extCtx.restore();
       }
     };
@@ -1210,6 +1304,12 @@
     const isSA = Boolean(ball.susanooArmorMode);
     const isEv = Boolean(ball.evolved);
     const t = performance.now() * 0.004;
+
+    if (ball.previewIndraSusanoo) {
+      drawIndraSusanoo(c, 0, -2, 0.36, t, 0.75, null);
+    } else if (ball.previewArmoredSusanoo) {
+      drawArmoredSusanoo(c, 0, -4, 0.54, t, 0.85);
+    }
 
     if (isSA) {
       // Susanoo Samurai Armor: Translucent purple Susanoo shoulder armor & ribcage aura

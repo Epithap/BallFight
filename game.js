@@ -5500,6 +5500,8 @@
         kyuubiMode: Boolean(fl.kyuubiMode),
         curseMarkMode: Boolean(fl.curseMarkMode),
         susanooArmorMode: Boolean(fl.susanooArmorMode),
+        previewArmoredSusanoo: Boolean(fl.previewArmoredSusanoo),
+        previewIndraSusanoo: Boolean(fl.previewIndraSusanoo),
         vastoLordeMode: Boolean(fl.vastoLordeMode),
         innerDemonMode: Boolean(fl.innerDemonMode),
         gear4Mode: fl.gear4Mode || null,
