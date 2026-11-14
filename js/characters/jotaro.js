@@ -3,16 +3,132 @@
   const { COLORS } = BF;
   const rt = BF.rt;
 
+  function spawnStarFingerBeam({ owner, target, angle, reach = 365, duration = 0.24, damage = 16 }) {
+    let hitDone = false;
+    owner.standAttackTimer = duration + 0.15;
+    return {
+      x: owner.x,
+      y: owner.y,
+      life: duration,
+      maxLife: duration,
+      isTimeStopEntity: true,
+      dead: false,
+      update(dt, g) {
+        this.life -= dt;
+        this.x = owner.x;
+        this.y = owner.y;
+        const p = 1 - Math.max(0, this.life / this.maxLife);
+        const curLen = reach * (p < 0.45 ? p / 0.45 : 1 - (p - 0.45) * 0.4);
+        const tipX = owner.x + Math.cos(angle) * curLen;
+        const tipY = owner.y + Math.sin(angle) * curLen;
+
+        if (!hitDone && target && target.alive) {
+          // Point-to-segment distance from target center to Star Finger beam
+          const dx = Math.cos(angle);
+          const dy = Math.sin(angle);
+          const proj = Math.max(0, Math.min(curLen, (target.x - owner.x) * dx + (target.y - owner.y) * dy));
+          const closestX = owner.x + dx * proj;
+          const closestY = owner.y + dy * proj;
+          const dist = Math.hypot(target.x - closestX, target.y - closestY);
+          if (dist <= target.radius + 14) {
+            hitDone = true;
+            const dealt = g.applyDamage(target, damage);
+            target.flashTimer = 0.16;
+            target.squash = 0.85;
+            // Interrupt non-ultimate casts & stagger/slow enemy
+            if (target.channelTimer > 0 && target.cast && target.cast.kind !== "time_stop") {
+              target.channelTimer = 0;
+              target.cast = null;
+            }
+            g.addEffect(target, "slow", 0.65, { factor: 0.35 });
+            // Step Jotaro forward toward the staggered target to combo into Ora Barrage!
+            const stepSpd = owner.baseSpeed * 1.35;
+            owner.vx = dx * stepSpd;
+            owner.vy = dy * stepSpd;
+            if (owner.skills[0] && owner.skills[0]._cd > 0.35) {
+              owner.skills[0]._cd = Math.max(0.2, owner.skills[0]._cd - 0.9);
+            }
+            g.chargeUlt(owner);
+            g.spawnSparks(target.x, target.y, "#00f0ff", "#a855f7");
+            g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#00f0ff", true, "STAR FINGER!!");
+            g.sound.playCritHit();
+            rt.setHitStop(0.05);
+            rt.addShake(0.14, 3.5);
+          }
+        }
+
+        if (Math.random() < 0.75) {
+          rt.particles.push({
+            x: tipX,
+            y: tipY,
+            vx: (Math.random() - 0.5) * 60,
+            vy: (Math.random() - 0.5) * 60,
+            size: 4,
+            life: 0.16,
+            maxLife: 0.16,
+            color: Math.random() < 0.5 ? "#00f0ff" : "#a855f7",
+          });
+        }
+
+        if (this.life <= 0) this.dead = true;
+      },
+      render(c) {
+        const p = 1 - Math.max(0, this.life / this.maxLife);
+        const ext = p < 0.45 ? p / 0.45 : Math.max(0, 1 - (p - 0.45) / 0.55);
+        const curLen = reach * ext;
+        if (curLen <= 8) return;
+
+        c.save();
+        c.translate(owner.x, owner.y);
+        c.rotate(angle);
+
+        // Outer Star Platinum violet-cyan aura beam
+        c.strokeStyle = "rgba(168, 85, 247, 0.55)";
+        c.lineWidth = 18;
+        c.lineCap = "round";
+        c.beginPath();
+        c.moveTo(owner.radius * 0.6, 0);
+        c.lineTo(curLen, 0);
+        c.stroke();
+
+        // Twin elongated Star Platinum fingers with gold knuckle guards
+        for (const offset of [-3.5, 3.5]) {
+          c.fillStyle = "#8e44ad";
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 2.5;
+          c.beginPath();
+          c.roundRect(owner.radius * 0.5, offset - 3, curLen - owner.radius * 0.5, 6, 3);
+          c.fill();
+          c.stroke();
+        }
+
+        // Glowing cyan piercing fingertip lance
+        c.strokeStyle = "#00f0ff";
+        c.lineWidth = 4;
+        c.beginPath();
+        c.moveTo(owner.radius * 0.7, 0);
+        c.lineTo(curLen + 8, 0);
+        c.stroke();
+
+        c.restore();
+      },
+    };
+  }
+
   const SKILL_ORA_BARRAGE = {
     name: "Ora Barrage",
-    cooldown: 2.4,
+    cooldown: 2.1,
     onTick(ball, game) {
       if (ball.standState) return false;
       const target = game.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
       const inUlt = ball.ultTimer > 0;
+      const dist = Math.hypot(target.x - ball.x, target.y - ball.y);
+      const maxReach = inUlt ? 420 : (ball.yareYareMode ? 285 : 250);
+      if (dist > maxReach + target.radius) return false;
+
       rt.beginCast(ball, {
-        kind: "stand_rush", duration: inUlt ? 0.16 : 0.25, color: "#9b59b6",
+        kind: "stand_rush", duration: inUlt ? 0.12 : 0.2, color: "#9b59b6",
         fire(b, g) {
           const t = g.balls.find((x) => x !== b && x.alive);
           if (!t) return;
@@ -29,20 +145,125 @@
             angle: angToTarget,
             target: t,
             dashDist: 0,
-            maxDashDist: inUlt ? 380 : 220,
+            maxDashDist: inUlt ? 400 : (b.yareYareMode ? 280 : 240),
             barrageTimer: 0,
-            punchInterval: 0.075,
-            punchesLeft: inUlt ? 6 : 5,
+            punchInterval: inUlt ? 0.065 : 0.072,
+            punchesLeft: inUlt ? 7 : (b.yareYareMode ? 6 : 5),
             hitCount: 0,
-            heavy: inUlt,
+            heavy: inUlt || Boolean(b.yareYareMode),
             cry: "ORA",
             standColor: "#9b59b6",
             vampiric: false,
           };
-          g.spawnDamageText(b.x, b.y - b.radius, 0, "#9b59b6", false, "STAR PLATINUM!");
+          g.spawnDamageText(b.x, b.y - b.radius, 0, "#9b59b6", false, b.yareYareMode ? "RAGE STAR PLATINUM!" : "STAR PLATINUM!");
         },
       });
       return true;
+    },
+  };
+
+  const SKILL_STAR_FINGER = {
+    name: "Star Finger",
+    cooldown: 3.8,
+    onTick(ball, game) {
+      if (ball.standState) return false;
+      const target = game.balls.find((b) => b !== ball && b.alive);
+      if (!target) return false;
+      const dist = Math.hypot(target.x - ball.x, target.y - ball.y);
+      // Ideal mid-to-long range poke or interrupt when enemy is casting
+      if (dist < 90 || dist > 375) return false;
+
+      rt.beginCast(ball, {
+        kind: "stand_rush", duration: 0.16, color: "#00f0ff",
+        fire(b, g) {
+          const t = g.balls.find((x) => x !== b && x.alive);
+          if (!t) return;
+          const ang = Math.atan2(t.y - b.y, t.x - b.x);
+          const dmg = Math.round((b.yareYareMode ? 18 : 14) + g.rng() * 5);
+          g.entities.push(spawnStarFingerBeam({
+            owner: b,
+            target: t,
+            angle: ang,
+            reach: 365,
+            duration: 0.24,
+            damage: dmg,
+          }));
+          g.sound.playBallHit();
+        },
+      });
+      return true;
+    },
+  };
+
+  const SKILL_STAR_PRECISION = {
+    name: "Yare Yare Daze & Star Guard",
+    cooldown: 0,
+    onTick(ball, game, dt) {
+      if (ball._guardCd > 0) ball._guardCd = Math.max(0, ball._guardCd - dt);
+
+      // 1. "YARE YARE DAZE..." Rage Awakening at <= 45% HP (once per round)
+      if (!ball.yareYareMode && ball.hp > 0 && ball.hp <= ball.maxHp * 0.45) {
+        ball.yareYareMode = true;
+        game.addEffect(ball, "shield", 6.5, { reduction: 0.25 });
+        game.addEffect(ball, "haste", 6.5, { factor: 1.2 });
+        for (const s of ball.skills) {
+          if (s._cd > 0) s._cd = 0;
+        }
+        game.chargeUlt(ball);
+        game.entities.push(rt.spawnShockRing(ball.x, ball.y, "#00f0ff", 130, 0.42));
+        game.entities.push(rt.spawnBanner("YARE YARE DAZE...", "#a855f7"));
+        game.spawnDamageText(ball.x, ball.y - ball.radius - 16, 0, "#00f0ff", true, "UNBREAKABLE RAGE!");
+        game.sound.playCritHit();
+        rt.addShake(0.18, 4);
+      }
+
+      // Bonus 30% faster skill cooldown recovery while in Yare Yare Rage Mode
+      if (ball.yareYareMode) {
+        for (const s of ball.skills) {
+          if (s._cd > 0) s._cd = Math.max(0, s._cd - dt * 0.3);
+        }
+      }
+
+      // 2. Star Guard: Auto-catch / deflect incoming projectiles with Star Platinum's precision!
+      if (!(ball._guardCd > 0)) {
+        for (const ent of game.entities) {
+          if (ent.dead || ent.owner === ball) continue;
+          const isHostileProj = ent.target === ball || ent.isKnife || ent.isArrow || ent.isSlash;
+          if (!isHostileProj || typeof ent.x !== "number" || typeof ent.y !== "number") continue;
+          const d = Math.hypot(ent.x - ball.x, ent.y - ball.y);
+          if (d <= ball.radius + 46) {
+            ent.dead = true;
+            ball._guardCd = 3.0;
+            ball.standAttackTimer = 0.28;
+            game.chargeUlt(ball);
+            game.spawnSparks(ent.x, ent.y, "#00f0ff", COLORS.gold);
+            game.spawnDamageText(ball.x, ball.y - ball.radius - 12, 0, "#00f0ff", false, "STAR CATCH!");
+            game.sound.playWallBounce();
+            break;
+          }
+        }
+      }
+      return false;
+    },
+    onDamaged(ball, amount, game) {
+      if (amount < 4 || ball._guardCd > 0 || !ball.alive) return false;
+      const attacker = game.balls.find((b) => b !== ball && b.alive);
+      if (!attacker) return false;
+      const dist = Math.hypot(attacker.x - ball.x, attacker.y - ball.y);
+      if (dist <= ball.radius + attacker.radius + 95) {
+        ball._guardCd = 3.2;
+        ball.standAttackTimer = 0.32;
+        game.addEffect(ball, "shield", 1.1, { reduction: 0.35 });
+        const counterDmg = game.applyDamage(attacker, Math.round(9 + game.rng() * 5));
+        const ang = Math.atan2(attacker.y - ball.y, attacker.x - ball.x);
+        attacker.vx = Math.cos(ang) * 420;
+        attacker.vy = Math.sin(ang) * 420;
+        game.spawnSparks(attacker.x, attacker.y, "#a855f7", "#00f0ff");
+        game.spawnDamageText(attacker.x, attacker.y - attacker.radius - 14, counterDmg, "#a855f7", true, "STAR COUNTER! ORA!");
+        game.sound.playBallHit();
+        return true;
+      }
+      return false;
     },
   };
 
@@ -255,18 +476,18 @@
     role: "STAND USER • STAR PLATINUM",
     color: "#6c5ce7",
     radius: 28,
-    speed: 365,
-    maxHp: 575,
+    speed: 370,
+    maxHp: 585,
     damage: [6, 10],
-    mass: 1.05,
+    mass: 1.08,
     costume: "jotaro",
     weapon: null,
     ult: "star_time_stop",
     ultName: "STAR PLATINUM: THE WORLD!",
-    ultDesc: "Stops time across the arena for 4 seconds! Star Platinum locks onto the rival with auto-aimed heavy ORA barrages.",
-    skillName: "ORA BARRAGE",
-    skillDesc: "Star Platinum dashes forward from behind and unleashes a furious ORA ORA punch barrage!",
-    skills: [SKILL_ORA_BARRAGE],
+    ultDesc: "Stops time for 4s, blinks right onto the frozen enemy, and stacks Stopped-Time ORA impacts that detonate when time resumes!",
+    skillName: "ORA BARRAGE & STAR FINGER",
+    skillDesc: "Unleashes ORA ORA barrages, pierces mid-range foes with Star Finger, auto-catches projectiles, and awakens 'Yare Yare Daze' Rage at <=45% HP!",
+    skills: [SKILL_ORA_BARRAGE, SKILL_STAR_FINGER, SKILL_STAR_PRECISION],
   };
 
   BF.WEAPON_DRAWERS.star_chain = (ball, c) => {

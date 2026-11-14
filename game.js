@@ -859,7 +859,7 @@
     timeStopTimer = 0;
     sound.playTimeResume();
     entities.push(spawnBanner("TIME RESUMES!", COLORS.gold));
-    shakeTime = 0.35; shakeIntensity = 7;
+    shakeTime = 0.22; shakeIntensity = 4.5;
 
     for (const ent of entities) {
       if (ent.isKnife && ent.state === "frozen") {
@@ -867,6 +867,25 @@
         if (ent.target) {
           ent.angle = Math.atan2(ent.target.y - ent.y, ent.target.x - ent.x);
         }
+      }
+    }
+    // Detonate accumulated Jotaro Stopped-Time ORA impacts when time resumes!
+    for (const b of balls) {
+      if (b.alive && b.stoppedTimeHits > 0) {
+        const hits = b.stoppedTimeHits;
+        const burstAng = b.stoppedTimeAngle ?? 0;
+        b.stoppedTimeHits = 0;
+        const burstDmg = applyDamage(b, Math.min(26, hits * 4));
+        b.flashTimer = 0.25;
+        b.squash = 0.95;
+        b.vx = Math.cos(burstAng) * 860;
+        b.vy = Math.sin(burstAng) * 860;
+        b.knockbackTimer = 0.42;
+        entities.push(spawnShockRing(b.x, b.y, "#a855f7", 150, 0.42));
+        spawnCritBurst(b.x, b.y);
+        spawnDamageText(b.x, b.y - b.radius - 18, burstDmg, "#a855f7", true, `TOKI WA UGOKIDASU! (${hits}x ORA)`);
+        sound.playCritHit();
+        checkKO(b.x, b.y);
       }
     }
     if (timeStopOwner && timeStopOwner.alive) {
@@ -2461,23 +2480,48 @@
       });
     } else if (ball.ult === "star_time_stop") {
       beginCast(ball, {
-        kind: "time_stop", duration: 0.45, color: "#9b59b6",
+        kind: "time_stop", duration: 0.42, color: "#9b59b6",
         fire(b) {
           b.ultTimer = 4.0;
           timeStopTimer = 4.0;
           timeStopOwner = b;
+          for (const s of b.skills) {
+            s._cd = 0;
+          }
+          // Instant Time-Step Blink onto the frozen enemy so Jotaro never whiffs Time Stop!
+          const enemy = balls.find((x) => x !== b && x.alive);
+          if (enemy) {
+            enemy.stoppedTimeHits = 0;
+            const angTo = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+            const standOff = enemy.radius + b.radius + 34;
+            b.x = Math.max(b.radius + 6, Math.min(WORLD_SIZE - b.radius - 6, enemy.x - Math.cos(angTo) * standOff));
+            b.y = Math.max(b.radius + 6, Math.min(WORLD_SIZE - b.radius - 6, enemy.y - Math.sin(angTo) * standOff));
+            b.vx = Math.cos(angTo) * b.baseSpeed * 1.15;
+            b.vy = Math.sin(angTo) * b.baseSpeed * 1.15;
+            entities.push(spawnShockRing(b.x, b.y, "#00f0ff", 110, 0.35));
+            spawnDamageText(b.x, b.y - b.radius - 12, 0, "#00f0ff", false, "TIME-STEP BLINK!");
+          }
           sound.playTimeStop();
-          shakeTime = 0.4; shakeIntensity = 8;
+          shakeTime = 0.25; shakeIntensity = 5;
         },
       });
     } else if (ball.ult === "berserker_armor") {
       beginCast(ball, {
-        kind: "powerup", duration: 0.5, color: COLORS.red,
+        kind: "powerup", duration: 0.45, color: COLORS.red,
         fire(b) {
           b.ultTimer = 8.5;
-          addEffect(b, "haste", 8.5, { factor: 1.32 });
-          if (b.skills[0]) b.skills[0]._cd = Math.min(b.skills[0]._cd, 0.2);
-          entities.push(spawnShockRing(b.x, b.y, COLORS.red, 125, 0.45));
+          addEffect(b, "haste", 8.5, { factor: 1.35 });
+          addEffect(b, "shield", 8.5, { reduction: 0.3 });
+          for (const s of b.skills) {
+            s._cd = 0;
+          }
+          const enemy = balls.find((x) => x !== b && x.alive);
+          if (enemy) {
+            const ang = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+            b.vx = Math.cos(ang) * b.baseSpeed * 1.55;
+            b.vy = Math.sin(ang) * b.baseSpeed * 1.55;
+          }
+          entities.push(spawnShockRing(b.x, b.y, COLORS.red, 135, 0.45));
         },
       });
     } else if (ball.ult === "hollow_purple") {
@@ -3265,10 +3309,14 @@
           attacker.standAttackTimer = 0.3;
           if (timeStopTimer > 0 && attacker === timeStopOwner) {
             const heavyStandDmg = applyDamage(defender, Math.round(9 + rng() * 4));
+            if (isJotaro) {
+              defender.stoppedTimeHits = (defender.stoppedTimeHits || 0) + 1;
+              defender.stoppedTimeAngle = Math.atan2(defender.y - attacker.y, defender.x - attacker.x);
+            }
             spawnSparks(midX, midY, standColor, COLORS.white);
             spawnDamageText(defender.x, defender.y - defender.radius - 16, heavyStandDmg, standColor, true, heavyCry);
-            shakeTime = 0.2;
-            shakeIntensity = 6;
+            shakeTime = 0.14;
+            shakeIntensity = 3.5;
             sound.playCritHit();
           } else {
             spawnDamageText(defender.x, defender.y - defender.radius - 12, 0, standColor, false, cry);
@@ -3388,6 +3436,10 @@
         if (st.vampiric !== false && ball.costume === "dio") {
           BF.tryDioVampiricHeal(ball);
         }
+        if (timeStopTimer > 0 && ball === timeStopOwner && ball.costume === "jotaro") {
+          st.target.stoppedTimeHits = (st.target.stoppedTimeHits || 0) + 1;
+          st.target.stoppedTimeAngle = st.angle;
+        }
         addEffect(st.target, "slow", 0.35, { factor: 0.45 });
         st.target.flashTimer = 0.08;
         st.target.squash = 0.65;
@@ -3403,8 +3455,8 @@
           st.hitCount === 1 ? (isOra ? "ORA" : "MUDA") : (st.heavy ? (isOra ? "HEAVY ORA!" : "HEAVY MUDA!") : (isOra ? "ORA!" : "MUDA!"))
         );
         sound.playBallHit();
-        shakeTime = Math.max(shakeTime, 0.12);
-        shakeIntensity = Math.max(shakeIntensity, st.heavy ? 6 : 2.5);
+        shakeTime = Math.max(shakeTime, 0.1);
+        shakeIntensity = Math.max(shakeIntensity, st.heavy ? 3.5 : 2);
 
         if (st.hitCount >= 2 && !st.ultCharged && !st.heavy) {
           st.ultCharged = true;
@@ -3412,6 +3464,11 @@
         }
 
         if (st.punchesLeft <= 0) {
+          if (ball.costume === "jotaro" && ball.yareYareMode && !(timeStopTimer > 0)) {
+            st.target.vx = Math.cos(st.angle) * 480;
+            st.target.vy = Math.sin(st.angle) * 480;
+            spawnDamageText(st.target.x, st.target.y - st.target.radius - 14, 0, "#00f0ff", true, "SKULL CRUSHER ORA!!");
+          }
           st.phase = "returning";
         }
       }
