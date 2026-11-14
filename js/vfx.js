@@ -913,7 +913,7 @@
         rt().spawnCritBurst(b.x, b.y);
         rt().spawnDamageText(b.x, b.y - b.radius - 18, burstDmg, "#a855f7", true, `TOKI WA UGOKIDASU! (${hits}x ORA)`);
         rt().sound.playCritHit();
-        checkKO(b.x, b.y);
+        rt().checkKO(b.x, b.y);
       }
     }
     if (rt().timeStopOwner && rt().timeStopOwner.alive) {

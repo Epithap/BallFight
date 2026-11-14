@@ -441,6 +441,7 @@
     triggerDomainExpansion: (...args) => triggerDomainExpansion(...args),
     castMuzzle: (...args) => castMuzzle(...args),
     drawStandFist: (...args) => drawStandFist(...args),
+    checkKO: (...args) => checkKO(...args),
     makeGameProxy: () => game,
   };
 
