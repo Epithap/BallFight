@@ -430,40 +430,158 @@
     },
   };
 
-  // ---- Skill 2: Chainsaw Tether & Grind (Physical Hook & Reel-In, No Ult Charge) ----
+  // ---- Skill 2: Straight Chainsaw Dash + Around-Self Saw Shred (No Auto-Lock, No Ult Charge) ----
+  function spawnAroundSawStorm(owner, dashAng) {
+    return {
+      owner,
+      dashAng,
+      life: 0.48,
+      maxLife: 0.48,
+      tickCd: 0.02,
+      healsLeft: 2,
+      spin: 0,
+      dead: false,
+      update(dt, g) {
+        this.life -= dt;
+        this.spin += dt * 24;
+        if (this.life <= 0 || !this.owner || !this.owner.alive) {
+          this.dead = true;
+          return;
+        }
+        this.tickCd -= dt;
+        if (this.tickCd <= 0) {
+          this.tickCd = 0.13;
+          const auraR = this.owner.radius + 34;
+          for (const enemy of g.balls) {
+            if (enemy === this.owner || !enemy.alive) continue;
+            const d = Math.hypot(enemy.x - this.owner.x, enemy.y - this.owner.y);
+            if (d <= auraR + enemy.radius) {
+              const dealt = g.applyDamage(enemy, 3);
+              enemy.flashTimer = 0.08;
+              enemy._denjiShredTimer = 2.5;
+              g.spawnSparks(enemy.x, enemy.y, "#ef4444", "#fbbf24");
+              g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 12, dealt, "#fb923c", false, "SAW SHRED!");
+              g.sound.playBallHit();
+              if (this.healsLeft > 0 && this.owner.hp < this.owner.maxHp) {
+                this.healsLeft--;
+                const actual = Math.min(2, this.owner.maxHp - this.owner.hp);
+                this.owner.hp += actual;
+              }
+            }
+          }
+        }
+      },
+      render(c) {
+        if (!this.owner || !this.owner.alive) return;
+        const fade = Math.min(1, this.life / 0.16);
+        const r = this.owner.radius + 30;
+        c.save();
+        c.globalAlpha = 0.9 * fade;
+        c.translate(this.owner.x, this.owner.y);
+
+        // Glowing circular chainsaw-shred storm around Denji
+        c.strokeStyle = "#f97316";
+        c.shadowColor = "#ef4444";
+        c.shadowBlur = 14;
+        c.lineWidth = 4;
+        c.beginPath();
+        c.arc(0, 0, r, 0, Math.PI * 2);
+        c.stroke();
+
+        // Spinning jagged saw teeth around the outer shred ring
+        c.rotate(this.spin);
+        c.fillStyle = "#f8fafc";
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 1.4;
+        for (let i = 0; i < 12; i++) {
+          const a = (i * Math.PI * 2) / 12;
+          c.save();
+          c.rotate(a);
+          c.beginPath();
+          c.moveTo(r - 2, -4);
+          c.lineTo(r + 8, 1);
+          c.lineTo(r - 2, 5);
+          c.closePath();
+          c.fill();
+          c.stroke();
+          c.restore();
+        }
+        c.restore();
+      },
+    };
+  }
+
   const SKILL_CHAIN_GRAPPLE = {
-    name: "Chain Tether",
-    cooldown: 4.6,
+    name: "Revving Saw Dash",
+    cooldown: 4.5,
     onTick(ball, g) {
       const target = g.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
       const dist = Math.hypot(target.x - ball.x, target.y - ball.y);
-      if (dist > 335 || dist < 55) return false;
+      if (dist > 340) return false;
+
+      // Lock straight forward along Denji's current heading (NO auto-lock onto enemy!)
+      const lockedAng =
+        Math.hypot(ball.vx, ball.vy) > 15 ? Math.atan2(ball.vy, ball.vx) : ball.facingAngle || 0;
 
       rt.beginCast(ball, {
-        kind: "slash",
-        duration: 0.2,
-        color: "#fbbf24",
-        renderCast(b, c, p, ang, tg) {
-          if (tg) {
-            c.save();
-            c.setLineDash([8, 6]);
-            c.strokeStyle = "#fbbf24";
-            c.lineWidth = 2.6;
-            c.globalAlpha = 0.72;
+        kind: "dash",
+        duration: 0.42,
+        color: "#fb923c",
+        renderCast(b, c, p) {
+          const ux = Math.cos(lockedAng);
+          const uy = Math.sin(lockedAng);
+          // Straight forward dash corridor & chevron arrows (no enemy tracking)
+          c.save();
+          c.translate(b.x, b.y);
+          c.rotate(lockedAng);
+          c.strokeStyle = "rgba(251, 146, 60, 0.85)";
+          c.lineWidth = 3;
+          c.setLineDash([10, 8]);
+          c.beginPath();
+          c.moveTo(b.radius + 8, 0);
+          c.lineTo(b.radius + 140 * (0.35 + 0.65 * p), 0);
+          c.stroke();
+          c.setLineDash([]);
+
+          // Revving sparks around Denji while charging
+          for (let i = 0; i < 6; i++) {
+            const a = p * 12 + (i * Math.PI) / 3;
+            const d = b.radius + 10 + Math.sin(p * 18 + i) * 5;
+            c.fillStyle = i % 2 === 0 ? "#fef08a" : "#ef4444";
             c.beginPath();
-            c.moveTo(b.x, b.y);
-            c.lineTo(b.x + (tg.x - b.x) * p, b.y + (tg.y - b.y) * p);
-            c.stroke();
-            c.restore();
+            c.arc(Math.cos(a) * d, Math.sin(a) * d, 3.2, 0, Math.PI * 2);
+            c.fill();
           }
+          c.restore();
+
+          // Forward arrow head
+          const tip = b.radius + 140 * (0.35 + 0.65 * p);
+          c.save();
+          c.translate(b.x + ux * tip, b.y + uy * tip);
+          c.rotate(lockedAng);
+          c.fillStyle = "#f97316";
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 2.4;
+          c.beginPath();
+          c.moveTo(12, 0);
+          c.lineTo(-6, -8);
+          c.lineTo(-6, 8);
+          c.closePath();
+          c.fill();
+          c.stroke();
+          c.restore();
         },
         fire(b, gg) {
-          const t = gg.balls.find((x) => x !== b && x.alive);
-          if (!t) return;
-          const aim = Math.atan2(t.y - b.y, t.x - b.x);
-          gg.entities.push(spawnChainHookProjectile(b, aim));
-          gg.sound.playBallHit();
+          const ux = Math.cos(lockedAng);
+          const uy = Math.sin(lockedAng);
+          b.denjiDashTimer = 0.34;
+          b.vx = ux * 700;
+          b.vy = uy * 700;
+          gg.entities.push(rt.spawnShockRing(b.x, b.y, "#f97316", 82, 0.28));
+          gg.entities.push(spawnAroundSawStorm(b, lockedAng));
+          gg.spawnDamageText(b.x, b.y - b.radius - 14, 0, "#fb923c", false, "SAW DASH!");
+          gg.sound.playCritHit();
         },
       });
       return true;
@@ -795,8 +913,8 @@ BF.CHARACTER_ROSTER.denji = {
     ult: "hero_of_hell",
     ultName: "HERO OF HELL (BLACK CHAINSAW)",
     ultDesc: "Awakens 4-arm Black Chainsaw Devil form for 8s! Deals automatic close-range 4-Arm Grind damage with Blood Lifesteal and fires Hellish Chain Barrage!",
-    skillName: "TWIN CHAINSAW LAUNCH & CHAIN TETHER",
-    skillDesc: "Launches twin forward-slicing Chainsaw Blades that bleed enemies & siphon Blood Orbs, or fires a Chain Tether to physically reel and shred targets!",
+    skillName: "TWIN CHAINSAW LAUNCH & REVVING SAW DASH",
+    skillDesc: "Launches twin forward-slicing Chainsaw Blades that bleed enemies & siphon Blood Orbs, or charges a straight non-homing dash that shreds everything around Denji!",
     skills: [SKILL_CHAINSAW_REV, SKILL_CHAIN_GRAPPLE],
   };
 })();
