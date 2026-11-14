@@ -23,6 +23,7 @@
       elapsed: 0,
       maxLife: 0.42,
       hit: false,
+      trail: [],
       dead: false,
       update(dt, g) {
         this.elapsed += dt;
@@ -39,6 +40,12 @@
         this.owner.x += this.owner.vx * dt;
         this.owner.y += this.owner.vy * dt;
 
+        this.trail.push({ x: this.owner.x, y: this.owner.y, life: 0.18 });
+        for (let i = this.trail.length - 1; i >= 0; i--) {
+          this.trail[i].life -= dt;
+          if (this.trail[i].life <= 0) this.trail.splice(i, 1);
+        }
+
         if (!this.hit && dist <= this.owner.radius + this.target.radius + 14) {
           this.hit = true;
           this.dead = true;
@@ -48,27 +55,46 @@
           this.target.vx = Math.cos(ang) * 320;
           this.target.vy = Math.sin(ang) * 320;
           g.chargeUlt(this.owner);
-          g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#f97316", 96, 0.28));
-          g.spawnSparks(this.target.x, this.target.y, "#fbbf24", "#f97316");
+          g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#f97316", 112, 0.32));
+          g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#fde047", 78, 0.24));
+          g.spawnSparks(this.target.x, this.target.y, "#fde047", "#f97316");
           g.spawnDamageText(this.target.x, this.target.y - this.target.radius - 16, dealt, "#f97316", true, "JAJANKEN: ROCK!");
-          g.shake = Math.max(g.shake || 0, 8);
+          g.shake = Math.max(g.shake || 0, 9);
           if (g.sound && g.sound.playBallHit) g.sound.playBallHit();
         }
       },
       render(c) {
         if (!this.owner.alive) return;
-        const ang = Math.atan2(this.owner.vy, this.owner.vx);
         c.save();
+        for (const pt of this.trail) {
+          const a = Math.max(0, pt.life / 0.18);
+          c.fillStyle = `rgba(249, 115, 22, ${0.42 * a})`;
+          c.beginPath();
+          c.arc(pt.x, pt.y, this.owner.radius * 0.92, 0, Math.PI * 2);
+          c.fill();
+        }
+        const ang = Math.atan2(this.owner.vy, this.owner.vx);
         c.translate(this.owner.x + Math.cos(ang) * (this.owner.radius + 6), this.owner.y + Math.sin(ang) * (this.owner.radius + 6));
-        const g = c.createRadialGradient(0, 0, 3, 0, 0, 22);
+        c.rotate(ang);
+        const g = c.createRadialGradient(0, 0, 3, 0, 0, 28);
         g.addColorStop(0, "#ffffff");
-        g.addColorStop(0.45, "#fbbf24");
-        g.addColorStop(0.85, "rgba(249, 115, 22, 0.75)");
+        g.addColorStop(0.4, "#fde047");
+        g.addColorStop(0.75, "rgba(249, 115, 22, 0.85)");
         g.addColorStop(1, "rgba(249, 115, 22, 0)");
         c.fillStyle = g;
         c.beginPath();
-        c.arc(0, 0, 22, 0, Math.PI * 2);
+        c.arc(0, 0, 28, 0, Math.PI * 2);
         c.fill();
+
+        // Blazing Nen flame streaks
+        c.strokeStyle = "#fef08a";
+        c.lineWidth = 2.4;
+        for (let i = -1; i <= 1; i++) {
+          c.beginPath();
+          c.moveTo(4, i * 8);
+          c.lineTo(-28, i * 13);
+          c.stroke();
+        }
         c.restore();
       },
     };
@@ -81,9 +107,9 @@
       x: owner.x,
       y: owner.y,
       angle,
-      life: 0.26,
-      maxLife: 0.26,
-      radius: 92,
+      life: 0.3,
+      maxLife: 0.3,
+      radius: 96,
       hitSet: new Set(),
       dead: false,
       update(dt, g) {
@@ -103,14 +129,14 @@
             let diff = Math.atan2(dy, dx) - this.angle;
             while (diff > Math.PI) diff -= Math.PI * 2;
             while (diff < -Math.PI) diff += Math.PI * 2;
-            if (Math.abs(diff) <= 1.2) {
+            if (Math.abs(diff) <= 1.25) {
               this.hitSet.add(enemy);
               const dealt = g.applyDamage(enemy, 9);
               enemy.flashTimer = 0.14;
               enemy.squash = 0.84;
               g.addEffect(enemy, "slow", 0.6, { factor: 0.78 });
               g.chargeUlt(this.owner);
-              g.entities.push(rt.spawnShockRing(enemy.x, enemy.y, "#facc15", 72, 0.22));
+              g.entities.push(rt.spawnShockRing(enemy.x, enemy.y, "#facc15", 82, 0.24));
               g.spawnSparks(enemy.x, enemy.y, "#fde047", "#ffffff");
               g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 14, dealt, "#facc15", true, "JAJANKEN: SCISSORS!");
               if (g.sound && g.sound.playBallHit) g.sound.playBallHit();
@@ -124,19 +150,31 @@
         c.translate(this.x, this.y);
         c.rotate(this.angle);
         c.globalAlpha = a;
-        c.strokeStyle = "#fde047";
+
+        // Outer golden aura arc
+        c.strokeStyle = "#f97316";
         c.shadowColor = "#facc15";
-        c.shadowBlur = 14;
-        c.lineWidth = 8;
+        c.shadowBlur = 16;
+        c.lineWidth = 11;
         c.lineCap = "round";
         c.beginPath();
-        c.arc(0, 0, this.radius * 0.82, -1.05, 1.05);
+        c.arc(0, 0, this.radius * 0.86, -1.12, 1.12);
+        c.stroke();
+
+        // Dual scissor-blade energy arcs
+        c.strokeStyle = "#fde047";
+        c.lineWidth = 6;
+        c.beginPath();
+        c.arc(4, -5, this.radius * 0.78, -0.95, 0.95);
+        c.stroke();
+        c.beginPath();
+        c.arc(4, 5, this.radius * 0.78, -0.95, 0.95);
         c.stroke();
 
         c.strokeStyle = "#ffffff";
-        c.lineWidth = 3;
+        c.lineWidth = 2.8;
         c.beginPath();
-        c.arc(6, 0, this.radius * 0.72, -0.85, 0.85);
+        c.arc(8, 0, this.radius * 0.72, -0.82, 0.82);
         c.stroke();
         c.restore();
       },
@@ -152,11 +190,13 @@
       y,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      radius: 17,
+      radius: 19,
       life: 1.15,
+      t: 0,
       dead: false,
       update(dt, g) {
         this.life -= dt;
+        this.t += dt;
         if (this.life <= 0) {
           this.dead = true;
           return;
@@ -173,10 +213,11 @@
           const dealt = g.applyDamage(t, 8);
           t.flashTimer = 0.14;
           t.squash = 0.85;
-          t.vx += Math.cos(angle) * 180;
-          t.vy += Math.sin(angle) * 180;
+          t.vx += Math.cos(angle) * 185;
+          t.vy += Math.sin(angle) * 185;
           g.chargeUlt(this.owner);
-          g.entities.push(rt.spawnShockRing(this.x, this.y, "#fb923c", 76, 0.24));
+          g.entities.push(rt.spawnShockRing(this.x, this.y, "#fb923c", 90, 0.28));
+          g.entities.push(rt.spawnShockRing(this.x, this.y, "#fde047", 60, 0.2));
           g.spawnSparks(this.x, this.y, "#fbbf24", "#ffffff");
           g.spawnDamageText(t.x, t.y - t.radius - 14, dealt, "#fbbf24", true, "JAJANKEN: PAPER!");
           if (g.sound && g.sound.playBallHit) g.sound.playBallHit();
@@ -185,15 +226,27 @@
       render(c) {
         c.save();
         c.translate(this.x, this.y);
-        const grad = c.createRadialGradient(0, 0, 2, 0, 0, this.radius * 1.45);
+        const grad = c.createRadialGradient(0, 0, 2, 0, 0, this.radius * 1.6);
         grad.addColorStop(0, "#ffffff");
-        grad.addColorStop(0.45, "#fde047");
-        grad.addColorStop(0.8, "rgba(249, 115, 22, 0.78)");
+        grad.addColorStop(0.4, "#fde047");
+        grad.addColorStop(0.75, "rgba(249, 115, 22, 0.85)");
         grad.addColorStop(1, "rgba(249, 115, 22, 0)");
         c.fillStyle = grad;
         c.beginPath();
-        c.arc(0, 0, this.radius * 1.45, 0, Math.PI * 2);
+        c.arc(0, 0, this.radius * 1.6, 0, Math.PI * 2);
         c.fill();
+
+        // Swirling emitter rings
+        c.rotate(this.t * 12);
+        c.strokeStyle = "#ffffff";
+        c.lineWidth = 2.2;
+        c.beginPath();
+        c.ellipse(0, 0, this.radius * 1.25, this.radius * 0.55, 0.4, 0, Math.PI * 2);
+        c.stroke();
+        c.strokeStyle = "#fde047";
+        c.beginPath();
+        c.ellipse(0, 0, this.radius * 1.25, this.radius * 0.55, -0.4, 0, Math.PI * 2);
+        c.stroke();
         c.restore();
       },
     };
@@ -253,6 +306,11 @@
         this.phaseElapsed += dt;
 
         if (!this.owner.alive || !this.target.alive) {
+          if (this.owner.alive && Math.hypot(this.owner.vx, this.owner.vy) < 40) {
+            const spd = this.owner.baseSpeed || 356;
+            this.owner.vx = Math.cos(0.7) * spd;
+            this.owner.vy = Math.sin(0.7) * spd;
+          }
           this.dead = true;
           return;
         }
@@ -328,6 +386,15 @@
           if (t >= 1 && !this.slammed) {
             this.slammed = true;
             this.dead = true;
+
+            // Clamp Gon inside arena and restore movement velocity so he never stands still after slam
+            const pad = this.owner.radius + 10;
+            this.owner.x = Math.min(WORLD_SIZE - pad, Math.max(pad, this.grabX - 22));
+            this.owner.y = Math.min(WORLD_SIZE - pad, Math.max(pad, this.grabY - 12));
+            const bounceAng = Math.atan2(this.owner.y - this.grabY, this.owner.x - this.grabX) || -0.8;
+            const spd = this.owner.baseSpeed || 356;
+            this.owner.vx = Math.cos(bounceAng) * spd;
+            this.owner.vy = Math.sin(bounceAng) * spd;
 
             const dealt = g.applyDamage(this.target, 18);
             this.target.flashTimer = 0.22;
@@ -422,15 +489,33 @@
 
       rt.beginCast(ball, {
         kind: "powerup",
-        duration: 0.22,
+        duration: 0.24,
         color: activeForm === "rock" ? "#f97316" : activeForm === "scissors" ? "#facc15" : "#fbbf24",
         renderCast(b, c, p) {
           c.save();
           c.translate(b.x, b.y);
-          c.strokeStyle = "#fbbf24";
+          const col = activeForm === "rock" ? "#f97316" : activeForm === "scissors" ? "#fde047" : "#fbbf24";
+          const auraR = b.radius + 12 + p * 12;
+          const grad = c.createRadialGradient(0, 0, b.radius * 0.6, 0, 0, auraR * 1.3);
+          grad.addColorStop(0, "rgba(254, 240, 138, 0.15)");
+          grad.addColorStop(0.6, "rgba(251, 191, 36, 0.55)");
+          grad.addColorStop(1, "rgba(249, 115, 22, 0)");
+          c.fillStyle = grad;
+          c.beginPath();
+          c.arc(0, 0, auraR * 1.3, 0, Math.PI * 2);
+          c.fill();
+
+          // Rotating golden Nen rings
+          c.rotate(p * 8);
+          c.strokeStyle = col;
           c.lineWidth = 3.5;
           c.beginPath();
-          c.arc(0, 0, b.radius + 8 + p * 10, 0, Math.PI * 2);
+          c.arc(0, 0, auraR, 0, Math.PI * 1.2);
+          c.stroke();
+          c.strokeStyle = "#ffffff";
+          c.lineWidth = 2.2;
+          c.beginPath();
+          c.arc(0, 0, auraR * 0.85, Math.PI, Math.PI * 2.1);
           c.stroke();
           c.restore();
         },
@@ -618,3 +703,4 @@
     skills: [SKILL_JAJANKEN],
   };
 })();
+
