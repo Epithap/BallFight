@@ -5512,7 +5512,14 @@
         effects: [],
         equippedAura: cfg.equippedAura || "none",
       };
-      drawBall(previewBall, pCtx, true);
+      if ((previewBall.previewIndraSusanoo || previewBall.previewArmoredSusanoo) && BF.COSTUME_DRAWERS && BF.COSTUME_DRAWERS.sasuke) {
+        pCtx.save();
+        pCtx.translate(previewBall.x, previewBall.y);
+        BF.COSTUME_DRAWERS.sasuke(previewBall, previewBall.radius, pCtx);
+        pCtx.restore();
+      } else {
+        drawBall(previewBall, pCtx, true);
+      }
       pCtx.restore();
     };
 

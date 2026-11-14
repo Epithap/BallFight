@@ -1306,9 +1306,11 @@
     const t = performance.now() * 0.004;
 
     if (ball.previewIndraSusanoo) {
-      drawIndraSusanoo(c, 0, -2, 0.36, t, 0.75, null);
+      drawIndraSusanoo(c, 0, -4, 0.44, t, 0.75, null);
+      return;
     } else if (ball.previewArmoredSusanoo) {
-      drawArmoredSusanoo(c, 0, -4, 0.54, t, 0.85);
+      drawArmoredSusanoo(c, 0, 14, 0.96, t, 0.92);
+      return;
     }
 
     if (isSA) {
