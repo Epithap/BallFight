@@ -801,4 +801,54 @@
     }
     mouth(c, r, s.cast ? "demon" : "fang");
   };
+
+  // Chibi Uchiha Prodigy (Sasuke): big round crimson Sharingan eyes (3 tomoe in Base, Mangekyou in Ult/Cast), cool smirk.
+  F.sasuke = (ball, r, c, s) => {
+    const ms = s.ult || s.cast;
+    const bl = blinkAmt(ball) * 0.5;
+    for (const side of [-1, 1]) {
+      eye(c, r, side, {
+        rx: 0.245,
+        ry: 0.24,
+        slant: 0.2,
+        iris: 0.15,
+        color: "#dc2626",
+        innerRing: "#7f1d1d",
+        lidArc: true,
+        blink: bl,
+        ex: s.ex,
+        ey: s.ey,
+      });
+      if (bl <= 0.65) {
+        const px = side * r * 0.30 + (s.ex || 0) * 0.45;
+        const py = -r * 0.08 + (s.ey || 0) * 0.45;
+        c.save();
+        c.translate(px, py);
+        if (ms) {
+          // Mangekyou Sharingan star spokes
+          c.strokeStyle = INK;
+          c.lineWidth = 1.6;
+          for (let i = 0; i < 6; i++) {
+            const a = (i * Math.PI) / 3;
+            c.beginPath();
+            c.moveTo(0, 0);
+            c.lineTo(Math.cos(a) * r * 0.11, Math.sin(a) * r * 0.11);
+            c.stroke();
+          }
+        } else {
+          // 3 Sharingan Tomoe dots
+          c.fillStyle = INK;
+          for (let i = 0; i < 3; i++) {
+            const a = (i * Math.PI * 2) / 3 - Math.PI * 0.5;
+            c.beginPath();
+            c.arc(Math.cos(a) * r * 0.09, Math.sin(a) * r * 0.09, r * 0.024, 0, TAU);
+            c.fill();
+          }
+        }
+        c.restore();
+      }
+      brow(c, side, r, 0.40, 0.12, 3.6, 0.36);
+    }
+    mouth(c, r, s.cast ? "grit" : "smirk");
+  };
 })();

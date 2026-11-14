@@ -3,12 +3,12 @@
   const BF = (window.BallFight = window.BallFight || {});
 
   BF.SERIES = {
-    goku: "DRAGON BALL", naruto: "NARUTO", luffy: "ONE PIECE", ichigo: "BLEACH",
+    goku: "DRAGON BALL", naruto: "NARUTO", luffy: "ONE PIECE", ichigo: "BLEACH", sasuke: "NARUTO",
     dio: "JOJO", jotaro: "JOJO", guts: "BERSERK", gojo: "JUJUTSU KAISEN", sukuna: "JUJUTSU KAISEN",
     killua: "HUNTER X HUNTER", gon: "HUNTER X HUNTER", jinwoo: "SOLO LEVELING", denji: "CHAINSAW MAN", garou: "ONE-PUNCH MAN",
   };
   BF.RARITY = {
-    goku: "fighter", naruto: "fighter", luffy: "fighter", ichigo: "fighter",
+    goku: "fighter", naruto: "fighter", luffy: "fighter", ichigo: "fighter", sasuke: "fighter",
     jotaro: "fighter", guts: "fighter", dio: "fighter", gojo: "fighter", sukuna: "fighter",
     killua: "fighter", gon: "fighter", jinwoo: "fighter", denji: "fighter", garou: "fighter",
   };
@@ -78,6 +78,10 @@
     gon: [
       { id: "base", label: "HUNTER EXAM", desc: "Jajanken Enhancer! Cycles Rock (heavy Nen fist dash), Scissors (golden blade slash), and Paper (Nen orb)." },
       { id: "ult", label: "ADULT GON", ult: true, desc: "Pitch-black Restriction & Pledge form! Replaces Jajanken with 1 brutal skill: dashes to the enemy, lifts them into the air, and slams them into the ground!" },
+    ],
+    sasuke: [
+      { id: "base", label: "SHARINGAN", desc: "Chidori dash (triggers Rasengan vs Chidori Clash against Naruto!) and Katon: Fireball Jutsu." },
+      { id: "ult", label: "KIRIN (THUNDERSTORM)", ult: true, desc: "Mangekyou Sharingan! Summons dark storm clouds over the arena and calls down the Kirin Lightning Dragon!" },
     ],
     jinwoo: [
       { id: "base", label: "HUNTER", desc: "Kamish's Wrath twin daggers, Mutilate cross-slash dash and Ruler's Authority gravity pull." },

@@ -1361,6 +1361,9 @@
       this.rocketHit = false;
       this.rasenganTimer = 0;
       this.rasenganHit = false;
+      this.chidoriTimer = 0;
+      this.chidoriHit = false;
+      this._jutsuClashTimer = 0;
       this.dragonRushTimer = 0;
       this.dragonRushHit = false;
       this.cleaveDashTimer = 0;
@@ -2382,6 +2385,7 @@
         ? ["GAMMA RAY BURST!", "#c084fc"]
         : ["MONSTER CALAMITY!", "#ef4444"],
       adult_gon: ["RESTRICTION & PLEDGE!", "#09090b"],
+      kirin: ["KIRIN: THUNDER DRAGON!", "#38bdf8"],
     }[ball.ult];
     if (fx) {
       if (ball.ult !== "time_stop" && ball.ult !== "star_time_stop") {
@@ -2755,6 +2759,17 @@
           entities.push(spawnShockRing(b.x, b.y, "#ffffff", 95, 0.32));
         },
       });
+    } else if (ball.ult === "kirin") {
+      beginCast(ball, {
+        kind: "powerup",
+        duration: 0.4,
+        color: "#38bdf8",
+        fire(b, g) {
+          b.ultTimer = 7.0;
+          addEffect(b, "haste", 7.0, { factor: 1.18 });
+          if (BF.spawnKirinUltimate) BF.spawnKirinUltimate(b, g);
+        },
+      });
     }
   }
 
@@ -2791,6 +2806,7 @@
       ball && (
         ball.rocketTimer > 0 ||
         ball.rasenganTimer > 0 ||
+        ball.chidoriTimer > 0 ||
         ball.kyuubiSlashTimer > 0 ||
         ball.shunpoDashTimer > 0 ||
         ball.dragonRushTimer > 0 ||
@@ -3357,6 +3373,17 @@
           entities.push(BF.spawnRasenganVisual(midX, midY, sage ? 58 : 48));
           entities.push(spawnShockRing(midX, midY, COLORS.blue, sage ? 90 : 75, 0.35));
           shakeTime = 0.2; shakeIntensity = 5;
+          chargeUlt(attacker);
+        }
+        if (attacker.chidoriTimer > 0 && !attacker.chidoriHit) {
+          attacker.chidoriHit = true;
+          attacker.chidoriTimer = 0;
+          const chiDmg = applyDamage(defender, 11);
+          addEffect(defender, "slow", 0.6, { factor: 0.72 });
+          spawnDamageText(defender.x, defender.y - defender.radius - 14, chiDmg, "#38bdf8", true, "CHIDORI!");
+          entities.push(spawnShockRing(midX, midY, "#38bdf8", 88, 0.32));
+          spawnSparks(midX, midY, "#ffffff", "#38bdf8");
+          shakeTime = 0.18; shakeIntensity = 5;
           chargeUlt(attacker);
         }
         if (attacker.kyuubiSlashTimer > 0 && !attacker.kyuubiSlashHit) {
@@ -3937,6 +3964,12 @@
       if (ball.rasenganTimer > 0) {
         ball.rasenganTimer = Math.max(0, ball.rasenganTimer - scaledDt);
       }
+      if (ball.chidoriTimer > 0) {
+        ball.chidoriTimer = Math.max(0, ball.chidoriTimer - scaledDt);
+      }
+      if (ball._jutsuClashTimer > 0) {
+        ball._jutsuClashTimer = Math.max(0, ball._jutsuClashTimer - scaledDt);
+      }
       if (ball.kyuubiSlashTimer > 0) {
         ball.kyuubiSlashTimer = Math.max(0, ball.kyuubiSlashTimer - scaledDt);
       }
@@ -4038,6 +4071,8 @@
         if (
           ball.rocketTimer <= 0 &&
           ball.rasenganTimer <= 0 &&
+          ball.chidoriTimer <= 0 &&
+          ball._jutsuClashTimer <= 0 &&
           ball.kyuubiSlashTimer <= 0 &&
           ball.shunpoDashTimer <= 0 &&
           ball.dragonRushTimer <= 0 &&
@@ -4052,9 +4087,13 @@
     }
 
     checkStandClash();
+    if (BF.checkChidoriRasenganClash) BF.checkChidoriRasenganClash(game);
 
     const anyClashing = balls.some(
-      (b) => b.alive && b.standState && (b.standState.phase === "clashing" || b.standState.phase === "clash_finisher" || b.standState.phase === "clash_broken")
+      (b) => b.alive && (
+        b._jutsuClashTimer > 0 ||
+        (b.standState && (b.standState.phase === "clashing" || b.standState.phase === "clash_finisher" || b.standState.phase === "clash_broken"))
+      )
     );
     if (!anyClashing && !(game._cosmicCutsceneTimer > 0) && balls[0].alive && balls[1].alive) {
       handleBallCollision(balls[0], balls[1]);
