@@ -1566,28 +1566,6 @@
           const t = gg.balls.find((x) => x !== b && x.alive);
           if (!t) return;
 
-          if (t._shadowMarkedTimer > 0) {
-            t._shadowMarkedTimer = 0;
-            gg.entities.push(spawnShadowExchangeCloneVisual(b.x, b.y, false));
-            gg.entities.push(rt.spawnShockRing(b.x, b.y, "#7c3aed", 62, 0.26));
-            const ang = Math.atan2(t.y - b.y, t.x - b.x);
-            const destX = Math.max(b.radius + 14, Math.min(WORLD_SIZE - b.radius - 14, t.x + Math.cos(ang) * (t.radius + b.radius + 18)));
-            const destY = Math.max(b.radius + 14, Math.min(WORLD_SIZE - b.radius - 14, t.y + Math.sin(ang) * (t.radius + b.radius + 18)));
-            b.x = destX;
-            b.y = destY;
-            gg.entities.push(spawnShadowExchangeCloneVisual(destX, destY, true));
-            const dealt = gg.applyDamage(t, Math.round(9 + rt.rng() * 3));
-            t.flashTimer = 0.14;
-            t._wallCrushWindow = 0.6;
-            t.vx = Math.cos(ang + Math.PI) * 320;
-            t.vy = Math.sin(ang + Math.PI) * 320;
-            gg.entities.push(spawnMutilateXSlashVisual(t.x, t.y, ang, 1.15));
-            gg.spawnDamageText(t.x, t.y - t.radius - 16, dealt, "#c084fc", true, "SHADOW EXCHANGE!");
-            gg.sound.playCritHit();
-            rt.setHitStop(0.045);
-            return;
-          }
-
           const dLeft = t.x;
           const dRight = WORLD_SIZE - t.x;
           const dTop = t.y;
@@ -1599,6 +1577,26 @@
           else if (minD === dRight) sx = 1;
           else if (minD === dTop) sy = -1;
           else sy = 1;
+
+          // If target has Shadow Mark, empower Ruler's Authority into Gravity Crush (no TP)
+          if (t._shadowMarkedTimer > 0) {
+            t._shadowMarkedTimer = 0;
+            const dealt = gg.applyDamage(t, Math.round(10 + rt.rng() * 2));
+            t.flashTimer = 0.14;
+            t.squash = 0.82;
+            t._wallCrushWindow = 0.65;
+            t.vx = sx * 460;
+            t.vy = sy * 460;
+            gg.addEffect(t, "stun", 0.35);
+            gg.entities.push(spawnRulersAuthorityCrushVisual(t.x, t.y, sx, sy));
+            gg.entities.push(spawnMutilateXSlashVisual(t.x, t.y, Math.atan2(sy, sx), 1.05));
+            gg.entities.push(rt.spawnShockRing(t.x, t.y, "#a855f7", 95, 0.32));
+            gg.spawnDamageText(t.x, t.y - t.radius - 16, dealt, "#c084fc", true, "GRAVITY CRUSH!");
+            gg.sound.playCritHit();
+            rt.setHitStop(0.045);
+            rt.addShake(0.16, 4.5);
+            return;
+          }
 
           const dealt = gg.applyDamage(t, Math.round(8 + rt.rng() * 2));
           t.flashTimer = 0.12;

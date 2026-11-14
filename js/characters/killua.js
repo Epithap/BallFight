@@ -344,12 +344,12 @@
     };
   }
 
-  // ---- Delayed Blindspot Backstab + Izutsushi (Lightning Palm) ----
+  // ---- Delayed Rhythm Echo Convergence + Izutsushi (Lightning Palm Bolt, No Teleport) ----
   function spawnIzutsushiAmbush(owner, target) {
     return {
       owner,
       target,
-      timer: 0.24,
+      timer: 0.28,
       dead: false,
       update(dt, g) {
         this.timer -= dt;
@@ -357,34 +357,12 @@
         this.dead = true;
         if (!this.owner.alive || !this.target || !this.target.alive) return;
 
-        // Leave electric afterimage at old position
-        g.entities.push(spawnElectricAfterimage(this.owner.x, this.owner.y, this.owner.radius, 0.32));
-
-        // Blink to the target's blindspot (away from walls)
-        const moveAng = Math.hypot(this.target.vx, this.target.vy) > 10
-          ? Math.atan2(this.target.vy, this.target.vx)
-          : Math.atan2(this.target.y - this.owner.y, this.target.x - this.owner.x);
-        const backAng = moveAng + Math.PI;
-        const standOff = this.owner.radius + this.target.radius + 16;
-        const pad = this.owner.radius + 18;
-        let bx = clampArena(this.target.x + Math.cos(backAng) * standOff, pad);
-        let by = clampArena(this.target.y + Math.sin(backAng) * standOff, pad);
-
-        // If wall-clamped too close, fall back to arena-center side
-        if (Math.hypot(bx - this.target.x, by - this.target.y) < this.owner.radius + this.target.radius + 6) {
-          const toCenter = Math.atan2(WORLD_SIZE * 0.5 - this.target.y, WORLD_SIZE * 0.5 - this.target.x);
-          bx = clampArena(this.target.x + Math.cos(toCenter) * standOff, pad);
-          by = clampArena(this.target.y + Math.sin(toCenter) * standOff, pad);
-        }
-
-        this.owner.x = bx;
-        this.owner.y = by;
-        const strikeAng = Math.atan2(this.target.y - by, this.target.x - bx);
+        // Strike target from Killua's position with a branching Izutsushi Lightning Palm bolt (no random TP)
+        const strikeAng = Math.atan2(this.target.y - this.owner.y, this.target.x - this.owner.x);
         this.owner.vx = Math.cos(strikeAng) * this.owner.baseSpeed * 1.15;
         this.owner.vy = Math.sin(strikeAng) * this.owner.baseSpeed * 1.15;
 
-        // Strike with Izutsushi (Lightning Palm) + apply Static Mark!
-        const raw = Math.round(10 + rt.rng() * 3);
+        const raw = Math.round(10 + rt.rng() * 2);
         const dealt = g.applyDamage(this.target, raw);
         this.target.flashTimer = 0.14;
         this.target.squash = 0.85;
@@ -392,8 +370,8 @@
         this.target._staticMarkTimer = 2.2;
         this.target._staticMarkOwner = this.owner;
 
-        g.entities.push(spawnLightningBoltVisual(this.owner.x, this.owner.y, this.target.x, this.target.y, "#38bdf8", 0.24, 8));
-        g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#38bdf8", 82, 0.28));
+        g.entities.push(spawnLightningBoltVisual(this.owner.x, this.owner.y, this.target.x, this.target.y, "#38bdf8", 0.28, 9));
+        g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#38bdf8", 86, 0.3));
         g.spawnSparks(this.target.x, this.target.y, "#38bdf8", "#ffffff");
         g.spawnDamageText(this.target.x, this.target.y - this.target.radius - 14, dealt, "#38bdf8", true, "IZUTSUSHI!");
         g.sound.playCritHit();
