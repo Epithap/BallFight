@@ -1046,26 +1046,28 @@
     }
     c.restore();
 
-    // Spiky Orange Hair
+    // Spiky Orange Hair (compact rounded chibi silhouette)
     c.strokeStyle = COLORS.ink;
     c.lineWidth = 3;
+    c.lineJoin = "round";
+    c.lineCap = "round";
     c.fillStyle = COLORS.orange;
     c.beginPath();
-    c.moveTo(-r * 0.95, -r * 0.32);
-    c.lineTo(-r * 1.25, -r * 0.72);
-    c.lineTo(-r * 0.8, -r * 0.76);
-    c.lineTo(-r * 0.82, -r * 1.22);
-    c.lineTo(-r * 0.35, -r * 0.88);
-    c.lineTo(-r * 0.04, -r * 1.32);
-    c.lineTo(r * 0.28, -r * 0.88);
-    c.lineTo(r * 0.78, -r * 1.24);
-    c.lineTo(r * 0.76, -r * 0.76);
-    c.lineTo(r * 1.22, -r * 0.68);
-    c.lineTo(r * 0.92, -r * 0.32);
-    c.lineTo(r * 0.48, -r * 0.5);
-    c.lineTo(r * 0.14, -r * 0.36);
-    c.lineTo(-r * 0.08, -r * 0.52);
-    c.lineTo(-r * 0.45, -r * 0.38);
+    c.moveTo(-r * 0.88, -r * 0.28);
+    c.lineTo(-r * 1.12, -r * 0.62);
+    c.lineTo(-r * 0.72, -r * 0.65);
+    c.lineTo(-r * 0.74, -r * 1.05);
+    c.lineTo(-r * 0.32, -r * 0.76);
+    c.lineTo(-r * 0.04, -r * 1.14);
+    c.lineTo(r * 0.25, -r * 0.76);
+    c.lineTo(r * 0.70, -r * 1.07);
+    c.lineTo(r * 0.68, -r * 0.65);
+    c.lineTo(r * 1.10, -r * 0.58);
+    c.lineTo(r * 0.85, -r * 0.28);
+    c.lineTo(r * 0.44, -r * 0.44);
+    c.lineTo(r * 0.13, -r * 0.32);
+    c.lineTo(-r * 0.07, -r * 0.46);
+    c.lineTo(-r * 0.40, -r * 0.34);
     c.closePath();
     c.fill();
     c.stroke();

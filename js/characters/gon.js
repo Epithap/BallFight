@@ -871,38 +871,39 @@
       c.lineTo(r * 0.5, r * 0.72);
       c.stroke();
 
-      // Stark pure-white hollow eyes
+      // Stark big round hollow white Chibi eyes
       c.fillStyle = "#ffffff";
       c.shadowColor = "#ffffff";
       c.shadowBlur = 10;
       c.beginPath();
-      c.ellipse(-r * 0.3, -r * 0.04, r * 0.16, r * 0.15, 0, 0, Math.PI * 2);
-      c.ellipse(r * 0.3, -r * 0.04, r * 0.16, r * 0.15, 0, 0, Math.PI * 2);
+      c.ellipse(-r * 0.30, -r * 0.06, r * 0.21, r * 0.21, 0, 0, Math.PI * 2);
+      c.ellipse(r * 0.30, -r * 0.06, r * 0.21, r * 0.21, 0, 0, Math.PI * 2);
       c.fill();
       c.shadowBlur = 0;
 
       // Subtle white-ink grim mouth line
       c.strokeStyle = "rgba(255, 255, 255, 0.7)";
-      c.lineWidth = 1.6;
+      c.lineWidth = 1.8;
       c.beginPath();
-      c.moveTo(-r * 0.18, r * 0.24);
+      c.moveTo(-r * 0.16, r * 0.24);
       c.lineTo(0, r * 0.21);
-      c.lineTo(r * 0.18, r * 0.24);
+      c.lineTo(r * 0.16, r * 0.24);
       c.stroke();
       c.restore();
 
-      // Towering Adult Gon spiked black-and-white ink hair
+      // Towering Adult Gon spiked black-and-white ink hair (compact Chibi proportion)
       const adultHair = [
-        [-0.9, -0.08], [-1.18, -0.58], [-0.88, -0.78], [-1.05, -1.55],
-        [-0.45, -1.25], [-0.35, -2.05], [0, -1.65], [0.35, -2.05],
-        [0.45, -1.25], [1.05, -1.55], [0.88, -0.78], [1.18, -0.58],
-        [0.9, -0.08], [0.65, -0.4], [0, -0.48], [-0.65, -0.4],
+        [-0.84, -0.07], [-1.06, -0.50], [-0.79, -0.67], [-0.95, -1.33],
+        [-0.41, -1.08], [-0.31, -1.76], [0, -1.42], [0.31, -1.76],
+        [0.41, -1.08], [0.95, -1.33], [0.79, -0.67], [1.06, -0.50],
+        [0.84, -0.07], [0.58, -0.34], [0, -0.41], [-0.58, -0.34],
       ];
       c.save();
       c.lineJoin = "round";
+      c.lineCap = "round";
       c.fillStyle = "#030305";
       c.strokeStyle = "#ffffff";
-      c.lineWidth = 2.4;
+      c.lineWidth = 2.6;
       poly(c, r, adultHair);
       c.fill();
       c.stroke();
@@ -944,23 +945,24 @@
     c.stroke();
     c.restore();
 
-    // Spiky dark-green/black hair
+    // Spiky dark-green/black hair (compact rounded Chibi proportion)
     const baseHair = [
-      [-0.92, -0.08], [-1.18, -0.48], [-0.88, -0.62], [-1.12, -1.28],
-      [-0.48, -1.04], [-0.26, -1.46], [0, -1.2], [0.26, -1.46],
-      [0.48, -1.04], [1.12, -1.28], [0.88, -0.62], [1.18, -0.48],
-      [0.92, -0.08], [0.68, -0.34], [0.28, -0.44], [0, -0.32],
-      [-0.28, -0.44], [-0.68, -0.34],
+      [-0.84, -0.07], [-1.06, -0.41], [-0.79, -0.53], [-1.01, -1.10],
+      [-0.43, -0.89], [-0.23, -1.26], [0, -1.03], [0.23, -1.26],
+      [0.43, -0.89], [1.01, -1.10], [0.79, -0.53], [1.06, -0.41],
+      [0.84, -0.07], [0.61, -0.29], [0.25, -0.38], [0, -0.28],
+      [-0.25, -0.38], [-0.61, -0.29],
     ];
     c.save();
     c.lineJoin = "round";
-    const hGrad = c.createLinearGradient(0, -r * 0.2, 0, -r * 1.46);
+    c.lineCap = "round";
+    const hGrad = c.createLinearGradient(0, -r * 0.2, 0, -r * 1.26);
     hGrad.addColorStop(0, "#052e16");
     hGrad.addColorStop(0.65, "#064e3b");
     hGrad.addColorStop(1, "#15803d");
     c.fillStyle = hGrad;
     c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.6;
+    c.lineWidth = 3;
     poly(c, r, baseHair);
     c.fill();
     c.stroke();

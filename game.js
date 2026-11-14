@@ -6061,10 +6061,10 @@
     if (!canvasEl || !cfg) return;
     const pCtx = canvasEl.getContext("2d");
     pCtx.clearRect(0, 0, canvasEl.width, canvasEl.height);
-    const radius = Math.round(canvasEl.width * 0.38);
+    const radius = Math.round(canvasEl.width * 0.31);
     const avatarBall = {
       x: canvasEl.width * 0.5,
-      y: canvasEl.height * 0.54,
+      y: canvasEl.height * 0.56,
       radius: radius,
       color: cfg.color,
       costume: cfg.costume,
