@@ -4893,7 +4893,7 @@
           btn.addEventListener("click", () => {
             sound.unlock();
             if (playerWallet.coins < evoSpec.cost) {
-              sound.playWallHit();
+              sound.playWallBounce();
               return;
             }
             const res = evolveFighter(activeCfg.id);
@@ -5074,7 +5074,7 @@
             btn.addEventListener("click", () => {
               sound.unlock();
               if (playerWallet.coins < evoSpec.cost) {
-                sound.playWallHit();
+                sound.playWallBounce();
                 return;
               }
               const res = evolveFighter(cfg.id);
@@ -5175,7 +5175,7 @@
               btnBuy.addEventListener("click", () => {
                 sound.unlock();
                 if (playerWallet.gems < skinSpec.price) {
-                  sound.playWallHit();
+                  sound.playWallBounce();
                   return;
                 }
                 const res = buySkin(skinSpec.id);
@@ -5359,7 +5359,7 @@
             btnBuy.addEventListener("click", () => {
               sound.unlock();
               if (playerWallet.gems < sk.price) {
-                sound.playWallHit();
+                sound.playWallBounce();
                 if (merchantSpeechText) {
                   merchantSpeechText.textContent = `"Oi brat! You need ${sk.price} Gems for ${sk.name}! You only have ${playerWallet.gems}!"`;
                   BF.grannyTalkUntil = performance.now() + 2000;
@@ -6054,7 +6054,7 @@
     if (btnResetWallet) {
       btnResetWallet.addEventListener("click", () => {
         sound.unlock();
-        sound.playWallHit();
+        sound.playWallBounce();
         playerWallet.coins = 0;
         playerWallet.gems = 0;
         syncAdminAndAllUI();
@@ -6063,7 +6063,7 @@
     if (btnResetAll) {
       btnResetAll.addEventListener("click", () => {
         sound.unlock();
-        sound.playWallHit();
+        sound.playWallBounce();
         // Reset wallet, unlocked fighters (back to 4 starters), evolutions & skins
         playerWallet.coins = 0;
         playerWallet.gems = 0;

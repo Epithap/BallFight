@@ -1357,8 +1357,8 @@ body.rec-mode .arena-wrap {
 /* ================= Screens v2: fighters, sheet, profile, shop, gacha ================= */
 .rarity-fighter { --rar: var(--blue); }
 .rarity-starter { --rar: #8b93a1; }
-.rarity-common { --rar: var(--blue); }
-.rarity-rare { --rar: var(--green); }
+.rarity-common { --rar: var(--green); }
+.rarity-rare { --rar: var(--blue); }
 .rarity-epic { --rar: #9b5de5; }
 .rarity-legend { --rar: var(--sun); }
 
