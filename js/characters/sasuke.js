@@ -691,10 +691,10 @@
         }
         if (target && Math.hypot(target.x - this.x, target.y - this.y) <= target.radius + this.radius + 6) {
           this.dead = true;
-          const dealt = g.applyDamage(target, 24);
-          target.flashTimer = 0.22;
-          target.squash = 0.76;
-          g.addEffect(target, "stun", 0.4);
+          const dealt = g.applyDamage(target, 10);
+          target.flashTimer = 0.2;
+          target.squash = 0.78;
+          g.addEffect(target, "stun", 0.26);
           g.entities.push(rt.spawnShockRing(this.x, this.y, "#a855f7", 120, 0.34));
           g.entities.push(rt.spawnShockRing(this.x, this.y, "#09090b", 80, 0.24));
           g.spawnSparks(this.x, this.y, "#e9d5ff", "#a855f7");
@@ -1009,8 +1009,8 @@
   }
 
   BF.spawnArmoredSusanooUltimate = (owner, g) => {
-    g.addEffect(owner, "shield", 7.0, { reduction: 0.3 });
-    const shotTimes = [0.4, 1.85, 3.3, 4.85];
+    g.addEffect(owner, "shield", 7.0, { reduction: 0.25 });
+    const shotTimes = [0.4, 1.5, 2.6, 3.7, 4.8];
     let shotsFired = 0;
 
     const ent = {
@@ -1135,10 +1135,10 @@
             arrowFired = true;
             for (const enemy of gg.balls) {
               if (enemy !== this.owner && enemy.alive) {
-                const dealt = gg.applyDamage(enemy, 42);
-                enemy.flashTimer = 0.38;
-                enemy.squash = 0.72;
-                gg.addEffect(enemy, "stun", 1.0);
+                const dealt = gg.applyDamage(enemy, 28);
+                enemy.flashTimer = 0.34;
+                enemy.squash = 0.76;
+                gg.addEffect(enemy, "stun", 0.65);
                 gg.spawnDamageText(enemy.x, enemy.y - enemy.radius - 18, dealt, "#38bdf8", true, "INDRA'S ARROW!!");
               }
             }
@@ -1162,7 +1162,7 @@
             shockTick = 0;
             for (const enemy of gg.balls) {
               if (enemy !== this.owner && enemy.alive) {
-                const tickDmg = gg.applyDamage(enemy, 2);
+                const tickDmg = gg.applyDamage(enemy, 1);
                 enemy.flashTimer = 0.08;
                 gg.spawnSparks(enemy.x, enemy.y, "#38bdf8", "#a855f7");
                 gg.spawnDamageText(enemy.x, enemy.y - enemy.radius - 8, tickDmg, "#7dd3fc", false);
