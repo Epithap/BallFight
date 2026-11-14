@@ -2875,6 +2875,8 @@
     elapsed = 0;
     timeStopTimer = 0;
     timeStopOwner = null;
+    game._cosmicCutsceneTimer = 0;
+    game._moonArenaTimer = 0;
     koSequence = null;
     cameraZoom = 1;
     cameraX = WORLD_SIZE * 0.5;
@@ -3957,8 +3959,9 @@
         continue;
       }
 
-      // Freeze both fighters in place while their Stands or Domains are clashing
+      // Freeze both fighters in place while their Stands, Domains, or Cosmic Awakening are active
       if (
+        game._cosmicCutsceneTimer > 0 ||
         (ball.standState && (ball.standState.phase === "clashing" || ball.standState.phase === "clash_finisher" || ball.standState.phase === "clash_broken")) ||
         ball.domainClashTimer > 0
       ) {
@@ -4630,6 +4633,10 @@
       const isJotaroTS = timeStopOwner && timeStopOwner.costume === "jotaro";
       ctx.fillStyle = isJotaroTS ? "rgba(30, 18, 56, 0.22)" : "rgba(40, 32, 12, 0.20)";
       ctx.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+    }
+
+    if (game._moonArenaTimer > 0 && BF.drawMoonArenaOverlay) {
+      BF.drawMoonArenaOverlay(ctx, game);
     }
 
     // Particles
