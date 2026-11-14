@@ -1776,7 +1776,6 @@ body.rec-mode .arena-wrap {
 .std-chip { background: var(--blue); }
 .std-fill { background: var(--blue); }
 .schedule-toggle-btn {
-  margin-left: auto;
   pointer-events: auto;
   font-family: var(--font);
   font-size: 10px;
