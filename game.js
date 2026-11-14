@@ -2378,7 +2378,9 @@
       godspeed: ["GODSPEED: KANMURU!", "#38bdf8"],
       arise: ["ARISE: SHADOW ARMY!", "#a855f7"],
       hero_of_hell: ["HERO OF HELL!", "#ea580c"],
-      cosmic_fear: ["MONSTER CALAMITY!", "#ef4444"],
+      cosmic_fear: ball._isCosmicGarou
+        ? ["GAMMA RAY BURST!", "#c084fc"]
+        : ["MONSTER CALAMITY!", "#ef4444"],
     }[ball.ult];
     if (fx) {
       if (ball.ult !== "time_stop" && ball.ult !== "star_time_stop") {
@@ -2719,20 +2721,24 @@
         },
       });
     } else if (ball.ult === "cosmic_fear") {
-      beginCast(ball, {
-        kind: "powerup",
-        duration: 0.48,
-        color: "#ef4444",
-        fire(b, g) {
-          b.ultTimer = 8.0;
-          addEffect(b, "haste", 8.0, { factor: 1.28 });
-          addEffect(b, "shield", 8.0, { reduction: 0.22 });
-          if (b.skills[0]) b.skills[0]._cd = 0;
-          if (BF.triggerGarouMonsterOpener) BF.triggerGarouMonsterOpener(b, g);
-          entities.push(spawnShockRing(b.x, b.y, "#ef4444", 135, 0.45));
-          entities.push(spawnShockRing(b.x, b.y, "#fb923c", 96, 0.34));
-        },
-      });
+      if (ball._isCosmicGarou && BF.triggerCosmicGammaRayBurstUlt) {
+        BF.triggerCosmicGammaRayBurstUlt(ball, game);
+      } else {
+        beginCast(ball, {
+          kind: "powerup",
+          duration: 0.48,
+          color: "#ef4444",
+          fire(b, g) {
+            b.ultTimer = 8.0;
+            addEffect(b, "haste", 8.0, { factor: 1.28 });
+            addEffect(b, "shield", 8.0, { reduction: 0.22 });
+            if (b.skills[0]) b.skills[0]._cd = 0;
+            if (BF.triggerGarouMonsterOpener) BF.triggerGarouMonsterOpener(b, g);
+            entities.push(spawnShockRing(b.x, b.y, "#ef4444", 135, 0.45));
+            entities.push(spawnShockRing(b.x, b.y, "#fb923c", 96, 0.34));
+          },
+        });
+      }
     }
   }
 
@@ -4472,7 +4478,7 @@
       (ball.costume === "ichigo" && (ball.vastoLordeMode || ball.innerDemonMode || (ball.evolved && ball.ultTimer > 0))) ||
       (ball.costume === "goku" && ball.apeMode) ||
       ball.costume === "denji" ||
-      (ball.costume === "garou" && ball.ultTimer > 0);
+      (ball.costume === "garou" && (ball.ultTimer > 0 || ball._isCosmicGarou));
     if (!hasFullFaceMask) {
       c.fillStyle = "rgba(255, 255, 255, 0.55)";
       c.beginPath();

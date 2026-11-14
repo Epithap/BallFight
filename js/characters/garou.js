@@ -334,7 +334,9 @@
           if (!this.blessed) {
             this.blessed = true;
             this.owner._isCosmicGarou = true;
-            this.owner.ultTimer = Math.max(this.owner.ultTimer || 0, 14);
+            this.owner._cosmicMoonWarped = false;
+            this.owner.ultTimer = 0;
+            this.owner.ultCharge = 0;
             game.entities.push(rt.spawnShockRing(this.owner.x, this.owner.y, "#c084fc", 135, 0.35));
             game.spawnSparks(this.owner.x, this.owner.y, "#c084fc", "#38bdf8");
             game.spawnDamageText(this.owner.x, this.owner.y - 38, 0, "#c084fc", true, "COSMIC FEAR AWAKENED!");
@@ -353,7 +355,8 @@
             const oldHp = this.owner.hp;
             this.owner.hp = Math.min(this.owner.maxHp, this.owner.hp + 50);
             const gained = Math.round(this.owner.hp - oldHp);
-            game.addEffect(this.owner, "haste", 10, { mult: 1.2 });
+            game.addEffect(this.owner, "haste", 14, { mult: 1.22 });
+            if (this.owner.skills && this.owner.skills[0]) this.owner.skills[0]._cd = 0;
             game.entities.push(rt.spawnShockRing(this.owner.x, this.owner.y, "#38bdf8", 96, 0.3));
             game.spawnSparks(this.owner.x, this.owner.y, "#4ade80", "#38bdf8");
             game.spawnDamageText(this.owner.x, this.owner.y - this.owner.radius - 18, gained, "#4ade80", true, `+${gained} HP`);
@@ -410,61 +413,411 @@
     };
   }
 
-  // ---- Moon Arena Overlay + Timer Controller ----
+  // ---- Elegant Moon Sanctuary Arena Overlay ----
+  const MOON_STARS = [
+    [0.08, 0.11, 1.6], [0.16, 0.06, 1.1], [0.24, 0.18, 1.8], [0.35, 0.08, 1.3],
+    [0.44, 0.15, 1.5], [0.53, 0.07, 1.2], [0.62, 0.14, 1.7], [0.71, 0.09, 1.1],
+    [0.88, 0.22, 1.5], [0.12, 0.29, 1.3], [0.29, 0.27, 1.1], [0.58, 0.25, 1.4],
+    [0.92, 0.34, 1.6], [0.07, 0.42, 1.2], [0.48, 0.31, 1.5], [0.76, 0.28, 1.3],
+  ];
+
+  function drawSubspacePortalDisc(c, x, y, rx, ry, rot, alpha) {
+    if (alpha <= 0 || rx <= 1 || ry <= 1) return;
+    c.save();
+    c.translate(x, y);
+    c.globalAlpha = alpha;
+
+    // Outer cosmic aura
+    c.save();
+    c.scale(1, ry / rx);
+    const outer = c.createRadialGradient(0, 0, rx * 0.1, 0, 0, rx * 1.25);
+    outer.addColorStop(0, "#000000");
+    outer.addColorStop(0.55, "#090418");
+    outer.addColorStop(0.78, "rgba(168, 85, 247, 0.85)");
+    outer.addColorStop(0.92, "rgba(56, 189, 248, 0.55)");
+    outer.addColorStop(1, "rgba(56, 189, 248, 0)");
+    c.fillStyle = outer;
+    c.beginPath();
+    c.arc(0, 0, rx * 1.25, 0, Math.PI * 2);
+    c.fill();
+
+    // Swirling vortex arms
+    c.rotate(rot);
+    c.strokeStyle = "#c084fc";
+    c.lineWidth = 2.6;
+    c.beginPath();
+    c.arc(0, 0, rx * 0.82, 0, Math.PI * 1.35);
+    c.stroke();
+
+    c.strokeStyle = "#38bdf8";
+    c.lineWidth = 2.2;
+    c.beginPath();
+    c.arc(0, 0, rx * 0.56, Math.PI * 0.7, Math.PI * 1.95);
+    c.stroke();
+
+    // Pitch-black singularity center
+    c.fillStyle = "#020108";
+    c.beginPath();
+    c.arc(0, 0, rx * 0.42, 0, Math.PI * 2);
+    c.fill();
+    c.restore();
+    c.restore();
+  }
+
   BF.drawMoonArenaOverlay = function (c, game) {
     const t = Math.min(1, (game._moonArenaTimer || 0) / 0.5);
+    const now = performance.now() * 0.001;
     c.save();
-    c.fillStyle = `rgba(8, 12, 30, ${0.78 * t})`;
+
+    // 1. Deep Velvet Space Sky & Lunar Horizon Backdrop
+    const bgGrad = c.createLinearGradient(0, 0, 0, WORLD_SIZE);
+    bgGrad.addColorStop(0, `rgba(2, 4, 14, ${0.95 * t})`);
+    bgGrad.addColorStop(0.42, `rgba(8, 12, 32, ${0.92 * t})`);
+    bgGrad.addColorStop(0.75, `rgba(22, 27, 51, ${0.9 * t})`);
+    bgGrad.addColorStop(1, `rgba(38, 45, 72, ${0.9 * t})`);
+    c.fillStyle = bgGrad;
     c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
-    c.strokeStyle = `rgba(148, 163, 184, ${0.24 * t})`;
-    c.lineWidth = 2;
+    // 2. Soft Cosmic Nebula Clouds (Violet & Cyan)
+    const neb1 = c.createRadialGradient(WORLD_SIZE * 0.28, WORLD_SIZE * 0.2, 8, WORLD_SIZE * 0.28, WORLD_SIZE * 0.2, 155);
+    neb1.addColorStop(0, `rgba(168, 85, 247, ${0.24 * t})`);
+    neb1.addColorStop(0.55, `rgba(56, 189, 248, ${0.1 * t})`);
+    neb1.addColorStop(1, "rgba(15, 23, 42, 0)");
+    c.fillStyle = neb1;
     c.beginPath();
-    c.ellipse(WORLD_SIZE * 0.25, WORLD_SIZE * 0.72, 48, 22, 0, 0, Math.PI * 2);
+    c.arc(WORLD_SIZE * 0.28, WORLD_SIZE * 0.2, 155, 0, Math.PI * 2);
+    c.fill();
+
+    // 3. Twinkling Starfield
+    for (let i = 0; i < MOON_STARS.length; i++) {
+      const [sx, sy, sr] = MOON_STARS[i];
+      const twinkle = 0.45 + 0.55 * Math.sin(now * 2.6 + i * 1.7);
+      c.fillStyle = i % 3 === 0 ? `rgba(186, 230, 253, ${twinkle * t})` : `rgba(248, 250, 252, ${twinkle * t})`;
+      c.beginPath();
+      c.arc(sx * WORLD_SIZE, sy * WORLD_SIZE, sr, 0, Math.PI * 2);
+      c.fill();
+    }
+
+    // 4. Distant Ringed Planet (Upper Left)
+    const satX = 86;
+    const satY = 74;
+    c.save();
+    c.translate(satX, satY);
+    c.rotate(-0.32);
+    c.strokeStyle = `rgba(216, 180, 254, ${0.42 * t})`;
+    c.lineWidth = 3.5;
+    c.beginPath();
+    c.ellipse(0, 0, 34, 9, 0, 0, Math.PI * 2);
     c.stroke();
+    const satGrad = c.createRadialGradient(-5, -5, 2, 0, 0, 15);
+    satGrad.addColorStop(0, `rgba(243, 232, 255, ${0.9 * t})`);
+    satGrad.addColorStop(0.6, `rgba(147, 51, 234, ${0.75 * t})`);
+    satGrad.addColorStop(1, `rgba(30, 27, 75, ${0.85 * t})`);
+    c.fillStyle = satGrad;
     c.beginPath();
-    c.ellipse(WORLD_SIZE * 0.72, WORLD_SIZE * 0.32, 62, 28, -0.2, 0, Math.PI * 2);
+    c.arc(0, 0, 15, 0, Math.PI * 2);
+    c.fill();
+    c.restore();
+
+    // 5. Majestic Blue-Marble Earth in the Upper Right Sky
+    const earthX = WORLD_SIZE - 88;
+    const earthY = 82;
+    const earthR = 38;
+    const atmo = c.createRadialGradient(earthX, earthY, earthR * 0.7, earthX, earthY, earthR * 1.55);
+    atmo.addColorStop(0, `rgba(56, 189, 248, ${0.55 * t})`);
+    atmo.addColorStop(0.6, `rgba(37, 99, 235, ${0.22 * t})`);
+    atmo.addColorStop(1, "rgba(37, 99, 235, 0)");
+    c.fillStyle = atmo;
+    c.beginPath();
+    c.arc(earthX, earthY, earthR * 1.55, 0, Math.PI * 2);
+    c.fill();
+
+    c.save();
+    c.beginPath();
+    c.arc(earthX, earthY, earthR, 0, Math.PI * 2);
+    c.clip();
+    const ocean = c.createRadialGradient(earthX - 12, earthY - 12, 4, earthX, earthY, earthR);
+    ocean.addColorStop(0, `rgba(125, 211, 252, ${0.95 * t})`);
+    ocean.addColorStop(0.55, `rgba(2, 132, 199, ${0.92 * t})`);
+    ocean.addColorStop(1, `rgba(15, 23, 42, ${0.95 * t})`);
+    c.fillStyle = ocean;
+    c.fillRect(earthX - earthR, earthY - earthR, earthR * 2, earthR * 2);
+
+    // Subtle emerald continents & white cloud swirls
+    c.fillStyle = `rgba(52, 211, 153, ${0.5 * t})`;
+    c.beginPath();
+    c.ellipse(earthX - 10, earthY - 6, 14, 9, 0.4, 0, Math.PI * 2);
+    c.ellipse(earthX + 12, earthY + 10, 11, 7, -0.3, 0, Math.PI * 2);
+    c.fill();
+    c.strokeStyle = `rgba(255, 255, 255, ${0.55 * t})`;
+    c.lineWidth = 2.2;
+    c.beginPath();
+    c.arc(earthX - 4, earthY - 2, earthR * 0.65, -0.4, 1.1);
+    c.stroke();
+    c.restore();
+
+    // 6. Sculpted Silver-Ivory Lunar Surface & Horizon Arc
+    const floorGrad = c.createRadialGradient(
+      WORLD_SIZE * 0.5,
+      WORLD_SIZE * 0.58,
+      20,
+      WORLD_SIZE * 0.5,
+      WORLD_SIZE * 0.6,
+      WORLD_SIZE * 0.65
+    );
+    floorGrad.addColorStop(0, `rgba(226, 232, 240, ${0.22 * t})`);
+    floorGrad.addColorStop(0.55, `rgba(148, 163, 184, ${0.16 * t})`);
+    floorGrad.addColorStop(1, `rgba(30, 41, 59, ${0.28 * t})`);
+    c.fillStyle = floorGrad;
+    c.beginPath();
+    c.arc(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, WORLD_SIZE * 0.46, 0, Math.PI * 2);
+    c.fill();
+
+    // Elegant Sacred-Cosmos Lunar Astrolabe Rings
+    c.save();
+    c.translate(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5);
+    c.strokeStyle = `rgba(226, 232, 240, ${0.26 * t})`;
+    c.lineWidth = 1.8;
+    c.beginPath();
+    c.arc(0, 0, WORLD_SIZE * 0.36, 0, Math.PI * 2);
     c.stroke();
 
-    const earthX = WORLD_SIZE - 64;
-    const earthY = 54;
-    const g = c.createRadialGradient(earthX, earthY, 6, earthX, earthY, 34);
-    g.addColorStop(0, `rgba(56, 189, 248, ${0.8 * t})`);
-    g.addColorStop(0.6, `rgba(37, 99, 235, ${0.45 * t})`);
-    g.addColorStop(1, "rgba(37, 99, 235, 0)");
-    c.fillStyle = g;
+    c.rotate(now * 0.18);
+    c.strokeStyle = `rgba(192, 132, 252, ${0.22 * t})`;
+    c.setLineDash([12, 10]);
     c.beginPath();
-    c.arc(earthX, earthY, 34, 0, Math.PI * 2);
-    c.fill();
+    c.arc(0, 0, WORLD_SIZE * 0.26, 0, Math.PI * 2);
+    c.stroke();
+    c.setLineDash([]);
+    c.restore();
+
+    // Lunar Craters with Soft Silver Rim-Lighting
+    const craters = [
+      [0.22, 0.74, 46, 20, 0.12],
+      [0.78, 0.72, 54, 23, -0.18],
+      [0.2, 0.34, 38, 16, -0.1],
+      [0.74, 0.36, 42, 18, 0.2],
+    ];
+    for (const [cx, cy, rx, ry, rot] of craters) {
+      c.save();
+      c.translate(cx * WORLD_SIZE, cy * WORLD_SIZE);
+      c.rotate(rot);
+      c.fillStyle = `rgba(15, 23, 42, ${0.38 * t})`;
+      c.beginPath();
+      c.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+      c.fill();
+      c.strokeStyle = `rgba(226, 232, 240, ${0.28 * t})`;
+      c.lineWidth = 1.8;
+      c.beginPath();
+      c.ellipse(0, 0, rx, ry, 0, Math.PI * 1.1, Math.PI * 1.95);
+      c.stroke();
+      c.restore();
+    }
+
     c.restore();
   };
 
   function spawnMoonArenaController(g) {
     const existing = g.entities.find((e) => e.type === "garou_moon_arena_controller" && !e.dead);
-    if (existing) return existing;
+    if (existing) {
+      g._moonArenaTimer = Math.max(g._moonArenaTimer || 0, 999);
+      return existing;
+    }
+    g._moonArenaTimer = 999;
     return {
       type: "garou_moon_arena_controller",
       dead: false,
       update(dt, game) {
-        game._moonArenaTimer = Math.max(0, (game._moonArenaTimer || 0) - dt);
-        if (game._moonArenaTimer <= 0) {
-          game._moonArenaTimer = 0;
-          this.dead = true;
-        }
+        game._moonArenaTimer = Math.max(10, (game._moonArenaTimer || 999) - dt);
       },
       render() {},
     };
   }
 
-  // ---- Cosmic Rampage: 5-Punch Barrage in Moon Arena ----
-  function spawnCosmicRampage(owner, target) {
+  // ---- Cosmic Opener Skill (1st Skill After Awakening): Auto-Lock Dash -> Portal Transit to Moon ----
+  function spawnCosmicPortalMoonTransitCutscene(owner, target, g) {
+    const startX = (owner.x + target.x) * 0.5;
+    const startY = (owner.y + target.y) * 0.5;
+    const cx = WORLD_SIZE * 0.5;
+    const cy = WORLD_SIZE * 0.5;
+    const totalDur = 1.2;
+    g._cosmicCutsceneTimer = totalDur;
+
+    return {
+      isCosmicCutsceneEntity: true,
+      owner,
+      target,
+      startX,
+      startY,
+      cx,
+      cy,
+      elapsed: 0,
+      totalDur,
+      warpedToMoon: false,
+      slammed: false,
+      dead: false,
+      update(dt, game) {
+        this.elapsed += dt;
+        game._cosmicCutsceneTimer = Math.max(0, this.totalDur - this.elapsed);
+
+        if (!this.owner.alive || !this.target.alive || this.elapsed >= this.totalDur) {
+          this.owner._portalScale = 1;
+          this.target._portalScale = 1;
+          game._cosmicCutsceneTimer = 0;
+          this.dead = true;
+          return;
+        }
+
+        // Phase 1 (0 -> 0.48s): Both fighters are sucked into the Subspace Portal
+        if (this.elapsed < 0.48) {
+          const p = this.elapsed / 0.48;
+          const spin = p * Math.PI * 3;
+          const rDist = (1 - p) * 26;
+          this.owner.x = this.startX + Math.cos(spin) * rDist;
+          this.owner.y = this.startY + Math.sin(spin) * rDist;
+          this.target.x = this.startX - Math.cos(spin) * rDist;
+          this.target.y = this.startY - Math.sin(spin) * rDist;
+          this.owner.vx = 0;
+          this.owner.vy = 0;
+          this.target.vx = 0;
+          this.target.vy = 0;
+        }
+        // Phase 2 (0.48 -> 0.82s): Hyperspace warp to the Moon Sanctuary
+        else if (this.elapsed < 0.82) {
+          if (!this.warpedToMoon) {
+            this.warpedToMoon = true;
+            this.owner._cosmicMoonWarped = true;
+            game.entities.push(spawnMoonArenaController(game));
+            game.spawnDamageText(this.cx, this.cy - 68, 0, "#c084fc", true, "HYPERSPACE GATE: MOON ARENA!");
+            game.shake = Math.max(game.shake || 0, 11);
+          }
+          this.owner.x = this.cx - 48;
+          this.owner.y = this.cy;
+          this.target.x = this.cx + 48;
+          this.target.y = this.cy;
+          this.owner.vx = 0;
+          this.owner.vy = 0;
+          this.target.vx = 0;
+          this.target.vy = 0;
+        }
+        // Phase 3 (0.82 -> 1.2s): Emerge on the Moon & slam enemy
+        else {
+          if (!this.slammed) {
+            this.slammed = true;
+            const dealt = game.applyDamage ? 12 : 12;
+            this.target.hp = Math.max(1, this.target.hp - dealt);
+            this.target.flashTimer = 0.16;
+            this.target.squash = 0.78;
+            game.entities.push(rt.spawnShockRing(this.cx, this.cy, "#38bdf8", 165, 0.38));
+            game.entities.push(rt.spawnShockRing(this.cx, this.cy, "#c084fc", 120, 0.3));
+            game.spawnSparks(this.target.x, this.target.y, "#c084fc", "#38bdf8");
+            game.spawnDamageText(this.target.x, this.target.y - 34, dealt, "#38bdf8", true, "MOON FALL!");
+            if (this.owner.skills && this.owner.skills[0]) {
+              this.owner.skills[0]._cd = 0.45;
+            }
+          }
+        }
+      },
+      render(c) {
+        const rot = this.elapsed * 9;
+        if (this.elapsed < 0.55) {
+          const p = Math.min(1, this.elapsed / 0.25);
+          drawSubspacePortalDisc(c, this.startX, this.startY, 78 * p, 78 * p, rot, 0.95);
+        }
+        if (this.elapsed >= 0.38 && this.elapsed <= 0.88) {
+          const flash = Math.sin(((this.elapsed - 0.38) / 0.5) * Math.PI);
+          c.save();
+          c.fillStyle = `rgba(192, 132, 252, ${0.48 * flash})`;
+          c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+          c.strokeStyle = `rgba(224, 242, 254, ${0.8 * flash})`;
+          c.lineWidth = 2.5;
+          for (let i = 0; i < 12; i++) {
+            const a = (i * Math.PI) / 6;
+            c.beginPath();
+            c.moveTo(this.cx + Math.cos(a) * 25, this.cy + Math.sin(a) * 25);
+            c.lineTo(this.cx + Math.cos(a) * 240, this.cy + Math.sin(a) * 240);
+            c.stroke();
+          }
+          c.restore();
+        }
+        if (this.elapsed >= 0.52) {
+          const fade = Math.max(0, 1 - (this.elapsed - 0.52) / 0.68);
+          drawSubspacePortalDisc(c, this.cx, this.cy, 92, 52, -rot, fade);
+        }
+      },
+    };
+  }
+
+  function spawnCosmicPortalGrabDash(owner, target) {
     return {
       owner,
       target,
       elapsed: 0,
+      maxLife: 1.8,
+      trail: [],
+      dead: false,
+      update(dt, g) {
+        this.elapsed += dt;
+        if (this.elapsed >= this.maxLife || !this.owner.alive || !this.target.alive) {
+          this.dead = true;
+          return;
+        }
+
+        const dx = this.target.x - this.owner.x;
+        const dy = this.target.y - this.owner.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        const speed = 940;
+        this.owner.vx = (dx / dist) * speed;
+        this.owner.vy = (dy / dist) * speed;
+        this.owner.x += this.owner.vx * dt;
+        this.owner.y += this.owner.vy * dt;
+
+        this.trail.push({ x: this.owner.x, y: this.owner.y, life: 0.2 });
+        for (let i = this.trail.length - 1; i >= 0; i--) {
+          this.trail[i].life -= dt;
+          if (this.trail[i].life <= 0) this.trail.splice(i, 1);
+        }
+
+        if (dist <= this.owner.radius + this.target.radius + 14) {
+          this.dead = true;
+          this.owner.vx = 0;
+          this.owner.vy = 0;
+          this.target.vx = 0;
+          this.target.vy = 0;
+          g.entities.push(spawnCosmicPortalMoonTransitCutscene(this.owner, this.target, g));
+        }
+      },
+      render(c) {
+        c.save();
+        for (const pt of this.trail) {
+          const a = Math.max(0, pt.life / 0.2);
+          c.fillStyle = `rgba(192, 132, 252, ${0.45 * a})`;
+          c.beginPath();
+          c.arc(pt.x, pt.y, this.owner.radius * 0.9, 0, Math.PI * 2);
+          c.fill();
+        }
+        c.restore();
+      },
+    };
+  }
+
+  // ---- Cosmic Skill 1 on Moon: Subspace Portal Below Garou -> Teleport + 6-Hit Rampage ----
+  function spawnCosmicSubspacePortalRampage(owner, target) {
+    const entryX = owner.x;
+    const entryY = owner.y + owner.radius * 0.45;
+    return {
+      owner,
+      target,
+      entryX,
+      entryY,
+      exitX: target.x,
+      exitY: target.y,
+      elapsed: 0,
+      portalDur: 0.24,
+      teleported: false,
       hitsDone: 0,
-      hitTimes: [0.12, 0.24, 0.36, 0.48, 0.62],
-      totalDur: 0.72,
+      hitTimes: [0.26, 0.36, 0.46, 0.56, 0.66, 0.78],
+      totalDur: 0.88,
       dead: false,
       update(dt, g) {
         this.elapsed += dt;
@@ -473,8 +826,30 @@
           return;
         }
 
+        // Phase 1: Open portal beneath Garou and sink in
+        if (this.elapsed < this.portalDur) {
+          this.owner.x = this.entryX;
+          this.owner.y = this.entryY - this.owner.radius * 0.45 + (this.elapsed / this.portalDur) * 14;
+          this.owner.vx = 0;
+          this.owner.vy = 0;
+          const side = this.entryX <= this.target.x ? -1 : 1;
+          this.exitX = Math.min(WORLD_SIZE - 45, Math.max(45, this.target.x + side * (this.owner.radius + this.target.radius + 8)));
+          this.exitY = this.target.y;
+          return;
+        }
+
+        // Phase 2: Burst out of Exit Portal beside enemy
+        if (!this.teleported) {
+          this.teleported = true;
+          this.owner.x = this.exitX;
+          this.owner.y = this.exitY;
+          g.entities.push(rt.spawnShockRing(this.exitX, this.exitY, "#c084fc", 78, 0.24));
+          g.spawnSparks(this.exitX, this.exitY, "#38bdf8", "#c084fc");
+        }
+
+        // Phase 3: Stick to enemy and unleash 6-Hit Cosmic Rampage
         const ang = Math.atan2(this.target.y - this.owner.y, this.target.x - this.owner.x);
-        const dist = this.owner.radius + this.target.radius + 8;
+        const dist = this.owner.radius + this.target.radius + 6;
         this.owner.x = this.target.x - Math.cos(ang) * dist;
         this.owner.y = this.target.y - Math.sin(ang) * dist;
         this.owner.vx = 0;
@@ -483,12 +858,15 @@
         while (this.hitsDone < this.hitTimes.length && this.elapsed >= this.hitTimes[this.hitsDone]) {
           this.hitsDone += 1;
           const isFinal = this.hitsDone === this.hitTimes.length;
-          const dealt = g.applyDamage(this.target, 3);
+          const dealt = g.applyDamage(this.target, 4);
           this.target.flashTimer = 0.1;
-          this.target.squash = 0.84;
+          this.target.squash = 0.82;
+          if (this.hitsDone === 3 || isFinal) {
+            g.chargeUlt(this.owner);
+          }
           g.spawnSparks(this.target.x, this.target.y, isFinal ? "#c084fc" : "#38bdf8", "#ffffff");
           g.spawnDamageText(
-            this.target.x + (Math.random() - 0.5) * 16,
+            this.target.x + (Math.random() - 0.5) * 18,
             this.target.y - this.target.radius - 14,
             dealt,
             isFinal ? "#c084fc" : "#38bdf8",
@@ -497,189 +875,228 @@
           );
           if (g.sound && g.sound.playBallHit) g.sound.playBallHit();
           if (isFinal) {
-            g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#c084fc", 96, 0.28));
-            this.target.vx += Math.cos(ang) * 240;
-            this.target.vy += Math.sin(ang) * 240;
+            g.entities.push(rt.spawnShockRing(this.target.x, this.target.y, "#c084fc", 104, 0.28));
+            this.target.vx += Math.cos(ang) * 255;
+            this.target.vy += Math.sin(ang) * 255;
             g.shake = Math.max(g.shake || 0, 9);
           }
         }
       },
       render(c) {
-        if (!this.target.alive) return;
-        c.save();
-        c.strokeStyle = "rgba(192, 132, 252, 0.58)";
-        c.lineWidth = 3;
-        c.beginPath();
-        c.arc(this.target.x, this.target.y, this.target.radius + 18 + Math.sin(this.elapsed * 40) * 5, 0, Math.PI * 2);
-        c.stroke();
-        c.restore();
+        const rot = this.elapsed * 11;
+        const entryAlpha = Math.max(0, 1 - this.elapsed / 0.45);
+        drawSubspacePortalDisc(c, this.entryX, this.entryY, 44, 18, rot, entryAlpha);
+
+        const exitAlpha = this.elapsed < 0.55 ? Math.min(1, this.elapsed / 0.16) : Math.max(0, 1 - (this.elapsed - 0.55) / 0.33);
+        drawSubspacePortalDisc(c, this.exitX, this.exitY + this.owner.radius * 0.45, 46, 19, -rot, exitAlpha);
+
+        if (this.teleported && this.target.alive) {
+          const pulse = (Math.sin(this.elapsed * 60) + 1) * 0.5;
+          const ang = Math.atan2(this.target.y - this.owner.y, this.target.x - this.owner.x);
+          c.save();
+          c.translate(this.owner.x, this.owner.y);
+          c.rotate(ang);
+          c.strokeStyle = `rgba(192, 132, 252, ${0.5 + pulse * 0.45})`;
+          c.lineWidth = 4;
+          for (let i = -1; i <= 1; i++) {
+            c.beginPath();
+            c.moveTo(10, i * 10);
+            c.lineTo(48 + pulse * 16, i * 15);
+            c.stroke();
+          }
+          c.restore();
+        }
       },
     };
   }
 
-  // ---- Cosmic Skill 1: Black Hole Circle -> Teleport to Moon Arena + Rampage ----
-  function spawnCosmicBlackHole(owner, targetX, targetY) {
+  // ---- Cosmic Ultimate: Fly Up -> Transform into Quasar Sphere -> Full-Arena Gamma Ray Burst ----
+  function spawnCosmicGammaRayBurstUlt(owner, g) {
+    const startX = owner.x;
+    const startY = owner.y;
+    const skyX = WORLD_SIZE * 0.5;
+    const skyY = 88;
+    const totalDur = 1.75;
+    g._cosmicCutsceneTimer = totalDur;
+
     return {
+      isCosmicCutsceneEntity: true,
       owner,
-      x: targetX,
-      y: targetY,
-      radius: 66,
-      life: 1.6,
-      maxLife: 1.6,
-      triggered: false,
+      startX,
+      startY,
+      skyX,
+      skyY,
+      elapsed: 0,
+      totalDur,
+      pulsesDone: 0,
+      pulseTimes: [0.62, 0.92, 1.22],
       dead: false,
-      update(dt, g) {
-        this.life -= dt;
-        if (this.life <= 0 || !this.owner.alive) {
+      update(dt, game) {
+        this.elapsed += dt;
+        game._cosmicCutsceneTimer = Math.max(0, this.totalDur - this.elapsed);
+
+        if (!this.owner.alive || this.elapsed >= this.totalDur) {
+          this.owner._cosmicSphereMode = false;
+          game._cosmicCutsceneTimer = 0;
           this.dead = true;
           return;
         }
 
-        const enemy = pickEnemy(this.owner, g);
-        if (!enemy) return;
-
-        const dx = this.x - enemy.x;
-        const dy = this.y - enemy.y;
-        const dist = Math.hypot(dx, dy) || 1;
-        if (dist <= 170) {
-          const pull = 280 * dt;
-          enemy.vx += (dx / dist) * pull;
-          enemy.vy += (dy / dist) * pull;
-        }
-
-        if (!this.triggered && dist <= 54 + enemy.radius * 0.4) {
-          this.triggered = true;
-          this.dead = true;
-
-          const cx = WORLD_SIZE * 0.5;
-          const cy = WORLD_SIZE * 0.5;
-          enemy.x = Math.min(WORLD_SIZE - enemy.radius - 20, Math.max(enemy.radius + 20, cx + 80));
-          enemy.y = cy;
-          enemy.vx = 0;
-          enemy.vy = 0;
-          this.owner.x = Math.max(this.owner.radius + 20, enemy.x - (this.owner.radius + enemy.radius + 14));
-          this.owner.y = cy;
+        // Phase 1 (0 -> 0.55s): Fly to top-center & morph into Cosmic Quasar Sphere
+        if (this.elapsed < 0.55) {
+          const p = this.elapsed / 0.55;
+          const ease = 1 - Math.pow(1 - p, 3);
+          this.owner.x = this.startX + (this.skyX - this.startX) * ease;
+          this.owner.y = this.startY + (this.skyY - this.startY) * ease;
           this.owner.vx = 0;
           this.owner.vy = 0;
-
-          g._moonArenaTimer = 4.8;
-          g.entities.push(spawnMoonArenaController(g));
-          g.entities.push(rt.spawnShockRing(cx, cy, "#c084fc", 150, 0.35));
-          g.spawnSparks(enemy.x, enemy.y, "#c084fc", "#38bdf8");
-          g.spawnDamageText(cx, cy - 42, 0, "#c084fc", true, "MOON ARENA: COSMIC RAMPAGE!");
-          g.entities.push(spawnCosmicRampage(this.owner, enemy));
+          this.owner._cosmicSphereMode = true;
         }
-      },
-      render(c) {
-        const alpha = Math.max(0, Math.min(1, this.life / 0.35));
-        const t = performance.now() / 160;
-        c.save();
-        c.translate(this.x, this.y);
-        c.globalAlpha = alpha;
+        // Phase 2 (0.55 -> 1.45s): Full-Arena Gamma Ray Burst (100% arena hit)
+        else if (this.elapsed < 1.45) {
+          this.owner.x = this.skyX;
+          this.owner.y = this.skyY;
+          this.owner.vx = 0;
+          this.owner.vy = 0;
+          this.owner._cosmicSphereMode = true;
 
-        const grad = c.createRadialGradient(0, 0, 8, 0, 0, this.radius);
-        grad.addColorStop(0, "#020617");
-        grad.addColorStop(0.55, "rgba(88, 28, 135, 0.85)");
-        grad.addColorStop(0.85, "rgba(56, 189, 248, 0.45)");
-        grad.addColorStop(1, "rgba(56, 189, 248, 0)");
-        c.fillStyle = grad;
-        c.beginPath();
-        c.arc(0, 0, this.radius, 0, Math.PI * 2);
-        c.fill();
+          while (this.pulsesDone < this.pulseTimes.length && this.elapsed >= this.pulseTimes[this.pulsesDone]) {
+            this.pulsesDone += 1;
+            const isFinal = this.pulsesDone === this.pulseTimes.length;
+            game.shake = Math.max(game.shake || 0, isFinal ? 16 : 12);
+            game.entities.push(rt.spawnShockRing(this.skyX, this.skyY, "#f0abfc", 260, 0.38));
 
-        c.strokeStyle = "#c084fc";
-        c.lineWidth = 3;
-        c.beginPath();
-        c.arc(0, 0, this.radius * 0.72, t, t + Math.PI * 1.4);
-        c.stroke();
-
-        c.strokeStyle = "#38bdf8";
-        c.lineWidth = 2.5;
-        c.beginPath();
-        c.arc(0, 0, this.radius * 0.46, -t * 1.3, -t * 1.3 + Math.PI * 1.3);
-        c.stroke();
-
-        c.fillStyle = "#000000";
-        c.beginPath();
-        c.arc(0, 0, 16, 0, Math.PI * 2);
-        c.fill();
-        c.restore();
-      },
-    };
-  }
-
-  // ---- Moon Arena Skill 2: Gamma Ray Burst ----
-  function spawnGammaRayBurstBeam(owner, angle) {
-    return {
-      owner,
-      x: owner.x,
-      y: owner.y,
-      angle,
-      life: 0.42,
-      maxLife: 0.42,
-      length: WORLD_SIZE * 1.3,
-      hitSet: new Set(),
-      dead: false,
-      update(dt, g) {
-        this.life -= dt;
-        if (this.life <= 0) {
-          this.dead = true;
-          return;
-        }
-        this.x = this.owner.x;
-        this.y = this.owner.y;
-
-        const cos = Math.cos(this.angle);
-        const sin = Math.sin(this.angle);
-
-        for (const enemy of g.balls) {
-          if (enemy === this.owner || !enemy.alive || this.hitSet.has(enemy)) continue;
-          const rx = enemy.x - this.x;
-          const ry = enemy.y - this.y;
-          const proj = rx * cos + ry * sin;
-          if (proj < -10 || proj > this.length) continue;
-          const perp = Math.abs(rx * -sin + ry * cos);
-          if (perp <= enemy.radius + 32) {
-            this.hitSet.add(enemy);
-            const dealt = g.applyDamage(enemy, 18);
-            enemy.flashTimer = 0.16;
-            enemy.squash = 0.78;
-            g.addEffect(enemy, "stun", 0.45);
-            enemy.vx += cos * 280;
-            enemy.vy += sin * 280;
-            g.entities.push(rt.spawnShockRing(enemy.x, enemy.y, "#f0abfc", 112, 0.32));
-            g.spawnSparks(enemy.x, enemy.y, "#f0abfc", "#38bdf8");
-            g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 16, dealt, "#f0abfc", true, "GAMMA RAY BURST!");
-            g.shake = Math.max(g.shake || 0, 12);
+            for (const enemy of game.balls) {
+              if (enemy === this.owner || !enemy.alive) continue;
+              // Direct HP reduction during cutscene (since applyDamage is guarded by _cosmicCutsceneTimer)
+              const shield = enemy.getEffect && enemy.getEffect("shield");
+              const red = shield ? (shield.data?.reduction ?? 0.35) : 0;
+              const dealt = Math.max(1, Math.round(14 * (1 - red)));
+              enemy.hp = Math.max(0, enemy.hp - dealt);
+              enemy.flashTimer = 0.18;
+              enemy.squash = 0.74;
+              game.addEffect(enemy, "stun", 0.75);
+              game.entities.push(rt.spawnShockRing(enemy.x, enemy.y, "#38bdf8", 130, 0.32));
+              game.spawnSparks(enemy.x, enemy.y, "#f0abfc", "#38bdf8");
+              game.spawnDamageText(
+                enemy.x + (Math.random() - 0.5) * 20,
+                enemy.y - enemy.radius - 18,
+                dealt,
+                "#f0abfc",
+                true,
+                isFinal ? "GAMMA RAY BURST!" : "COSMIC RADIATION!"
+              );
+              if (game.sound && game.sound.playBallHit) game.sound.playBallHit();
+            }
           }
         }
+        // Phase 3 (1.45 -> 1.75s): Exit sphere mode & descend
+        else {
+          this.owner._cosmicSphereMode = false;
+          const p = Math.min(1, (this.elapsed - 1.45) / 0.3);
+          this.owner.x = this.skyX + (this.startX - this.skyX) * p;
+          this.owner.y = this.skyY + (this.startY - this.skyY) * p;
+          this.owner.vx = 0;
+          this.owner.vy = 0;
+        }
       },
       render(c) {
-        const alpha = Math.max(0, this.life / this.maxLife);
-        const width = 44 * alpha + 12;
-        c.save();
-        c.translate(this.x, this.y);
-        c.rotate(this.angle);
-        c.globalAlpha = alpha;
+        const sx = this.owner.x;
+        const sy = this.owner.y;
 
-        const grad = c.createLinearGradient(0, -width, 0, width);
-        grad.addColorStop(0, "rgba(192, 132, 252, 0)");
-        grad.addColorStop(0.25, "rgba(192, 132, 252, 0.85)");
-        grad.addColorStop(0.5, "#ffffff");
-        grad.addColorStop(0.75, "rgba(56, 189, 248, 0.85)");
-        grad.addColorStop(1, "rgba(56, 189, 248, 0)");
+        // Quasar Singularity Sphere Aura around Garou
+        if (this.elapsed < 1.48) {
+          const chargeP = Math.min(1, this.elapsed / 0.55);
+          const coreR = (this.owner.radius + 14) * (0.7 + 0.3 * chargeP);
+          c.save();
+          c.translate(sx, sy);
 
-        c.fillStyle = grad;
-        c.fillRect(0, -width, this.length, width * 2);
+          const halo = c.createRadialGradient(0, 0, coreR * 0.2, 0, 0, coreR * 2.4);
+          halo.addColorStop(0, "rgba(255, 255, 255, 0.95)");
+          halo.addColorStop(0.35, "rgba(240, 171, 252, 0.85)");
+          halo.addColorStop(0.7, "rgba(56, 189, 248, 0.45)");
+          halo.addColorStop(1, "rgba(56, 189, 248, 0)");
+          c.fillStyle = halo;
+          c.beginPath();
+          c.arc(0, 0, coreR * 2.4, 0, Math.PI * 2);
+          c.fill();
 
-        c.fillStyle = "#ffffff";
-        c.beginPath();
-        c.arc(0, 0, width * 0.65, 0, Math.PI * 2);
-        c.fill();
-        c.restore();
+          // Accretion disk rings
+          c.rotate(this.elapsed * 7);
+          c.strokeStyle = "#fde047";
+          c.lineWidth = 3.2;
+          c.beginPath();
+          c.ellipse(0, 0, coreR * 1.85, coreR * 0.52, 0.35, 0, Math.PI * 2);
+          c.stroke();
+
+          c.strokeStyle = "#38bdf8";
+          c.lineWidth = 2.8;
+          c.beginPath();
+          c.ellipse(0, 0, coreR * 1.65, coreR * 0.48, -0.35, 0, Math.PI * 2);
+          c.stroke();
+
+          // Black-gold singularity sphere body
+          const sphereGrad = c.createRadialGradient(-6, -6, 2, 0, 0, coreR);
+          sphereGrad.addColorStop(0, "#ffffff");
+          sphereGrad.addColorStop(0.35, "#c084fc");
+          sphereGrad.addColorStop(0.75, "#1e1b4b");
+          sphereGrad.addColorStop(1, "#020617");
+          c.fillStyle = sphereGrad;
+          c.beginPath();
+          c.arc(0, 0, coreR, 0, Math.PI * 2);
+          c.fill();
+          c.restore();
+        }
+
+        // Phase 2: Colossal Full-Arena Gamma Ray Burst Torrents
+        if (this.elapsed >= 0.55 && this.elapsed <= 1.48) {
+          const burstAlpha = Math.sin(((this.elapsed - 0.55) / 0.93) * Math.PI);
+          c.save();
+
+          // Arena-wide blinding cosmic radiation wash
+          const wash = c.createRadialGradient(sx, sy, 20, WORLD_SIZE * 0.5, WORLD_SIZE * 0.55, WORLD_SIZE * 0.85);
+          wash.addColorStop(0, `rgba(255, 255, 255, ${0.88 * burstAlpha})`);
+          wash.addColorStop(0.35, `rgba(240, 171, 252, ${0.65 * burstAlpha})`);
+          wash.addColorStop(0.75, `rgba(56, 189, 248, ${0.48 * burstAlpha})`);
+          wash.addColorStop(1, `rgba(88, 28, 135, ${0.35 * burstAlpha})`);
+          c.fillStyle = wash;
+          c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+          // Giant vertical/fanning Quasar Beam engulfing the entire arena width
+          const beamGrad = c.createLinearGradient(0, sy, 0, WORLD_SIZE);
+          beamGrad.addColorStop(0, `rgba(255, 255, 255, ${0.95 * burstAlpha})`);
+          beamGrad.addColorStop(0.5, `rgba(192, 132, 252, ${0.75 * burstAlpha})`);
+          beamGrad.addColorStop(1, `rgba(56, 189, 248, ${0.65 * burstAlpha})`);
+          c.fillStyle = beamGrad;
+          c.beginPath();
+          c.moveTo(sx - 55, sy);
+          c.lineTo(sx + 55, sy);
+          c.lineTo(WORLD_SIZE + 60, WORLD_SIZE);
+          c.lineTo(-60, WORLD_SIZE);
+          c.closePath();
+          c.fill();
+
+          // High-energy core rays across arena
+          c.strokeStyle = `rgba(255, 255, 255, ${0.85 * burstAlpha})`;
+          c.lineWidth = 4;
+          for (let i = -3; i <= 3; i++) {
+            c.beginPath();
+            c.moveTo(sx, sy);
+            c.lineTo(WORLD_SIZE * 0.5 + i * 95 + Math.sin(this.elapsed * 35 + i) * 18, WORLD_SIZE);
+            c.stroke();
+          }
+          c.restore();
+        }
       },
     };
   }
+
+  BF.triggerCosmicGammaRayBurstUlt = (ball, g) => {
+    if (!ball || !g || !ball.alive) return;
+    ball.ultTimer = 0;
+    ball.ultCharge = 0;
+    g.entities.push(spawnCosmicGammaRayBurstUlt(ball, g));
+  };
 
   // ---- Cosmic Awakening Trigger (called from applyDamage or onTick) ----
   BF.triggerGarouCosmicAwakening = (ball, g) => {
@@ -715,14 +1132,17 @@
       const enemy = pickEnemy(ball, g);
       if (!enemy) return false;
 
-      // Cosmic Form Skill 1: Black Hole Circle -> Moon Arena Rampage
+      // Cosmic Form Skill 1:
+      // - 1st cast after Awakening (!ball._cosmicMoonWarped): Auto-Lock Dash -> Portal Transit to Moon Arena
+      // - Subsequent casts on Moon: Subspace Portal Below Garou -> Teleport + 6-Hit Cosmic Rampage
       if (ball._isCosmicGarou) {
-        const angle = Math.atan2(enemy.y - ball.y, enemy.x - ball.x);
-        const dist = Math.min(185, Math.max(60, Math.hypot(enemy.x - ball.x, enemy.y - ball.y)));
-        const tx = Math.min(WORLD_SIZE - 70, Math.max(70, ball.x + Math.cos(angle) * dist));
-        const ty = Math.min(WORLD_SIZE - 70, Math.max(70, ball.y + Math.sin(angle) * dist));
-        g.entities.push(spawnCosmicBlackHole(ball, tx, ty));
-        g.spawnDamageText(ball.x, ball.y - ball.radius - 14, 0, "#c084fc", false, "BLACK HOLE!");
+        if (!ball._cosmicMoonWarped) {
+          g.entities.push(spawnCosmicPortalGrabDash(ball, enemy));
+          g.spawnDamageText(ball.x, ball.y - ball.radius - 14, 0, "#38bdf8", true, "HYPERSPACE LOCK!");
+          return true;
+        }
+        g.entities.push(spawnCosmicSubspacePortalRampage(ball, enemy));
+        g.spawnDamageText(ball.x, ball.y - ball.radius - 14, 0, "#c084fc", true, "SUBSPACE PORTAL!");
         return true;
       }
 
@@ -813,20 +1233,13 @@
     },
   };
 
-  // ---- Skill 2: Water Stream Counter / Gamma Ray Burst in Moon Arena ----
+  // ---- Skill 2: Water Stream Counter ----
   const SKILL_WATER_STREAM_COUNTER = {
     name: "Water Stream Counter",
     cooldown: 4.5,
     onTick(ball, g) {
       const target = pickEnemy(ball, g);
       if (!target) return false;
-
-      if (ball._isCosmicGarou && (g._moonArenaTimer || 0) > 0) {
-        const angle = Math.atan2(target.y - ball.y, target.x - ball.x);
-        g.entities.push(spawnGammaRayBurstBeam(ball, angle));
-        g.spawnDamageText(ball.x, ball.y - ball.radius - 16, 0, "#f0abfc", true, "GAMMA RAY BURST!");
-        return true;
-      }
 
       const dist = Math.hypot(target.x - ball.x, target.y - ball.y);
       if (dist > 280) return false;
@@ -921,6 +1334,27 @@
     ];
 
     if (isCosmic) {
+      // During Gamma Ray Burst Ultimate: Garou transforms into a pure Quasar Singularity Sphere (no hair spikes)
+      if (ball._cosmicSphereMode) {
+        c.save();
+        const sg = c.createRadialGradient(-r * 0.25, -r * 0.25, 2, 0, 0, r);
+        sg.addColorStop(0, "#ffffff");
+        sg.addColorStop(0.35, "#f0abfc");
+        sg.addColorStop(0.7, "#38bdf8");
+        sg.addColorStop(1, "#020617");
+        c.fillStyle = sg;
+        c.beginPath();
+        c.arc(0, 0, r, 0, Math.PI * 2);
+        c.fill();
+        c.strokeStyle = "#fde047";
+        c.lineWidth = 3;
+        c.beginPath();
+        c.arc(0, 0, r * 1.15, t * 2, t * 2 + Math.PI * 1.5);
+        c.stroke();
+        c.restore();
+        return;
+      }
+
       c.save();
       for (let i = 0; i < 8; i++) {
         const a = t * 0.9 + (i * Math.PI) / 4;
@@ -1139,10 +1573,10 @@
     costume: "garou",
     weapon: null,
     ult: "cosmic_fear",
-    ultName: "MONSTERIZATION & COSMIC MOON",
-    ultDesc: "Ult: Monster Form with God Slayer Dash Barrage! Below 100 HP: Time freezes for God's Cosmic Moon Awakening (+50 HP), Black Hole Moon Arena Rampage, & Gamma Ray Burst!",
-    skillName: "WHIRLWIND FIST / BLACK HOLE & COUNTER / GAMMA RAY",
-    skillDesc: "Base: spiral waves & Water Stream Counter. Monster: God Slayer Dash Barrage. Cosmic: Black Hole Moon Arena Rampage & Gamma Ray Burst!",
+    ultName: "MONSTERIZATION / GAMMA RAY BURST",
+    ultDesc: "Ult: Monster Form (God Slayer Dash Barrage). Below 100 HP: Cosmic Moon Awakening (+50 HP)! 1st Skill locks & warps enemy to the Moon; Cosmic Ult flies up as a Quasar Sphere to unleash a Full-Arena Gamma Ray Burst!",
+    skillName: "WHIRLWIND FIST / SUBSPACE PORTAL RAMPAGE & COUNTER",
+    skillDesc: "Base: spiral waves & Water Stream Counter. Monster: God Slayer Barrage. Cosmic: 1st skill auto-locks & portals to the Moon; then opens Subspace Portals below Garou to teleport & Rampage!",
     skills: [SKILL_WHIRLWIND_FIST, SKILL_WATER_STREAM_COUNTER],
   };
 })();
