@@ -565,7 +565,7 @@
     damage: [6, 9],
     mass: 1.02,
     costume: "garou",
-    weapon: "martial_aura",
+    weapon: null,
     ult: "cosmic_fear",
     ultName: "MONSTERIZATION (AWAKENED FORM)",
     ultDesc: "Awakens Monster Form for 8s! Deals Monster Calamity shockwave, empowers collisions with Extreme Fa Jin (+4 DMG), and fires God Slayer Fists!",
