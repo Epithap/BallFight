@@ -826,22 +826,61 @@
       c.fillRect(242, h * 0.31, 96, h * 0.25);
       c.fillRect(350, h * 0.36, 90, h * 0.20);
     } else {
-      // 2. Sunlit Ichigo's Bedroom (The Next Morning)
+      // 2. Sunlit Ichigo's Bedroom (The Next Morning — Detailed Room)
       c.fillStyle = "#f5efe0";
       c.fillRect(0, 0, w, h);
 
-      // Hardwood Floor
+      // Hardwood Floor + Plank Seams + Baseboard Trim
       c.fillStyle = "#d9a66f";
       c.fillRect(0, h * 0.44, w, h * 0.56);
+      c.fillStyle = "#b45309";
+      c.fillRect(0, h * 0.44 - 12, w, 12);
+      c.strokeStyle = INK;
+      c.lineWidth = 3;
+      c.beginPath(); c.moveTo(0, h * 0.44); c.lineTo(w, h * 0.44); c.stroke();
       c.strokeStyle = "rgba(120, 53, 15, 0.25)";
       c.lineWidth = 2;
-      for (let y = h * 0.44; y < h; y += 26) {
+      for (let row = 0, y = h * 0.44; y < h; row++, y += 26) {
         c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke();
+        const off = (row % 2) * 44;
+        for (let px = 50 + off; px < w; px += 88) {
+          c.beginPath(); c.moveTo(px, y); c.lineTo(px, Math.min(h, y + 26)); c.stroke();
+        }
       }
 
-      // Morning Window with Blue Sky & Sunbeams
+      // Cozy Woven Bedroom Rug
+      c.fillStyle = "#fde68a";
+      c.strokeStyle = "#d97706";
+      c.lineWidth = 3;
+      c.beginPath(); c.roundRect(w * 0.22, h * 0.52, w * 0.56, 98, 14); c.fill(); c.stroke();
+      c.strokeStyle = "rgba(217, 119, 6, 0.35)";
+      c.lineWidth = 2;
+      c.beginPath(); c.roundRect(w * 0.24, h * 0.535, w * 0.52, 78, 10); c.stroke();
+
+      // Wall Clock (Top-Left)
+      c.fillStyle = "#ffffff";
+      c.strokeStyle = INK;
+      c.lineWidth = 2.6;
+      c.beginPath(); c.arc(54, 86, 19, 0, Math.PI * 2); c.fill(); c.stroke();
+      c.fillStyle = "#ef4444";
+      c.beginPath(); c.arc(54, 86, 2.5, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.moveTo(54, 86); c.lineTo(54, 72); c.stroke();
+      c.beginPath(); c.moveTo(54, 86); c.lineTo(65, 89); c.stroke();
+
+      // Framed "15" Poster + Wall Shelf (Top-Right)
+      c.fillStyle = "#ef4444";
+      c.strokeStyle = INK;
+      c.lineWidth = 2.6;
+      c.beginPath(); c.roundRect(w - 86, 56, 56, 68, 6); c.fill(); c.stroke();
+      c.fillStyle = "#fef08a";
+      c.font = "900 22px 'Lilita One', Impact, sans-serif";
+      c.textAlign = "center";
+      c.textBaseline = "middle";
+      c.fillText("15", w - 58, 90);
+
+      // Morning Window with Blue Sky, Clouds & Curtains
       const wx = w * 0.26;
-      const wy = 42;
+      const wy = 46;
       const ww = w * 0.48;
       const wh = 136;
       const winSky = c.createLinearGradient(wx, wy, wx, wy + wh);
@@ -854,14 +893,26 @@
 
       c.fillStyle = "#fde047";
       c.beginPath(); c.arc(wx + ww - 38, wy + 34, 16, 0, Math.PI * 2); c.fill();
+      c.fillStyle = "rgba(255, 255, 255, 0.88)";
+      c.beginPath();
+      c.arc(wx + 42, wy + 46, 12, 0, Math.PI * 2);
+      c.arc(wx + 58, wy + 42, 14, 0, Math.PI * 2);
+      c.fill();
       c.strokeStyle = "#ffffff";
       c.lineWidth = 3;
       c.beginPath(); c.moveTo(wx + ww * 0.5, wy); c.lineTo(wx + ww * 0.5, wy + wh); c.stroke();
       c.beginPath(); c.moveTo(wx, wy + wh * 0.52); c.lineTo(wx + ww, wy + wh * 0.52); c.stroke();
 
-      // Warm Golden Morning Sunbeam Spill
+      // Side Curtains
+      c.fillStyle = "#334155";
+      c.strokeStyle = INK;
+      c.lineWidth = 2.6;
+      c.beginPath(); c.roundRect(wx - 14, wy - 4, 22, wh + 10, 6); c.fill(); c.stroke();
+      c.beginPath(); c.roundRect(wx + ww - 8, wy - 4, 22, wh + 10, 6); c.fill(); c.stroke();
+
+      // Warm Golden Morning Sunbeam Spill + Floating Dust Motes
       c.save();
-      c.fillStyle = "rgba(254, 240, 138, 0.28)";
+      c.fillStyle = "rgba(254, 240, 138, 0.26)";
       c.beginPath();
       c.moveTo(wx + 8, wy + wh);
       c.lineTo(wx + ww - 8, wy + wh);
@@ -869,11 +920,66 @@
       c.lineTo(wx - 74, h * 0.86);
       c.closePath();
       c.fill();
+      c.fillStyle = "rgba(255, 255, 255, 0.6)";
+      for (let i = 0; i < 6; i++) {
+        const mx = wx + 22 + i * 32 + Math.sin(t * 1.5 + i) * 6;
+        const my = wy + wh + 24 + ((i * 29 + t * 10) % 130);
+        c.beginPath(); c.arc(mx, my, 2.2, 0, Math.PI * 2); c.fill();
+      }
       c.restore();
+
+      // Ichigo's Bed (Left Side — Rumpled Orange Blanket & Pillow)
+      c.fillStyle = "#92400e";
+      c.strokeStyle = INK;
+      c.lineWidth = 3;
+      c.beginPath(); c.roundRect(14, h * 0.40, 118, 126, 10); c.fill(); c.stroke();
+      c.fillStyle = "#fefce8";
+      c.beginPath(); c.roundRect(22, h * 0.415, 102, 104, 8); c.fill(); c.stroke();
+      // Pillow
+      c.fillStyle = "#ffffff";
+      c.beginPath(); c.roundRect(30, h * 0.425, 58, 26, 8); c.fill(); c.stroke();
+      // Orange Blanket
+      c.fillStyle = "#f97316";
+      c.beginPath(); c.roundRect(22, h * 0.48, 102, 62, 8); c.fill(); c.stroke();
+      c.fillStyle = "#fb923c";
+      c.fillRect(26, h * 0.485, 94, 12);
+
+      // Nightstand + Alarm Clock beside Bed
+      c.fillStyle = "#b45309";
+      c.beginPath(); c.roundRect(140, h * 0.41, 44, 48, 7); c.fill(); c.stroke();
+      c.fillStyle = "#ef4444";
+      c.beginPath(); c.arc(162, h * 0.40, 10, 0, Math.PI * 2); c.fill(); c.stroke();
+      c.fillStyle = "#ffffff";
+      c.beginPath(); c.arc(162, h * 0.40, 6.5, 0, Math.PI * 2); c.fill();
+
+      // Study Desk + Chair + Lamp + School Bag (Right Side)
+      c.fillStyle = "#b45309";
+      c.beginPath(); c.roundRect(w - 134, h * 0.40, 118, 66, 8); c.fill(); c.stroke();
+      c.fillStyle = "#d97706";
+      c.fillRect(w - 128, h * 0.41, 106, 16);
+      // Desk Lamp
+      c.fillStyle = "#334155";
+      c.beginPath(); c.roundRect(w - 48, h * 0.37, 22, 14, 5); c.fill(); c.stroke();
+      c.fillStyle = "#fde047";
+      c.beginPath(); c.arc(w - 37, h * 0.36, 7, 0, Math.PI * 2); c.fill(); c.stroke();
+      // Open Notebook & Manga Stack on Desk
+      c.fillStyle = "#ffffff";
+      c.beginPath(); c.roundRect(w - 118, h * 0.405, 38, 22, 3); c.fill(); c.stroke();
+      c.fillStyle = "#38bdf8";
+      c.beginPath(); c.roundRect(w - 72, h * 0.41, 24, 18, 3); c.fill(); c.stroke();
+      // Desk Chair
+      c.fillStyle = "#475569";
+      c.beginPath(); c.roundRect(w - 92, h * 0.48, 38, 32, 8); c.fill(); c.stroke();
+      // Karakura High School Bag on Floor
+      c.fillStyle = "#1e293b";
+      c.beginPath(); c.roundRect(w - 46, h * 0.51, 32, 26, 6); c.fill(); c.stroke();
+      c.strokeStyle = "#f59e0b";
+      c.lineWidth = 2;
+      c.beginPath(); c.moveTo(w - 40, h * 0.51); c.lineTo(w - 20, h * 0.51); c.stroke();
 
       // Human Ichigo in His Bedroom
       if (S.BleachChars) {
-        S.BleachChars.drawHumanIchigo(c, w * 0.5, h * 0.52, 26, t, scene === "school_bound" ? 1 : -1, {
+        S.BleachChars.drawHumanIchigo(c, w * 0.5, h * 0.54, 26, t, scene === "school_bound" ? 1 : -1, {
           mood: line.mood || "shocked",
           talking: true,
         });
