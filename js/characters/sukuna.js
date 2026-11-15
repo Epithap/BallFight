@@ -2456,13 +2456,20 @@
     };
   }
 
-  function drawIncompleteShrineStructure(c, cx, cy, scale, alpha, pulse = 0) {
-    c.save();
-    c.translate(cx, cy);
-    c.scale(scale, scale);
-    c.globalAlpha = alpha;
+  let _shrineCache = null;
+  function getIncompleteShrineCache() {
+    if (_shrineCache) return _shrineCache;
+    if (typeof document === "undefined") return null;
+    const cw = 360;
+    const ch = 420;
+    const off = document.createElement("canvas");
+    off.width = cw;
+    off.height = ch;
+    const c = off.getContext("2d");
+    if (!c) return null;
+    c.translate(cw * 0.5, ch * 0.62);
 
-    // 1. Towering Abyssal Black-Crimson Cursed Pillars & Thorny Tendrils
+    // 1. Towering Abyssal Black-Crimson Cursed Pillars
     for (const [rx, rw, rh] of [[-128, 18, 175], [-88, 26, 225], [-44, 32, 255], [44, 32, 255], [88, 26, 225], [128, 18, 175]]) {
       const pGrad = c.createLinearGradient(rx, 130, rx, -rh);
       pGrad.addColorStop(0, "#09090b");
@@ -2478,15 +2485,7 @@
       c.fill();
     }
 
-    // 2. Crimson-Black Cursed Energy Halo behind the Shrine
-    const halo = c.createRadialGradient(0, -10, 20, 0, -10, 175 + pulse * 14);
-    halo.addColorStop(0, "rgba(220, 38, 38, 0.62)");
-    halo.addColorStop(0.55, "rgba(127, 29, 29, 0.34)");
-    halo.addColorStop(1, "rgba(9, 9, 11, 0)");
-    c.fillStyle = halo;
-    c.beginPath(); c.arc(0, -10, 175 + pulse * 14, 0, Math.PI * 2); c.fill();
-
-    // 3. Skeletal Ribcage Bone Spikes jutting from both flanks
+    // 2. Skeletal Ribcage Bone Spikes jutting from both flanks
     for (const side of [-1, 1]) {
       for (let i = 0; i < 4; i++) {
         const by = -48 + i * 32;
@@ -2503,7 +2502,7 @@
       }
     }
 
-    // 4. Sculpted Twisted Dark-Flesh Monolith Body
+    // 3. Sculpted Twisted Dark-Flesh Monolith Body
     const bodyGrad = c.createLinearGradient(0, -95, 0, 115);
     bodyGrad.addColorStop(0, "#450a0a");
     bodyGrad.addColorStop(0.45, "#2b090c");
@@ -2531,7 +2530,7 @@
       c.stroke();
     }
 
-    // 5. Massive Sweeping Bone Horns & Crown Skull Crest
+    // 4. Massive Sweeping Bone Horns & Crown Skull Crest
     for (const side of [-1, 1]) {
       c.fillStyle = "#e2e8f0";
       c.strokeStyle = "#09090b";
@@ -2542,7 +2541,6 @@
       c.bezierCurveTo(side * 96, -102, side * 58, -108, side * 34, -64);
       c.closePath();
       c.fill(); c.stroke();
-      // Horn ridges
       c.strokeStyle = "#64748b";
       c.lineWidth = 1.6;
       c.beginPath();
@@ -2552,14 +2550,13 @@
       c.stroke();
     }
 
-    // 6. Gaping Abyssal Maw, Sharp Fangs & Bleeding Crimson Drape
+    // 5. Gaping Abyssal Maw, Sharp Fangs & Bleeding Crimson Drape
     c.fillStyle = "#09090b";
     c.strokeStyle = "#7f1d1d";
     c.lineWidth = 3;
     c.beginPath();
     c.ellipse(0, -12, 48, 38, 0, 0, Math.PI * 2);
     c.fill(); c.stroke();
-    // Upper & lower bone fangs
     c.fillStyle = "#f1f5f9";
     c.strokeStyle = "#09090b";
     c.lineWidth = 1.5;
@@ -2567,7 +2564,6 @@
       c.beginPath(); c.moveTo(tx - 4.5, -24); c.lineTo(tx, -10); c.lineTo(tx + 4.5, -24); c.closePath(); c.fill(); c.stroke();
       c.beginPath(); c.moveTo(tx - 4.5, 16); c.lineTo(tx, 3); c.lineTo(tx + 4.5, 16); c.closePath(); c.fill(); c.stroke();
     }
-    // Bleeding crimson shrine drape over top of maw
     c.fillStyle = "#991b1b";
     c.strokeStyle = "#09090b";
     c.lineWidth = 2.8;
@@ -2579,7 +2575,7 @@
     c.closePath();
     c.fill(); c.stroke();
 
-    // 7. 8 Glowing Golden-Amber Eyes embedded asymmetrically in the Shrine
+    // 6. 8 Glowing Golden-Amber Eyes embedded asymmetrically in the Shrine
     const eyes = [
       [-40, -48, 11], [40, -48, 11],
       [-58, -10, 14], [58, -10, 14],
@@ -2587,17 +2583,44 @@
       [-28, 64, 10], [28, 64, 10],
     ];
     for (const [ex, ey, er] of eyes) {
-      const rGlow = er * (1 + pulse * 0.08);
       c.fillStyle = "#fef9c3";
       c.strokeStyle = "#09090b";
       c.lineWidth = 2.6;
-      c.beginPath(); c.ellipse(ex, ey, rGlow, rGlow * 0.58, ex < 0 ? 0.28 : -0.28, 0, Math.PI * 2); c.fill(); c.stroke();
+      c.beginPath(); c.ellipse(ex, ey, er, er * 0.58, ex < 0 ? 0.28 : -0.28, 0, Math.PI * 2); c.fill(); c.stroke();
       c.fillStyle = "#f59e0b";
-      c.beginPath(); c.arc(ex, ey, rGlow * 0.34, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.arc(ex, ey, er * 0.34, 0, Math.PI * 2); c.fill();
       c.fillStyle = "#09090b";
-      c.beginPath(); c.ellipse(ex, ey, rGlow * 0.12, rGlow * 0.32, 0, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.ellipse(ex, ey, er * 0.12, er * 0.32, 0, 0, Math.PI * 2); c.fill();
     }
 
+    _shrineCache = off;
+    return _shrineCache;
+  }
+
+  function drawIncompleteShrineStructure(c, cx, cy, scale, alpha, pulse = 0) {
+    c.save();
+    c.translate(cx, cy);
+    c.scale(scale, scale);
+    c.globalAlpha = alpha;
+
+    // Lightweight pulsing crimson halo (no per-frame gradient allocation)
+    c.fillStyle = "rgba(127, 29, 29, 0.28)";
+    c.beginPath(); c.arc(0, -10, 175 + pulse * 14, 0, Math.PI * 2); c.fill();
+    c.fillStyle = "rgba(220, 38, 38, 0.34)";
+    c.beginPath(); c.arc(0, -10, 115 + pulse * 8, 0, Math.PI * 2); c.fill();
+
+    const cached = getIncompleteShrineCache();
+    if (cached) {
+      c.drawImage(cached, -cached.width * 0.5, -cached.height * 0.62);
+      c.restore();
+      return;
+    }
+
+    // Fallback for headless/non-DOM environments
+    c.fillStyle = "#2b090c";
+    c.strokeStyle = "#09090b";
+    c.lineWidth = 4;
+    c.beginPath(); c.arc(0, 0, 95, 0, Math.PI * 2); c.fill(); c.stroke();
     c.restore();
   }
 
@@ -2670,14 +2693,12 @@
         const pulse = Math.sin(now * 2.2) * 0.5 + 0.5;
         c.save();
 
-        // Deep crimson-black domain atmosphere + terrifying edge vignette
-        c.fillStyle = `rgba(38, 4, 10, ${(0.32 * k).toFixed(3)})`;
+        // Deep crimson-black domain atmosphere + terrifying edge vignette (no per-frame gradient)
+        c.fillStyle = `rgba(38, 4, 10, ${(0.36 * k).toFixed(3)})`;
         c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
-        const vig = c.createRadialGradient(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, WORLD_SIZE * 0.24, WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, WORLD_SIZE * 0.72);
-        vig.addColorStop(0, "rgba(0, 0, 0, 0)");
-        vig.addColorStop(1, `rgba(9, 2, 5, ${(0.58 * k).toFixed(3)})`);
-        c.fillStyle = vig;
-        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+        c.strokeStyle = `rgba(9, 2, 5, ${(0.48 * k).toFixed(3)})`;
+        c.lineWidth = WORLD_SIZE * 0.14;
+        c.strokeRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
         // Rotating dark-crimson Domain ring on arena floor
         c.save();
