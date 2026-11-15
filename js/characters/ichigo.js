@@ -2081,8 +2081,11 @@
       ball.vx = Math.cos(a) * spd;
       ball.vy = Math.sin(a) * spd;
     }
-    rt.addEffect(ball, "haste", duration, { factor: 1.38 });
-    rt.addEffect(ball, "shield", duration, { reduction: 0.25 });
+    const applyEff = rt.addEffect || (BF._rt && BF._rt.addEffect);
+    if (applyEff) {
+      applyEff(ball, "haste", duration, { factor: 1.38 });
+      applyEff(ball, "shield", duration, { reduction: 0.25 });
+    }
     if (ball.skills[0]) ball.skills[0]._cd = 0.15;
     rt.entities.push(rt.spawnShockRing(ball.x, ball.y, "#09090b", 180, 0.48));
     rt.entities.push(rt.spawnShockRing(ball.x, ball.y, "#a855f7", 140, 0.38));
