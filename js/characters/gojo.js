@@ -656,20 +656,20 @@
     c.clip();
 
     c.fillStyle = "#f9e8dc";
-    c.fillRect(-r, -r, r * 2, r * 1.48);
+    c.fillRect(-r, -r, r * 2, r * 1.72);
     if (isShinjuku) {
-      // Shinjuku Showdown: Toji-style black compression shirt + white sash/pants
+      // Shinjuku Showdown: Toji-style black compression shirt + white sash/pants (low collar so mouth stays clear)
       c.fillStyle = "#11131d";
-      c.fillRect(-r, r * 0.34, r * 2, r * 0.36);
+      c.fillRect(-r, r * 0.56, r * 2, r * 0.24);
       c.fillStyle = "#e2e8f0";
-      c.fillRect(-r, r * 0.68, r * 2, r * 0.38);
+      c.fillRect(-r, r * 0.78, r * 2, r * 0.30);
       c.strokeStyle = COLORS.ink;
       c.lineWidth = 2.4;
       c.beginPath();
-      c.moveTo(-r, r * 0.34);
-      c.lineTo(r, r * 0.34);
-      c.moveTo(-r, r * 0.68);
-      c.lineTo(r, r * 0.68);
+      c.moveTo(-r, r * 0.56);
+      c.lineTo(r, r * 0.56);
+      c.moveTo(-r, r * 0.78);
+      c.lineTo(r, r * 0.78);
       c.stroke();
     } else {
       c.fillStyle = "#141624";
