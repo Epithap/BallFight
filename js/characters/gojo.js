@@ -501,6 +501,7 @@
     const impactDur = 0.42;
     const totalDur = pushDur + chargeDur + impactDur;
     const angFromOwner = Math.atan2(hitY - owner.y, hitX - owner.x);
+    const savedSpeed = Math.hypot(owner.vx || 0, owner.vy || 0) || owner.baseSpeed || 360;
     return {
       isFreezeCinematic: true,
       timer: 0,
@@ -513,6 +514,11 @@
       update(dt, gg) {
         this.timer += dt;
         if (!owner.alive || !target.alive) {
+          if (owner.alive && Math.hypot(owner.vx || 0, owner.vy || 0) < 20) {
+            const ra = gg.rng() * Math.PI * 2;
+            owner.vx = Math.cos(ra) * savedSpeed;
+            owner.vy = Math.sin(ra) * savedSpeed;
+          }
           this.dead = true;
           return;
         }
@@ -551,6 +557,9 @@
           target.squash = 0.55;
           target.vx = Math.cos(kAng) * 820;
           target.vy = Math.sin(kAng) * 820;
+          const followAng = kAng + (gg.rng() < 0.5 ? 0.55 : -0.55);
+          owner.vx = Math.cos(followAng) * savedSpeed;
+          owner.vy = Math.sin(followAng) * savedSpeed;
           gg.entities.push(spawnBlackFlashBurst(target.x, target.y));
           gg.entities.push(rt.spawnShockRing(target.x, target.y, "#09090b", 180, 0.42));
           gg.entities.push(rt.spawnShockRing(target.x, target.y, "#ef4444", 140, 0.34));
