@@ -99,6 +99,10 @@
       skins: eqSkins,
       name: spec.evolvedName || base.name,
       role: spec.evolvedRole || base.role,
+      skillName: spec.evolvedSkillName || base.skillName,
+      skillDesc: spec.evolvedSkillDesc || base.skillDesc,
+      ultName: spec.evolvedUltName || base.ultName,
+      ultDesc: spec.evolvedUltDesc || base.ultDesc,
       maxHp: base.maxHp + (spec.bonusHp || 0),
       speed: base.speed + (spec.bonusSpeed || 0),
     };
@@ -849,7 +853,19 @@
     el.classList.toggle("ready", ready);
     if (fill) fill.style.width = `${pct}%`;
     if (label) {
-      const shortName = (ball.apeMode ? "APE RUSH" : ball.kyuubiMode ? "KYUUBI SLASH" : ball.vastoLordeMode ? "SONÍDO SLASH" : skill.name).toUpperCase();
+      const shortName = (
+        ball.apeMode
+          ? "APE RUSH"
+          : ball.kyuubiMode
+          ? "KYUUBI SLASH"
+          : ball.vastoLordeMode
+          ? "SONÍDO SLASH"
+          : ball.heianEraMode
+          ? "WORLD SLASH / KAMUTOKE"
+          : ball.costume === "sukuna" && ball.evolved
+          ? "TEN SHADOWS (DOG / NUE)"
+          : skill.name
+      ).toUpperCase();
       label.textContent = ready ? `${shortName} • READY` : `${shortName} • ${cd.toFixed(1)}S`;
     }
   }
@@ -3569,7 +3585,8 @@
 
     const s1 = cfg.skills[0];
     if (detailSkillName) detailSkillName.textContent = cfg.skillName || (s1 ? s1.name.toUpperCase() : "SKILL");
-    if (detailSkillCd) detailSkillCd.textContent = s1 ? `CD: ${s1.cooldown}S` : "PASSIVE";
+    const displayCd = cfg.id === "sukuna" && cfg.evolved ? 2.1 : (s1 ? s1.cooldown : 0);
+    if (detailSkillCd) detailSkillCd.textContent = s1 ? `CD: ${displayCd}S` : "PASSIVE";
     if (detailSkillDesc) detailSkillDesc.textContent = cfg.skillDesc || "Special character technique.";
 
     if (detailUltName) detailUltName.textContent = cfg.ultName || "ULTIMATE POWER";
@@ -3578,9 +3595,14 @@
     if (detailEmpoweredBox) {
       detailEmpoweredBox.classList.toggle("hidden", !tr);
       if (tr) {
-        if (detailEmpName) detailEmpName.textContent = tr.ultSkillName;
-        if (detailEmpCd) detailEmpCd.textContent = tr.ultSkillCd;
-        if (detailEmpDesc) detailEmpDesc.textContent = tr.ultSkillDesc;
+        const isSukunaEvo = cfg.id === "sukuna" && cfg.evolved;
+        if (detailEmpName) detailEmpName.textContent = isSukunaEvo ? "HEIAN ERA: WORLD SLASH & KAMUTOKE" : tr.ultSkillName;
+        if (detailEmpCd) detailEmpCd.textContent = isSukunaEvo ? "CD: 1.7S" : tr.ultSkillCd;
+        if (detailEmpDesc) {
+          detailEmpDesc.textContent = isSukunaEvo
+            ? "At HP <= 200, permanently becomes 4-Arm Heian Era (+60 HP, +15% Speed): World-Cutting Slash (24 DMG, pierces Infinity & Shields!), 4-Arm Cleave + Kamutoke Lightning, and Furnace: Open!"
+            : tr.ultSkillDesc;
+        }
       }
     }
   }

@@ -508,18 +508,32 @@
       },
       render(c) {
         const p = 1 - Math.max(0, this.life / this.maxLife);
-        const alpha = Math.min(1, this.life * 1.4) * 0.75;
+        const alpha = Math.min(1, this.life * 1.4) * 0.85;
         c.save();
         c.translate(this.x, this.y);
         c.globalAlpha = alpha;
-        c.fillStyle = "rgba(14, 165, 233, 0.28)";
+        // Deep Ten Shadows flood pool
+        const wg = c.createRadialGradient(0, 0, rad * 0.15, 0, 0, rad);
+        wg.addColorStop(0, "rgba(14, 165, 233, 0.42)");
+        wg.addColorStop(0.7, "rgba(2, 132, 199, 0.28)");
+        wg.addColorStop(1, "rgba(15, 23, 42, 0.12)");
+        c.fillStyle = wg;
         c.beginPath(); c.arc(0, 0, rad, 0, Math.PI * 2); c.fill();
+        // Expanding water ripple rings
         c.strokeStyle = "#38bdf8";
-        c.lineWidth = 3;
-        c.beginPath(); c.arc(0, 0, rad * (0.86 + Math.sin(p * 18) * 0.05), 0, Math.PI * 2); c.stroke();
+        c.lineWidth = 3.2;
+        c.beginPath(); c.arc(0, 0, rad * (0.9 + Math.sin(p * 18) * 0.05), 0, Math.PI * 2); c.stroke();
         c.strokeStyle = "#bae6fd";
-        c.lineWidth = 2;
-        c.beginPath(); c.arc(0, 0, rad * 0.55, p * 8, p * 8 + Math.PI * 1.3); c.stroke();
+        c.lineWidth = 2.2;
+        c.beginPath(); c.arc(0, 0, rad * 0.64, p * 9, p * 9 + Math.PI * 1.35); c.stroke();
+        c.beginPath(); c.arc(0, 0, rad * 0.36, -p * 11, -p * 11 + Math.PI * 1.15); c.stroke();
+        // Splash droplets
+        c.fillStyle = "#e0f2fe";
+        for (let i = 0; i < 6; i++) {
+          const a = (i / 6) * Math.PI * 2 + p * 4;
+          const dr = rad * (0.45 + 0.35 * ((i % 2) + 0.4));
+          c.beginPath(); c.arc(Math.cos(a) * dr, Math.sin(a) * dr, 3, 0, Math.PI * 2); c.fill();
+        }
         c.restore();
       },
     };
@@ -562,27 +576,67 @@
       },
       render(c) {
         const p = 1 - Math.max(0, this.life / this.maxLife);
-        const dropY = -120 * (1 - p);
+        const dropY = -135 * (1 - p * p);
         c.save();
         c.translate(cx, cy);
-        // Target shadow ring on ground
-        c.fillStyle = "rgba(15, 23, 42, 0.35)";
-        c.beginPath(); c.ellipse(0, 0, 42 * (0.5 + 0.5 * p), 20 * (0.5 + 0.5 * p), 0, 0, Math.PI * 2); c.fill();
-        // Dropping Max Elephant silhouette
+        // Expanding dark Ten Shadows target ring on ground
+        c.fillStyle = "rgba(15, 23, 42, 0.42)";
+        c.beginPath(); c.ellipse(0, 0, 50 * (0.45 + 0.55 * p), 24 * (0.45 + 0.55 * p), 0, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = "#38bdf8";
+        c.lineWidth = 2.5;
+        c.beginPath(); c.ellipse(0, 0, 50 * (0.45 + 0.55 * p), 24 * (0.45 + 0.55 * p), 0, 0, Math.PI * 2); c.stroke();
+
+        // Dropping Armored Ten Shadows Max Elephant
         c.translate(0, dropY);
+        // Shadow aura behind elephant
+        c.fillStyle = "rgba(30, 41, 59, 0.45)";
+        c.beginPath(); c.arc(0, -6, 48, 0, Math.PI * 2); c.fill();
+        // Huge flared ears with slate ridges
+        for (const side of [-1, 1]) {
+          c.fillStyle = "#334155";
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 3;
+          c.beginPath();
+          c.ellipse(side * 38, -8, 18, 25, side * 0.28, 0, Math.PI * 2);
+          c.fill(); c.stroke();
+          c.fillStyle = "#475569";
+          c.beginPath();
+          c.ellipse(side * 36, -8, 10, 16, side * 0.28, 0, Math.PI * 2);
+          c.fill();
+        }
+        // Main heavy body/head
         c.fillStyle = "#1e293b";
         c.strokeStyle = COLORS.ink;
-        c.lineWidth = 3;
-        c.beginPath(); c.roundRect(-34, -30, 68, 52, 18); c.fill(); c.stroke();
-        // Ears + Trunk + Tusks
-        c.fillStyle = "#334155";
-        c.beginPath(); c.ellipse(-36, -6, 14, 20, -0.2, 0, Math.PI * 2); c.fill(); c.stroke();
-        c.beginPath(); c.ellipse(36, -6, 14, 20, 0.2, 0, Math.PI * 2); c.fill(); c.stroke();
-        c.fillStyle = "#0f172a";
-        c.beginPath(); c.roundRect(-8, 6, 16, 26, 6); c.fill(); c.stroke();
+        c.lineWidth = 3.2;
+        c.beginPath(); c.roundRect(-34, -34, 68, 56, 20); c.fill(); c.stroke();
+        // Bone-armor crown & Ten Shadows diamond crest
+        c.fillStyle = "#cbd5e1";
+        c.beginPath();
+        c.moveTo(-22, -32); c.lineTo(0, -40); c.lineTo(22, -32); c.lineTo(14, -18); c.lineTo(-14, -18);
+        c.closePath();
+        c.fill(); c.stroke();
+        c.fillStyle = "#38bdf8";
+        c.beginPath(); c.moveTo(0, -34); c.lineTo(5, -27); c.lineTo(0, -20); c.lineTo(-5, -27); c.closePath(); c.fill();
+        // Fierce glowing cyan-white eyes
+        c.fillStyle = "#7dd3fc";
+        c.beginPath(); c.arc(-14, -10, 3.6, 0, Math.PI * 2); c.arc(14, -10, 3.6, 0, Math.PI * 2); c.fill();
+        // Curved sharp ivory tusks
         c.fillStyle = "#f8fafc";
-        c.beginPath(); c.moveTo(-16, 12); c.lineTo(-24, 24); c.lineTo(-10, 18); c.closePath(); c.fill(); c.stroke();
-        c.beginPath(); c.moveTo(16, 12); c.lineTo(24, 24); c.lineTo(10, 18); c.closePath(); c.fill(); c.stroke();
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 2.4;
+        for (const side of [-1, 1]) {
+          c.beginPath();
+          c.moveTo(side * 14, 8);
+          c.quadraticCurveTo(side * 30, 16, side * 26, 30);
+          c.quadraticCurveTo(side * 16, 22, side * 10, 16);
+          c.closePath();
+          c.fill(); c.stroke();
+        }
+        // Trunk spraying water mist
+        c.fillStyle = "#0f172a";
+        c.beginPath(); c.roundRect(-9, 2, 18, 30, 8); c.fill(); c.stroke();
+        c.fillStyle = "rgba(125, 211, 252, 0.85)";
+        c.beginPath(); c.arc(0, 34, 7, 0, Math.PI * 2); c.fill();
         c.restore();
       },
     };
@@ -626,22 +680,40 @@
         c.save();
         c.translate(this.x, this.y);
         c.rotate(this.ang);
-        // Shadow Wolf (Divine Dog: Totality)
+        // Trailing shadow wisps behind Divine Dog: Totality
+        c.fillStyle = "rgba(15, 23, 42, 0.45)";
+        c.beginPath();
+        c.moveTo(-12, -12); c.lineTo(-38, -4); c.lineTo(-24, 0); c.lineTo(-38, 4); c.lineTo(-12, 12);
+        c.closePath();
+        c.fill();
+        // Jagged Shadow Wolf Mane & Pointed Ears
         c.fillStyle = "#0f172a";
         c.strokeStyle = COLORS.ink;
         c.lineWidth = 2.6;
         c.beginPath();
-        c.moveTo(22, 0);
-        c.lineTo(4, -14);
-        c.lineTo(-18, -10);
-        c.lineTo(-12, 0);
-        c.lineTo(-18, 10);
-        c.lineTo(4, 14);
+        c.moveTo(28, 0);
+        c.lineTo(10, -10);
+        c.lineTo(-4, -20);
+        c.lineTo(-6, -12);
+        c.lineTo(-20, -14);
+        c.lineTo(-13, 0);
+        c.lineTo(-20, 14);
+        c.lineTo(-6, 12);
+        c.lineTo(-4, 20);
+        c.lineTo(10, 10);
         c.closePath();
         c.fill(); c.stroke();
-        // Glowing red eyes & white snout marking
+        // White Totality snout/muzzle stripe + crimson forehead diamond
+        c.fillStyle = "#e2e8f0";
+        c.beginPath();
+        c.moveTo(26, 0); c.lineTo(8, -5); c.lineTo(4, 0); c.lineTo(8, 5);
+        c.closePath();
+        c.fill();
         c.fillStyle = "#ef4444";
-        c.beginPath(); c.arc(10, -4, 2.5, 0, Math.PI * 2); c.arc(10, 4, 2.5, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.arc(12, -4.5, 2.7, 0, Math.PI * 2); c.arc(12, 4.5, 2.7, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "#f8fafc";
+        c.beginPath(); c.moveTo(18, -2); c.lineTo(22, -4); c.lineTo(19, 0); c.closePath(); c.fill();
+        c.beginPath(); c.moveTo(18, 2); c.lineTo(22, 4); c.lineTo(19, 0); c.closePath(); c.fill();
         c.restore();
       },
     };
@@ -713,9 +785,10 @@
         }
       },
       render(c) {
-        const wingFlap = Math.sin(performance.now() * 0.025) * 12;
+        const now = performance.now();
+        const wingFlap = Math.sin(now * 0.028) * 14;
         c.save();
-        // Wide purple corridor indicator
+        // Wide purple storm corridor indicator
         c.save();
         c.translate(this.startX, this.startY);
         c.rotate(this.ang);
@@ -726,26 +799,52 @@
         c.strokeRect(0, -halfCorridor, distMax, halfCorridor * 2);
         c.restore();
 
-        // Giant Max Nue Shikigami body & wide wings
+        // Giant Max Nue: Shadow-Owl Wings + Crackling Lightning + Skull Mask
         c.translate(this.x, this.y);
         c.rotate(this.ang);
+        // Shadow wing aura
+        c.fillStyle = "rgba(88, 28, 135, 0.35)";
+        c.beginPath(); c.ellipse(-6, 0, 36, 88 + wingFlap, 0, 0, Math.PI * 2); c.fill();
+        // Layered feathered wings
         c.fillStyle = "#1e1b4b";
         c.strokeStyle = COLORS.ink;
-        c.lineWidth = 3;
+        c.lineWidth = 3.2;
         c.beginPath();
-        c.moveTo(28, 0);
-        c.lineTo(-10, -76 - wingFlap);
-        c.lineTo(-26, -34);
-        c.lineTo(-20, 0);
-        c.lineTo(-26, 34);
-        c.lineTo(-10, 76 + wingFlap);
+        c.moveTo(30, 0);
+        c.lineTo(4, -52 - wingFlap * 0.6);
+        c.lineTo(-14, -84 - wingFlap);
+        c.lineTo(-28, -56 - wingFlap * 0.5);
+        c.lineTo(-18, -32);
+        c.lineTo(-32, -16);
+        c.lineTo(-22, 0);
+        c.lineTo(-32, 16);
+        c.lineTo(-18, 32);
+        c.lineTo(-28, 56 + wingFlap * 0.5);
+        c.lineTo(-14, 84 + wingFlap);
+        c.lineTo(4, 52 + wingFlap * 0.6);
         c.closePath();
         c.fill(); c.stroke();
-        // White owl mask + amber eyes
+
+        // Golden-violet lightning veins across wings
+        c.strokeStyle = "#facc15";
+        c.lineWidth = 2.4;
+        c.beginPath();
+        c.moveTo(6, -12); c.lineTo(-8, -42); c.lineTo(-2, -58); c.lineTo(-14, -76);
+        c.moveTo(6, 12); c.lineTo(-8, 42); c.lineTo(-2, 58); c.lineTo(-14, 76);
+        c.stroke();
+
+        // White Owl Skull Mask + Curved Horns + Glowing Amber Eyes
         c.fillStyle = "#f8fafc";
-        c.beginPath(); c.arc(14, 0, 12, 0, Math.PI * 2); c.fill(); c.stroke();
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 2.6;
+        c.beginPath(); c.ellipse(15, 0, 14, 13, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+        // Skull horns
+        c.fillStyle = "#cbd5e1";
+        c.beginPath(); c.moveTo(8, -10); c.lineTo(-4, -18); c.lineTo(4, -6); c.closePath(); c.fill(); c.stroke();
+        c.beginPath(); c.moveTo(8, 10); c.lineTo(-4, 18); c.lineTo(4, 6); c.closePath(); c.fill(); c.stroke();
+        // Amber eyes
         c.fillStyle = "#facc15";
-        c.beginPath(); c.arc(18, -4, 3, 0, Math.PI * 2); c.arc(18, 4, 3, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.arc(19, -4.5, 3.2, 0, Math.PI * 2); c.arc(19, 4.5, 3.2, 0, Math.PI * 2); c.fill();
         c.restore();
       },
     };
