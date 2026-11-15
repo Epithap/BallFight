@@ -4312,11 +4312,11 @@
         card.addEventListener("click", () => {
           sound.unlock();
           detailCharId = char.id;
-          const evoActive = Boolean(isEvolutionEquipped && isEvolutionEquipped(char.id));
+          const evoTier = getEquippedEvoTier ? getEquippedEvoTier(char.id) : (isEvolutionEquipped && isEvolutionEquipped(char.id) ? 1 : 0);
           if (char.id === "ichigo") {
-            detailFormId = evoActive ? "base" : "shikai";
+            detailFormId = evoTier === 2 ? "dangai" : (evoTier === 1 ? "base" : "shikai");
           } else if (char.id === "naruto") {
-            detailFormId = evoActive ? "sage" : "base";
+            detailFormId = evoTier >= 1 ? "sage" : "base";
           } else {
             detailFormId = "base";
           }
