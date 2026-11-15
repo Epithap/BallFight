@@ -1,4 +1,4 @@
-// Story Saga Quest & Progression System (Bleach Episode 1 — Phase 3)
+// Story Saga Quest & Progression System (Prologue + Arc 1 Open World)
 (() => {
   const S = (window.BallFightStory = window.BallFightStory || {});
   const SAVE_KEY = "bf_story_bleach_v1";
@@ -9,11 +9,12 @@
       zone: "ichigo_bedroom",
       x: 215,
       y: 285,
-      phase: "investigate_room", // "investigate_room" | "talk_rukia" | "door_unlocked" | "clinic_check" | "street_hollow" | "phase3_complete"
+      phase: "investigate_room",
       hasPowers: false,
       seenIntro: false,
       clinicTalked: false,
       inspected: {},
+      flags: {},
     };
   }
 
@@ -23,7 +24,11 @@
     try {
       const raw = localStorage.getItem(SAVE_KEY);
       if (!raw) return defaultState();
-      return Object.assign(defaultState(), JSON.parse(raw));
+      const parsed = JSON.parse(raw);
+      return Object.assign(defaultState(), parsed, {
+        inspected: Object.assign({}, parsed.inspected),
+        flags: Object.assign({}, parsed.flags),
+      });
     } catch {
       return defaultState();
     }
@@ -62,6 +67,20 @@
     save();
   }
 
+  function setFlag(key, val = true) {
+    state.flags = state.flags || {};
+    state.flags[key] = val;
+    save();
+  }
+
+  function getFlag(key) {
+    return Boolean(state.flags && state.flags[key]);
+  }
+
+  function isOpenWorldUnlocked() {
+    return state.phase && state.phase.startsWith("arc1_");
+  }
+
   function markClinicTalked() {
     state.clinicTalked = true;
     if (state.phase === "door_unlocked" || state.phase === "clinic_check") {
@@ -71,56 +90,98 @@
   }
 
   function getActiveQuestSummary() {
-    if (state.phase === "talk_rukia") {
+    const p = state.phase;
+    if (p === "talk_rukia") {
       return {
-        title: "EP. 1: AN UNEXPECTED VISITOR",
-        desc: "A girl in black robes appeared in your room! Walk up and talk to her (F).",
+        title: "PROLOGUE: AN UNEXPECTED VISITOR",
+        desc: "A girl in black robes appeared in your room! Talk to her (F).",
       };
     }
-    if (state.phase === "door_unlocked") {
+    if (p === "door_unlocked") {
       return {
-        title: "EP. 1: SCREAM FROM DOWNSTAIRS",
+        title: "PROLOGUE: SCREAM FROM DOWNSTAIRS",
         desc: "A Hollow is attacking Kurosaki Clinic! Head through the bedroom door (F).",
       };
     }
-    if (state.phase === "clinic_check") {
+    if (p === "clinic_check") {
       return {
-        title: "EP. 1: WRECKED CLINIC",
+        title: "PROLOGUE: WRECKED CLINIC",
         desc: "Check on Karin, Yuzu, and Isshin in Kurosaki Clinic (F).",
       };
     }
-    if (state.phase === "street_hollow") {
+    if (p === "street_hollow") {
       return {
-        title: "EP. 1: FISHBONE D",
-        desc: "Step outside to Karakura Street and confront the Hollow (F)!",
+        title: "PROLOGUE: STREET SHOWDOWN",
+        desc: "Head out to Karakura Street (south exit) to confront the Hollow!",
       };
     }
-    if (state.phase === "phase3_complete" || state.phase === "ready_for_battle") {
+    if (p === "ready_for_battle") {
       return {
-        title: "EP. 1: SUBSTITUTE SHINIGAMI",
-        desc: "You awakened your Shinigami powers! (Hollow Boss Battle coming next)",
+        title: "PROLOGUE: BECOME A SHINIGAMI",
+        desc: "Approach Fishbone D on Karakura Street (F) to awaken your powers!",
       };
     }
-    const count = Math.min(2, getInspectedCount());
+    if (p === "ep1_cleared" || p === "arc1_start") {
+      return {
+        title: "ARC 1: SUBSTITUTE SHINIGAMI",
+        desc: "Open World unlocked! Head to Karakura High (west of Karakura Street).",
+      };
+    }
+    if (p === "arc1_q1_school") {
+      return {
+        title: "Q1: FIRST DAY AT KARAKURA HIGH",
+        desc: "Talk to Rukia (in her school uniform) at Karakura High (F).",
+      };
+    }
+    if (p === "arc1_q1_kon") {
+      return {
+        title: "Q1B: RUNAWAY MOD-SOUL",
+        desc: "A strange lion plushie is causing chaos! Catch & talk to Kon (F).",
+      };
+    }
+    if (p === "arc1_q2_chad") {
+      return {
+        title: "Q2: THE CURSED PARAKEET",
+        desc: "Talk to Chad & Orihime at Karakura High, then head to Riverbank Park!",
+      };
+    }
+    if (p === "arc1_q2_shrieker") {
+      return {
+        title: "Q2B: HUNT SHRIEKER",
+        desc: "Go to Riverbank Park (south of Karakura Street) and defeat Shrieker (F)!",
+      };
+    }
+    if (p === "arc1_q2_done") {
+      return {
+        title: "ARC 1 OPEN WORLD (Q2 CLEAR!)",
+        desc: "Explore Karakura Town, Clinic, High School & Urahara Shop! (Grand Fisher next!)",
+      };
+    }
+    const count = getInspectedCount();
     return {
-      title: "EP. 1: DEATH & STRAWBERRY",
-      desc: `Something eerie is outside Karakura Town. Inspect your room (${count}/2).`,
+      title: "PROLOGUE: RESTLESS NIGHT",
+      desc: `Inspect your room (${Math.min(count, 2)}/2 clues) before going to sleep.`,
     };
+  }
+
+  function reset() {
+    state = defaultState();
+    save();
   }
 
   S.Quests = {
     getState: () => state,
     save,
-    reset: () => {
-      state = defaultState();
-      save();
-    },
     markInspected,
     getInspectedCount,
     setPhase,
     setHasPowers,
     setZone,
+    setFlag,
+    getFlag,
+    isOpenWorldUnlocked,
     markClinicTalked,
     getActiveQuestSummary,
+    reset,
   };
 })();

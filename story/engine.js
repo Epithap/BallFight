@@ -657,6 +657,24 @@
     S.Battle.reset(player);
   }
 
+  function continueAfterBattle() {
+    const resEl = document.getElementById("story-battle-result");
+    if (resEl) resEl.classList.add("hidden");
+    if (S.Battle) S.Battle.stop();
+    const st = S.Quests.getState();
+    if (st.phase === "ep1_cleared") {
+      S.Quests.setPhase("arc1_start");
+      S.Quests.setZone("karakura_street");
+      player.x = 220;
+      player.y = 240;
+      S.UI.syncHud();
+      S.UI.showToast("ARC 1: KARAKURA TOWN OPEN WORLD UNLOCKED!");
+    } else {
+      S.UI.syncHud();
+      S.UI.showToast("EXPLORE KARAKURA TOWN OPEN WORLD!");
+    }
+  }
+
   window.addEventListener("keydown", (e) => {
     keys[e.code] = true;
     if (!running) return;
@@ -692,6 +710,8 @@
     interact: triggerInteract,
     combatAction,
     retryBattle,
+    continueAfterBattle,
+    getPlayer: () => player,
     setDialogueOpen(v) {
       dialogueOpen = Boolean(v);
     },

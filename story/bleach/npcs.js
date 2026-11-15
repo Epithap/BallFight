@@ -1128,10 +1128,345 @@
     c.restore();
   }
 
+  function drawRukiaGigai(c, x, y, r, t = 0, opts = {}) {
+    // Rukia in Karakura High School Uniform (no sword, navy blazer + red ribbon)
+    const mood = opts.mood || "neutral";
+    const isTalking = Boolean(opts.talking);
+    const blink = getBlink(t, 2.3);
+    c.save();
+    c.translate(x, y);
+    if (!opts.noShadow) {
+      c.fillStyle = "rgba(18, 11, 28, 0.30)";
+      c.beginPath(); c.ellipse(0, r * 0.94, r * 0.80, r * 0.22, 0, 0, TAU); c.fill();
+    }
+    // Flipped-out black bob hair
+    c.fillStyle = "#1a1933";
+    c.strokeStyle = INK;
+    c.lineWidth = 2.6;
+    c.beginPath();
+    c.arc(0, -r * 0.06, r * 1.04, Math.PI * 0.86, Math.PI * 2.14);
+    c.quadraticCurveTo(r * 1.24, r * 0.42, r * 1.16, r * 0.58);
+    c.quadraticCurveTo(r * 0.84, r * 0.56, r * 0.65, r * 0.40);
+    c.lineTo(-r * 0.65, r * 0.40);
+    c.quadraticCurveTo(-r * 0.84, r * 0.56, -r * 1.16, r * 0.58);
+    c.quadraticCurveTo(-r * 1.24, r * 0.42, -r * 1.04, r * 0.06);
+    c.closePath();
+    c.fill(); c.stroke();
+
+    c.fillStyle = "#ffe6d4";
+    c.beginPath(); c.arc(0, 0, r, 0, TAU); c.fill();
+    // School Blazer + White Collar + Red Ribbon
+    c.save();
+    c.beginPath(); c.arc(0, 0, r - 1.5, 0, TAU); c.clip();
+    c.fillStyle = "#475569";
+    c.fillRect(-r, r * 0.58, r * 2, r * 0.50);
+    c.fillStyle = "#ffffff";
+    c.beginPath(); c.moveTo(-r * 0.32, r * 0.58); c.lineTo(0, r * 0.92); c.lineTo(r * 0.32, r * 0.58); c.closePath(); c.fill();
+    c.fillStyle = "#ef4444";
+    c.beginPath(); c.arc(0, r * 0.72, r * 0.13, 0, TAU); c.fill();
+    c.restore();
+
+    c.strokeStyle = INK;
+    c.lineWidth = 2.8;
+    c.beginPath(); c.arc(0, 0, r, 0, TAU); c.stroke();
+
+    drawAnimeEyes(c, r, -r * 0.02, 1, "#4f46e5", "#1e1b4b", mood, blink);
+    drawDynamicMouth(c, r, mood, isTalking, t);
+    // Signature single forehead strand
+    c.fillStyle = "#1a1933";
+    c.beginPath();
+    c.moveTo(-r * 0.06, -r * 0.92);
+    c.quadraticCurveTo(r * 0.08, -r * 0.48, -r * 0.02, -r * 0.16);
+    c.quadraticCurveTo(-r * 0.16, -r * 0.50, -r * 0.18, -r * 0.90);
+    c.closePath();
+    c.fill(); c.stroke();
+    c.restore();
+  }
+
+  function drawKon(c, x, y, r, t = 0, opts = {}) {
+    const bounce = opts.noShadow ? 0 : Math.abs(Math.sin(t * 5.2)) * 3.5;
+    c.save();
+    c.translate(x, y - bounce);
+    if (!opts.noShadow) {
+      c.fillStyle = "rgba(18, 11, 28, 0.28)";
+      c.beginPath(); c.ellipse(0, r * 0.95 + bounce, r * 0.78, r * 0.22, 0, 0, TAU); c.fill();
+    }
+    // Brown spiky lion mane tuft on top
+    c.fillStyle = "#92400e";
+    c.strokeStyle = INK;
+    c.lineWidth = 2.4;
+    c.beginPath();
+    c.moveTo(-r * 0.45, -r * 0.75);
+    c.lineTo(-r * 0.25, -r * 1.18);
+    c.lineTo(0, -r * 0.92);
+    c.lineTo(r * 0.25, -r * 1.18);
+    c.lineTo(r * 0.45, -r * 0.75);
+    c.closePath();
+    c.fill(); c.stroke();
+
+    // Cute Lion Plushie Round Ears
+    for (const s of [-1, 1]) {
+      c.fillStyle = "#f59e0b";
+      c.beginPath(); c.arc(s * r * 0.78, -r * 0.65, r * 0.30, 0, TAU); c.fill(); c.stroke();
+    }
+
+    // Golden-Orange Plush Body
+    c.fillStyle = "#fbbf24";
+    c.beginPath(); c.arc(0, 0, r, 0, TAU); c.fill(); c.stroke();
+
+    // Cream Muzzle Patch
+    c.fillStyle = "#fef3c7";
+    c.beginPath(); c.ellipse(0, r * 0.24, r * 0.52, r * 0.34, 0, 0, TAU); c.fill(); c.stroke();
+
+    // Button Eyes with X stitches
+    for (const s of [-1, 1]) {
+      c.fillStyle = "#ffffff";
+      c.beginPath(); c.arc(s * r * 0.34, -r * 0.14, r * 0.20, 0, TAU); c.fill(); c.stroke();
+      c.fillStyle = INK;
+      c.beginPath(); c.arc(s * r * 0.34, -r * 0.14, r * 0.08, 0, TAU); c.fill();
+    }
+    // Nose + Wide Happy Plush Smile
+    c.fillStyle = "#78350f";
+    c.beginPath(); c.arc(0, r * 0.12, r * 0.11, 0, TAU); c.fill();
+    c.strokeStyle = INK;
+    c.lineWidth = 2;
+    c.beginPath(); c.arc(0, r * 0.24, r * 0.24, 0.2, Math.PI - 0.2); c.stroke();
+    c.restore();
+  }
+
+  function drawOrihime(c, x, y, r, t = 0, opts = {}) {
+    const mood = opts.mood || "happy";
+    const isTalking = Boolean(opts.talking);
+    const blink = getBlink(t, 3.1);
+    c.save();
+    c.translate(x, y);
+    if (!opts.noShadow) {
+      c.fillStyle = "rgba(18, 11, 28, 0.30)";
+      c.beginPath(); c.ellipse(0, r * 0.94, r * 0.80, r * 0.22, 0, 0, TAU); c.fill();
+    }
+    // Long Flowing Auburn-Orange Hair Behind
+    c.fillStyle = "#ea580c";
+    c.strokeStyle = INK;
+    c.lineWidth = 2.6;
+    c.beginPath();
+    c.arc(0, -r * 0.08, r * 1.08, Math.PI * 0.82, Math.PI * 2.18);
+    c.lineTo(r * 1.14, r * 0.95);
+    c.quadraticCurveTo(0, r * 1.12, -r * 1.14, r * 0.95);
+    c.closePath();
+    c.fill(); c.stroke();
+
+    c.fillStyle = "#ffe2cb";
+    c.beginPath(); c.arc(0, 0, r, 0, TAU); c.fill();
+    c.save();
+    c.beginPath(); c.arc(0, 0, r - 1.5, 0, TAU); c.clip();
+    c.fillStyle = "#475569";
+    c.fillRect(-r, r * 0.60, r * 2, r * 0.45);
+    c.fillStyle = "#ffffff";
+    c.beginPath(); c.moveTo(-r * 0.30, r * 0.60); c.lineTo(0, r * 0.90); c.lineTo(r * 0.30, r * 0.60); c.closePath(); c.fill();
+    c.restore();
+
+    c.strokeStyle = INK;
+    c.lineWidth = 2.8;
+    c.beginPath(); c.arc(0, 0, r, 0, TAU); c.stroke();
+
+    drawAnimeEyes(c, r, -r * 0.02, 1, "#94a3b8", "#475569", mood, blink);
+    drawDynamicMouth(c, r, mood, isTalking, t);
+
+    // Bangs + Iconic Blue 6-Petal Hairpins!
+    c.fillStyle = "#ea580c";
+    c.beginPath();
+    c.moveTo(-r * 0.92, -r * 0.25);
+    c.quadraticCurveTo(-r * 0.35, -r * 1.05, 0, -r * 0.42);
+    c.quadraticCurveTo(r * 0.35, -r * 1.05, r * 0.92, -r * 0.25);
+    c.arc(0, 0, r * 1.02, -0.25, Math.PI + 0.25, true);
+    c.closePath();
+    c.fill(); c.stroke();
+
+    for (const s of [-1, 1]) {
+      c.fillStyle = "#38bdf8";
+      c.strokeStyle = INK;
+      c.lineWidth = 1.6;
+      c.beginPath(); c.arc(s * r * 0.72, -r * 0.42, r * 0.16, 0, TAU); c.fill(); c.stroke();
+    }
+    c.restore();
+  }
+
+  function drawChad(c, x, y, r, t = 0, opts = {}) {
+    const mood = opts.mood || "serious";
+    const isTalking = Boolean(opts.talking);
+    const blink = getBlink(t, 4.7);
+    c.save();
+    c.translate(x, y);
+    if (!opts.noShadow) {
+      c.fillStyle = "rgba(18, 11, 28, 0.34)";
+      c.beginPath(); c.ellipse(0, r * 0.96, r * 0.88, r * 0.25, 0, 0, TAU); c.fill();
+    }
+    // Warm Tanned Skin
+    c.fillStyle = "#d99b6c";
+    c.beginPath(); c.arc(0, 0, r, 0, TAU); c.fill();
+
+    // Maroon Jacket / Open Collar
+    c.save();
+    c.beginPath(); c.arc(0, 0, r - 1.5, 0, TAU); c.clip();
+    c.fillStyle = "#7f1d1d";
+    c.fillRect(-r, r * 0.58, r * 2, r * 0.50);
+    c.fillStyle = "#f8fafc";
+    c.fillRect(-r * 0.22, r * 0.62, r * 0.44, r * 0.40);
+    c.restore();
+
+    c.strokeStyle = INK;
+    c.lineWidth = 2.8;
+    c.beginPath(); c.arc(0, 0, r, 0, TAU); c.stroke();
+
+    drawAnimeEyes(c, r, 0, 1, "#334155", "#0f172a", mood, blink);
+    drawDynamicMouth(c, r, mood, isTalking, t);
+
+    // Thick Dark Wavy Hair Covering Forehead
+    c.fillStyle = "#1e1b2e";
+    c.strokeStyle = INK;
+    c.lineWidth = 2.6;
+    c.beginPath();
+    c.arc(0, -r * 0.05, r * 1.05, Math.PI * 0.92, Math.PI * 2.08);
+    c.quadraticCurveTo(r * 0.55, -r * 0.15, r * 0.12, -r * 0.28);
+    c.quadraticCurveTo(-r * 0.28, -r * 0.10, -r * 0.98, -r * 0.05);
+    c.closePath();
+    c.fill(); c.stroke();
+    c.restore();
+  }
+
+  function drawUrahara(c, x, y, r, t = 0, opts = {}) {
+    const mood = opts.mood || "happy";
+    const isTalking = Boolean(opts.talking);
+    const blink = getBlink(t, 2.9);
+    c.save();
+    c.translate(x, y);
+    if (!opts.noShadow) {
+      c.fillStyle = "rgba(18, 11, 28, 0.30)";
+      c.beginPath(); c.ellipse(0, r * 0.94, r * 0.82, r * 0.22, 0, 0, TAU); c.fill();
+    }
+    c.fillStyle = "#fde0c2";
+    c.beginPath(); c.arc(0, 0, r, 0, TAU); c.fill();
+
+    // Dark-Green Haori + Inner Kimono
+    c.save();
+    c.beginPath(); c.arc(0, 0, r - 1.5, 0, TAU); c.clip();
+    c.fillStyle = "#14532d";
+    c.fillRect(-r, r * 0.58, r * 2, r * 0.50);
+    c.fillStyle = "#0f172a";
+    c.beginPath(); c.moveTo(-r * 0.28, r * 0.58); c.lineTo(0, r * 0.95); c.lineTo(r * 0.28, r * 0.58); c.closePath(); c.fill();
+    c.restore();
+
+    c.strokeStyle = INK;
+    c.lineWidth = 2.8;
+    c.beginPath(); c.arc(0, 0, r, 0, TAU); c.stroke();
+
+    drawAnimeEyes(c, r, r * 0.04, 1, "#64748b", "#334155", mood, blink);
+    drawDynamicMouth(c, r, mood, isTalking, t);
+
+    // Scruffy Blonde Hair under Bucket Hat
+    c.fillStyle = "#fde047";
+    c.strokeStyle = INK;
+    c.lineWidth = 2.2;
+    c.beginPath();
+    c.moveTo(-r * 1.02, -r * 0.10);
+    c.lineTo(-r * 0.85, r * 0.24);
+    c.lineTo(-r * 0.65, -r * 0.08);
+    c.lineTo(r * 0.65, -r * 0.08);
+    c.lineTo(r * 0.85, r * 0.24);
+    c.lineTo(r * 1.02, -r * 0.10);
+    c.closePath();
+    c.fill(); c.stroke();
+
+    // Iconic Green-and-White Striped Bucket Hat!
+    c.fillStyle = "#f8fafc";
+    c.strokeStyle = INK;
+    c.lineWidth = 2.6;
+    c.beginPath();
+    c.ellipse(0, -r * 0.45, r * 1.24, r * 0.26, 0, 0, TAU);
+    c.fill(); c.stroke();
+
+    c.fillStyle = "#16a34a";
+    c.beginPath();
+    c.arc(0, -r * 0.50, r * 0.86, Math.PI, TAU);
+    c.closePath();
+    c.fill(); c.stroke();
+    // White vertical stripe on hat
+    c.fillStyle = "#f8fafc";
+    c.fillRect(-r * 0.18, -r * 1.24, r * 0.36, r * 0.72);
+    c.strokeRect(-r * 0.18, -r * 1.24, r * 0.36, r * 0.72);
+    c.restore();
+  }
+
+  function drawShriekerHollow(c, x, y, r, t = 0, opts = {}) {
+    // Frog/Insect-like Hollow Boss (Shrieker)
+    const isPortrait = Boolean(opts.noShadow);
+    const bossState = opts.bossState || "chase";
+    const animProg = opts.animProg ?? 0;
+    const s = r / 26;
+    const hop = bossState === "stagger" ? 0 : Math.abs(Math.sin(t * 4.5)) * 3 * s;
+
+    c.save();
+    c.translate(x, y - hop);
+    if (!isPortrait) {
+      c.fillStyle = "rgba(18, 11, 28, 0.48)";
+      c.beginPath(); c.ellipse(0, 26 * s + hop, 34 * s, 11 * s, 0, 0, TAU); c.fill();
+    }
+    const aura = c.createRadialGradient(0, 0, 8 * s, 0, 0, 48 * s);
+    aura.addColorStop(0, bossState === "telegraph" ? "rgba(234, 179, 8, 0.45)" : "rgba(16, 185, 129, 0.28)");
+    aura.addColorStop(1, "rgba(0, 0, 0, 0)");
+    c.fillStyle = aura;
+    c.beginPath(); c.arc(0, 0, 48 * s, 0, TAU); c.fill();
+
+    const vib = bossState === "telegraph" ? Math.sin(t * 50) * (1.2 + animProg * 2.2) : 0;
+    c.translate(vib, 0);
+
+    // Frog-like Clawed Hind Legs + Dark Green Body
+    c.fillStyle = "#14532d";
+    c.strokeStyle = INK;
+    c.lineWidth = 2.6;
+    for (const side of [-1, 1]) {
+      c.beginPath();
+      c.ellipse(side * 22 * s, 10 * s, 10 * s, 15 * s, side * 0.35, 0, TAU);
+      c.fill(); c.stroke();
+    }
+    c.fillStyle = "#1e293b";
+    c.beginPath();
+    c.ellipse(0, 2 * s, 22 * s, 24 * s, 0, 0, TAU);
+    c.fill(); c.stroke();
+
+    // Shrieker Elongated White Skull Mask with Crimson Markings
+    c.fillStyle = "#f8fafc";
+    c.beginPath();
+    c.moveTo(-16 * s, -16 * s);
+    c.quadraticCurveTo(0, -32 * s, 16 * s, -16 * s);
+    c.lineTo(13 * s, 6 * s);
+    c.lineTo(0, 14 * s);
+    c.lineTo(-13 * s, 6 * s);
+    c.closePath();
+    c.fill(); c.stroke();
+
+    c.fillStyle = "#dc2626";
+    c.beginPath(); c.moveTo(-12 * s, -12 * s); c.lineTo(0, -4 * s); c.lineTo(12 * s, -12 * s); c.lineTo(0, -18 * s); c.closePath(); c.fill();
+
+    for (const side of [-1, 1]) {
+      c.fillStyle = "#09090b";
+      c.beginPath(); c.ellipse(side * 7 * s, -4 * s, 4.5 * s, 3.2 * s, side * -0.2, 0, TAU); c.fill();
+      c.fillStyle = "#facc15";
+      c.beginPath(); c.arc(side * 7 * s, -4 * s, 1.8 * s, 0, TAU); c.fill();
+    }
+    c.restore();
+  }
+
   function drawById(id, c, x, y, r, t = 0, opts = {}) {
     if (id === "rukia" || id === "rukia_bedroom" || id === "rukia_street") {
       return drawRukia(c, x, y, r, t, opts);
     }
+    if (id === "rukia_gigai" || id === "rukia_school") return drawRukiaGigai(c, x, y, r, t, opts);
+    if (id === "kon") return drawKon(c, x, y, r, t, opts);
+    if (id === "orihime") return drawOrihime(c, x, y, r, t, opts);
+    if (id === "chad") return drawChad(c, x, y, r, t, opts);
+    if (id === "urahara") return drawUrahara(c, x, y, r, t, opts);
+    if (id === "hollow_shrieker" || id === "shrieker") return drawShriekerHollow(c, x, y, r, t, opts);
     if (id === "ichigo_shinigami") return drawShinigamiIchigo(c, x, y, r, t, opts.facing ?? 1, opts);
     if (id === "yuzu") return drawYuzu(c, x, y, r, t, opts);
     if (id === "karin") return drawKarin(c, x, y, r, t, opts);
@@ -1145,10 +1480,16 @@
     drawHumanIchigo,
     drawShinigamiIchigo,
     drawRukia,
+    drawRukiaGigai,
+    drawKon,
+    drawOrihime,
+    drawChad,
+    drawUrahara,
     drawYuzu,
     drawKarin,
     drawIsshin,
     drawFishboneHollow,
+    drawShriekerHollow,
     drawById,
   };
 })();

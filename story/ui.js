@@ -190,7 +190,7 @@
     }
   }
 
-  function showBattleResult(victory) {
+  function showBattleResult(victory, bossId = "fishbone") {
     const resEl = document.getElementById("story-battle-result");
     const badge = document.getElementById("story-result-badge");
     const title = document.getElementById("story-result-title");
@@ -199,9 +199,15 @@
     if (!resEl) return;
     resEl.classList.remove("hidden");
     if (victory) {
-      if (badge) badge.textContent = "EPISODE 1 CLEAR!";
-      if (title) title.textContent = "HOLLOW PURIFIED!";
-      if (desc) desc.textContent = "You defeated Fishbone D and protected Karakura Town!";
+      if (bossId === "shrieker") {
+        if (badge) badge.textContent = "QUEST 2 CLEAR!";
+        if (title) title.textContent = "SHRIEKER PURIFIED!";
+        if (desc) desc.textContent = "You freed the boy's soul and protected Chad & Orihime!";
+      } else {
+        if (badge) badge.textContent = "PROLOGUE CLEAR!";
+        if (title) title.textContent = "HOLLOW PURIFIED!";
+        if (desc) desc.textContent = "Fishbone D defeated! Karakura Town Open World (Arc 1) is now unlocked!";
+      }
       if (retryBtn) retryBtn.classList.add("hidden");
     } else {
       if (badge) badge.textContent = "DEFEATED";
@@ -408,7 +414,15 @@
       });
     }
     const btnResOk = document.getElementById("story-btn-result-ok");
-    if (btnResOk) btnResOk.addEventListener("click", exitToSelector);
+    if (btnResOk) {
+      btnResOk.addEventListener("click", () => {
+        if (S.Engine && S.Engine.continueAfterBattle) {
+          S.Engine.continueAfterBattle();
+        } else {
+          exitToSelector();
+        }
+      });
+    }
   }
 
   if (document.readyState === "loading") {

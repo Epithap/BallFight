@@ -13,6 +13,7 @@
   let enrageBanner = 0;
   let deathState = null; // null | "boss" | "player"
   let deathTimer = 0;
+  let currentBossId = "fishbone"; // "fishbone" | "shrieker"
 
   // ===== LAYERED ANIME COMBAT SFX (Web Audio, zero GC noise buffer) =====
   const SFX = (() => {
@@ -297,13 +298,14 @@
       afterimages: [],
     });
 
+    const isShrieker = currentBossId === "shrieker";
     Object.assign(boss, {
       x: 240,
       y: 390,
-      r: 30,
-      hp: 800,
-      maxHp: 800,
-      speed: 92,
+      r: isShrieker ? 27 : 30,
+      hp: isShrieker ? 550 : 800,
+      maxHp: isShrieker ? 550 : 800,
+      speed: isShrieker ? 108 : 92,
       state: "chase",
       timer: 0.9,
       pattern: "cone",
@@ -317,6 +319,9 @@
       enraged: false,
     });
 
+    const bNameEl = document.getElementById("story-boss-name");
+    if (bNameEl) bNameEl.textContent = isShrieker ? "SHRIEKER • HOLLOW" : "FISHBONE D • HOLLOW";
+
     slashes.length = 0;
     projectiles.length = 0;
     bossProjectiles.length = 0;
@@ -329,11 +334,16 @@
     syncBattleHud();
   }
 
-  function start(player) {
+  function start(player, opts = {}) {
+    currentBossId = opts.bossId || "fishbone";
     SFX.unlock();
     resetBattle(player);
     S.UI.setBattleMode(true);
-    S.UI.showToast("1v1 BOSS BATTLE! DEFEAT FISHBONE D!");
+    S.UI.showToast(
+      currentBossId === "shrieker"
+        ? "BOSS BATTLE! DEFEAT SHRIEKER!"
+        : "1v1 BOSS BATTLE! DEFEAT FISHBONE D!"
+    );
   }
 
   function stop() {
@@ -817,10 +827,15 @@
       if (deathTimer <= 0 && !resultShown) {
         resultShown = true;
         if (deathState === "boss") {
-          S.Quests.setPhase("ep1_cleared");
-          S.UI.showBattleResult(true);
+          if (currentBossId === "shrieker") {
+            S.Quests.setPhase("arc1_q2_done");
+            S.Quests.setFlag("shriekerDefeated", true);
+          } else {
+            S.Quests.setPhase("ep1_cleared");
+          }
+          S.UI.showBattleResult(true, currentBossId);
         } else {
-          S.UI.showBattleResult(false);
+          S.UI.showBattleResult(false, currentBossId);
         }
       }
       syncBattleHud();
@@ -1092,8 +1107,8 @@
     // 1. Red Telegraph Danger Indicators on Asphalt
     renderTelegraphs(c);
 
-    // 2. Rukia watching from sidewalk
-    if (S.BleachChars) {
+    // 2. Rukia watching from sidewalk (Prologue only)
+    if (currentBossId === "fishbone" && S.BleachChars) {
       S.BleachChars.drawRukia(c, 84, 158, 17, t, { mood: "serious" });
     }
 
@@ -1132,9 +1147,10 @@
       c.restore();
     }
 
-    // 5. Fishbone D Boss (stays visible & dissolves during deathState === "boss")
+    // 5. Boss Render (Fishbone D or Shrieker, stays visible & dissolves during deathState === "boss")
     if ((boss.hp > 0 || deathState === "boss") && S.BleachChars) {
       const animProg = boss.state === "telegraph" ? 1 - Math.max(0, boss.timer / boss.teleDuration) : 0;
+      const drawBoss = currentBossId === "shrieker" ? S.BleachChars.drawShriekerHollow : S.BleachChars.drawFishboneHollow;
       c.save();
       if (deathState === "boss") {
         const dp = 1 - Math.max(0, deathTimer / 1.55);
@@ -1144,7 +1160,7 @@
         c.translate(boss.x + vib, boss.y - dp * 14);
         c.rotate(dp * 0.22);
         c.scale(1 + dp * 0.14, Math.max(0.4, 1 - dp * 0.48));
-        S.BleachChars.drawFishboneHollow(c, 0, 0, boss.r, t, {
+        drawBoss(c, 0, 0, boss.r, t, {
           talking: true,
           bossState: "stagger",
           animProg: 0,
@@ -1157,7 +1173,7 @@
         c.arc(0, 0, boss.r * (0.8 + dp * 1.9), 0, TAU);
         c.stroke();
       } else {
-        S.BleachChars.drawFishboneHollow(c, boss.x, boss.y, boss.r, t, {
+        drawBoss(c, boss.x, boss.y, boss.r, t, {
           talking: boss.state === "telegraph" || boss.state === "attack",
           bossState: boss.state,
           animProg,

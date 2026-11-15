@@ -880,6 +880,7 @@
           box: { x: 124, y: 208, w: 44, h: 44 },
           shortLabel: "TALK TO RUKIA",
           label: "TALK TO RUKIA (F)",
+          visibleWhen: () => !S.Quests.isOpenWorldUnlocked(),
           getDialogue: () => [
             {
               side: "right",
@@ -909,6 +910,7 @@
           box: { x: 204, y: 326, w: 80, h: 78 },
           shortLabel: "CONFRONT HOLLOW",
           label: "CONFRONT HOLLOW (F)",
+          visibleWhen: () => !S.Quests.isOpenWorldUnlocked(),
           cutscene: "rukia_vs_hollow",
           onFinish: () => {
             S.Quests.setHasPowers(true);
@@ -928,6 +930,39 @@
           shortLabel: "BACK TO CLINIC",
           label: "ENTER CLINIC (F)",
           portal: { targetZone: "kurosaki_clinic", spawnX: 220, spawnY: 410 },
+        },
+        {
+          id: "portal_karakura_high",
+          x: 34,
+          y: 310,
+          r: 34,
+          box: { x: 16, y: 276, w: 32, h: 68 },
+          shortLabel: "◀ KARAKURA HIGH",
+          label: "GO TO KARAKURA HIGH (F)",
+          visibleWhen: () => S.Quests.isOpenWorldUnlocked(),
+          portal: { targetZone: "karakura_high", spawnX: 368, spawnY: 300 },
+        },
+        {
+          id: "portal_urahara_shop",
+          x: 406,
+          y: 310,
+          r: 34,
+          box: { x: 392, y: 276, w: 32, h: 68 },
+          shortLabel: "URAHARA SHOP ▶",
+          label: "GO TO URAHARA SHOP (F)",
+          visibleWhen: () => S.Quests.isOpenWorldUnlocked(),
+          portal: { targetZone: "urahara_shop", spawnX: 64, spawnY: 300 },
+        },
+        {
+          id: "portal_riverbank_park",
+          x: 220,
+          y: 478,
+          r: 36,
+          box: { x: 174, y: 468, w: 92, h: 26 },
+          shortLabel: "▼ RIVERBANK PARK",
+          label: "GO TO RIVERBANK PARK (F)",
+          visibleWhen: () => S.Quests.isOpenWorldUnlocked(),
+          portal: { targetZone: "riverbank_park", spawnX: 220, spawnY: 146 },
         },
       ],
       drawGround(c, t = 0) {
@@ -1094,6 +1129,446 @@
         c.moveTo(370, 20);
         c.quadraticCurveTo(405, 32, 440, 18);
         c.stroke();
+
+        // 6. Open World Directional Portal Badges
+        if (S.Quests.isOpenWorldUnlocked()) {
+          const drawPortalTag = (px, py, txt) => {
+            c.save();
+            c.fillStyle = "#16a34a";
+            c.strokeStyle = INK;
+            c.lineWidth = 2.4;
+            c.beginPath(); c.roundRect(px - 44, py - 12, 88, 24, 8); c.fill(); c.stroke();
+            c.fillStyle = "#ffffff";
+            c.font = "900 10px 'Lilita One', sans-serif";
+            c.textAlign = "center";
+            c.textBaseline = "middle";
+            c.fillText(txt, px, py + 1);
+            c.restore();
+          };
+          drawPortalTag(66, 310, "◀ HIGH SCHOOL");
+          drawPortalTag(374, 310, "URAHARA ▶");
+          drawPortalTag(220, 474, "▼ RIVERBANK");
+        }
+      },
+    },
+
+    karakura_high: {
+      id: "karakura_high",
+      name: "KARAKURA HIGH SCHOOL",
+      w: 440,
+      h: 480,
+      bg: "#cbd5e1",
+      walls: [
+        { x: 0, y: 0, w: 440, h: 112 },
+        { x: 0, y: 454, w: 440, h: 26 },
+        { x: 0, y: 0, w: 22, h: 480 },
+        { x: 418, y: 0, w: 22, h: 480 },
+      ],
+      npcs: [
+        {
+          id: "rukia_school",
+          speakerId: "rukia_gigai",
+          name: "RUKIA KUCHIKI (GIGAI)",
+          x: 196,
+          y: 168,
+          r: 18,
+          box: { x: 174, y: 146, w: 44, h: 44 },
+          shortLabel: "TALK TO RUKIA",
+          label: "TALK TO RUKIA (F)",
+          getDialogue: (st) => {
+            if (st.phase === "arc1_start" || st.phase === "arc1_q1_school") {
+              return [
+                {
+                  side: "right",
+                  speakerId: "rukia_gigai",
+                  name: "RUKIA KUCHIKI",
+                  mood: "serious",
+                  partner: { speakerId: "ichigo_shinigami", mood: "shocked" },
+                  text: "You actually transferred me into your class?! Never mind—my Gigai can't restore my powers yet, so YOU are the Substitute Shinigami!",
+                },
+                {
+                  side: "right",
+                  speakerId: "rukia_gigai",
+                  name: "RUKIA KUCHIKI",
+                  mood: "battle",
+                  partner: { speakerId: "ichigo_shinigami", mood: "serious" },
+                  text: "First problem: a rogue Mod-Soul pill escaped into that lion plushie over there! Catch him before he wrecks the school!",
+                },
+              ];
+            }
+            return [
+              {
+                side: "right",
+                speakerId: "rukia_gigai",
+                name: "RUKIA KUCHIKI",
+                mood: "neutral",
+                partner: { speakerId: "ichigo_shinigami", mood: "neutral" },
+                text: "Keep your Substitute Badge ready. Hollows are starting to gather near Riverbank Park!",
+              },
+            ];
+          },
+          onFinish: () => {
+            const st = S.Quests.getState();
+            if (st.phase === "arc1_start" || st.phase === "arc1_q1_school") {
+              S.Quests.setPhase("arc1_q1_kon");
+              S.UI.syncHud();
+              S.UI.showToast("QUEST 1B: CATCH KON IN THE COURTYARD!");
+            }
+          },
+        },
+        {
+          id: "kon",
+          speakerId: "kon",
+          name: "KON (MOD-SOUL)",
+          x: 110,
+          y: 344,
+          r: 17,
+          box: { x: 88, y: 322, w: 44, h: 44 },
+          shortLabel: "CATCH KON",
+          label: "CATCH KON (F)",
+          visibleWhen: (st) => st.phase === "arc1_q1_kon" || S.Quests.getFlag("konRecruited"),
+          getDialogue: (st) => {
+            if (st.phase === "arc1_q1_kon") {
+              return [
+                {
+                  side: "right",
+                  speakerId: "kon",
+                  name: "KON",
+                  mood: "shocked",
+                  partner: { speakerId: "ichigo_shinigami", mood: "angry" },
+                  text: "GYAAAH! Let go of me, spiky-head! I'm a noble Mod-Soul—I don't belong in a stuffed lion!",
+                },
+                {
+                  side: "left",
+                  speakerId: "ichigo_shinigami",
+                  name: "ICHIGO KUROSAKI",
+                  mood: "serious",
+                  partner: { speakerId: "kon", mood: "sad" },
+                  text: "Shut up, stuffed toy! From today on your name is Kon—and you're guarding my body when I go Shinigami!",
+                },
+              ];
+            }
+            return [
+              {
+                side: "right",
+                speakerId: "kon",
+                name: "KON",
+                mood: "happy",
+                partner: { speakerId: "ichigo_shinigami", mood: "neutral" },
+                text: "Hmph! Check on Chad and Orihime over by the lockers—they've been acting weird about some parakeet!",
+              },
+            ];
+          },
+          onFinish: () => {
+            const st = S.Quests.getState();
+            if (st.phase === "arc1_q1_kon") {
+              S.Quests.setFlag("konRecruited", true);
+              S.Quests.setPhase("arc1_q2_chad");
+              S.UI.syncHud();
+              S.UI.showToast("KON RECRUITED! TALK TO CHAD & ORIHIME!");
+            }
+          },
+        },
+        {
+          id: "chad",
+          speakerId: "chad",
+          name: "YASUTORA SADO (CHAD)",
+          x: 298,
+          y: 238,
+          r: 19,
+          box: { x: 274, y: 214, w: 48, h: 48 },
+          shortLabel: "TALK TO CHAD",
+          label: "TALK TO CHAD (F)",
+          getDialogue: (st) => {
+            if (st.phase === "arc1_q2_chad") {
+              return [
+                {
+                  side: "right",
+                  speakerId: "chad",
+                  name: "CHAD",
+                  mood: "serious",
+                  partner: { speakerId: "ichigo_shinigami", mood: "serious" },
+                  text: "Ichigo... a cursed parakeet just attacked me, and I can hear a child's voice crying inside it. It flew toward Riverbank Park!",
+                },
+                {
+                  side: "left",
+                  speakerId: "ichigo_shinigami",
+                  name: "ICHIGO KUROSAKI",
+                  mood: "angry",
+                  partner: { speakerId: "chad", mood: "serious" },
+                  text: "Stay safe, Chad. That's definitely a Hollow's doing—I'm heading to Riverbank Park right now!",
+                },
+              ];
+            }
+            return [
+              {
+                side: "right",
+                speakerId: "chad",
+                name: "CHAD",
+                mood: "neutral",
+                partner: { speakerId: "ichigo_shinigami", mood: "neutral" },
+                text: "Be careful out there, Ichigo.",
+              },
+            ];
+          },
+          onFinish: () => {
+            if (S.Quests.getState().phase === "arc1_q2_chad") {
+              S.Quests.setPhase("arc1_q2_shrieker");
+              S.UI.syncHud();
+              S.UI.showToast("QUEST 2B: HEAD TO RIVERBANK PARK!");
+            }
+          },
+        },
+        {
+          id: "orihime",
+          speakerId: "orihime",
+          name: "ORIHIME INOUE",
+          x: 344,
+          y: 266,
+          r: 17,
+          box: { x: 322, y: 244, w: 44, h: 44 },
+          shortLabel: "TALK TO ORIHIME",
+          label: "TALK TO ORIHIME (F)",
+          getDialogue: () => [
+            {
+              side: "right",
+              speakerId: "orihime",
+              name: "ORIHIME INOUE",
+              mood: "happy",
+              partner: { speakerId: "ichigo_shinigami", mood: "neutral" },
+              text: "Kurosaki-kun! Good luck with whatever you're investigating! Don't forget to eat if you get hurt!",
+            },
+          ],
+        },
+      ],
+      inspectables: [
+        {
+          id: "school_to_street",
+          x: 396,
+          y: 300,
+          r: 34,
+          box: { x: 386, y: 266, w: 32, h: 68 },
+          shortLabel: "KARAKURA STREET ▶",
+          label: "EXIT TO KARAKURA STREET (F)",
+          portal: { targetZone: "karakura_street", spawnX: 74, spawnY: 310 },
+        },
+      ],
+      drawGround(c) {
+        // School Brick Building Top + Courtyard Paving
+        c.fillStyle = "#b45309";
+        c.fillRect(0, 0, 440, 112);
+        c.fillStyle = "#e2e8f0";
+        c.fillRect(0, 112, 440, 368);
+        c.strokeStyle = "rgba(15, 23, 42, 0.14)";
+        c.lineWidth = 1.5;
+        for (let x = 0; x < 440; x += 36) {
+          c.beginPath(); c.moveTo(x, 112); c.lineTo(x, 480); c.stroke();
+        }
+        for (let y = 112; y < 480; y += 36) {
+          c.beginPath(); c.moveTo(0, y); c.lineTo(440, y); c.stroke();
+        }
+        // School Windows & Clock
+        for (let wx = 44; wx <= 360; wx += 78) {
+          c.fillStyle = "#bae6fd";
+          c.strokeStyle = INK;
+          c.lineWidth = 2.4;
+          c.fillRect(wx, 28, 48, 52);
+          c.strokeRect(wx, 28, 48, 52);
+        }
+        // Sakura Trees in Courtyard Corners
+        for (const [tx, ty] of [[56, 152], [380, 152]]) {
+          c.fillStyle = "#78350f";
+          c.fillRect(tx - 6, ty + 10, 12, 24);
+          c.fillStyle = "#fbcfe8";
+          c.strokeStyle = INK;
+          c.lineWidth = 2.4;
+          c.beginPath(); c.arc(tx, ty, 24, 0, Math.PI * 2); c.fill(); c.stroke();
+        }
+        // Exit Tag
+        c.fillStyle = "#16a34a";
+        c.strokeStyle = INK;
+        c.lineWidth = 2.4;
+        c.beginPath(); c.roundRect(334, 288, 86, 24, 8); c.fill(); c.stroke();
+        c.fillStyle = "#ffffff";
+        c.font = "900 10px 'Lilita One', sans-serif";
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+        c.fillText("STREET ▶", 377, 301);
+      },
+    },
+
+    urahara_shop: {
+      id: "urahara_shop",
+      name: "URAHARA SHOP",
+      w: 440,
+      h: 480,
+      bg: "#d6b88c",
+      walls: [
+        { x: 0, y: 0, w: 440, h: 108 },
+        { x: 0, y: 454, w: 440, h: 26 },
+        { x: 0, y: 0, w: 22, h: 480 },
+        { x: 418, y: 0, w: 22, h: 480 },
+      ],
+      npcs: [
+        {
+          id: "urahara",
+          speakerId: "urahara",
+          name: "KISUKE URAHARA",
+          x: 220,
+          y: 178,
+          r: 19,
+          box: { x: 194, y: 152, w: 52, h: 52 },
+          shortLabel: "TALK TO URAHARA",
+          label: "TALK TO URAHARA (F)",
+          getDialogue: () => [
+            {
+              side: "right",
+              speakerId: "urahara",
+              name: "KISUKE URAHARA",
+              mood: "happy",
+              partner: { speakerId: "ichigo_shinigami", mood: "neutral" },
+              text: "Welcome, Kurosaki-san! Need supplies or Soul Candy? You're doing great as a Substitute Shinigami—keep sharpening your Shunpo and Parry!",
+            },
+            {
+              side: "right",
+              speakerId: "urahara",
+              name: "KISUKE URAHARA",
+              mood: "serious",
+              partner: { speakerId: "ichigo_shinigami", mood: "serious" },
+              text: "Still, be careful. A powerful Hollow's reiatsu has been lingering around Karakura Town lately... we'll talk again soon.",
+            },
+          ],
+        },
+      ],
+      inspectables: [
+        {
+          id: "urahara_to_street",
+          x: 44,
+          y: 300,
+          r: 34,
+          box: { x: 22, y: 266, w: 32, h: 68 },
+          shortLabel: "◀ KARAKURA STREET",
+          label: "EXIT TO KARAKURA STREET (F)",
+          portal: { targetZone: "karakura_street", spawnX: 368, spawnY: 310 },
+        },
+      ],
+      drawGround(c) {
+        // Traditional Wooden Shop + Tatami Floor
+        c.fillStyle = "#78350f";
+        c.fillRect(0, 0, 440, 108);
+        c.fillStyle = "#e7d3a8";
+        c.fillRect(0, 108, 440, 372);
+        // Tatami Mat Grid
+        c.strokeStyle = "#57534e";
+        c.lineWidth = 2;
+        for (let y = 136; y < 440; y += 72) {
+          c.strokeRect(42, y, 170, 68);
+          c.strokeRect(228, y, 170, 68);
+        }
+        // Shoji Sliding Panels on Top Wall
+        for (let sx = 46; sx <= 320; sx += 94) {
+          c.fillStyle = "#fefce8";
+          c.strokeStyle = INK;
+          c.lineWidth = 2.4;
+          c.fillRect(sx, 24, 78, 74);
+          c.strokeRect(sx, 24, 78, 74);
+        }
+        // Exit Tag
+        c.fillStyle = "#16a34a";
+        c.strokeStyle = INK;
+        c.lineWidth = 2.4;
+        c.beginPath(); c.roundRect(22, 288, 86, 24, 8); c.fill(); c.stroke();
+        c.fillStyle = "#ffffff";
+        c.font = "900 10px 'Lilita One', sans-serif";
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+        c.fillText("◀ STREET", 65, 301);
+      },
+    },
+
+    riverbank_park: {
+      id: "riverbank_park",
+      name: "KARAKURA RIVERBANK",
+      w: 440,
+      h: 500,
+      bg: "#4ade80",
+      walls: [
+        { x: 0, y: 0, w: 440, h: 108 },
+        { x: 0, y: 472, w: 440, h: 28 },
+        { x: 0, y: 0, w: 22, h: 500 },
+        { x: 418, y: 0, w: 22, h: 500 },
+      ],
+      npcs: [
+        {
+          id: "hollow_shrieker",
+          speakerId: "hollow_shrieker",
+          name: "SHRIEKER (HOLLOW)",
+          x: 220,
+          y: 344,
+          r: 27,
+          box: { x: 184, y: 308, w: 72, h: 72 },
+          shortLabel: "FIGHT SHRIEKER",
+          label: "FIGHT SHRIEKER (F)",
+          visibleWhen: (st) => st.phase === "arc1_q2_shrieker" && !S.Quests.getFlag("shriekerDefeated"),
+          getDialogue: () => [
+            {
+              side: "right",
+              speakerId: "hollow_shrieker",
+              name: "SHRIEKER",
+              mood: "angry",
+              partner: { speakerId: "ichigo_shinigami", mood: "battle" },
+              text: "Kekehe! You fell right into my trap, Shinigami brat! Let's see how you dance around my bombs!",
+            },
+          ],
+          onFinish: () => {
+            if (S.Battle) S.Battle.start(S.Engine.getPlayer(), { bossId: "shrieker" });
+          },
+        },
+      ],
+      inspectables: [
+        {
+          id: "river_to_street",
+          x: 220,
+          y: 124,
+          r: 36,
+          box: { x: 176, y: 102, w: 88, h: 26 },
+          shortLabel: "▲ KARAKURA STREET",
+          label: "BACK TO KARAKURA STREET (F)",
+          portal: { targetZone: "karakura_street", spawnX: 220, spawnY: 438 },
+        },
+      ],
+      drawGround(c, t = 0) {
+        // Karakura River on Top + Grassy Bank + Paved Path
+        c.fillStyle = "#0284c7";
+        c.fillRect(0, 0, 440, 108);
+        c.strokeStyle = "rgba(224, 242, 254, 0.55)";
+        c.lineWidth = 2;
+        for (let ry = 28; ry <= 84; ry += 26) {
+          const off = (t * 28 + ry) % 60;
+          for (let rx = -40 + off; rx < 440; rx += 80) {
+            c.beginPath(); c.moveTo(rx, ry); c.lineTo(rx + 28, ry); c.stroke();
+          }
+        }
+        // Grassy Slope
+        c.fillStyle = "#22c55e";
+        c.fillRect(0, 108, 440, 392);
+        // Paved Stone Riverside Path
+        c.fillStyle = "#cbd5e1";
+        c.fillRect(36, 152, 368, 300);
+        c.strokeStyle = INK;
+        c.lineWidth = 2.6;
+        c.strokeRect(36, 152, 368, 300);
+
+        // Exit Tag
+        c.fillStyle = "#16a34a";
+        c.strokeStyle = INK;
+        c.lineWidth = 2.4;
+        c.beginPath(); c.roundRect(166, 114, 108, 24, 8); c.fill(); c.stroke();
+        c.fillStyle = "#ffffff";
+        c.font = "900 10px 'Lilita One', sans-serif";
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+        c.fillText("▲ KARAKURA ST.", 220, 127);
       },
     },
   };
