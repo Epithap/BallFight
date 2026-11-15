@@ -290,11 +290,64 @@
     mascotRaf = requestAnimationFrame(tick);
   }
 
+  function syncSelectorCards() {
+    const st = S.Quests.getState();
+    const unlocked = S.Quests.isOpenWorldUnlocked() || st.phase === "ep1_cleared";
+
+    const btnPrologue = document.getElementById("btn-play-bleach-saga");
+    if (btnPrologue) {
+      btnPrologue.textContent = unlocked ? "REPLAY PROLOGUE" : "START PROLOGUE";
+    }
+
+    const owCard = document.getElementById("story-openworld-card");
+    const owSub = document.getElementById("story-openworld-sub");
+    const owRibbon = document.getElementById("story-openworld-ribbon");
+    const btnOw = document.getElementById("btn-enter-open-world");
+    if (owCard) owCard.classList.toggle("locked", !unlocked);
+    if (owSub) {
+      owSub.textContent = unlocked
+        ? "OPEN WORLD • SUBSTITUTE SHINIGAMI"
+        : "OPEN WORLD • CLEAR PROLOGUE TO UNLOCK";
+    }
+    if (owRibbon) {
+      owRibbon.innerHTML = unlocked ? "UNLOCKED" : '<svg><use href="#i-lock"/></svg>LOCKED';
+    }
+    if (btnOw) {
+      btnOw.disabled = !unlocked;
+      btnOw.textContent = unlocked ? "ENTER KARAKURA WORLD" : "CLEAR PROLOGUE FIRST";
+    }
+  }
+
   function openSelectorScreen() {
     document.querySelectorAll(".screen").forEach((s) => s.classList.add("hidden"));
     const sel = document.getElementById("screen-story-select");
     if (sel) sel.classList.remove("hidden");
+    syncSelectorCards();
     startSelectorMascotLoop();
+  }
+
+  function launchOpenWorld() {
+    const st = S.Quests.getState();
+    if (!S.Quests.isOpenWorldUnlocked() && st.phase !== "ep1_cleared") return;
+    cancelAnimationFrame(mascotRaf);
+    document.querySelectorAll(".screen").forEach((s) => s.classList.add("hidden"));
+    const playScreen = document.getElementById("screen-story-play");
+    if (playScreen) playScreen.classList.remove("hidden");
+    const bnav = document.querySelector(".bnav");
+    if (bnav) bnav.classList.add("hidden");
+
+    S.Quests.setHasPowers(true);
+    if (st.phase === "ep1_cleared") {
+      S.Quests.setPhase("arc1_start");
+    }
+    const targetZone =
+      st.zone && st.zone !== "ichigo_bedroom" && st.zone !== "kurosaki_clinic"
+        ? st.zone
+        : "karakura_street";
+    S.Quests.setZone(targetZone);
+    syncHud();
+    S.Engine.start({ resumeOpenWorld: true, x: 220, y: 240 });
+    showToast("WELCOME TO KARAKURA TOWN OPEN WORLD!");
   }
 
   function launchBleachEpisode1() {
@@ -378,6 +431,9 @@
 
     const btnPlayBleach = document.getElementById("btn-play-bleach-saga");
     if (btnPlayBleach) btnPlayBleach.addEventListener("click", launchBleachEpisode1);
+
+    const btnOpenWorld = document.getElementById("btn-enter-open-world");
+    if (btnOpenWorld) btnOpenWorld.addEventListener("click", launchOpenWorld);
 
     const btnSkip = document.getElementById("story-cutscene-skip");
     if (btnSkip) btnSkip.addEventListener("click", () => S.BleachCutscenes.stop(true));

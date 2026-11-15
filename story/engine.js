@@ -624,15 +624,22 @@
     rafId = requestAnimationFrame(loop);
   }
 
-  function start() {
+  function start(opts = {}) {
     if (running) return;
     running = true;
     dialogueOpen = false;
-    player.x = 215;
-    player.y = 285;
+    if (opts.resumeOpenWorld) {
+      player.x = opts.x ?? 220;
+      player.y = opts.y ?? 240;
+      player.mood = "battle";
+      player.moodTimer = 0;
+    } else {
+      player.x = 215;
+      player.y = 285;
+      player.mood = "shocked";
+      player.moodTimer = 3.0;
+    }
     player.r = 18;
-    player.mood = "shocked";
-    player.moodTimer = 3.0;
     lastTs = performance.now();
     rafId = requestAnimationFrame(loop);
   }
