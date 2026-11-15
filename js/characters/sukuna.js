@@ -1513,26 +1513,26 @@
     c.fillStyle = "#f1f5f9";
     c.fill();
 
-    // Baju: Dark Charcoal Hakama wrapping lower half of the ball
+    // Baju: Dark Charcoal Hakama wrapping lower portion of the ball (lowered waist)
     c.save();
     c.beginPath();
     c.arc(0, 0, R, 0, Math.PI * 2);
     c.clip();
     c.fillStyle = "#27272a";
-    c.fillRect(-R, R * 0.28, R * 2, R);
+    c.fillRect(-R, R * 0.50, R * 2, R);
     // Waist sash
     c.fillStyle = "#3f3f46";
     c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.4;
-    c.fillRect(-R, R * 0.22, R * 2, 7);
-    c.strokeRect(-R, R * 0.22, R * 2, 7);
+    c.lineWidth = 2.2;
+    c.fillRect(-R, R * 0.45, R * 2, 5.5);
+    c.strokeRect(-R, R * 0.45, R * 2, 5.5);
     // Hanging center sash flap
     c.beginPath();
-    c.moveTo(-5, R * 0.45);
-    c.lineTo(5, R * 0.45);
-    c.lineTo(7, R * 0.92);
+    c.moveTo(-4.5, R * 0.62);
+    c.lineTo(4.5, R * 0.62);
+    c.lineTo(6, R * 0.94);
     c.lineTo(0, R * 1.02);
-    c.lineTo(-7, R * 0.92);
+    c.lineTo(-6, R * 0.94);
     c.closePath();
     c.fill(); c.stroke();
     c.restore();
@@ -1549,20 +1549,21 @@
     c.stroke();
     c.restore();
 
-    // 4. Clean Ball-Style Face: 4 White Eye-Wings + Roaring Mouth (No Eyes)
-    // Roaring mouth
-    c.fillStyle = "#09090b";
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2;
-    c.beginPath(); c.ellipse(0, -1, 7, 6.5, 0, 0, Math.PI * 2); c.fill(); c.stroke();
-    c.fillStyle = "#9333ea";
-    c.beginPath(); c.ellipse(0, 2, 3.8, 2.5, 0, 0, Math.PI * 2); c.fill();
+    // 4. Clean Ball-Style Face: 4 White Eye-Wings + Clenched Toothy Grin (No Mangap, No Eyes)
     c.fillStyle = "#ffffff";
-    c.fillRect(-4.5, -6, 2.2, 2.6);
-    c.fillRect(-1.1, -6, 2.2, 2.6);
-    c.fillRect(2.3, -6, 2.2, 2.6);
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2.2;
+    c.beginPath(); c.roundRect(-8, 1.5, 16, 6, 3); c.fill(); c.stroke();
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 1.4;
+    c.beginPath();
+    c.moveTo(-8, 4.5); c.lineTo(8, 4.5);
+    for (const tx of [-4, 0, 4]) {
+      c.moveTo(tx, 1.5); c.lineTo(tx, 7.5);
+    }
+    c.stroke();
 
-    // 4 Sweeping White Eye-Wings
+    // 4 Sweeping White Eye-Wings (wider sweep)
     const drawWing = (sx, sy, tipX, tipY, cx, cy) => {
       c.fillStyle = "#f8fafc";
       c.strokeStyle = COLORS.ink;
@@ -1575,23 +1576,11 @@
       c.fill(); c.stroke();
     };
     for (const side of [-1, 1]) {
-      drawWing(side * 6, -12, side * 36, -27, side * 20, -23);
-      drawWing(side * 7, -7, side * 34, -14, side * 20, -11);
+      drawWing(side * 6, -12, side * 42, -28, side * 24, -23);
+      drawWing(side * 7, -6.5, side * 38, -13, side * 23, -10.5);
     }
 
-    // 5. Left Ball-Hand + Black Wrist Ring
-    c.save();
-    c.translate(-R * 0.96, 4);
-    c.fillStyle = "#f1f5f9";
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.8;
-    c.beginPath(); c.arc(0, 0, 7.5, 0, Math.PI * 2); c.fill(); c.stroke();
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 3.5;
-    c.beginPath(); c.arc(2, -1, 5.5, -0.8, 0.8); c.stroke();
-    c.restore();
-
-    // 6. Tangan Tajam: Right Arm + Sword of Extermination (Taima no Tsurugi)
+    // 5. Tangan Tajam: Right Arm + Sword of Extermination (Taima no Tsurugi)
     c.save();
     c.translate(R * 0.92, 2);
     c.rotate(-0.28 + slashAnim * 1.35);
