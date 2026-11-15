@@ -745,8 +745,159 @@
     }
   };
 
+  function spawnRoadRollerDrop(owner) {
+    let dropped = false;
+    let exploded = false;
+    let mudaTick = 0;
+    return {
+      isTimeStopEntity: true,
+      isDioEntity: true,
+      delay: 2.3,
+      timer: 0,
+      duration: 1.55,
+      tx: WORLD_SIZE * 0.5,
+      ty: WORLD_SIZE * 0.5,
+      dead: false,
+      update(dt, g) {
+        if (!owner.alive || rt.timeStopTimer <= 0) {
+          this.dead = true;
+          return;
+        }
+        if (this.delay > 0) {
+          this.delay -= dt;
+          if (this.delay <= 0) {
+            const t = g.balls.find((b) => b !== owner && b.alive);
+            if (!t) {
+              this.dead = true;
+              return;
+            }
+            this.tx = t.x;
+            this.ty = t.y;
+            dropped = true;
+            g.entities.push(rt.spawnBanner("ROAD ROLLER DA!!", COLORS.gold));
+            g.spawnDamageText(this.tx, Math.max(48, this.ty - 55), 0, COLORS.gold, true, "ROAD ROLLER DA!!");
+            g.sound.playCritHit();
+            rt.addShake(0.35, 9);
+          }
+          return;
+        }
+
+        this.timer += dt;
+        const p = Math.min(1, this.timer / this.duration);
+        const t = g.balls.find((b) => b !== owner && b.alive);
+        if (t) {
+          this.tx = t.x;
+          this.ty = t.y;
+        }
+
+        // Impact & rapid MUDA pummeling on the Road Roller
+        if (p >= 0.28 && p < 0.88) {
+          owner.x = this.tx;
+          owner.y = Math.max(owner.radius + 16, this.ty - 52);
+          mudaTick -= dt;
+          if (mudaTick <= 0) {
+            mudaTick = 0.14;
+            if (t) {
+              const d = g.applyDamage(t, 2);
+              t.flashTimer = 0.08;
+              g.spawnSparks(this.tx + (g.rng() - 0.5) * 44, this.ty, COLORS.gold, "#ef4444");
+              g.spawnDamageText(this.tx + (g.rng() - 0.5) * 48, this.ty - 28 + (g.rng() - 0.5) * 20, d, COLORS.gold, false, "MUDA!");
+              g.sound.playBallHit();
+            }
+            rt.addShake(0.08, 4.5);
+          }
+        }
+
+        // Final WRYYYYYY explosion right before Time Resumes
+        if (p >= 0.88 && !exploded) {
+          exploded = true;
+          if (t) {
+            const dealt = g.applyDamage(t, 12);
+            t.flashTimer = 0.25;
+            g.spawnDamageText(this.tx, this.ty - 42, dealt, "#ef4444", true, "WRYYYYYY!! CRUSH!");
+          }
+          g.entities.push(rt.spawnShockRing(this.tx, this.ty, COLORS.gold, 210, 0.48));
+          g.entities.push(rt.spawnShockRing(this.tx, this.ty, "#ef4444", 155, 0.36));
+          g.spawnSparks(this.tx, this.ty, COLORS.gold, "#ef4444");
+          g.sound.playCritHit();
+          rt.addShake(0.42, 11);
+        }
+
+        if (this.timer >= this.duration) {
+          this.dead = true;
+        }
+      },
+      render(c) {
+        if (!dropped) return;
+        const p = Math.min(1, this.timer / this.duration);
+        const dropP = Math.min(1, p / 0.28);
+        const startY = -120;
+        const curY = startY + (this.ty - startY) * (1 - Math.pow(1 - dropP, 3));
+        const shudderX = p >= 0.28 && p < 0.88 ? (Math.random() - 0.5) * 8 : 0;
+        const shudderY = p >= 0.28 && p < 0.88 ? (Math.random() - 0.5) * 6 : 0;
+        const alpha = p >= 0.88 ? Math.max(0, 1 - (p - 0.88) / 0.12) : 1;
+
+        c.save();
+        c.globalAlpha = alpha;
+        c.translate(this.tx + shudderX, curY + shudderY);
+        c.rotate(-0.18);
+
+        // Ground shadow / crush shockwave ring
+        if (p >= 0.26) {
+          c.fillStyle = "rgba(250, 204, 21, 0.26)";
+          c.beginPath();
+          c.ellipse(0, 18, 78, 24, 0, 0, Math.PI * 2);
+          c.fill();
+        }
+
+        // Giant Yellow Construction Steamroller Chassis
+        c.fillStyle = "#eab308";
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 4;
+        c.beginPath();
+        c.roundRect(-64, -34, 128, 44, 8);
+        c.fill();
+        c.stroke();
+
+        // Warning hazard stripes
+        c.fillStyle = "#18181b";
+        for (let sx = -52; sx <= 36; sx += 22) {
+          c.fillRect(sx, -10, 10, 16);
+        }
+
+        // Cab & Engine Hood
+        c.fillStyle = "#facc15";
+        c.beginPath();
+        c.roundRect(-22, -58, 52, 28, 6);
+        c.fill();
+        c.stroke();
+
+        // Front Giant Steel Drum Roller & Rear Heavy Wheel
+        c.fillStyle = "#475569";
+        c.beginPath();
+        c.arc(-44, 14, 24, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+        c.beginPath();
+        c.arc(42, 14, 22, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+
+        c.fillStyle = "#facc15";
+        c.beginPath();
+        c.arc(-44, 14, 9, 0, Math.PI * 2);
+        c.arc(42, 14, 9, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+
+        c.restore();
+      },
+    };
+  }
+
   BF.spawnStandPunchBarrage = spawnStandPunchBarrage;
   BF.spawnKnifeWave = spawnKnifeWave;
+  BF.spawnRoadRollerDrop = spawnRoadRollerDrop;
   BF.drawTheWorldStand = drawTheWorldStand;
   BF.tryDioVampiricHeal = tryDioVampiricHeal;
 })();

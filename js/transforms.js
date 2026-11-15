@@ -409,6 +409,7 @@
           b.knifeWavesLeft = 4;
           b.knifeWaveTimer = 0.35;
           if (BF.spawnTimeStopDome) rt().entities.push(BF.spawnTimeStopDome(b, 5.0, true));
+          if (BF.spawnRoadRollerDrop) rt().entities.push(BF.spawnRoadRollerDrop(b));
           rt().sound.playTimeStop();
           rt().shakeTime = 0.4; rt().shakeIntensity = 8;
         },
@@ -448,6 +449,7 @@
           rt().addEffect(b, "haste", 8.5, { factor: 1.32 });
           rt().addEffect(b, "shield", 8.5, { reduction: 0.22 });
           if (b.skills[0]) b.skills[0]._cd = 0;
+          if (BF.spawnBerserkerEclipseCinematic) rt().entities.push(BF.spawnBerserkerEclipseCinematic(b));
           const enemy = rt().balls.find((x) => x !== b && x.alive);
           if (enemy) {
             const ang = Math.atan2(enemy.y - b.y, enemy.x - b.x);

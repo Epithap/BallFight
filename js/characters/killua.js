@@ -73,17 +73,47 @@
         if (this.life <= 0) this.dead = true;
       },
       render(c) {
-        const a = Math.max(0, (this.life / this.maxLife) * 0.65);
+        const p = 1 - Math.max(0, this.life / this.maxLife);
+        const a = Math.max(0, (this.life / this.maxLife) * 0.78);
         c.save();
         c.globalAlpha = a;
         c.translate(this.x, this.y);
-        c.fillStyle = "#38bdf8";
+
+        // Outer electric plasma halo
+        c.fillStyle = "rgba(56, 189, 248, 0.34)";
+        c.beginPath();
+        c.arc(0, 0, this.radius * 1.28, 0, Math.PI * 2);
+        c.fill();
+
+        // Neon cyan Kanmuru body silhouette
+        c.fillStyle = "#0284c7";
         c.strokeStyle = "#e0f2fe";
-        c.lineWidth = 2.5;
+        c.lineWidth = 3;
         c.beginPath();
         c.arc(0, 0, this.radius, 0, Math.PI * 2);
         c.fill();
         c.stroke();
+
+        // Glowing white-cyan cat-slit eyes on afterimage
+        c.fillStyle = "#e0f2fe";
+        c.beginPath();
+        c.ellipse(-this.radius * 0.28, -this.radius * 0.08, 2.2, 5.2, 0.15, 0, Math.PI * 2);
+        c.ellipse(this.radius * 0.28, -this.radius * 0.08, 2.2, 5.2, -0.15, 0, Math.PI * 2);
+        c.fill();
+
+        // Crackling radial lightning arcs off the afterimage
+        c.strokeStyle = "#ffffff";
+        c.lineWidth = 2;
+        for (let i = 0; i < 4; i++) {
+          const ang = (i / 4) * Math.PI * 2 + p * 5;
+          const r1 = this.radius * 0.85;
+          const r2 = this.radius * 1.42;
+          c.beginPath();
+          c.moveTo(Math.cos(ang) * r1, Math.sin(ang) * r1);
+          c.lineTo(Math.cos(ang + 0.22) * ((r1 + r2) * 0.5), Math.sin(ang + 0.22) * ((r1 + r2) * 0.5));
+          c.lineTo(Math.cos(ang) * r2, Math.sin(ang) * r2);
+          c.stroke();
+        }
         c.restore();
       },
     };
@@ -388,18 +418,44 @@
 
     const raw = Math.round(14 + rt.rng() * 2);
     const dealt = g.applyDamage(enemy, raw);
-    enemy.flashTimer = 0.16;
-    enemy.squash = 0.9;
-    g.addEffect(enemy, "stun", 0.65);
+    enemy.flashTimer = 0.2;
+    enemy.squash = 0.85;
+    g.addEffect(enemy, "stun", 0.75);
 
-    g.entities.push(spawnLightningBoltVisual(enemy.x, 12, enemy.x, enemy.y, "#38bdf8", 0.4, 14));
-    g.entities.push(spawnLightningBoltVisual(enemy.x - 18, 12, enemy.x + 6, enemy.y, "#e0f2fe", 0.34, 8));
-    g.entities.push(spawnStaticField(b, enemy.x, enemy.y, 64, 2.8));
-    g.entities.push(rt.spawnShockRing(enemy.x, enemy.y, "#e0f2fe", 145, 0.42));
+    // 5-Pillar Narukami Sky-Lightning Cage + Thunderstorm Flash Overlay
+    for (const offX of [-56, -26, 0, 26, 56]) {
+      const col = offX === 0 ? "#ffffff" : (Math.abs(offX) === 26 ? "#38bdf8" : "#0284c7");
+      const w = offX === 0 ? 18 : 10;
+      g.entities.push(spawnLightningBoltVisual(enemy.x + offX * 0.6, 6, enemy.x + offX, enemy.y, col, 0.48, w));
+    }
+    g.entities.push({
+      life: 0.55,
+      maxLife: 0.55,
+      dead: false,
+      update(dt) {
+        this.life -= dt;
+        if (this.life <= 0) this.dead = true;
+      },
+      render(c) {
+        const fade = Math.max(0, this.life / this.maxLife);
+        c.save();
+        c.globalAlpha = 0.28 * fade;
+        c.fillStyle = "#082f49";
+        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+        c.globalAlpha = 0.75 * fade;
+        c.strokeStyle = "#38bdf8";
+        c.lineWidth = 7;
+        c.strokeRect(5, 5, WORLD_SIZE - 10, WORLD_SIZE - 10);
+        c.restore();
+      },
+    });
+    g.entities.push(spawnStaticField(b, enemy.x, enemy.y, 76, 3.0));
+    g.entities.push(rt.spawnShockRing(enemy.x, enemy.y, "#e0f2fe", 185, 0.48));
+    g.entities.push(rt.spawnShockRing(enemy.x, enemy.y, "#38bdf8", 130, 0.36));
     g.spawnSparks(enemy.x, enemy.y, "#38bdf8", "#ffffff");
-    g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 16, dealt, "#38bdf8", true, "NARUKAMI SKY PILLAR!");
-    rt.setHitStop(0.06);
-    rt.addShake(0.24, 6.0);
+    g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 16, dealt, "#38bdf8", true, "NARUKAMI: THUNDERBOLT CAGE!");
+    rt.setHitStop(0.07);
+    rt.addShake(0.32, 8.0);
   };
 
   function triggerWhirlwindCounter(ball, target, g) {
@@ -610,13 +666,14 @@
       const dist = Math.hypot(enemy.x - ball.x, enemy.y - ball.y);
       if (dist > 340) return false;
 
-      // Spawn 3 Rhythm Echo decoy clones + schedule Izutsushi blindspot backstab
-      for (const angOff of [-0.65, 0, 0.65]) {
+      // Spawn 5 Rhythm Echo phantom assassin clones in a wide arc + schedule Izutsushi blindspot backstab
+      for (const angOff of [-1.1, -0.55, 0, 0.55, 1.1]) {
         g.entities.push(spawnRhythmEchoDecoy(ball, enemy, angOff));
       }
       g.entities.push(spawnIzutsushiAmbush(ball, enemy));
-      g.entities.push(rt.spawnShockRing(ball.x, ball.y, "#bae6fd", 72, 0.26));
-      g.spawnDamageText(ball.x, ball.y - ball.radius - 12, 0, "#bae6fd", false, "RHYTHM ECHO!");
+      g.entities.push(rt.spawnShockRing(ball.x, ball.y, "#38bdf8", 115, 0.34));
+      g.entities.push(rt.spawnShockRing(enemy.x, enemy.y, "#bae6fd", 95, 0.28));
+      g.spawnDamageText(ball.x, ball.y - ball.radius - 12, 0, "#38bdf8", true, "RHYTHM ECHO: PHANTOM RING!");
       return true;
     },
     onHit(ball, target, g) {

@@ -1424,44 +1424,86 @@
         st.target.squash = 0.65;
         const sc = st.standColor || COLORS.gold;
         const isOra = st.cry === "ORA";
-        const fistAng = st.angle + (rng() - 0.5) * 0.65;
-        const fistLen = 28 + rng() * 18;
+        const volleyCount = st.heavy ? 6 : 4;
+        const fists = [];
+        for (let fi = 0; fi < volleyCount; fi++) {
+          const fAng = st.angle + (rng() - 0.5) * 0.95;
+          const fLen = 36 + rng() * 28;
+          const offPerp = (rng() - 0.5) * 28;
+          const px = -Math.sin(st.angle) * offPerp;
+          const py = Math.cos(st.angle) * offPerp;
+          fists.push({
+            x: st.target.x + px - Math.cos(fAng) * fLen,
+            y: st.target.y + py - Math.sin(fAng) * fLen,
+            tx: st.target.x + px + Math.cos(fAng) * (14 + rng() * 14),
+            ty: st.target.y + py + Math.sin(fAng) * (14 + rng() * 14),
+            r: (st.heavy ? 9.5 : 7.2) + (fi === 0 ? 2.5 : 0),
+          });
+        }
+        const kanaTxt = isOra ? "オラ!" : "無駄!";
+        const kx = st.target.x + (rng() - 0.5) * 68;
+        const ky = st.target.y - st.target.radius - 14 + (rng() - 0.5) * 32;
         entities.push({
-          x: st.target.x - Math.cos(fistAng) * fistLen,
-          y: st.target.y - Math.sin(fistAng) * fistLen,
-          tx: st.target.x + Math.cos(fistAng) * 10,
-          ty: st.target.y + Math.sin(fistAng) * 10,
-          ang: fistAng,
-          life: 0.16,
-          maxLife: 0.16,
+          fists,
+          kx,
+          ky,
+          kanaTxt,
+          life: 0.2,
+          maxLife: 0.2,
           dead: false,
           update(dt2) {
             this.life -= dt2;
             if (this.life <= 0) this.dead = true;
           },
           render(c) {
-            const a = Math.max(0, this.life / this.maxLife);
+            const p = 1 - Math.max(0, this.life / this.maxLife);
+            const a = Math.max(0, 1 - p * 0.85);
             c.save();
-            c.globalAlpha = a * 0.9;
-            c.strokeStyle = isOra ? "#00f0ff" : "#facc15";
-            c.lineWidth = st.heavy ? 5.5 : 4;
-            c.lineCap = "round";
-            c.beginPath();
-            c.moveTo(this.x, this.y);
-            c.lineTo(this.tx, this.ty);
-            c.stroke();
-            c.fillStyle = sc;
+            c.globalAlpha = a;
+            for (const f of this.fists) {
+              const cx = f.x + (f.tx - f.x) * Math.min(1, p * 1.4);
+              const cy = f.y + (f.ty - f.y) * Math.min(1, p * 1.4);
+              // High-speed punch afterimage cone
+              c.strokeStyle = isOra ? "rgba(0, 240, 255, 0.72)" : "rgba(250, 204, 21, 0.72)";
+              c.lineWidth = f.r * 1.35;
+              c.lineCap = "round";
+              c.beginPath();
+              c.moveTo(f.x, f.y);
+              c.lineTo(cx, cy);
+              c.stroke();
+
+              c.strokeStyle = "#ffffff";
+              c.lineWidth = f.r * 0.5;
+              c.beginPath();
+              c.moveTo(f.x, f.y);
+              c.lineTo(cx, cy);
+              c.stroke();
+
+              // Glowing Stand Fist Knuckle
+              c.fillStyle = sc;
+              c.strokeStyle = COLORS.ink;
+              c.lineWidth = 2.4;
+              c.beginPath();
+              c.arc(cx, cy, f.r, 0, Math.PI * 2);
+              c.fill();
+              c.stroke();
+            }
+            // Floating Anime Katakana Cry ("オラ!" / "無駄!")
+            c.font = "900 18px Impact, sans-serif";
+            c.textAlign = "center";
+            c.lineWidth = 3.5;
             c.strokeStyle = COLORS.ink;
-            c.lineWidth = 2;
-            c.beginPath();
-            c.arc(this.tx, this.ty, st.heavy ? 8.5 : 6.5, 0, Math.PI * 2);
-            c.fill();
-            c.stroke();
+            c.fillStyle = isOra ? "#00f0ff" : "#facc15";
+            c.strokeText(this.kanaTxt, this.kx, this.ky - p * 14);
+            c.fillText(this.kanaTxt, this.kx, this.ky - p * 14);
             c.restore();
           },
         });
         if (st.punchesLeft === 0) {
-          entities.push(spawnShockRing(st.target.x, st.target.y, isOra ? "#00f0ff" : "#facc15", st.heavy ? 120 : 82, 0.3));
+          entities.push(spawnShockRing(st.target.x, st.target.y, isOra ? "#00f0ff" : "#facc15", st.heavy ? 165 : 115, 0.38));
+          entities.push(spawnShockRing(st.target.x, st.target.y, sc, st.heavy ? 120 : 84, 0.28));
+          shakeTime = Math.max(shakeTime, st.heavy ? 0.28 : 0.18);
+          shakeIntensity = Math.max(shakeIntensity, st.heavy ? 7.5 : 4.5);
         }
         spawnSparks(st.target.x, st.target.y, sc, st.heavy ? COLORS.red : COLORS.green);
         spawnDamageText(

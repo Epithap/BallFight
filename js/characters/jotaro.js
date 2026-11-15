@@ -40,16 +40,19 @@
               target.channelTimer = 0;
               target.cast = null;
             }
-            g.addEffect(target, "slow", 0.5, { factor: 0.45 });
+            g.addEffect(target, "stun", 0.38);
+            g.addEffect(target, "slow", 0.65, { factor: 0.45 });
             // Step Jotaro forward slightly toward the staggered target
-            const stepSpd = owner.baseSpeed * 1.18;
+            const stepSpd = owner.baseSpeed * 1.24;
             owner.vx = dx * stepSpd;
             owner.vy = dy * stepSpd;
+            g.entities.push(rt.spawnShockRing(target.x, target.y, "#00f0ff", 115, 0.32));
+            g.entities.push(rt.spawnShockRing(target.x, target.y, "#a855f7", 78, 0.24));
             g.spawnSparks(target.x, target.y, "#00f0ff", "#a855f7");
-            g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#00f0ff", true, "STAR FINGER!!");
+            g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#00f0ff", true, "STAR FINGER!! +STUN");
             g.sound.playCritHit();
-            rt.setHitStop(0.04);
-            rt.addShake(0.12, 3);
+            rt.setHitStop(0.06);
+            rt.addShake(0.18, 5);
           }
         }
 
@@ -78,33 +81,57 @@
         c.translate(owner.x, owner.y);
         c.rotate(angle);
 
-        // Outer Star Platinum violet-cyan aura beam
-        c.strokeStyle = "rgba(168, 85, 247, 0.55)";
-        c.lineWidth = 18;
+        // Outer Star Platinum violet-cyan plasma lance
+        c.strokeStyle = "rgba(168, 85, 247, 0.42)";
+        c.lineWidth = 30;
         c.lineCap = "round";
         c.beginPath();
-        c.moveTo(owner.radius * 0.6, 0);
-        c.lineTo(curLen, 0);
+        c.moveTo(owner.radius * 0.5, 0);
+        c.lineTo(curLen + 10, 0);
         c.stroke();
 
+        c.strokeStyle = "rgba(0, 240, 255, 0.65)";
+        c.lineWidth = 18;
+        c.beginPath();
+        c.moveTo(owner.radius * 0.6, 0);
+        c.lineTo(curLen + 6, 0);
+        c.stroke();
+
+        // Sonic boom rings along the extending Star Finger shaft
+        c.strokeStyle = "#00f0ff";
+        c.lineWidth = 2.5;
+        for (const frac of [0.28, 0.56, 0.84]) {
+          const rx = curLen * frac;
+          if (rx > owner.radius) {
+            c.beginPath();
+            c.ellipse(rx, 0, 5, 16, 0, 0, Math.PI * 2);
+            c.stroke();
+          }
+        }
+
         // Twin elongated Star Platinum fingers with gold knuckle guards
-        for (const offset of [-3.5, 3.5]) {
+        for (const offset of [-4, 4]) {
           c.fillStyle = "#8e44ad";
           c.strokeStyle = COLORS.ink;
           c.lineWidth = 2.5;
           c.beginPath();
-          c.roundRect(owner.radius * 0.5, offset - 3, curLen - owner.radius * 0.5, 6, 3);
+          c.roundRect(owner.radius * 0.5, offset - 3.5, curLen - owner.radius * 0.5, 7, 3.5);
           c.fill();
           c.stroke();
         }
 
-        // Glowing cyan piercing fingertip lance
-        c.strokeStyle = "#00f0ff";
-        c.lineWidth = 4;
+        // Glowing cyan-white piercing fingertip core & 4-point starburst at tip
+        c.strokeStyle = "#ffffff";
+        c.lineWidth = 5;
         c.beginPath();
         c.moveTo(owner.radius * 0.7, 0);
-        c.lineTo(curLen + 8, 0);
+        c.lineTo(curLen + 12, 0);
         c.stroke();
+
+        c.fillStyle = "#00f0ff";
+        c.beginPath();
+        c.arc(curLen + 10, 0, 9, 0, Math.PI * 2);
+        c.fill();
 
         c.restore();
       },

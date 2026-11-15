@@ -888,12 +888,37 @@
   function spawnTimeStopDome(owner, duration, isDio) {
     const primary = isDio ? "#facc15" : "#a855f7";
     const secondary = isDio ? "#22c55e" : "#00f0ff";
+    const accent = isDio ? "#fef08a" : "#e879f9";
     const label = isDio ? "ZA WARUDO! TOKI WO TOMARE!" : "STAR PLATINUM: THE WORLD!";
     const ox = owner ? owner.x : WORLD_SIZE * 0.5;
     const oy = owner ? owner.y : WORLD_SIZE * 0.5;
     rt().entities.push(spawnBanner(label, primary));
-    rt().entities.push(spawnShockRing(ox, oy, primary, WORLD_SIZE * 0.9, 0.55));
-    rt().entities.push(spawnShockRing(ox, oy, secondary, WORLD_SIZE * 0.65, 0.4));
+    rt().entities.push(spawnShockRing(ox, oy, primary, WORLD_SIZE * 1.05, 0.62));
+    rt().entities.push(spawnShockRing(ox, oy, secondary, WORLD_SIZE * 0.78, 0.48));
+    rt().entities.push(spawnShockRing(ox, oy, "#ffffff", WORLD_SIZE * 0.52, 0.34));
+
+    const menacingGlyphs = [];
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      menacingGlyphs.push({
+        x: WORLD_SIZE * 0.5 + Math.cos(a) * (155 + (i % 2) * 32),
+        y: WORLD_SIZE * 0.5 + Math.sin(a) * (155 + (i % 2) * 32),
+        phase: i * 0.9,
+        scale: 0.9 + (i % 3) * 0.18,
+      });
+    }
+
+    const cracks = [];
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2 + 0.18;
+      cracks.push({
+        ang: a,
+        r1: 65 + (i % 3) * 18,
+        r2: 185 + (i % 2) * 38,
+        j1: (i % 2 === 0 ? 1 : -1) * 0.14,
+      });
+    }
+
     return {
       isTimeStopVisual: true,
       life: duration,
@@ -907,65 +932,158 @@
       },
       render(c) {
         const elapsed = this.maxLife - Math.max(0, this.life);
-        const expandP = Math.min(1, elapsed / 0.35);
+        const expandP = Math.min(1, elapsed / 0.48);
         const fade = Math.min(1, this.life / 0.35);
-        const domeR = WORLD_SIZE * 0.82 * (1 - Math.pow(1 - expandP, 3));
+        const domeR = WORLD_SIZE * 0.96 * (1 - Math.pow(1 - expandP, 3));
         const cx = WORLD_SIZE * 0.5;
         const cy = WORLD_SIZE * 0.5;
 
         c.save();
-        // Inverted-time tint & vignette across arena
-        c.globalAlpha = 0.22 * fade;
-        c.fillStyle = isDio ? "#1e1b0a" : "#140b2e";
-        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
-
-        // Expanding negative-space Time Stop ripple ring
+        // 1. Anime-accurate Negative-Color ("difference") Inversion Wave on activation!
         if (expandP < 1) {
-          c.globalAlpha = (1 - expandP) * 0.85;
+          c.save();
+          c.globalCompositeOperation = "difference";
+          c.globalAlpha = (1 - expandP * 0.72) * 0.92;
+          c.fillStyle = isDio ? "#fffbeb" : "#f0f9ff";
+          c.beginPath();
+          c.arc(ox, oy, domeR, 0, Math.PI * 2);
+          c.fill();
+          c.restore();
+
+          c.globalAlpha = (1 - expandP) * 0.95;
           c.strokeStyle = primary;
-          c.lineWidth = 8 * (1 - expandP) + 2;
+          c.lineWidth = 12 * (1 - expandP) + 3;
           c.beginPath();
           c.arc(ox, oy, domeR, 0, Math.PI * 2);
           c.stroke();
-        }
 
-        // Giant translucent Arcane Clock Face at center
-        c.translate(cx, cy);
-        c.globalAlpha = 0.24 * fade;
-        c.strokeStyle = primary;
-        c.lineWidth = 3;
-        c.beginPath();
-        c.arc(0, 0, 148, 0, Math.PI * 2);
-        c.stroke();
-        c.beginPath();
-        c.arc(0, 0, 128, 0, Math.PI * 2);
-        c.stroke();
-
-        // 12 Clock tick marks
-        for (let i = 0; i < 12; i++) {
-          const a = (i / 12) * Math.PI * 2 - Math.PI * 0.5;
+          c.strokeStyle = secondary;
+          c.lineWidth = 6 * (1 - expandP) + 2;
           c.beginPath();
-          c.moveTo(Math.cos(a) * 128, Math.sin(a) * 128);
-          c.lineTo(Math.cos(a) * 146, Math.sin(a) * 146);
+          c.arc(ox, oy, domeR * 0.78, 0, Math.PI * 2);
           c.stroke();
         }
 
-        // Clock hands ticking rapidly at start then freezing
-        const tickEase = Math.min(1, elapsed / 0.55);
-        const handAng = -Math.PI * 0.5 + tickEase * Math.PI * 2;
+        // 2. Deep Frozen-Time Atmosphere + Corner Vignette Borders
+        c.globalAlpha = 0.28 * fade;
+        c.fillStyle = isDio ? "#1c1605" : "#110726";
+        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+        c.globalAlpha = 0.55 * fade;
+        c.strokeStyle = primary;
+        c.lineWidth = 8;
+        c.strokeRect(6, 6, WORLD_SIZE - 12, WORLD_SIZE - 12);
         c.strokeStyle = secondary;
+        c.lineWidth = 2.5;
+        c.strokeRect(14, 14, WORLD_SIZE - 28, WORLD_SIZE - 28);
+
+        // 3. Giant Ornate Roman-Numeral Clock & Interlocking Gears at Arena Center
+        c.save();
+        c.translate(cx, cy);
+        c.globalAlpha = 0.34 * fade;
+
+        // Radial time-fracture cracks
+        c.strokeStyle = secondary;
+        c.lineWidth = 2;
+        for (const cr of cracks) {
+          const midR = (cr.r1 + cr.r2) * 0.5;
+          c.beginPath();
+          c.moveTo(Math.cos(cr.ang) * cr.r1, Math.sin(cr.ang) * cr.r1);
+          c.lineTo(Math.cos(cr.ang + cr.j1) * midR, Math.sin(cr.ang + cr.j1) * midR);
+          c.lineTo(Math.cos(cr.ang - cr.j1 * 0.5) * cr.r2, Math.sin(cr.ang - cr.j1 * 0.5) * cr.r2);
+          c.stroke();
+        }
+
+        // Outer & inner clock rings
+        c.strokeStyle = primary;
+        c.lineWidth = 4.5;
+        c.beginPath();
+        c.arc(0, 0, 178, 0, Math.PI * 2);
+        c.stroke();
+        c.lineWidth = 2.5;
+        c.beginPath();
+        c.arc(0, 0, 152, 0, Math.PI * 2);
+        c.stroke();
+        c.strokeStyle = secondary;
+        c.beginPath();
+        c.arc(0, 0, 96, 0, Math.PI * 2);
+        c.stroke();
+
+        // Spinning inner gear teeth (halts after 0.6s)
+        const gearRot = Math.min(elapsed, 0.6) * 4.2;
+        c.save();
+        c.rotate(gearRot);
+        c.strokeStyle = accent;
         c.lineWidth = 4;
+        for (let i = 0; i < 16; i++) {
+          const a = (i / 16) * Math.PI * 2;
+          c.beginPath();
+          c.moveTo(Math.cos(a) * 88, Math.sin(a) * 88);
+          c.lineTo(Math.cos(a) * 104, Math.sin(a) * 104);
+          c.stroke();
+        }
+        c.restore();
+
+        // 12 Clock tick marks + Roman numerals XII, III, VI, IX
+        c.fillStyle = accent;
+        c.font = "900 18px Impact, sans-serif";
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+        const numerals = { 0: "XII", 3: "III", 6: "VI", 9: "IX" };
+        for (let i = 0; i < 12; i++) {
+          const a = (i / 12) * Math.PI * 2 - Math.PI * 0.5;
+          c.strokeStyle = i % 3 === 0 ? accent : primary;
+          c.lineWidth = i % 3 === 0 ? 4 : 2.2;
+          c.beginPath();
+          c.moveTo(Math.cos(a) * 152, Math.sin(a) * 152);
+          c.lineTo(Math.cos(a) * 176, Math.sin(a) * 176);
+          c.stroke();
+          if (numerals[i]) {
+            c.fillText(numerals[i], Math.cos(a) * 134, Math.sin(a) * 134);
+          }
+        }
+
+        // Clock hands spinning rapidly on activation then locking with a shudder
+        const tickEase = Math.min(1, elapsed / 0.55);
+        const shudder = elapsed > 0.55 && elapsed < 0.85 ? Math.sin(elapsed * 90) * 0.04 : 0;
+        const handAng = -Math.PI * 0.5 + tickEase * Math.PI * 2 + shudder;
+        c.strokeStyle = secondary;
+        c.lineWidth = 5;
         c.lineCap = "round";
         c.beginPath();
         c.moveTo(0, 0);
-        c.lineTo(Math.cos(handAng) * 110, Math.sin(handAng) * 110);
+        c.lineTo(Math.cos(handAng) * 138, Math.sin(handAng) * 138);
         c.stroke();
+
         c.strokeStyle = primary;
-        c.lineWidth = 5.5;
+        c.lineWidth = 7;
         c.beginPath();
         c.moveTo(0, 0);
-        c.lineTo(Math.cos(handAng * 0.25) * 72, Math.sin(handAng * 0.25) * 72);
+        c.lineTo(Math.cos(handAng * 0.25) * 92, Math.sin(handAng * 0.25) * 92);
         c.stroke();
+
+        c.fillStyle = accent;
+        c.beginPath();
+        c.arc(0, 0, 9, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+
+        // 4. Floating "ゴゴゴ" (MENACING) Katakana Glyphs around the Frozen Arena
+        c.font = "900 22px Impact, sans-serif";
+        c.textAlign = "center";
+        for (const g of menacingGlyphs) {
+          const bob = Math.sin(elapsed * 4.5 + g.phase) * 7;
+          c.save();
+          c.translate(g.x, g.y + bob);
+          c.scale(g.scale, g.scale);
+          c.globalAlpha = 0.62 * fade;
+          c.lineWidth = 4;
+          c.strokeStyle = "#09090b";
+          c.fillStyle = primary;
+          c.strokeText("ゴゴ", 0, 0);
+          c.fillText("ゴゴ", 0, 0);
+          c.restore();
+        }
         c.restore();
       },
     };
@@ -975,9 +1093,10 @@
   function triggerTimeResume() {
     rt().timeStopTimer = 0;
     rt().sound.playTimeResume();
-    rt().entities.push(spawnBanner("TIME RESUMES!", COLORS.gold));
-    rt().entities.push(spawnShockRing(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, COLORS.gold, 210, 0.45));
-    rt().shakeTime = 0.22; rt().shakeIntensity = 4.5;
+    rt().entities.push(spawnBanner("TOKI WA UGOKIDASU! TIME RESUMES!", COLORS.gold));
+    rt().entities.push(spawnShockRing(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, COLORS.gold, 260, 0.52));
+    rt().entities.push(spawnShockRing(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, "#00f0ff", 190, 0.38));
+    rt().shakeTime = 0.36; rt().shakeIntensity = 8.5;
 
     for (const ent of rt().entities) {
       if (ent.isKnife && ent.state === "frozen") {

@@ -106,28 +106,53 @@
         for (let i = steps; i >= 0; i--) {
           const f = i / steps;
           const a = trailStart + (curAng - trailStart) * f;
-          const thickness = Math.sin(f * Math.PI * 0.85) * (berserk ? 48 : 38) + f * 12;
-          const rIn = Math.max(owner.radius * 0.7, outerR * (0.86 + 0.14 * f) - thickness);
+          const thickness = Math.sin(f * Math.PI * 0.85) * (berserk ? 68 : 48) + f * 16;
+          const rIn = Math.max(owner.radius * 0.62, outerR * (0.86 + 0.14 * f) - thickness);
           c.lineTo(Math.cos(a) * rIn, Math.sin(a) * rIn);
         }
         c.closePath();
-        c.fillStyle = berserk ? "rgba(215, 20, 35, 0.82)" : "rgba(203, 213, 225, 0.82)";
+        c.fillStyle = berserk ? "rgba(220, 38, 38, 0.88)" : "rgba(203, 213, 225, 0.86)";
         c.fill();
-        c.lineWidth = 3.5;
+        c.lineWidth = berserk ? 4.5 : 3.5;
         c.strokeStyle = COLORS.ink;
         c.stroke();
 
-        c.strokeStyle = berserk ? "#ff6b6b" : COLORS.white;
-        c.lineWidth = berserk ? 5 : 4;
+        // Inner obsidian core slash band in Berserker mode
+        if (berserk) {
+          c.strokeStyle = "#09090b";
+          c.lineWidth = 10;
+          c.lineCap = "round";
+          c.beginPath();
+          c.arc(0, 0, outerR * 0.78, trailStart + (curAng - trailStart) * 0.15, curAng, direction < 0);
+          c.stroke();
+
+          // Jagged crimson-black lightning arcs crackling along the Dragonslayer edge
+          c.strokeStyle = "#fca5a5";
+          c.lineWidth = 3;
+          c.beginPath();
+          for (let li = 0; li < 6; li++) {
+            const lf = li / 5;
+            const la = trailStart + (curAng - trailStart) * lf;
+            const lr = outerR * (0.82 + (li % 2 ? 0.18 : -0.06));
+            const lx = Math.cos(la) * lr;
+            const ly = Math.sin(la) * lr;
+            if (li === 0) c.moveTo(lx, ly);
+            else c.lineTo(lx, ly);
+          }
+          c.stroke();
+        }
+
+        c.strokeStyle = berserk ? "#ff4d4d" : COLORS.white;
+        c.lineWidth = berserk ? 7 : 4.5;
         c.lineCap = "round";
         c.beginPath();
-        c.arc(0, 0, outerR * 0.9, trailStart + (curAng - trailStart) * 0.25, curAng, direction < 0);
+        c.arc(0, 0, outerR * 0.92, trailStart + (curAng - trailStart) * 0.2, curAng, direction < 0);
         c.stroke();
 
-        c.strokeStyle = berserk ? "#14090c" : "rgba(25, 28, 36, 0.65)";
-        c.lineWidth = 3;
+        c.strokeStyle = berserk ? "#09090b" : "rgba(25, 28, 36, 0.65)";
+        c.lineWidth = berserk ? 4.5 : 3;
         c.beginPath();
-        c.arc(0, 0, outerR * 1.08, trailStart + (curAng - trailStart) * 0.15, curAng, direction < 0);
+        c.arc(0, 0, outerR * 1.09, trailStart + (curAng - trailStart) * 0.12, curAng, direction < 0);
         c.stroke();
 
         c.restore();
@@ -358,6 +383,15 @@
                   knockback: 490,
                   berserk: true,
                   direction: -1,
+                  onComplete(gg3) {
+                    if (!b.alive) return;
+                    const t3 = gg3.balls.find((x) => x !== b && x.alive);
+                    const ang3 = t3 ? Math.atan2(t3.y - b.y, t3.x - b.x) : ang2;
+                    gg3.entities.push(spawnHandCannonBlast({ owner: b, angle: ang3, reach: 195, duration: 0.26, damage: 10 }));
+                    gg3.entities.push(rt.spawnShockRing(b.x, b.y, "#ef4444", 185, 0.4));
+                    gg3.entities.push(rt.spawnShockRing(b.x, b.y, "#09090b", 130, 0.3));
+                    gg3.spawnDamageText(b.x, b.y - b.radius - 16, 0, "#ef4444", true, "ABYSSAL CANNON SLAM!");
+                  },
                 }));
                 gg2.sound.playBallHit();
               },
@@ -366,16 +400,16 @@
             gg.entities.push(spawnGreatswordSwing({
               owner: b,
               angle: ang,
-              arcSpan: Math.PI * 1.0,
-              reach: 134,
+              arcSpan: Math.PI * 1.05,
+              reach: 142,
               duration: 0.24,
               damage: Math.round(11 + gg.rng() * 3),
-              knockback: 350,
+              knockback: 360,
               berserk: false,
             }));
           }
           gg.sound.playBallHit();
-          gg.spawnDamageText(b.x, b.y - b.radius, 0, berserk ? COLORS.red : COLORS.silver, false, berserk ? "SAVAGE RAMPAGE x2!" : "DRAGONSLAYER!");
+          gg.spawnDamageText(b.x, b.y - b.radius, 0, berserk ? COLORS.red : COLORS.silver, false, berserk ? "SAVAGE RAMPAGE x3!" : "DRAGONSLAYER!");
         },
       });
       return true;
@@ -890,5 +924,131 @@
       c.fill();
     }
   };
+
+  function spawnBerserkerEclipseCinematic(owner) {
+    const ghosts = [];
+    let ghostCd = 0;
+    return {
+      life: 8.5,
+      maxLife: 8.5,
+      dead: false,
+      update(dt) {
+        this.life -= dt;
+        if (this.life <= 0 || !owner.alive || owner.ultTimer <= 0) {
+          this.dead = true;
+          return;
+        }
+        ghostCd -= dt;
+        if (ghostCd <= 0) {
+          ghostCd = 0.065;
+          ghosts.push({
+            x: owner.x,
+            y: owner.y,
+            r: owner.radius || 29,
+            ang: owner.weaponAngle || 0,
+            life: 0.26,
+            maxLife: 0.26,
+          });
+        }
+        for (let i = ghosts.length - 1; i >= 0; i--) {
+          ghosts[i].life -= dt;
+          if (ghosts[i].life <= 0) ghosts.splice(i, 1);
+        }
+      },
+      render(c) {
+        const elapsed = this.maxLife - Math.max(0, this.life);
+        const fade = Math.min(1, this.life / 0.4);
+
+        c.save();
+        // 1. Subtle Blood-Eclipse Arena Border & Vignette during Berserker Armor
+        c.globalAlpha = 0.16 * fade;
+        c.fillStyle = "#2b0509";
+        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+        c.globalAlpha = 0.55 * fade;
+        c.strokeStyle = "#dc2626";
+        c.lineWidth = 6;
+        c.strokeRect(4, 4, WORLD_SIZE - 8, WORLD_SIZE - 8);
+
+        // 2. First 0.95s: Giant Beast of Darkness Glowing Red V-Eyes & Jaws Cut-In across Arena!
+        if (elapsed < 0.95) {
+          const ep = elapsed / 0.95;
+          const ea = ep < 0.2 ? ep / 0.2 : Math.max(0, 1 - (ep - 0.2) / 0.8);
+          const cx = WORLD_SIZE * 0.5;
+          const cy = WORLD_SIZE * 0.44;
+          c.save();
+          c.translate(cx, cy);
+          c.scale(1 + ep * 0.18, 1 + ep * 0.18);
+          c.globalAlpha = ea * 0.88;
+
+          // Obsidian Hellhound Silhouette Backing
+          c.fillStyle = "rgba(9, 9, 11, 0.78)";
+          c.beginPath();
+          c.arc(0, 0, 138, 0, Math.PI * 2);
+          c.fill();
+
+          // Glowing Crimson Beast of Darkness V-Visor Eyes
+          c.fillStyle = "#ef4444";
+          c.strokeStyle = "#fecaca";
+          c.lineWidth = 3;
+          for (const side of [-1, 1]) {
+            c.beginPath();
+            c.moveTo(side * 16, 12);
+            c.lineTo(side * 96, -38);
+            c.lineTo(side * 68, 4);
+            c.closePath();
+            c.fill();
+            c.stroke();
+          }
+
+          // Jagged Hellhound Fangs below eyes
+          c.fillStyle = "#e2e8f0";
+          c.strokeStyle = "#09090b";
+          c.lineWidth = 2.5;
+          for (let fi = -4; fi <= 4; fi++) {
+            const fx = fi * 18;
+            const fh = fi % 2 === 0 ? 28 : 18;
+            c.beginPath();
+            c.moveTo(fx - 8, 36);
+            c.lineTo(fx, 36 + fh);
+            c.lineTo(fx + 8, 36);
+            c.closePath();
+            c.fill();
+            c.stroke();
+          }
+          c.restore();
+        }
+
+        // 3. Beast of Darkness Crimson-Black Phantom Trail + Red Eye Streaks behind Guts
+        for (const g of ghosts) {
+          const ga = Math.max(0, (g.life / g.maxLife) * 0.55);
+          c.save();
+          c.globalAlpha = ga;
+          c.translate(g.x, g.y);
+          c.fillStyle = "#09090b";
+          c.strokeStyle = "#dc2626";
+          c.lineWidth = 3;
+          c.beginPath();
+          c.arc(0, 0, g.r * 0.94, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+          // Glowing red beast eyes on shadow clone
+          c.fillStyle = "#ef4444";
+          c.beginPath();
+          c.moveTo(-g.r * 0.45, -g.r * 0.18);
+          c.lineTo(-g.r * 0.1, -g.r * 0.04);
+          c.lineTo(-g.r * 0.35, g.r * 0.06);
+          c.closePath();
+          c.moveTo(g.r * 0.45, -g.r * 0.18);
+          c.lineTo(g.r * 0.1, -g.r * 0.04);
+          c.lineTo(g.r * 0.35, g.r * 0.06);
+          c.closePath();
+          c.fill();
+          c.restore();
+        }
+        c.restore();
+      },
+    };
+  }
+  BF.spawnBerserkerEclipseCinematic = spawnBerserkerEclipseCinematic;
 })();
 
