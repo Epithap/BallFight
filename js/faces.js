@@ -532,10 +532,10 @@
       const isMugetsu = Boolean(ball.mugetsuMode && ball.ultTimer > 0);
       for (const side of [-1, 1]) {
         eye(c, r, side, {
-          rx: 0.18,
-          ry: 0.155,
-          slant: isMugetsu ? 0.14 : 0.08,
-          iris: 0.105,
+          rx: isMugetsu ? 0.18 : 0.24,
+          ry: isMugetsu ? 0.14 : 0.23,
+          slant: isMugetsu ? 0.16 : 0.06,
+          iris: isMugetsu ? 0.105 : 0.145,
           color: isMugetsu ? "#dc2626" : "#9a6324",
           ring: isMugetsu ? "#f87171" : "#d97706",
           innerRing: isMugetsu ? "#fecaca" : undefined,
@@ -544,8 +544,16 @@
           ex: s.ex,
           ey: s.ey,
         });
-        // Sleek, cool brow positioned cleanly over the smaller eye
-        brow(c, side, r, 0.29, isMugetsu ? 0.08 : 0.05, 3.0, 0.28);
+        // Mugetsu: sleek sharp brow over narrow eye; Dangai: calm chill brow over standard round eye
+        brow(
+          c,
+          side,
+          r,
+          isMugetsu ? 0.28 : 0.36,
+          isMugetsu ? 0.08 : 0.03,
+          isMugetsu ? 3.0 : 2.8,
+          isMugetsu ? 0.28 : 0.34
+        );
       }
       if (!isMugetsu) {
         mouth(c, r, s.cast ? "grit" : "flat");
