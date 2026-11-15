@@ -17,11 +17,11 @@
 
   // Helper to spawn a solid-outlined projectile entity aimed at the opponent
   function drawGetsugaCrescent(c, r, spin, style) {
-    const outerR = r * 1.68;
-    const tipA = Math.PI * 0.58;
+    const outerR = r * 1.72;
+    const tipA = Math.PI * 0.60;
     const tipX = Math.cos(-tipA) * outerR;
     const tipY = Math.sin(-tipA) * outerR;
-    const innerCtrlX = r * 1.24; // Deep concave curve -> sleek sharp crescent moon
+    const innerCtrlX = outerR * 1.48; // Deep concave curve -> razor-sharp sickle crescent moon
     const wave = Math.sin(spin * 3.2);
 
     c.save();
@@ -32,31 +32,31 @@
     const offsets = [-0.88, -0.44, 0, 0.44, 0.88];
     for (let i = 0; i < offsets.length; i++) {
       const f = offsets[i];
-      const startY = f * outerR * 0.82;
-      const startX = Math.cos(f * tipA) * outerR * 0.62;
-      const tailLen = r * (1.25 + (i % 2 === 0 ? 0.55 : 0.25)) + wave * r * 0.14;
-      const wispY = startY + Math.sin(spin * 2.8 + i * 1.7) * r * 0.22;
+      const startY = f * outerR * 0.80;
+      const startX = Math.cos(f * tipA) * outerR * 0.66;
+      const tailLen = r * (1.75 + (i % 2 === 0 ? 0.65 : 0.30)) + wave * r * 0.16;
+      const wispY = startY + Math.sin(spin * 2.8 + i * 1.7) * r * 0.25;
 
       c.strokeStyle = style.outerAura;
-      c.lineWidth = i === 2 ? 7.5 : 5.2;
+      c.lineWidth = i === 2 ? 8.5 : 5.8;
       c.beginPath();
       c.moveTo(startX, startY);
       c.quadraticCurveTo(startX - tailLen * 0.5, wispY, startX - tailLen, startY * 0.92 + wispY * 0.2);
       c.stroke();
 
       c.strokeStyle = style.ribbonColor;
-      c.lineWidth = i === 2 ? 3.2 : 2.1;
+      c.lineWidth = i === 2 ? 3.8 : 2.5;
       c.beginPath();
       c.moveTo(startX, startY);
-      c.quadraticCurveTo(startX - tailLen * 0.5, wispY, startX - tailLen * 0.88, startY * 0.92 + wispY * 0.16);
+      c.quadraticCurveTo(startX - tailLen * 0.5, wispY, startX - tailLen * 0.90, startY * 0.92 + wispY * 0.16);
       c.stroke();
     }
 
     // 2. Outer Pulsing Crescent Aura Halo
     c.fillStyle = style.outerAura;
     c.beginPath();
-    c.arc(0, 0, outerR * 1.15, -tipA * 1.04, tipA * 1.04);
-    c.quadraticCurveTo(r * 0.92, 0, Math.cos(-tipA * 1.04) * outerR * 1.15, Math.sin(-tipA * 1.04) * outerR * 1.15);
+    c.arc(0, 0, outerR * 1.15, -tipA * 1.03, tipA * 1.03);
+    c.quadraticCurveTo(outerR * 1.28, 0, Math.cos(-tipA * 1.03) * outerR * 1.15, Math.sin(-tipA * 1.03) * outerR * 1.15);
     c.closePath();
     c.fill();
 
