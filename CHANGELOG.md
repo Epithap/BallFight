@@ -4,6 +4,24 @@ Dokumen ini ditulis supaya AI agent (Antigravity) dan developer langsung paham s
 
 ---
 
+## Version 1.3.3 — Shinjuku Showdown: Evo Gojo & Heian Sukuna Revamp
+
+### Highlights v1.3.3
+- **Evo Gojo: Shinjuku Strongest (`js/characters/gojo.js`, `js/shop.js`, `js/forms.js`, `js/faces.js`, `js/transforms.js`, `game.js`)**:
+  - **Syarat Evolusi (`3,000 Gems`)**: Menambah `+40 HP`, `+15 Speed`, baju ketat hitam Shinjuku + celana putih, penutup mata dilepas permanen, **Six Eyes bersinar biru-cyan**, dan kobaran aura energi kutukan.
+  - **Orbiting Max Blue (2 Putaran + 8-Orb Finale)**: Bola Blue besar berputar spiral melebar 2 putaran mengelilingi Gojo; musuh yang terkena tarikan **terkunci di titik tengah Blue**, lalu di akhir putaran memicu **freeze 8 bola Blue** mengelilingi musuh dan meledak di tengah (`10–13 DMG` + knockback).
+  - **Max Red → Black Flash Freeze Cutscene**: *Reversal Red* yang mengenai target akan membalik dari belakang dan mendorong musuh ke depan Gojo, disusul **freeze cutscene Black Flash** (`16–20 DMG`, petir hitam-merah, teks `"BLACK FLASH!"`, lalu kecepatan Gojo pulih).
+  - **Ulti — Hollow Nuke (External Canvas Ascent)**: Gojo sendiri melayang ke atas/luar arena dengan desain ori Shinjuku (`gojo-nuke-ext-canvas`), memunculkan **Red & Blue** yang menyatu di arena menjadi ledakan **Hollow Nuke** ungu-putih 14-sinar (`38–46 DMG`), lalu turun kembali.
+- **Heian Sukuna Revamp (`js/characters/sukuna.js`, `js/transforms.js`, `js/shop.js`, `js/forms.js`, `game.js`)**:
+  - **Heian Era Dual Weapons**: Memegang trisula **Hiten** (semburan api lebar) & **Kamutoke** (petir langit multi-area).
+  - **Auto-Domain 10s Incomplete Malevolent Shrine**: Saat berubah ke Heian (`HP <= 200`), langsung memicu **freeze strobe gelap-terang (`2.15s`)** dan membuka **Incomplete Malevolent Shrine** (bertanduk, tulang rusuk, mulut bertaring, 8 mata) selama 10 detik penuh (charge Ult dinonaktifkan di mode Heian).
+  - **Meguna & Mahoraga Polish**: Perbaikan bebas freeze pada *Max Nue* flyover + crash, *Max Elephant* flood zone, serta animasi **freeze charge World-Cutting Slash** milik Mahoraga.
+- **Mobile 60 FPS & Bug Fixes (`js/characters/sukuna.js`, `js/characters/gojo.js`, `js/faces.js`, `index.html`)**:
+  - Pre-bake struktur *Incomplete Malevolent Shrine* ke offscreen canvas & hilangkan alokasi gradien/shadowBlur per frame agar tetap mulus di HP.
+  - Fix bug outline lingkaran nyasar di `dGrin` (`js/faces.js`), posisi kerah Shinjuku Gojo, dan update modal **What's New** (`index.html`) khusus menampilkan **v1.3.3**.
+
+---
+
 ## Version 1.3.2 — Story Saga BETA (Bleach Ep. 1 Overworld, Cutscenes & 1v1 Boss Battle)
 
 ### Highlights v1.3.2
