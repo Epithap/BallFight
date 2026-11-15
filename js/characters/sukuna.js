@@ -890,7 +890,7 @@
           g.entities.push(rt.spawnShockRing(ex, ey, "#a855f7", 155, 0.46));
           g.entities.push(rt.spawnShockRing(ex, ey, "#facc15", 112, 0.36));
           g.spawnSparks(ex, ey, "#a855f7", "#facc15");
-          g.spawnCritBurst(ex, ey, "#facc15", "#c084fc");
+          if (g.spawnCritBurst) g.spawnCritBurst(ex, ey);
           rt.addShake(0.42, 12);
           g.sound.playCritHit();
           for (const tt of g.balls) {
@@ -1927,7 +1927,7 @@
       target.vx = Math.cos(ang) * 460;
       target.vy = Math.sin(ang) * 460;
       g.spawnDamageText(target.x, target.y - target.radius - 18, dealt, "#ef4444", true, "WORLD-CUTTING SLASH!");
-      g.spawnCritBurst(target.x, target.y, "#facc15", "#ef4444");
+      if (g.spawnCritBurst) g.spawnCritBurst(target.x, target.y);
     }
     g.entities.push(rt.spawnShockRing(x, y, "#dc2626", 190, 0.45));
     g.entities.push(rt.spawnShockRing(x, y, "#facc15", 130, 0.35));

@@ -459,8 +459,11 @@
   const game = {
     get balls() { return balls; },
     get entities() { return entities; },
+    get hitStop() { return hitStop; },
+    set hitStop(v) { hitStop = v; },
     rng: () => rng(),
     spawnSparks,
+    spawnCritBurst,
     spawnDamageText,
     applyDamage,
     addEffect,
