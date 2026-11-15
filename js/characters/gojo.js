@@ -378,6 +378,97 @@
     };
   }
 
+  function spawnOrbitingMaxBlue({ owner }) {
+    const startAng = Math.atan2(owner.vy || 0, owner.vx || 1);
+    const totalAngle = Math.PI * 4; // 2 full rotations
+    const duration = 1.15;
+    const angSpeed = totalAngle / duration;
+    const orbitR = owner.radius + 46;
+    return {
+      angle: startAng,
+      traveled: 0,
+      x: owner.x + Math.cos(startAng) * orbitR,
+      y: owner.y + Math.sin(startAng) * orbitR,
+      hitCd: 0,
+      ultCharged: false,
+      dead: false,
+      update(dt, gg) {
+        if (!owner.alive) {
+          this.dead = true;
+          return;
+        }
+        const step = angSpeed * dt;
+        this.angle += step;
+        this.traveled += step;
+        this.x = owner.x + Math.cos(this.angle) * orbitR;
+        this.y = owner.y + Math.sin(this.angle) * orbitR;
+        this.hitCd = Math.max(0, this.hitCd - dt);
+
+        for (const tt of gg.balls) {
+          if (tt === owner || !tt.alive) continue;
+          const dx = this.x - tt.x;
+          const dy = this.y - tt.y;
+          const dist = Math.hypot(dx, dy) || 1;
+          if (dist < 155) {
+            const pull = 165 * dt;
+            tt.x += (dx / dist) * pull;
+            tt.y += (dy / dist) * pull;
+          }
+          if (dist <= tt.radius + 24 && this.hitCd <= 0) {
+            this.hitCd = 0.18;
+            const dealt = gg.applyDamage(tt, 3);
+            tt.flashTimer = 0.08;
+            gg.spawnSparks(tt.x, tt.y, "#00b4ff", COLORS.white);
+            gg.spawnDamageText(tt.x, tt.y - tt.radius - 10, dealt, "#38bdf8", false, "BLUE!");
+            gg.sound.playBallHit();
+            if (!this.ultCharged) {
+              this.ultCharged = true;
+              gg.chargeUlt(owner);
+            }
+          }
+        }
+
+        if (this.traveled >= totalAngle) {
+          this.dead = true;
+          for (const tt of gg.balls) {
+            if (tt === owner || !tt.alive) continue;
+            if (Math.hypot(tt.x - this.x, tt.y - this.y) <= 115) {
+              const fin = gg.applyDamage(tt, 5);
+              tt.flashTimer = 0.14;
+              gg.spawnDamageText(tt.x, tt.y - tt.radius - 14, fin, "#00b4ff", true, "MAX BLUE!");
+              if (!this.ultCharged) {
+                this.ultCharged = true;
+                gg.chargeUlt(owner);
+              }
+            }
+          }
+          gg.entities.push(rt.spawnShockRing(this.x, this.y, "#38bdf8", 115, 0.34));
+          gg.sound.playCritHit();
+        }
+      },
+      render(c) {
+        c.save();
+        // Orbit trail arc around Gojo
+        c.strokeStyle = "rgba(56, 189, 248, 0.42)";
+        c.lineWidth = 6;
+        c.lineCap = "round";
+        c.beginPath();
+        c.arc(owner.x, owner.y, orbitR, this.angle - 1.15, this.angle);
+        c.stroke();
+
+        // Orbiting Blue singularity orb
+        c.translate(this.x, this.y);
+        c.fillStyle = "rgba(0, 180, 255, 0.34)";
+        c.beginPath(); c.arc(0, 0, 28, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "#0ea5e9";
+        c.beginPath(); c.arc(0, 0, 16, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "#e0f2fe";
+        c.beginPath(); c.arc(0, 0, 7, 0, Math.PI * 2); c.fill();
+        c.restore();
+      },
+    };
+  }
+
   function spawnRedReturnBlackFlash({ owner, target, hitX, hitY }) {
     const duration = 0.58;
     const blackFlashAt = 0.30;
@@ -686,8 +777,10 @@
                 gg2.sound.playCritHit();
               },
             }));
+          } else if (isEvo) {
+            gg.entities.push(spawnOrbitingMaxBlue({ owner: b }));
           } else {
-            gg.entities.push(spawnLimitlessBlueVortex({ owner: b, target: t, x: m.x, y: m.y, isMax: isEvo }));
+            gg.entities.push(spawnLimitlessBlueVortex({ owner: b, target: t, x: m.x, y: m.y, isMax: false }));
           }
           gg.sound.playBallHit();
         },
