@@ -473,7 +473,11 @@
         fire(b, g) {
           b.ultTimer = 13.0;
           b.domainUsedInUlt = false;
-          rt().addEffect(b, "haste", 13.0, { factor: 1.15 });
+          rt().addEffect(b, "haste", 13.0, { factor: b.evolved ? 1.22 : 1.15 });
+          if (b.evolved && BF.spawnShinjukuPurpleCinematic) {
+            g.entities.push(BF.spawnShinjukuPurpleCinematic(b, g));
+            return;
+          }
           const t = g.balls.find((x) => x !== b && x.alive);
           if (!t) return;
           const ang = Math.atan2(t.y - b.y, t.x - b.x);

@@ -112,6 +112,23 @@
       bonusHp: 40,
       bonusSpeed: 15,
     },
+    gojo: {
+      charId: "gojo",
+      evolvedName: "SHINJUKU STRONGEST",
+      evolvedRole: "INFINITY • MAXIMUM BLUE & BLACK FLASH",
+      starterLabel: "STARTER (BLINDFOLD)",
+      evolvedLabel: "EVOLVED (SHINJUKU)",
+      cost: 3000,
+      currency: "gems",
+      requirementText: "3,000 GEMS",
+      desc: "Transforms Gojo into Shinjuku Showdown attire (black compression shirt, blindfold off, Six Eyes & Infinity Aura): upgrades skills to Maximum Output: Blue Vortex + Reversal Red Black Flash Warp, and upgrades Ult to Unlimited Hollow Purple (omnidirectional arena nuke) + Unlimited Void!",
+      evolvedSkillName: "MAXIMUM BLUE / RED BLACK FLASH",
+      evolvedSkillDesc: "Alternates Maximum Output: Blue (heavy gravitational vortex pull & implosion) and Reversal Red: Black Flash (crimson blast + Instant Warp Black Flash punch!).",
+      evolvedUltName: "UNLIMITED HOLLOW PURPLE",
+      evolvedUltDesc: "Freeze Chant Cinematic! Fuses Blue & Red into an arena-wide Unlimited Hollow Purple Singularity Nuke (36-44 DMG) & unlocks Unlimited Void!",
+      bonusHp: 40,
+      bonusSpeed: 15,
+    },
   };
 
   function loadWallet() {

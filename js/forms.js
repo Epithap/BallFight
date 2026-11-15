@@ -31,6 +31,10 @@
       { id: "starter", label: "BASE (YUJI)", evolved: false, defaultForm: "base" },
       { id: "evolved", label: "MEGUNA (EVO)", evolved: true, defaultForm: "evolved_base" },
     ],
+    gojo: [
+      { id: "starter", label: "BASE (BLINDFOLD)", evolved: false, defaultForm: "base" },
+      { id: "evolved", label: "SHINJUKU (EVO)", evolved: true, defaultForm: "evolved_base" },
+    ],
   };
 
   // flags are copied onto the preview ball (ult => ultTimer, others as-is)
@@ -72,8 +76,10 @@
       { id: "ult", label: "BERSERKER ARMOR", ult: true, desc: "Blood-red armor. Savage Rampage twice." },
     ],
     gojo: [
-      { id: "base", label: "BLINDFOLD", desc: "White hair and a black blindfold." },
-      { id: "ult", label: "SIX EYES", ult: true, desc: "Blindfold off, Infinity up, Hollow Purple unlocked." },
+      { id: "base", stage: "starter", label: "BLINDFOLD", starterOnly: true, desc: "Starter Base: White hair, black blindfold, Limitless Red / Blue alternating casts." },
+      { id: "ult", stage: "starter", label: "SIX EYES", ult: true, starterOnly: true, desc: "Starter Ult: Blindfold off, Infinity up, Hollow Purple & Unlimited Void unlocked." },
+      { id: "evolved_base", stage: "evolved", label: "SHINJUKU", evolved: true, previewShinjuku: true, desc: "Evolved Base (3,000 Gems): Black compression shirt, blindfold off, Six Eyes & Infinity Distortion Aura (+40 HP, +15 Speed). Maximum Output: Blue & Reversal Red: Black Flash Warp!" },
+      { id: "shinjuku_ult", stage: "evolved", label: "UNLIMITED PURPLE (ULT)", evolved: true, ult: true, previewShinjuku: true, desc: "Shinjuku Ult: Freeze Chant Cinematic! Fuses Blue & Red into an omnidirectional Unlimited Hollow Purple Nuke & opens Unlimited Void!" },
     ],
     sukuna: [
       { id: "base", stage: "starter", label: "YUJI VESSEL", starterOnly: true, desc: "Starter Base: Four eyes, cursed markings, Cleave Dash & Dismantle x3." },
