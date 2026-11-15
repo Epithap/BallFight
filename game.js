@@ -3349,11 +3349,15 @@
       } else {
         detailEvoBox.classList.remove("hidden");
         const equipped = isEvolutionEquipped(cfg.id);
-        const canAfford = playerWallet.coins >= evoSpec.cost;
+        const isGems = evoSpec.currency === "gems";
+        const canAfford = (isGems ? playerWallet.gems : playerWallet.coins) >= evoSpec.cost;
+        const costBadge = isGems
+          ? `💎 ${evoSpec.cost.toLocaleString()} GEMS`
+          : `🪙 ${evoSpec.cost.toLocaleString()} GOLD`;
         detailEvoBox.innerHTML =
           `<div class="power-header">` +
             `<span class="power-badge badge-gold">✨ FIGHTER EVOLUTION</span>` +
-            `<span class="power-cd">${evolved ? "UNLOCKED" : `🪙 ${evoSpec.cost.toLocaleString()} GOLD`}</span>` +
+            `<span class="power-cd">${evolved ? "UNLOCKED" : costBadge}</span>` +
           `</div>` +
           `<h3 class="power-title">${evoSpec.evolvedName}</h3>` +
           `<p class="power-desc">${evoSpec.desc}</p>` +

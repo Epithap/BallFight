@@ -27,6 +27,10 @@
       { id: "starter", label: "BASE (SHARINGAN)", evolved: false, defaultForm: "base" },
       { id: "evolved", label: "RINNEGAN (EVO)", evolved: true, defaultForm: "evolved_base" },
     ],
+    sukuna: [
+      { id: "starter", label: "BASE (YUJI)", evolved: false, defaultForm: "base" },
+      { id: "evolved", label: "MEGUNA (EVO)", evolved: true, defaultForm: "evolved_base" },
+    ],
   };
 
   // flags are copied onto the preview ball (ult => ultTimer, others as-is)
