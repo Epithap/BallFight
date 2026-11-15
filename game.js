@@ -3061,6 +3061,7 @@
         heianEraMode: Boolean(fl.heianEraMode),
         previewHeianEra: Boolean(fl.previewHeianEra),
         previewMeguna: Boolean(fl.previewMeguna),
+        previewMahoraga: Boolean(fl.previewMahoraga),
         gear4Mode: fl.gear4Mode || null,
         _isCosmicGarou: Boolean(fl.cosmicMode),
         cast: null,
@@ -3073,6 +3074,11 @@
         pCtx.save();
         pCtx.translate(previewBall.x, previewBall.y);
         BF.COSTUME_DRAWERS.sasuke(previewBall, previewBall.radius, pCtx);
+        pCtx.restore();
+      } else if (previewBall.previewMahoraga && BF.COSTUME_DRAWERS && BF.COSTUME_DRAWERS.sukuna) {
+        pCtx.save();
+        pCtx.translate(previewBall.x, previewBall.y);
+        BF.COSTUME_DRAWERS.sukuna(previewBall, previewBall.radius, pCtx);
         pCtx.restore();
       } else {
         drawBall(previewBall, pCtx, true);

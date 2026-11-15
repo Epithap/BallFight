@@ -1119,9 +1119,21 @@
   };
 
   BF.COSTUME_DRAWERS.sukuna = (ball, r, c) => {
+    const nowS = performance.now() * 0.004;
+    if (ball.previewMahoraga) {
+      drawMahoragaEntity(c, {
+        x: 0,
+        y: 6,
+        facing: 1,
+        wheelAngle: nowS * 0.35,
+        slashAnim: Math.max(0, Math.sin(nowS * 0.9)) * 0.45,
+        alpha: 1,
+        scale: Math.max(1.15, r / 30),
+      });
+      return;
+    }
     const isHeian = Boolean(ball.heianEraMode || ball.previewHeianEra);
     const isMeguna = Boolean((ball.evolved || ball.previewMeguna) && !isHeian);
-    const nowS = performance.now() * 0.004;
 
     // 1. Meguna: Ten Shadows Aura + Sculpted Golden Mahoraga Dharma Wheel behind head
     if (isMeguna) {
@@ -1422,6 +1434,100 @@
     }
   };
 
+  function drawMahoragaEntity(c, { x = 0, y = 0, facing = 1, wheelAngle = 0, slashAnim = 0, alpha = 1, scale = 1 }) {
+    const now = performance.now() * 0.004;
+    const bob = Math.sin(now * 1.6) * 3;
+    c.save();
+    c.translate(x, y + bob);
+    c.scale(scale, scale);
+    c.globalAlpha = alpha;
+
+    // Ground shadow
+    c.fillStyle = "rgba(15, 23, 42, 0.34)";
+    c.beginPath(); c.ellipse(0, 32 - bob, 26, 10, 0, 0, Math.PI * 2); c.fill();
+
+    // Spinning Golden 8-Handled Dharma Wheel behind Mahoraga
+    c.save();
+    c.translate(0, -16);
+    c.rotate(wheelAngle);
+    const wr = 24;
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const hx = Math.cos(a) * (wr + 5);
+      const hy = Math.sin(a) * (wr + 5);
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 4.2;
+      c.beginPath(); c.moveTo(0, 0); c.lineTo(hx, hy); c.stroke();
+      c.strokeStyle = "#eab308";
+      c.lineWidth = 2.2;
+      c.beginPath(); c.moveTo(0, 0); c.lineTo(hx, hy); c.stroke();
+      c.fillStyle = "#fef08a";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 1.6;
+      c.beginPath(); c.arc(hx, hy, 3, 0, Math.PI * 2); c.fill(); c.stroke();
+    }
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 5;
+    c.beginPath(); c.arc(0, 0, wr, 0, Math.PI * 2); c.stroke();
+    c.strokeStyle = "#facc15";
+    c.lineWidth = 2.5;
+    c.beginPath(); c.arc(0, 0, wr, 0, Math.PI * 2); c.stroke();
+    c.restore();
+
+    c.scale(facing, 1);
+
+    // Muscular Ivory-White Torso + Black Waist Cloth
+    c.fillStyle = "#f8fafc";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2.8;
+    c.beginPath(); c.roundRect(-18, -14, 36, 34, 11); c.fill(); c.stroke();
+    c.fillStyle = "#1e293b";
+    c.beginPath(); c.roundRect(-16, 10, 32, 14, 5); c.fill(); c.stroke();
+
+    // Towering Head + Winged Head-Fins + Toothy Jaw
+    c.fillStyle = "#e2e8f0";
+    c.beginPath(); c.ellipse(0, -18, 13, 14, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+    for (const side of [-1, 1]) {
+      c.fillStyle = "#f8fafc";
+      c.beginPath();
+      c.moveTo(side * 8, -20);
+      c.lineTo(side * 24, -32);
+      c.lineTo(side * 18, -16);
+      c.lineTo(side * 26, -12);
+      c.lineTo(side * 10, -10);
+      c.closePath();
+      c.fill(); c.stroke();
+    }
+    // Menacing jaw/grin
+    c.fillStyle = "#09090b";
+    c.beginPath(); c.roundRect(-8, -15, 16, 6, 3); c.fill();
+    c.fillStyle = "#ffffff";
+    c.fillRect(-6, -14, 3, 4);
+    c.fillRect(-1, -14, 3, 4);
+    c.fillRect(4, -14, 3, 4);
+
+    // Right Forearm + Glowing Sword of Extermination (Taima no Tsurugi)
+    c.save();
+    c.translate(16, -2);
+    c.rotate(-0.45 + slashAnim * 1.45);
+    c.fillStyle = "#f8fafc";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2.4;
+    c.beginPath(); c.roundRect(-4, -4, 14, 10, 4); c.fill(); c.stroke();
+    c.fillStyle = "#7dd3fc";
+    c.beginPath();
+    c.moveTo(8, -5);
+    c.lineTo(36, 0);
+    c.lineTo(8, 5);
+    c.closePath();
+    c.fill(); c.stroke();
+    c.fillStyle = "#fef08a";
+    c.fillRect(6, -5, 5, 10);
+    c.restore();
+
+    c.restore();
+  }
+
   function spawnMahoragaSummon(owner, g) {
     const startX = Math.max(54, Math.min(WORLD_SIZE - 54, owner.x + 36));
     const startY = Math.max(54, Math.min(WORLD_SIZE - 54, owner.y - 24));
@@ -1485,99 +1591,15 @@
         }
       },
       render(c) {
-        const now = performance.now() * 0.004;
-        const alpha = Math.min(1, this.life * 2);
-        const bob = Math.sin(now * 1.6) * 3;
-        c.save();
-        c.translate(this.x, this.y + bob);
-        c.globalAlpha = alpha;
-
-        // Ground shadow
-        c.fillStyle = "rgba(15, 23, 42, 0.34)";
-        c.beginPath(); c.ellipse(0, 32 - bob, 26, 10, 0, 0, Math.PI * 2); c.fill();
-
-        // Spinning Golden 8-Handled Dharma Wheel behind Mahoraga
-        c.save();
-        c.translate(0, -16);
-        c.rotate(this.wheelAngle);
-        const wr = 24;
-        for (let i = 0; i < 8; i++) {
-          const a = (i / 8) * Math.PI * 2;
-          const hx = Math.cos(a) * (wr + 5);
-          const hy = Math.sin(a) * (wr + 5);
-          c.strokeStyle = COLORS.ink;
-          c.lineWidth = 4.2;
-          c.beginPath(); c.moveTo(0, 0); c.lineTo(hx, hy); c.stroke();
-          c.strokeStyle = "#eab308";
-          c.lineWidth = 2.2;
-          c.beginPath(); c.moveTo(0, 0); c.lineTo(hx, hy); c.stroke();
-          c.fillStyle = "#fef08a";
-          c.strokeStyle = COLORS.ink;
-          c.lineWidth = 1.6;
-          c.beginPath(); c.arc(hx, hy, 3, 0, Math.PI * 2); c.fill(); c.stroke();
-        }
-        c.strokeStyle = COLORS.ink;
-        c.lineWidth = 5;
-        c.beginPath(); c.arc(0, 0, wr, 0, Math.PI * 2); c.stroke();
-        c.strokeStyle = "#facc15";
-        c.lineWidth = 2.5;
-        c.beginPath(); c.arc(0, 0, wr, 0, Math.PI * 2); c.stroke();
-        c.restore();
-
-        c.scale(this.facing, 1);
-
-        // Muscular Ivory-White Torso + Black Waist Cloth
-        c.fillStyle = "#f8fafc";
-        c.strokeStyle = COLORS.ink;
-        c.lineWidth = 2.8;
-        c.beginPath(); c.roundRect(-18, -14, 36, 34, 11); c.fill(); c.stroke();
-        c.fillStyle = "#1e293b";
-        c.beginPath(); c.roundRect(-16, 10, 32, 14, 5); c.fill(); c.stroke();
-
-        // Towering Head + 4 Winged Head-Fins + Toothy Jaw
-        c.fillStyle = "#e2e8f0";
-        c.beginPath(); c.ellipse(0, -18, 13, 14, 0, 0, Math.PI * 2); c.fill(); c.stroke();
-        // Winged ear-fins
-        for (const side of [-1, 1]) {
-          c.fillStyle = "#f8fafc";
-          c.beginPath();
-          c.moveTo(side * 8, -20);
-          c.lineTo(side * 24, -32);
-          c.lineTo(side * 18, -16);
-          c.lineTo(side * 26, -12);
-          c.lineTo(side * 10, -10);
-          c.closePath();
-          c.fill(); c.stroke();
-        }
-        // Menacing jaw/grin
-        c.fillStyle = "#09090b";
-        c.beginPath(); c.roundRect(-8, -15, 16, 6, 3); c.fill();
-        c.fillStyle = "#ffffff";
-        c.fillRect(-6, -14, 3, 4);
-        c.fillRect(-1, -14, 3, 4);
-        c.fillRect(4, -14, 3, 4);
-
-        // Right Forearm + Glowing Sword of Extermination (Taima no Tsurugi)
-        c.save();
-        c.translate(16, -2);
-        c.rotate(-0.45 + this.slashAnim * 1.45);
-        c.fillStyle = "#f8fafc";
-        c.strokeStyle = COLORS.ink;
-        c.lineWidth = 2.4;
-        c.beginPath(); c.roundRect(-4, -4, 14, 10, 4); c.fill(); c.stroke();
-        // Positive-energy blade
-        c.fillStyle = "#7dd3fc";
-        c.beginPath();
-        c.moveTo(8, -5);
-        c.lineTo(36, 0);
-        c.lineTo(8, 5);
-        c.closePath();
-        c.fill(); c.stroke();
-        c.fillStyle = "#fef08a";
-        c.fillRect(6, -5, 5, 10);
-        c.restore();
-
-        c.restore();
+        drawMahoragaEntity(c, {
+          x: this.x,
+          y: this.y,
+          facing: this.facing,
+          wheelAngle: this.wheelAngle,
+          slashAnim: this.slashAnim,
+          alpha: Math.min(1, this.life * 2),
+          scale: 1,
+        });
       },
     };
   }
