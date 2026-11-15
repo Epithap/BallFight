@@ -548,7 +548,7 @@
         brow(c, side, r, 0.36, isMugetsu ? 0.06 : 0.03, 2.8, 0.34);
       }
       if (!isMugetsu) {
-        mouth(c, r, s.cast ? "grit" : "smirk");
+        mouth(c, r, s.cast ? "grit" : "flat");
       }
       return;
     }
