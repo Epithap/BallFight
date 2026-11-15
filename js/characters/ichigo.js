@@ -2008,61 +2008,236 @@
   }
 
   function spawnMugetsuFinisherSlash(owner, g) {
-    const t = g.balls.find((b) => b !== owner && b.alive);
-    const sx = t ? t.x : WORLD_SIZE * 0.5;
+    const duration = 1.85;
+    rt.setHitStop(duration);
+
+    const target = g.balls.find((b) => b !== owner && b.alive) || null;
+    const tx = target ? target.x : WORLD_SIZE * 0.5;
+    const ty = target ? target.y : WORLD_SIZE * 0.5;
+    const ang = Math.atan2(ty - owner.y, tx - owner.x);
     let struck = false;
+
     return {
-      life: 0.95,
-      maxLife: 0.95,
+      isFreezeCinematic: true,
+      timer: 0,
+      duration,
       dead: false,
       update(dt, gg) {
-        this.life -= dt;
-        const p = 1 - Math.max(0, this.life / this.maxLife);
-        if (p >= 0.22 && !struck) {
+        this.timer += dt;
+        const p = Math.min(1, this.timer / this.duration);
+
+        if (p >= 0.48 && !struck) {
           struck = true;
           gg.entities.push(rt.spawnBanner("MUGETSU!!", "#a855f7"));
-          gg.entities.push(rt.spawnShockRing(sx, WORLD_SIZE * 0.5, "#09090b", 260, 0.52));
-          gg.entities.push(rt.spawnShockRing(sx, WORLD_SIZE * 0.5, "#a855f7", 210, 0.42));
+          gg.entities.push(rt.spawnShockRing(tx, ty, "#09090b", 280, 0.52));
+          gg.entities.push(rt.spawnShockRing(tx, ty, "#a855f7", 220, 0.42));
           for (const foe of gg.balls) {
             if (foe === owner || !foe.alive) continue;
-            const dealt = gg.applyDamage(foe, 34, { pierce: true });
-            foe.flashTimer = 0.28;
+            const dealt = gg.applyDamage(foe, 150, { pierce: true });
+            foe.flashTimer = 0.35;
             foe.squash = 1.0;
             gg.spawnSparks(foe.x, foe.y, "#09090b", "#a855f7");
-            gg.spawnDamageText(foe.x, foe.y - foe.radius - 18, dealt, "#a855f7", true, "FINAL GETSUGA: MUGETSU!!");
+            gg.spawnDamageText(foe.x, foe.y - foe.radius - 18, dealt, "#a855f7", true, "MUGETSU!! -150");
           }
-          rt.setHitStop(0.12);
-          rt.addShake(0.55, 12);
+          rt.addShake(0.65, 14);
           gg.sound.playCritHit();
         }
-        if (this.life <= 0) {
+
+        if (this.timer >= this.duration) {
           owner.mugetsuMode = false;
           owner.ultTimer = 0;
           this.dead = true;
         }
       },
-      render(c) {
-        const p = 1 - Math.max(0, this.life / this.maxLife);
-        const fade = p < 0.7 ? 1 : Math.max(0, (1 - p) / 0.3);
-        const width = p < 0.22 ? 12 + (p / 0.22) * 32 : 92 * fade + 16;
+      render() {},
+      renderOverlay(c) {
+        const p = Math.min(1, this.timer / this.duration);
+        const fadeOut = p < 0.78 ? 1 : Math.max(0, (1 - p) / 0.22);
 
         c.save();
-        c.globalAlpha = fade;
-        // Outer violet-crimson sky-splitting aura
-        c.fillStyle = "rgba(168, 85, 247, 0.45)";
-        c.fillRect(sx - width * 0.72, 0, width * 1.44, WORLD_SIZE);
 
-        // Colossal Pitch-Black Vertical Mugetsu Slash splitting the entire arena
-        c.fillStyle = "#030106";
-        c.fillRect(sx - width * 0.5, 0, width, WORLD_SIZE);
+        // 1. Freeze Cutscene Pitch-Black Void Dimmer
+        const dimAlpha = p < 0.12 ? (p / 0.12) * 0.72 : 0.72 * fadeOut;
+        c.fillStyle = `rgba(3, 1, 8, ${dimAlpha.toFixed(3)})`;
+        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
-        // Razor-sharp white-violet core line
-        c.strokeStyle = "#f5d0fe";
-        c.lineWidth = Math.max(2, width * 0.09);
-        c.beginPath();
-        c.moveTo(sx, 0);
-        c.lineTo(sx, WORLD_SIZE);
-        c.stroke();
+        // 2. Auto-Lock Targeting Line & Reticle on Enemy
+        if (target && p < 0.78) {
+          const lockP = Math.min(1, p / 0.25);
+          const lockScale = 1.65 - 0.65 * lockP;
+          const lockRot = (1 - lockP) * 0.9 + this.timer * 1.4;
+          const rLock = (target.radius + 16) * lockScale;
+
+          c.save();
+          c.globalAlpha = (p < 0.48 ? 0.92 : Math.max(0, 1 - (p - 0.48) / 0.3)) * fadeOut;
+
+          // Subtle auto-lock trajectory guide
+          c.strokeStyle = "rgba(168, 85, 247, 0.45)";
+          c.lineWidth = 2;
+          c.setLineDash([8, 8]);
+          c.beginPath();
+          c.moveTo(owner.x, owner.y);
+          c.lineTo(tx, ty);
+          c.stroke();
+          c.setLineDash([]);
+
+          // Lock-on brackets around target
+          c.translate(tx, ty);
+          c.rotate(lockRot);
+          c.strokeStyle = p >= 0.3 ? "#ef4444" : "#c084fc";
+          c.lineWidth = 3;
+          for (let q = 0; q < 4; q++) {
+            c.rotate(Math.PI * 0.5);
+            c.beginPath();
+            c.moveTo(rLock - 10, -rLock);
+            c.lineTo(rLock, -rLock);
+            c.lineTo(rLock, -rLock + 10);
+            c.stroke();
+          }
+          c.restore();
+        }
+
+        // 3. Scene: Ichigo Raising Hand High -> Swinging Down the Black Mugetsu Blade
+        if (p < 0.72) {
+          const raiseP = Math.min(1, p / 0.28);
+          const swingP = p < 0.40 ? 0 : Math.min(1, (p - 0.40) / 0.10);
+          const upAng = -Math.PI * 0.5;
+          // Shortest angular swing from straight up (-PI/2) to target angle
+          let diff = ang - upAng;
+          while (diff > Math.PI) diff -= Math.PI * 2;
+          while (diff < -Math.PI) diff += Math.PI * 2;
+          const armAng = upAng + diff * swingP;
+
+          // Converging black-violet reiatsu pillar behind Ichigo during raise
+          if (p < 0.50) {
+            const pillarW = (owner.radius * 2.2) * (0.6 + 0.4 * Math.sin(this.timer * 14));
+            c.fillStyle = "rgba(168, 85, 247, 0.22)";
+            c.fillRect(owner.x - pillarW * 0.65, 0, pillarW * 1.3, owner.y + owner.radius);
+            c.fillStyle = "rgba(5, 5, 8, 0.65)";
+            c.fillRect(owner.x - pillarW * 0.4, 0, pillarW * 0.8, owner.y + owner.radius);
+          }
+
+          c.save();
+          c.translate(owner.x, owner.y);
+          c.rotate(armAng);
+
+          const armLen = owner.radius * 1.15 * (0.4 + 0.6 * raiseP);
+          // Raised bandaged arm
+          c.fillStyle = "#475569";
+          c.strokeStyle = "#09090b";
+          c.lineWidth = 3;
+          c.beginPath();
+          c.roundRect(owner.radius * 0.35, -6, armLen, 12, 5);
+          c.fill();
+          c.stroke();
+
+          // Bandage wrap stripes on arm
+          c.strokeStyle = "#94a3b8";
+          c.lineWidth = 1.6;
+          for (let b = 0.25; b <= 0.8; b += 0.25) {
+            const bx = owner.radius * 0.35 + armLen * b;
+            c.beginPath();
+            c.moveTo(bx, -5);
+            c.lineTo(bx + 3, 5);
+            c.stroke();
+          }
+
+          // Towering jet-black Mugetsu blade extending from raised hand
+          const bladeLen = (110 + 40 * raiseP) * (p < 0.48 ? 1 : Math.max(0, 1 - (p - 0.48) / 0.24));
+          if (bladeLen > 4) {
+            const handX = owner.radius * 0.35 + armLen;
+            // Violet outer flame aura
+            c.fillStyle = "rgba(168, 85, 247, 0.55)";
+            c.beginPath();
+            c.moveTo(handX - 6, -13);
+            c.lineTo(handX + bladeLen + 18, 0);
+            c.lineTo(handX - 6, 13);
+            c.closePath();
+            c.fill();
+
+            // Pure black Mugetsu blade core
+            c.fillStyle = "#050507";
+            c.strokeStyle = "#e9d5ff";
+            c.lineWidth = 1.5;
+            c.beginPath();
+            c.moveTo(handX - 4, -8);
+            c.lineTo(handX + bladeLen, 0);
+            c.lineTo(handX - 4, 8);
+            c.closePath();
+            c.fill();
+            c.stroke();
+          }
+          c.restore();
+        }
+
+        // 4. Cutscene Text Banner ("FINAL GETSUGA TENSHO" -> "MUGETSU.")
+        if (p < 0.55) {
+          c.save();
+          c.textAlign = "center";
+          c.textBaseline = "middle";
+          c.lineJoin = "round";
+          const label = p < 0.36 ? "FINAL GETSUGA TENSHO..." : "MUGETSU!!";
+          c.font = `900 ${p < 0.36 ? 22 : 34}px 'Fredoka', 'Nunito', sans-serif`;
+          c.lineWidth = 7;
+          c.strokeStyle = "#030106";
+          c.strokeText(label, WORLD_SIZE * 0.5, 58);
+          c.fillStyle = p < 0.36 ? "#e9d5ff" : "#a855f7";
+          c.fillText(label, WORLD_SIZE * 0.5, 58);
+          c.restore();
+        }
+
+        // 5. Colossal Auto-Locked Long Slash (Tebasan Panjang) Cutting Across the Entire Arena
+        if (p >= 0.45) {
+          const slashP = (p - 0.45) / 0.55;
+          const slashAlpha = slashP < 0.65 ? 1 : Math.max(0, (1 - slashP) / 0.35);
+          const flash = slashP < 0.14 ? (1 - slashP / 0.14) : 0;
+          const beamW = slashP < 0.15
+            ? 24 + (slashP / 0.15) * 86
+            : 110 * slashAlpha + 10;
+          const beamLen = WORLD_SIZE * 2.2;
+
+          if (flash > 0) {
+            c.fillStyle = `rgba(245, 208, 254, ${(flash * 0.35).toFixed(3)})`;
+            c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+          }
+
+          c.save();
+          c.translate(owner.x, owner.y);
+          c.rotate(ang);
+          c.globalAlpha = slashAlpha;
+
+          // Outer violet-crimson sky-splitting aura
+          c.fillStyle = "rgba(168, 85, 247, 0.52)";
+          c.fillRect(-beamLen * 0.25, -beamW * 0.75, beamLen, beamW * 1.5);
+
+          // Pitch-black void slash body
+          c.fillStyle = "#030106";
+          c.fillRect(-beamLen * 0.25, -beamW * 0.5, beamLen, beamW);
+
+          // Razor-sharp white-violet core line
+          c.strokeStyle = "#fdf4ff";
+          c.lineWidth = Math.max(2.5, beamW * 0.11);
+          c.beginPath();
+          c.moveTo(-beamLen * 0.25, 0);
+          c.lineTo(beamLen * 0.75, 0);
+          c.stroke();
+          c.restore();
+
+          // Direct impact burst ring at locked target coordinates
+          if (slashP < 0.55) {
+            const ringP = slashP / 0.55;
+            const ringR = (target ? target.radius : 28) + ringP * 145;
+            c.save();
+            c.globalAlpha = (1 - ringP) * 0.9;
+            c.strokeStyle = "#c084fc";
+            c.lineWidth = 6 * (1 - ringP) + 1.5;
+            c.beginPath();
+            c.arc(tx, ty, ringR, 0, Math.PI * 2);
+            c.stroke();
+            c.restore();
+          }
+        }
+
         c.restore();
       },
     };
@@ -2111,6 +2286,7 @@
         }
         if (this.life <= 0.95 && !finisherFired) {
           finisherFired = true;
+          this.dead = true;
           g.entities.push(spawnMugetsuFinisherSlash(ball, g));
         }
         if (this.life <= 0) {

@@ -3889,7 +3889,7 @@
         }
         if (detailEmpDesc) {
           detailEmpDesc.textContent = isIchigoTier2
-            ? "Transforms into Mugetsu inside a Pitch-Black Void World, firing rapid jet-black crescent slashes (20 DMG) before ending with an arena-splitting vertical MUGETSU!! slash (34 piercing DMG)!"
+            ? "Transforms into Mugetsu inside a Pitch-Black Void World, firing rapid jet-black crescent slashes (20 DMG) before freezing time for an auto-locked MUGETSU!! slash (150 piercing DMG)!"
             : (isSukunaEvo
                 ? "At HP <= 200, permanently becomes 4-Arm Heian Era (+60 HP, +15% Speed) wielding Hiten & Kamutoke: Multi-Area Kamutoke Sky Lightning, Hiten Fire Breath, and Incomplete Malevolent Shrine!"
                 : tr.ultSkillDesc);
