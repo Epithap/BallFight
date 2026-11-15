@@ -843,6 +843,14 @@
   }
 
   function triggerDomainExpansion(owner, spec, g) {
+    const activeIncompleteShrine = g.entities.find((ent) => ent.isIncompleteShrine && !ent.dead);
+    if (activeIncompleteShrine) {
+      if (activeIncompleteShrine.domainOwner !== owner) {
+        owner.domainUsedInUlt = false;
+        g.spawnDamageText(owner.x, owner.y - owner.radius - 16, 0, "#ef4444", false, "DOMAIN LOCKED!");
+      }
+      return;
+    }
     const enemyDomain = g.entities.find((ent) => ent.isDomain && !ent.dead && ent.domainOwner !== owner);
     const activeClash = g.entities.find((ent) => ent.isDomainClash && !ent.dead);
     if (activeClash) return;
@@ -883,7 +891,9 @@
 
       const enemyDomainType = enemyDomain
         ? enemyDomain.domainType
-        : (enemy && enemy.costume === "gojo" ? "unlimited_void" : "malevolent_shrine");
+        : (enemy && enemy.costume === "gojo"
+            ? "unlimited_void"
+            : (enemy && enemy.costume === "sukuna" && enemy.heianEraMode ? "incomplete_shrine" : "malevolent_shrine"));
 
       const enemySpec = enemyDomainType === "unlimited_void"
         ? {
@@ -898,6 +908,18 @@
               owner.vx = 0;
               owner.vy = 0;
               gg.spawnDamageText(owner.x, owner.y - owner.radius - 18, 0, "#7dd3fc", true, "INFINITE VOID (6S)!");
+            },
+          }
+        : enemyDomainType === "incomplete_shrine"
+        ? {
+            type: "incomplete_shrine",
+            name: "INCOMPLETE SHRINE",
+            color: "#dc2626",
+            createDomain: BF.spawnIncompleteShrineDomain
+              ? () => BF.spawnIncompleteShrineDomain({ owner: enemy, duration: 8.0 })
+              : (BF.spawnMalevolentShrineDomain ? () => BF.spawnMalevolentShrineDomain({ owner: enemy, duration: 6.0 }) : null),
+            onStart(gg) {
+              gg.spawnDamageText(enemy.x, enemy.y - enemy.radius - 18, 0, "#ef4444", true, "INCOMPLETE SHRINE!");
             },
           }
         : {

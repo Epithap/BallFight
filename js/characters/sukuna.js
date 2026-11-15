@@ -873,9 +873,9 @@
           for (const tt of g.balls) {
             if (tt === owner || !tt.alive) continue;
             if (Math.hypot(tt.x - this.x, tt.y - this.y) <= halfCorridor + tt.radius) {
-              const dealt = g.applyDamage(tt, 5);
+              const dealt = g.applyDamage(tt, 3);
               g.spawnDamageText(tt.x, tt.y - tt.radius - 10, dealt, "#facc15", false, "NUE BOLT!");
-              g.addEffect(tt, "stun", 0.22);
+              g.addEffect(tt, "stun", 0.15);
             }
           }
         }
@@ -896,13 +896,13 @@
           for (const tt of g.balls) {
             if (tt === owner || !tt.alive) continue;
             if (Math.hypot(tt.x - ex, tt.y - ey) <= 122 + tt.radius) {
-              const dealt = g.applyDamage(tt, 14);
+              const dealt = g.applyDamage(tt, 9);
               g.spawnDamageText(tt.x, tt.y - tt.radius - 16, dealt, "#c084fc", true, "MAX NUE CRASH!");
               const kAng = Math.atan2(tt.y - ey, tt.x - ex);
               tt.vx = Math.cos(kAng) * 480;
               tt.vy = Math.sin(kAng) * 480;
               tt.flashTimer = 0.18;
-              g.addEffect(tt, "stun", 0.5);
+              g.addEffect(tt, "stun", 0.32);
             }
           }
         }
@@ -1078,7 +1078,7 @@
     for (const tt of g.balls) {
       if (tt === owner || !tt.alive) continue;
       if (Math.hypot(tt.x - cx, tt.y - cy) <= 95 + tt.radius) {
-        const dealt = g.applyDamage(tt, 8);
+        const dealt = g.applyDamage(tt, 6);
         g.spawnDamageText(tt.x, tt.y - tt.radius - 14, dealt, "#facc15", true, "KAMUTOKE!");
         tt.flashTimer = 0.14;
         g.addEffect(tt, "stun", 0.35);
@@ -1120,7 +1120,7 @@
             const dist = Math.hypot(dx, dy) || 1;
             const dot = (dx / dist) * Math.cos(ang) + (dy / dist) * Math.sin(ang);
             if (dist <= 275 + liveTarget.radius && dot >= 0.48) {
-              const dealt = g.applyDamage(liveTarget, 4);
+              const dealt = g.applyDamage(liveTarget, 3);
               liveTarget.flashTimer = 0.1;
               liveTarget.vx += Math.cos(ang) * 155;
               liveTarget.vy += Math.sin(ang) * 155;
@@ -2149,9 +2149,9 @@
       });
     }
 
-    // Deal 30 piercing DMG (bypasses Infinity & Shields)
+    // Deal 20 piercing DMG (bypasses Infinity & Shields)
     if (target && target.alive) {
-      const dealt = g.applyDamage(target, 30, { pierce: true });
+      const dealt = g.applyDamage(target, 20, { pierce: true });
       target.flashTimer = 0.25;
       target.vx = Math.cos(ang) * 480;
       target.vy = Math.sin(ang) * 480;
@@ -2396,7 +2396,7 @@
           const hitDist = Math.hypot(target.x - this.x, target.y - this.y);
           if (!this.dashHitDone && hitDist <= 48 + target.radius) {
             this.dashHitDone = true;
-            const dealt = gg.applyDamage(target, 10);
+            const dealt = gg.applyDamage(target, 6);
             target.flashTimer = 0.16;
             target.vx = this.dashDirX * 360;
             target.vy = this.dashDirY * 360;
@@ -2626,8 +2626,8 @@
     c.restore();
   }
 
-  function spawnIncompleteShrineDomain(owner, g) {
-    const duration = 10.0;
+  function spawnIncompleteShrineDomain(owner, g, customDuration = 10.0) {
+    const duration = customDuration;
     g.entities.push(rt.spawnShockRing(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, "#dc2626", 290, 0.58));
     g.entities.push(rt.spawnShockRing(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, "#09090b", 220, 0.45));
     g.sound.playCritHit();
@@ -2646,6 +2646,11 @@
     }
 
     return {
+      isDomain: true,
+      isIncompleteShrine: true,
+      domainType: "incomplete_shrine",
+      domainName: "INCOMPLETE SHRINE",
+      domainOwner: owner,
       life: duration,
       maxLife: duration,
       slashCd: 0.12,
@@ -2678,10 +2683,10 @@
         }
         this.slashCd -= dt;
         if (this.slashCd <= 0) {
-          this.slashCd = 0.25;
+          this.slashCd = 0.28;
           for (const tt of gg.balls) {
             if (tt === owner || !tt.alive) continue;
-            const dealt = gg.applyDamage(tt, 4, { pierce: true });
+            const dealt = gg.applyDamage(tt, 2, { pierce: true });
             tt.flashTimer = 0.08;
             gg.entities.push(spawnCleaveSlashEffect(tt.x + (gg.rng() - 0.5) * 28, tt.y + (gg.rng() - 0.5) * 28, 48));
             gg.spawnDamageText(tt.x, tt.y - tt.radius - 12, dealt, "#ef4444", false, "SHRINE!");
@@ -2866,4 +2871,10 @@
   BF.spawnMahoragaSummon = spawnMahoragaSummon;
   BF.spawnMahoragaRitualCinematic = spawnMahoragaRitualCinematic;
   BF.spawnIncompleteShrineCinematic = spawnIncompleteShrineCinematic;
+  BF.spawnIncompleteShrineDomain = (optsOrOwner, g, customDuration) => {
+    if (optsOrOwner && optsOrOwner.owner) {
+      return spawnIncompleteShrineDomain(optsOrOwner.owner, g || rt.makeGameProxy(), optsOrOwner.duration || 8.0);
+    }
+    return spawnIncompleteShrineDomain(optsOrOwner, g || rt.makeGameProxy(), customDuration || 10.0);
+  };
 })();

@@ -1003,7 +1003,8 @@
       const target = g.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
 
-      if (ball.ultTimer > 0 && !ball.domainUsedInUlt) {
+      const incompleteShrineActive = g.entities.some((e) => e.isIncompleteShrine && !e.dead && e.domainOwner !== ball);
+      if (ball.ultTimer > 0 && !ball.domainUsedInUlt && !incompleteShrineActive) {
         ball.domainUsedInUlt = true;
         rt.triggerDomainExpansion(ball, {
           type: "unlimited_void",
