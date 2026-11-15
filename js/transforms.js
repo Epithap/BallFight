@@ -480,16 +480,18 @@
     } else if (ball.ult === "fuga") {
       if (!rt().balls.find((x) => x !== ball && x.alive)) return;
 
-      // Meguna (Evolved Base): Summon Mahoraga to fight alongside Meguna (no Fuga/Domain!)
+      // Meguna (Evolved Base): Summon Mahoraga with screen-freeze Ten Shadows Ritual!
       if (ball.evolved && !ball.heianEraMode) {
         rt().beginCast(ball, {
           kind: "powerup",
-          duration: 0.55,
+          duration: 0.45,
           color: "#facc15",
           fire(b, g) {
             b.ultTimer = 10.0;
             rt().addEffect(b, "haste", 10.0, { factor: 1.15 });
-            if (BF.spawnMahoragaSummon) {
+            if (BF.spawnMahoragaRitualCinematic) {
+              g.entities.push(BF.spawnMahoragaRitualCinematic(b, g));
+            } else if (BF.spawnMahoragaSummon) {
               g.entities.push(BF.spawnMahoragaSummon(b, g));
             }
           },

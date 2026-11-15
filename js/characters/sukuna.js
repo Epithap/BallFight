@@ -1645,6 +1645,214 @@
     c.restore();
   }
 
+  function spawnMahoragaRitualCinematic(owner, g) {
+    const duration = 1.45;
+    g.hitStop = duration;
+    g.sound.playCritHit();
+    rt.addShake(0.32, 7);
+
+    return {
+      isFreezeCinematic: true,
+      timer: 0,
+      duration,
+      dead: false,
+      update(dt, gg) {
+        this.timer += dt;
+        if (this.timer >= this.duration) {
+          this.dead = true;
+          gg.entities.push(spawnMahoragaSummon(owner, gg));
+        }
+      },
+      render() {},
+      renderOverlay(c) {
+        const p = Math.min(1, this.timer / this.duration);
+        const fadeOut = p > 0.86 ? (1 - p) / 0.14 : 1;
+        const cx = WORLD_SIZE * 0.5;
+        const cy = WORLD_SIZE * 0.52;
+
+        c.save();
+        // 1. Dark Ten Shadows Veil over frozen arena
+        c.fillStyle = `rgba(5, 7, 15, ${(0.84 * fadeOut).toFixed(3)})`;
+        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+        // 2. Center Trapezoidal Ritual Light-Slit (JJK Summoning Frame)
+        const slitWTop = 120 + p * 85;
+        const slitWBot = 210 + p * 120;
+        const slitGrad = c.createLinearGradient(cx, 0, cx, WORLD_SIZE);
+        slitGrad.addColorStop(0, "rgba(15, 23, 42, 0.2)");
+        slitGrad.addColorStop(0.45, `rgba(186, 230, 253, ${(0.24 * fadeOut).toFixed(3)})`);
+        slitGrad.addColorStop(1, "rgba(15, 23, 42, 0.1)");
+        c.fillStyle = slitGrad;
+        c.beginPath();
+        c.moveTo(cx - slitWTop * 0.5, 0);
+        c.lineTo(cx + slitWTop * 0.5, 0);
+        c.lineTo(cx + slitWBot * 0.5, WORLD_SIZE);
+        c.lineTo(cx - slitWBot * 0.5, WORLD_SIZE);
+        c.closePath();
+        c.fill();
+
+        // 3. Flanking Howling Ten Shadows Wolf Silhouettes + Pale Shadow Flames
+        for (const side of [-1, 1]) {
+          const wx = cx + side * 195;
+          const wy = cy + 65;
+          c.save();
+          c.globalAlpha = Math.min(1, p * 2.2) * 0.78 * fadeOut;
+          // Shadow wolf silhouette
+          c.fillStyle = "#090d16";
+          c.beginPath();
+          c.moveTo(wx - side * 42, wy + 85);
+          c.lineTo(wx - side * 15, wy - 35);
+          c.lineTo(wx - side * 24, wy - 70);
+          c.lineTo(wx - side * 4, wy - 52);
+          c.lineTo(wx + side * 10, wy - 80);
+          c.lineTo(wx + side * 22, wy - 30);
+          c.lineTo(wx + side * 45, wy + 85);
+          c.closePath();
+          c.fill();
+          // Glowing white/cyan shadow flame wisps
+          c.fillStyle = "#e0f2fe";
+          for (let i = 0; i < 3; i++) {
+            const fx = wx + Math.sin(p * 12 + i * 2.1) * 14;
+            const fy = wy + 38 - i * 16 - (p * 18);
+            c.beginPath();
+            c.ellipse(fx, fy, 14 - i * 2, 9, side * 0.3, 0, Math.PI * 2);
+            c.fill();
+          }
+          c.restore();
+        }
+
+        // 4. Center Towering Mahoraga Silhouette rising in light rays
+        const riseY = cy + 38 - Math.min(1, p * 1.4) * 44;
+        c.save();
+        c.globalAlpha = Math.min(1, p * 2) * fadeOut;
+        // Radiating light rays
+        c.strokeStyle = "rgba(224, 242, 254, 0.38)";
+        c.lineWidth = 2.5;
+        for (let i = 0; i < 10; i++) {
+          const ang = -Math.PI * 0.85 + (i / 9) * Math.PI * 0.7;
+          c.beginPath();
+          c.moveTo(cx, riseY - 20);
+          c.lineTo(cx + Math.cos(ang) * 260, riseY - 20 + Math.sin(ang) * 260);
+          c.stroke();
+        }
+        // Stone/shadow Mahoraga silhouette
+        c.fillStyle = "#cbd5e1";
+        c.strokeStyle = "#0f172a";
+        c.lineWidth = 3;
+        c.beginPath();
+        c.ellipse(cx, riseY - 68, 30, 38, 0, 0, Math.PI * 2);
+        c.fill(); c.stroke();
+        c.beginPath();
+        c.roundRect(cx - 48, riseY - 38, 96, 120, 22);
+        c.fill(); c.stroke();
+
+        // 5. Spinning & Locking Golden 8-Handled Dharma Wheel
+        c.save();
+        c.translate(cx, riseY - 122);
+        const wScale = 0.65 + Math.min(1, p * 1.35) * 0.65;
+        c.scale(wScale, wScale);
+        c.rotate(p * Math.PI * 1.75);
+        const wr = 34;
+        for (let i = 0; i < 8; i++) {
+          const a = (i / 8) * Math.PI * 2;
+          const hx = Math.cos(a) * (wr + 9);
+          const hy = Math.sin(a) * (wr + 9);
+          c.strokeStyle = "#0f172a";
+          c.lineWidth = 6.5;
+          c.beginPath(); c.moveTo(0, 0); c.lineTo(hx, hy); c.stroke();
+          c.strokeStyle = "#facc15";
+          c.lineWidth = 3.5;
+          c.beginPath(); c.moveTo(0, 0); c.lineTo(hx, hy); c.stroke();
+          c.fillStyle = "#fef08a";
+          c.strokeStyle = "#0f172a";
+          c.lineWidth = 2;
+          c.beginPath(); c.arc(hx, hy, 5.2, 0, Math.PI * 2); c.fill(); c.stroke();
+        }
+        c.strokeStyle = "#0f172a";
+        c.lineWidth = 7.5;
+        c.beginPath(); c.arc(0, 0, wr, 0, Math.PI * 2); c.stroke();
+        c.strokeStyle = "#facc15";
+        c.lineWidth = 4;
+        c.beginPath(); c.arc(0, 0, wr, 0, Math.PI * 2); c.stroke();
+        c.restore();
+
+        // Golden lock-in flash at end of ritual
+        if (p > 0.72) {
+          const flashAlpha = Math.sin(((p - 0.72) / 0.28) * Math.PI) * 0.55;
+          c.fillStyle = `rgba(250, 204, 21, ${flashAlpha.toFixed(3)})`;
+          c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+        }
+
+        // 6. Ritual Incantation Text
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+        c.lineJoin = "round";
+        const chant = p < 0.52 ? "WITH THIS TREASURE I SUMMON..." : "EIGHT-HANDLED SWORD: MAHORAGA!";
+        c.font = `bold ${p < 0.52 ? 22 : 27}px ${FONT}`;
+        c.lineWidth = 7;
+        c.strokeStyle = "#09090b";
+        c.strokeText(chant, cx, WORLD_SIZE - 58);
+        c.fillStyle = p < 0.52 ? "#e0f2fe" : "#facc15";
+        c.fillText(chant, cx, WORLD_SIZE - 58);
+        c.restore();
+
+        c.restore();
+      },
+    };
+  }
+
+  function spawnMahoragaWorldSlash(x, y, ang, owner, target, g) {
+    const len = 760;
+    const x1 = x - Math.cos(ang) * 90;
+    const y1 = y - Math.sin(ang) * 90;
+    const x2 = x + Math.cos(ang) * len;
+    const y2 = y + Math.sin(ang) * len;
+
+    // Deal 30 piercing DMG (bypasses Infinity & Shields)
+    if (target && target.alive) {
+      const dealt = g.applyDamage(target, 30, { pierce: true });
+      target.flashTimer = 0.25;
+      target.vx = Math.cos(ang) * 460;
+      target.vy = Math.sin(ang) * 460;
+      g.spawnDamageText(target.x, target.y - target.radius - 18, dealt, "#ef4444", true, "WORLD-CUTTING SLASH!");
+      g.spawnCritBurst(target.x, target.y, "#facc15", "#ef4444");
+    }
+    g.entities.push(rt.spawnShockRing(x, y, "#dc2626", 190, 0.45));
+    g.entities.push(rt.spawnShockRing(x, y, "#facc15", 130, 0.35));
+    g.sound.playCritHit();
+    rt.addShake(0.45, 13);
+
+    return {
+      life: 0.48,
+      maxLife: 0.48,
+      dead: false,
+      update(dt) {
+        this.life -= dt;
+        if (this.life <= 0) this.dead = true;
+      },
+      render() {},
+      renderOverlay(c) {
+        const k = Math.max(0, this.life / this.maxLife);
+        c.save();
+        c.globalAlpha = Math.min(1, k * 1.4);
+        c.lineCap = "round";
+        // Outer crimson spatial tear
+        c.strokeStyle = "#dc2626";
+        c.lineWidth = 28 * k;
+        c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+        // Pitch-black void core
+        c.strokeStyle = "#09090b";
+        c.lineWidth = 14 * k;
+        c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+        // Razor white-gold edge
+        c.strokeStyle = "#fef08a";
+        c.lineWidth = 4 * k;
+        c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+        c.restore();
+      },
+    };
+  }
+
   function spawnMahoragaSummon(owner, g) {
     const startX = Math.max(54, Math.min(WORLD_SIZE - 54, owner.x + 36));
     const startY = Math.max(54, Math.min(WORLD_SIZE - 54, owner.y - 24));
@@ -1663,19 +1871,57 @@
       facing: 1,
       life: 10.0,
       maxLife: 10.0,
-      atkCd: 0.25,
+      atkCd: 0.45,
+      dashTimer: 0,
+      dashDirX: 1,
+      dashDirY: 0,
+      dashHitDone: false,
+      trail: [],
+      finaleStarted: false,
+      finaleTimer: 0,
+      finaleSlashFired: false,
       slashAnim: 0,
       wheelAngle: 0,
       dead: false,
       update(dt, gg) {
         this.life -= dt;
-        this.wheelAngle += dt * 2.2;
+        this.wheelAngle += dt * (this.finaleStarted ? 9.5 : 2.2);
         if (this.slashAnim > 0) this.slashAnim = Math.max(0, this.slashAnim - dt * 3.8);
-        if (this.life <= 0 || !owner.alive) {
+
+        if (!owner.alive) {
           this.dead = true;
           return;
         }
+
         const target = gg.balls.find((b) => b !== owner && b.alive);
+
+        // Finale: right before expiring, charge & unleash World-Cutting Slash (30 DMG) then vanish!
+        if (this.life <= 0.85 && !this.finaleStarted) {
+          this.finaleStarted = true;
+          this.finaleTimer = 0.85;
+          this.dashTimer = 0;
+          gg.spawnDamageText(this.x, this.y - 44, 0, "#ef4444", true, "ADAPTATION COMPLETE!");
+          gg.entities.push(rt.spawnShockRing(this.x, this.y, "#dc2626", 95, 0.32));
+        }
+
+        if (this.finaleStarted) {
+          this.finaleTimer -= dt;
+          if (target) this.facing = target.x >= this.x ? 1 : -1;
+          if (this.finaleTimer <= 0.42 && !this.finaleSlashFired) {
+            this.finaleSlashFired = true;
+            this.slashAnim = 1.25;
+            this.wheelAngle += Math.PI / 2;
+            const ang = target ? Math.atan2(target.y - this.y, target.x - this.x) : (this.facing >= 0 ? 0 : Math.PI);
+            gg.entities.push(spawnMahoragaWorldSlash(this.x, this.y, ang, owner, target, gg));
+          }
+          if (this.finaleTimer <= 0) {
+            gg.spawnSparks(this.x, this.y, "#09090b", "#facc15");
+            gg.entities.push(rt.spawnShockRing(this.x, this.y, "#0f172a", 88, 0.3));
+            this.dead = true;
+          }
+          return;
+        }
+
         if (!target) return;
 
         const dx = target.x - this.x;
@@ -1683,38 +1929,85 @@
         const dist = Math.hypot(dx, dy) || 1;
         this.facing = dx >= 0 ? 1 : -1;
 
-        const moveSpeed = 315;
-        if (dist > 46) {
-          this.vx = (dx / dist) * moveSpeed;
-          this.vy = (dy / dist) * moveSpeed;
-          this.x = Math.max(42, Math.min(WORLD_SIZE - 42, this.x + this.vx * dt));
-          this.y = Math.max(42, Math.min(WORLD_SIZE - 42, this.y + this.vy * dt));
-        }
-
+        // 3s CD Auto-Lock Dash Lunge (10 DMG per hit)
         this.atkCd -= dt;
-        if (this.atkCd <= 0 && dist <= 78 + target.radius) {
-          this.atkCd = 0.92;
+        if (this.atkCd <= 0 && this.dashTimer <= 0) {
+          this.atkCd = 3.0;
+          this.dashTimer = 0.28;
+          this.dashDirX = dx / dist;
+          this.dashDirY = dy / dist;
+          this.dashHitDone = false;
           this.slashAnim = 1.0;
           this.wheelAngle += Math.PI / 4;
-          const dealt = gg.applyDamage(target, 13);
-          target.flashTimer = 0.14;
-          const kAng = Math.atan2(target.y - this.y, target.x - this.x);
-          target.vx = Math.cos(kAng) * 340;
-          target.vy = Math.sin(kAng) * 340;
-          gg.entities.push(spawnCleaveSlashEffect(target.x, target.y, 48));
-          gg.entities.push(rt.spawnShockRing(target.x, target.y, "#facc15", 72, 0.24));
-          gg.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#facc15", true, "EXTERMINATE!");
-          gg.sound.playBallHit();
+          gg.entities.push(rt.spawnShockRing(this.x, this.y, "#facc15", 66, 0.22));
+        }
+
+        if (this.dashTimer > 0) {
+          this.dashTimer -= dt;
+          this.trail.push({ x: this.x, y: this.y, facing: this.facing, life: 0.18 });
+          const dashSpeed = 880;
+          this.x = Math.max(42, Math.min(WORLD_SIZE - 42, this.x + this.dashDirX * dashSpeed * dt));
+          this.y = Math.max(42, Math.min(WORLD_SIZE - 42, this.y + this.dashDirY * dashSpeed * dt));
+
+          const hitDist = Math.hypot(target.x - this.x, target.y - this.y);
+          if (!this.dashHitDone && hitDist <= 48 + target.radius) {
+            this.dashHitDone = true;
+            const dealt = gg.applyDamage(target, 10);
+            target.flashTimer = 0.16;
+            target.vx = this.dashDirX * 360;
+            target.vy = this.dashDirY * 360;
+            gg.entities.push(spawnCleaveSlashEffect(target.x, target.y, 54));
+            gg.entities.push(rt.spawnShockRing(target.x, target.y, "#facc15", 82, 0.26));
+            gg.spawnSparks(target.x, target.y, "#facc15", "#7dd3fc");
+            gg.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#facc15", true, "MAHORAGA SLASH!");
+            gg.sound.playBallHit();
+          }
+        } else {
+          // Independent autonomous stalk/orbit around enemy (never follows Meguna)
+          const desiredDist = 135;
+          const dirX = dist > desiredDist ? dx / dist : (dist < desiredDist - 25 ? -dx / dist : -dy / dist);
+          const dirY = dist > desiredDist ? dy / dist : (dist < desiredDist - 25 ? -dy / dist : dx / dist);
+          const stalkSpeed = 240;
+          this.x = Math.max(42, Math.min(WORLD_SIZE - 42, this.x + dirX * stalkSpeed * dt));
+          this.y = Math.max(42, Math.min(WORLD_SIZE - 42, this.y + dirY * stalkSpeed * dt));
+        }
+
+        for (let i = this.trail.length - 1; i >= 0; i--) {
+          this.trail[i].life -= dt;
+          if (this.trail[i].life <= 0) this.trail.splice(i, 1);
         }
       },
       render(c) {
+        // Afterimage trail during auto-lock lunge
+        for (const tr of this.trail) {
+          drawMahoragaEntity(c, {
+            x: tr.x,
+            y: tr.y,
+            facing: tr.facing,
+            wheelAngle: this.wheelAngle,
+            slashAnim: this.slashAnim,
+            alpha: (tr.life / 0.18) * 0.35,
+            scale: 1,
+          });
+        }
+        // Crimson-gold charge ring during finale
+        if (this.finaleStarted && !this.finaleSlashFired) {
+          c.save();
+          c.strokeStyle = "#ef4444";
+          c.lineWidth = 3.5;
+          c.beginPath();
+          c.arc(this.x, this.y, 44 + Math.sin(performance.now() * 0.03) * 5, 0, Math.PI * 2);
+          c.stroke();
+          c.restore();
+        }
+        const alpha = this.finaleSlashFired ? Math.max(0, this.finaleTimer / 0.42) : Math.min(1, this.life * 2);
         drawMahoragaEntity(c, {
           x: this.x,
           y: this.y,
           facing: this.facing,
           wheelAngle: this.wheelAngle,
           slashAnim: this.slashAnim,
-          alpha: Math.min(1, this.life * 2),
+          alpha,
           scale: 1,
         });
       },
@@ -1725,4 +2018,5 @@
   BF.spawnMalevolentShrineDomain = spawnMalevolentShrineDomain;
   BF.spawnCleaveSlashEffect = spawnCleaveSlashEffect;
   BF.spawnMahoragaSummon = spawnMahoragaSummon;
+  BF.spawnMahoragaRitualCinematic = spawnMahoragaRitualCinematic;
 })();

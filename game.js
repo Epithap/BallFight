@@ -1647,6 +1647,13 @@
 
     if (hitStop > 0) {
       hitStop = Math.max(0, hitStop - dt);
+      for (let i = entities.length - 1; i >= 0; i--) {
+        const ent = entities[i];
+        if (ent.isFreezeCinematic) {
+          ent.update(dt, runtimeApi);
+          if (ent.dead) entities.splice(i, 1);
+        }
+      }
       return;
     }
 
