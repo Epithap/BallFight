@@ -1437,85 +1437,65 @@
   function drawMahoragaEntity(c, { x = 0, y = 0, facing = 1, wheelAngle = 0, slashAnim = 0, alpha = 1, scale = 1 }) {
     const now = performance.now() * 0.004;
     const bob = Math.sin(now * 1.6) * 2.5;
+    const R = 30;
     c.save();
     c.translate(x, y + bob);
     c.scale(scale, scale);
     c.globalAlpha = alpha;
 
-    // Ground shadow under wide stance
-    c.fillStyle = "rgba(15, 23, 42, 0.32)";
-    c.beginPath(); c.ellipse(0, 42 - bob, 36, 9, 0, 0, Math.PI * 2); c.fill();
+    // Ground shadow under big ball
+    c.fillStyle = "rgba(43, 27, 61, 0.24)";
+    c.beginPath(); c.ellipse(0, R + 8 - bob, R * 0.95, 9, 0, 0, Math.PI * 2); c.fill();
 
     c.scale(facing, 1);
 
-    // 1. Curved Segmented Head-Tail (arching behind & above head)
+    // 1. Curved Segmented Head-Tail (Buntut) arching behind the ball
     c.save();
     c.lineCap = "round";
     c.lineJoin = "round";
-    // Outer ink stroke of tail
     c.strokeStyle = COLORS.ink;
     c.lineWidth = 13;
     c.beginPath();
-    c.moveTo(0, -20);
-    c.bezierCurveTo(24, -42, 22, -56, -4, -52);
-    c.bezierCurveTo(-24, -49, -36, -34, -44, -22);
+    c.moveTo(-4, -R * 0.72);
+    c.bezierCurveTo(18, -R * 1.55, -8, -R * 1.85, -36, -R * 1.25);
+    c.quadraticCurveTo(-48, -R * 0.95, -52, -R * 0.52);
     c.stroke();
-    // Pale grey-ivory fill of tail
-    c.strokeStyle = "#cbd5e1";
-    c.lineWidth = 8.5;
+    c.strokeStyle = "#e2e8f0";
+    c.lineWidth = 8;
     c.stroke();
-    // Highlight ridge
-    c.strokeStyle = "#f1f5f9";
-    c.lineWidth = 3.2;
-    c.stroke();
-    // Tapered tip
-    c.fillStyle = "#cbd5e1";
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2;
-    c.beginPath();
-    c.moveTo(-40, -25);
-    c.lineTo(-50, -34);
-    c.lineTo(-44, -19);
-    c.closePath();
-    c.fill(); c.stroke();
-    // Segment rings along the arching tail
-    c.strokeStyle = "#475569";
-    c.lineWidth = 1.5;
-    const segPts = [
-      [12, -37, 0.55], [16, -46, 0.1], [8, -52, -0.4],
-      [-5, -52, -1.2], [-18, -47, -1.8], [-29, -39, -2.2], [-38, -29, -2.4],
-    ];
-    for (const [sx, sy, ang] of segPts) {
+    c.strokeStyle = "#64748b";
+    c.lineWidth = 1.6;
+    for (const [sx, sy, ang] of [[-12, -R * 1.52, -0.4], [-26, -R * 1.42, -0.9], [-39, -R * 1.15, -1.2], [-47, -R * 0.82, -1.4]]) {
       c.save();
       c.translate(sx, sy);
       c.rotate(ang);
-      c.beginPath(); c.moveTo(-4, 0); c.lineTo(4, 0); c.stroke();
+      c.beginPath(); c.moveTo(-3.5, 0); c.lineTo(3.5, 0); c.stroke();
       c.restore();
     }
     c.restore();
 
-    // 2. Spinning Golden 8-Handled Dharma Wheel
+    // 2. Spinning Golden 8-Handled Dharma Wheel behind top of ball
     c.save();
-    c.translate(0, -36);
+    c.translate(0, -R * 0.95);
     c.rotate(wheelAngle);
-    const wr = 15;
+    const wr = 18;
     for (let i = 0; i < 8; i++) {
       const a = (i / 8) * Math.PI * 2;
       const hx = Math.cos(a) * (wr + 4.5);
       const hy = Math.sin(a) * (wr + 4.5);
       c.strokeStyle = COLORS.ink;
-      c.lineWidth = 4;
+      c.lineWidth = 4.2;
       c.beginPath(); c.moveTo(0, 0); c.lineTo(hx, hy); c.stroke();
       c.strokeStyle = "#eab308";
       c.lineWidth = 2.2;
       c.beginPath(); c.moveTo(0, 0); c.lineTo(hx, hy); c.stroke();
       c.fillStyle = "#facc15";
       c.strokeStyle = COLORS.ink;
-      c.lineWidth = 1.5;
+      c.lineWidth = 1.6;
       c.beginPath(); c.arc(hx, hy, 2.8, 0, Math.PI * 2); c.fill(); c.stroke();
     }
     c.strokeStyle = COLORS.ink;
-    c.lineWidth = 4.6;
+    c.lineWidth = 4.8;
     c.beginPath(); c.arc(0, 0, wr, 0, Math.PI * 2); c.stroke();
     c.strokeStyle = "#facc15";
     c.lineWidth = 2.4;
@@ -1523,212 +1503,119 @@
     c.fillStyle = "#fef08a";
     c.strokeStyle = COLORS.ink;
     c.lineWidth = 1.6;
-    c.beginPath(); c.arc(0, 0, 2.8, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.beginPath(); c.arc(0, 0, 3, 0, Math.PI * 2); c.fill(); c.stroke();
     c.restore();
 
-    // 3. Muscular Legs + Black Ankle Rings + Clawed Feet
-    for (const side of [-1, 1]) {
-      c.save();
-      // Thigh & calf
-      c.fillStyle = "#cbd5e1";
-      c.strokeStyle = COLORS.ink;
-      c.lineWidth = 2.4;
-      c.beginPath();
-      c.moveTo(side * 8, 12);
-      c.lineTo(side * 22, 22);
-      c.lineTo(side * 28, 37);
-      c.lineTo(side * 19, 38);
-      c.lineTo(side * 13, 25);
-      c.lineTo(side * 3, 14);
-      c.closePath();
-      c.fill(); c.stroke();
-
-      // Foot + claws
-      c.fillStyle = "#e2e8f0";
-      c.beginPath();
-      c.moveTo(side * 18, 36);
-      c.lineTo(side * 31, 36);
-      c.lineTo(side * 34, 42);
-      c.lineTo(side * 17, 42);
-      c.closePath();
-      c.fill(); c.stroke();
-
-      // Thick black ankle ring
-      c.strokeStyle = COLORS.ink;
-      c.lineWidth = 4.8;
-      c.beginPath(); c.ellipse(side * 24, 35, 6.2, 2.6, side * 0.25, 0, Math.PI * 2); c.stroke();
-      c.strokeStyle = "#334155";
-      c.lineWidth = 1.8;
-      c.stroke();
-      c.restore();
-    }
-
-    // 4. Tattered Dark Charcoal Hakama Skirt & Waist Sash
-    c.fillStyle = "#27272a";
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.4;
+    // 3. Big Ball Body + Baju (Hakama Skirt clipped/wrapped cleanly on bottom)
+    c.save();
     c.beginPath();
-    c.moveTo(-14, 4);
-    c.lineTo(14, 4);
-    c.lineTo(25, 24);
-    c.lineTo(18, 28);
-    c.lineTo(13, 23);
-    c.lineTo(7, 29);
-    c.lineTo(0, 22);
-    c.lineTo(-7, 29);
-    c.lineTo(-13, 23);
-    c.lineTo(-18, 28);
-    c.lineTo(-25, 24);
-    c.closePath();
-    c.fill(); c.stroke();
+    c.arc(0, 0, R, 0, Math.PI * 2);
+    c.fillStyle = "#f1f5f9";
+    c.fill();
 
-    // Pleat shading lines on hakama
-    c.strokeStyle = "#09090b";
-    c.lineWidth = 1.4;
-    for (const px of [-10, -4, 4, 10]) {
-      c.beginPath(); c.moveTo(px * 0.7, 7); c.lineTo(px * 1.4, 24); c.stroke();
-    }
-    // Waist sash & hanging front loincloth flap
+    // Baju: Dark Charcoal Hakama wrapping lower half of the ball
+    c.save();
+    c.beginPath();
+    c.arc(0, 0, R, 0, Math.PI * 2);
+    c.clip();
+    c.fillStyle = "#27272a";
+    c.fillRect(-R, R * 0.28, R * 2, R);
+    // Waist sash
     c.fillStyle = "#3f3f46";
     c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.2;
-    c.beginPath(); c.roundRect(-14, 3, 28, 6.5, 3); c.fill(); c.stroke();
-    c.beginPath();
-    c.moveTo(-3.5, 9);
-    c.lineTo(3.5, 9);
-    c.lineTo(5.5, 26);
-    c.lineTo(0, 31);
-    c.lineTo(-5.5, 26);
-    c.closePath();
-    c.fill(); c.stroke();
-
-    // 5. Broad Muscular Pale-Grey Torso + Chest Ritual Sigil
-    c.fillStyle = "#e2e8f0";
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.5;
-    c.beginPath();
-    c.moveTo(-21, -13);
-    c.quadraticCurveTo(0, -17, 21, -13);
-    c.lineTo(14, 5);
-    c.lineTo(-14, 5);
-    c.closePath();
-    c.fill(); c.stroke();
-
-    // Pectoral & ab definition
-    c.strokeStyle = "#64748b";
-    c.lineWidth = 1.5;
-    c.beginPath();
-    c.moveTo(-13, -7); c.quadraticCurveTo(-5, -3, 0, -6);
-    c.moveTo(13, -7); c.quadraticCurveTo(5, -3, 0, -6);
-    c.moveTo(0, -6); c.lineTo(0, 3);
-    c.stroke();
-
-    // Iconic Black Chest Ritual Chain/Sigil
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2;
-    c.beginPath(); c.moveTo(-11, -7); c.lineTo(11, -7); c.stroke();
-    for (const rx of [-8, -2.5, 3, 8.5]) {
-      c.beginPath(); c.moveTo(rx, -7); c.lineTo(rx, -3.5); c.stroke();
-      c.fillStyle = "#e2e8f0";
-      c.beginPath(); c.arc(rx, -2.2, 1.8, 0, Math.PI * 2); c.fill(); c.stroke();
-    }
-
-    // 6. Back/Left Muscular Arm + Black Wrist Ring + Clawed Hand
-    c.save();
-    c.translate(-18, -10);
-    c.rotate(0.45);
-    c.fillStyle = "#cbd5e1";
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.3;
-    c.beginPath(); c.roundRect(-5, -2, 10, 20, 5); c.fill(); c.stroke();
-    // Black wrist ring
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 4.2;
-    c.beginPath(); c.ellipse(0, 14, 5.5, 2.2, 0, 0, Math.PI * 2); c.stroke();
-    // Clawed hand
-    c.fillStyle = "#e2e8f0";
-    c.lineWidth = 2;
-    c.beginPath(); c.arc(0, 19, 4.5, 0, Math.PI * 2); c.fill(); c.stroke();
-    c.restore();
-
-    // 7. Right Muscular Arm + Black Wrist Ring + Sword of Extermination
-    c.save();
-    c.translate(18, -10);
-    c.rotate(-0.55 + slashAnim * 1.45);
-    c.fillStyle = "#cbd5e1";
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.3;
-    c.beginPath(); c.roundRect(-5, -2, 10, 19, 5); c.fill(); c.stroke();
-    // Black wrist cuff
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 4.4;
-    c.beginPath(); c.ellipse(0, 12, 5.5, 2.2, 0, 0, Math.PI * 2); c.stroke();
-    // Sword of Extermination (Taima no Tsurugi)
-    c.fillStyle = "#f8fafc";
-    c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.1;
-    c.beginPath();
-    c.moveTo(2, 10);
-    c.lineTo(28, 22);
-    c.lineTo(0, 16);
-    c.closePath();
-    c.fill(); c.stroke();
-    // Positive energy blade sheen
-    c.strokeStyle = "#7dd3fc";
-    c.lineWidth = 1.6;
-    c.beginPath(); c.moveTo(4, 12); c.lineTo(24, 20.5); c.stroke();
-    c.restore();
-
-    // 8. Elongated Eyeless Skull + Wide Roaring Mouth + 4 Feathered Eye-Wings
-    c.save();
-    c.translate(0, -18);
-    // Skull cranium
-    c.fillStyle = "#f1f5f9";
-    c.strokeStyle = COLORS.ink;
     c.lineWidth = 2.4;
+    c.fillRect(-R, R * 0.22, R * 2, 7);
+    c.strokeRect(-R, R * 0.22, R * 2, 7);
+    // Hanging center sash flap
     c.beginPath();
-    c.ellipse(0, 0, 8.5, 11.5, 0, 0, Math.PI * 2);
+    c.moveTo(-5, R * 0.45);
+    c.lineTo(5, R * 0.45);
+    c.lineTo(7, R * 0.92);
+    c.lineTo(0, R * 1.02);
+    c.lineTo(-7, R * 0.92);
+    c.closePath();
     c.fill(); c.stroke();
+    c.restore();
 
-    // Dark roaring mouth cavity + tongue + sharp teeth
+    // Glossy ball highlight + Thick Ball Fight Ink Outline
+    c.fillStyle = "rgba(255, 255, 255, 0.55)";
+    c.beginPath();
+    c.ellipse(-R * 0.34, -R * 0.38, R * 0.24, R * 0.13, -0.55, 0, Math.PI * 2);
+    c.fill();
+    c.beginPath();
+    c.arc(0, 0, R, 0, Math.PI * 2);
+    c.lineWidth = 3.8;
+    c.strokeStyle = COLORS.ink;
+    c.stroke();
+    c.restore();
+
+    // 4. Clean Ball-Style Face: 4 White Eye-Wings + Roaring Mouth (No Eyes)
+    // Roaring mouth
     c.fillStyle = "#09090b";
-    c.beginPath(); c.ellipse(0, 5.5, 4.8, 5.2, 0, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2;
+    c.beginPath(); c.ellipse(0, -1, 7, 6.5, 0, 0, Math.PI * 2); c.fill(); c.stroke();
     c.fillStyle = "#9333ea";
-    c.beginPath(); c.ellipse(0, 7.5, 2.6, 2.2, 0, 0, Math.PI * 2); c.fill();
-    // Sharp upper & lower teeth
+    c.beginPath(); c.ellipse(0, 2, 3.8, 2.5, 0, 0, Math.PI * 2); c.fill();
     c.fillStyle = "#ffffff";
-    for (const tx of [-3, -1, 1, 3]) {
-      c.fillRect(tx - 0.7, 1.2, 1.4, 2.4);
-    }
+    c.fillRect(-4.5, -6, 2.2, 2.6);
+    c.fillRect(-1.1, -6, 2.2, 2.6);
+    c.fillRect(2.3, -6, 2.2, 2.6);
 
-    // 4 Sweeping White Feathered Wing-Tendrils sprouting from eye sockets
-    const drawFeatherWing = (sx, sy, tipX, tipY, ctrlX, ctrlY) => {
-      c.save();
+    // 4 Sweeping White Eye-Wings
+    const drawWing = (sx, sy, tipX, tipY, cx, cy) => {
       c.fillStyle = "#f8fafc";
       c.strokeStyle = COLORS.ink;
-      c.lineWidth = 1.8;
+      c.lineWidth = 2.2;
       c.beginPath();
       c.moveTo(sx, sy - 2);
-      c.quadraticCurveTo(ctrlX, ctrlY - 5, tipX, tipY);
-      c.quadraticCurveTo(ctrlX, ctrlY + 3, sx, sy + 2);
+      c.quadraticCurveTo(cx, cy - 5, tipX, tipY);
+      c.quadraticCurveTo(cx, cy + 3.5, sx, sy + 2.5);
       c.closePath();
       c.fill(); c.stroke();
-      // Feather barbs
-      c.strokeStyle = "#94a3b8";
-      c.lineWidth = 1.1;
-      for (let t = 0.28; t <= 0.85; t += 0.2) {
-        const bx = (1 - t) * (1 - t) * sx + 2 * (1 - t) * t * ctrlX + t * t * tipX;
-        const by = (1 - t) * (1 - t) * sy + 2 * (1 - t) * t * ctrlY + t * t * tipY;
-        c.beginPath(); c.moveTo(bx, by); c.lineTo(bx + (tipX > 0 ? 3 : -3), by - 4); c.stroke();
-      }
-      c.restore();
     };
     for (const side of [-1, 1]) {
-      // Upper eye-socket wing
-      drawFeatherWing(side * 3.5, -3.5, side * 34, -18, side * 18, -14);
-      // Lower eye-socket wing
-      drawFeatherWing(side * 4, -0.5, side * 32, -6, side * 18, -4);
+      drawWing(side * 6, -12, side * 36, -27, side * 20, -23);
+      drawWing(side * 7, -7, side * 34, -14, side * 20, -11);
     }
+
+    // 5. Left Ball-Hand + Black Wrist Ring
+    c.save();
+    c.translate(-R * 0.96, 4);
+    c.fillStyle = "#f1f5f9";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2.8;
+    c.beginPath(); c.arc(0, 0, 7.5, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 3.5;
+    c.beginPath(); c.arc(2, -1, 5.5, -0.8, 0.8); c.stroke();
+    c.restore();
+
+    // 6. Tangan Tajam: Right Arm + Sword of Extermination (Taima no Tsurugi)
+    c.save();
+    c.translate(R * 0.92, 2);
+    c.rotate(-0.28 + slashAnim * 1.35);
+    // Forearm cuff
+    c.fillStyle = "#f1f5f9";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2.8;
+    c.beginPath(); c.roundRect(-4, -5, 13, 10, 4); c.fill(); c.stroke();
+    c.fillStyle = "#18181b";
+    c.fillRect(3, -5, 4, 10);
+    // Sharp Sword of Extermination blade
+    c.fillStyle = "#f8fafc";
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 2.6;
+    c.beginPath();
+    c.moveTo(8, -5.5);
+    c.lineTo(42, 0);
+    c.lineTo(8, 5.5);
+    c.closePath();
+    c.fill(); c.stroke();
+    // Positive-energy cyan edge highlight
+    c.strokeStyle = "#38bdf8";
+    c.lineWidth = 2;
+    c.beginPath(); c.moveTo(11, -1.5); c.lineTo(36, 0); c.stroke();
     c.restore();
 
     c.restore();
