@@ -430,19 +430,37 @@
             const dx = this.x - tt.x;
             const dy = this.y - tt.y;
             const dist = Math.hypot(dx, dy) || 1;
-            if (dist < 190) {
-              // Pull enemy along with the spinning Blue orb!
-              const pull = 250 * dt;
-              const pad = (BF.CONSTANTS && BF.CONSTANTS.ARENA_PAD) || 26;
-              tt.x = Math.max(pad + tt.radius, Math.min(WORLD_SIZE - pad - tt.radius, tt.x + (dx / dist) * pull));
-              tt.y = Math.max(pad + tt.radius, Math.min(WORLD_SIZE - pad - tt.radius, tt.y + (dy / dist) * pull));
-              this.caughtTarget = tt;
+            const pad = (BF.CONSTANTS && BF.CONSTANTS.ARENA_PAD) || 26;
+            const minP = pad + tt.radius;
+            const maxP = WORLD_SIZE - pad - tt.radius;
+            if (this.caughtTarget === tt) {
+              // Truly lock caught enemy at the center of the spinning Blue orb!
+              tt.x = Math.max(minP, Math.min(maxP, this.x));
+              tt.y = Math.max(minP, Math.min(maxP, this.y));
+              tt.vx = 0;
+              tt.vy = 0;
+              if (this.pulseCd <= 0) {
+                this.pulseCd = 0.20;
+                this.pulses.push({ x: tt.x, y: tt.y, life: 0.25, maxLife: 0.25 });
+              }
+            } else if (dist < 190) {
+              // Strong pull into the center of Blue -> locks once within capture radius!
+              const pull = 360 * dt;
+              tt.x = Math.max(minP, Math.min(maxP, tt.x + (dx / dist) * pull));
+              tt.y = Math.max(minP, Math.min(maxP, tt.y + (dy / dist) * pull));
+              if (dist <= tt.radius + 42) {
+                this.caughtTarget = tt;
+                tt.x = Math.max(minP, Math.min(maxP, this.x));
+                tt.y = Math.max(minP, Math.min(maxP, this.y));
+                tt.vx = 0;
+                tt.vy = 0;
+              }
               if (this.pulseCd <= 0) {
                 this.pulseCd = 0.20;
                 this.pulses.push({ x: tt.x, y: tt.y, life: 0.25, maxLife: 0.25 });
               }
             }
-            if (dist <= tt.radius + 36 && this.hitCd <= 0) {
+            if ((this.caughtTarget === tt || dist <= tt.radius + 38) && this.hitCd <= 0) {
               this.hitCd = 0.18;
               const dealt = gg.applyDamage(tt, 3);
               tt.flashTimer = 0.08;
