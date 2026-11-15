@@ -528,6 +528,31 @@
 
   // Moody chibi brawler: big round amber eyes, heavy angled brows, compact frown/grit.
   F.ichigo = (ball, r, c, s) => {
+    if (ball.evoTier === 2) {
+      const isMugetsu = Boolean(ball.mugetsuMode && ball.ultTimer > 0);
+      for (const side of [-1, 1]) {
+        eye(c, r, side, {
+          rx: 0.24,
+          ry: 0.23,
+          slant: isMugetsu ? 0.12 : 0.06,
+          iris: 0.145,
+          color: isMugetsu ? "#dc2626" : "#9a6324",
+          ring: isMugetsu ? "#f87171" : "#d97706",
+          innerRing: isMugetsu ? "#fecaca" : undefined,
+          lidArc: true,
+          blink: blinkAmt(ball) * 0.5,
+          ex: s.ex,
+          ey: s.ey,
+        });
+        // Calm, unfurrowed chill brow (flat/subtle slope, never angry)
+        brow(c, side, r, 0.36, isMugetsu ? 0.06 : 0.03, 2.8, 0.34);
+      }
+      if (!isMugetsu) {
+        mouth(c, r, s.cast ? "grit" : "smirk");
+      }
+      return;
+    }
+
     for (const side of [-1, 1]) {
       eye(c, r, side, {
         rx: 0.24,

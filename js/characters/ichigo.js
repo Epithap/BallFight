@@ -704,76 +704,8 @@
         c.stroke();
       }
 
-      // Signature BallFight Round Eyes & Base Face
+      // Signature BallFight Base Skin Face (eyes, calm brows & smirk are drawn by BF.FACE_DRAWERS.ichigo)
       rt.drawSkinFace(ball, r, c);
-
-      // Modify signature round eyes & expression for Chill Dangai / Intense Mugetsu
-      if (!hurt) {
-        if (isMugetsu) {
-          // Recolor irises to glowing Crimson Red inside the signature round eyes
-          for (const dir of [-1, 1]) {
-            const ex = dir * r * 0.32;
-            const ey = -r * 0.16;
-            c.fillStyle = "#dc2626";
-            c.beginPath();
-            c.arc(ex, ey, r * 0.12, 0, Math.PI * 2);
-            c.fill();
-            c.fillStyle = "#09090b";
-            c.beginPath();
-            c.arc(ex, ey, r * 0.06, 0, Math.PI * 2);
-            c.fill();
-            c.fillStyle = "#ffffff";
-            c.beginPath();
-            c.arc(ex - r * 0.04, ey - r * 0.04, r * 0.035, 0, Math.PI * 2);
-            c.fill();
-          }
-        }
-
-        // Half-Lidded Upper Eyelids over the signature round eyes (Chill / Unbothered look)
-        for (const dir of [-1, 1]) {
-          const ex = dir * r * 0.32;
-          const ey = -r * 0.16;
-          const lidY = isMugetsu ? ey - r * 0.03 : ey - r * 0.02;
-          const slant = isMugetsu ? dir * r * 0.04 : dir * r * 0.015;
-          // Skin-colored eyelid cap covering top ~38% of the round eye
-          c.save();
-          c.beginPath();
-          c.arc(ex, ey, r * 0.24, Math.PI, 0, false);
-          c.lineTo(ex + r * 0.24, lidY + slant);
-          c.lineTo(ex - r * 0.24, lidY - slant);
-          c.closePath();
-          c.fillStyle = "#fcd5a5";
-          c.fill();
-          // Crisp upper eyelid crease
-          c.strokeStyle = COLORS.ink;
-          c.lineWidth = 2.6;
-          c.beginPath();
-          c.moveTo(ex - r * 0.23, lidY - slant);
-          c.lineTo(ex + r * 0.23, lidY + slant);
-          c.stroke();
-          // Calm flat/slightly-angled eyebrow
-          c.lineWidth = 2.4;
-          c.beginPath();
-          c.moveTo(ex - r * 0.19, lidY - r * 0.13 - slant * 0.8);
-          c.lineTo(ex + r * 0.19, lidY - r * 0.13 + slant * 0.8);
-          c.stroke();
-          c.restore();
-        }
-
-        // Calm stoic mouth for Dangai (replaces default frown)
-        if (!isMugetsu) {
-          c.fillStyle = "#fcd5a5";
-          c.beginPath();
-          c.arc(0, r * 0.20, r * 0.16, 0, Math.PI * 2);
-          c.fill();
-          c.strokeStyle = COLORS.ink;
-          c.lineWidth = 2.4;
-          c.beginPath();
-          c.moveTo(-r * 0.10, r * 0.22);
-          c.quadraticCurveTo(0, r * 0.24, r * 0.11, r * 0.20);
-          c.stroke();
-        }
-      }
 
       // Outfit: Torn Shihakusho (Dangai) or Dark-Grey Mugetsu Bandages
       c.save();
