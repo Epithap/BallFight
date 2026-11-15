@@ -515,6 +515,7 @@
     spawnDelayedAction,
     getInfinitySlowFactor,
     applyDamage,
+    addEffect,
     chargeUlt,
     spawnSparks,
     spawnDamageText,
