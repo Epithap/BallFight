@@ -536,9 +536,9 @@
         const eyeH = Math.max(0.02, 1 - b);
         for (const side of [-1, 1]) {
           const cx = side * r * 0.30;
-          const cy = -r * 0.08;
-          const w = r * 0.21;
-          const h = r * 0.095 * eyeH;
+          const cy = -r * 0.09;
+          const w = r * 0.22;
+          const h = r * 0.145 * eyeH;
           c.save();
           c.translate(cx, cy);
           // Sharp slanted anime eye path (flat angled top lid, soft curved bottom)
@@ -555,10 +555,10 @@
 
           c.save();
           c.clip();
-          // Crimson iris tucked under the upper eyelid (top ~30% covered = cold stoic gaze)
+          // Crimson iris tucked under the upper eyelid (sharp, cold stoic gaze without looking squinty)
           const ix = (s.ex || 0) * 0.65;
-          const iy = -h * 0.18 + (s.ey || 0) * 0.55;
-          const ir = r * 0.088;
+          const iy = -h * 0.08 + (s.ey || 0) * 0.55;
+          const ir = r * 0.115;
           c.fillStyle = "#991b1b";
           c.beginPath();
           c.arc(ix, iy, ir, 0, TAU);
@@ -601,8 +601,8 @@
           // Sleek low cold brow
           c.lineWidth = 2.0;
           c.beginPath();
-          c.moveTo(-side * w * 0.88, -h * 1.18);
-          c.lineTo(side * w * 0.98, -h * 1.88);
+          c.moveTo(-side * w * 0.88, -h * 1.12);
+          c.lineTo(side * w * 0.98, -h * 1.65);
           c.stroke();
 
           c.restore();
