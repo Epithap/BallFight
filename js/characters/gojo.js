@@ -457,9 +457,7 @@
           }
 
           if (this.traveled >= totalAngle) {
-            const target = (this.caughtTarget && this.caughtTarget.alive)
-              ? this.caughtTarget
-              : gg.balls.find((tt) => tt !== owner && tt.alive && Math.hypot(tt.x - this.x, tt.y - this.y) <= 220);
+            const target = (this.caughtTarget && this.caughtTarget.alive) ? this.caughtTarget : null;
             if (target) {
               this.caughtTarget = target;
               this.phase = "eight_blue";
@@ -525,8 +523,8 @@
         if (this.phase !== "orbit") return;
         c.save();
         // Expanding spiral trail arc around Gojo
-        c.strokeStyle = "rgba(56, 189, 248, 0.48)";
-        c.lineWidth = 9;
+        c.strokeStyle = "rgba(56, 189, 248, 0.50)";
+        c.lineWidth = 12;
         c.lineCap = "round";
         c.beginPath();
         c.arc(owner.x, owner.y, this.orbitR, this.angle - 1.25, this.angle);
@@ -542,16 +540,16 @@
           c.stroke();
         }
 
-        // Original bright glowing Blue orb (no black hole)
+        // Larger original bright glowing Blue orb (no black hole)
         c.translate(this.x, this.y);
         c.fillStyle = "rgba(0, 180, 255, 0.28)";
-        c.beginPath(); c.arc(0, 0, 44, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.arc(0, 0, 56, 0, Math.PI * 2); c.fill();
         c.fillStyle = "rgba(56, 189, 248, 0.55)";
-        c.beginPath(); c.arc(0, 0, 29, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.arc(0, 0, 38, 0, Math.PI * 2); c.fill();
         c.fillStyle = "#0ea5e9";
-        c.beginPath(); c.arc(0, 0, 19, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.arc(0, 0, 25, 0, Math.PI * 2); c.fill();
         c.fillStyle = "#e0f2fe";
-        c.beginPath(); c.arc(0, 0, 9, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.arc(0, 0, 12, 0, Math.PI * 2); c.fill();
         c.restore();
       },
       renderOverlay(c) {
