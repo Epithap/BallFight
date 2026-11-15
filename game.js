@@ -2597,6 +2597,13 @@
       BF.hideGutsEclipseOuterBg();
     }
 
+    const killuaGodspeedOwner = balls.find((b) => b.alive && b.costume === "killua" && b.ultTimer > 0);
+    if (killuaGodspeedOwner && BF.drawKilluaGodspeedOverlay) {
+      BF.drawKilluaGodspeedOverlay(ctx, game, killuaGodspeedOwner);
+    } else if (BF.hideKilluaGodspeedOuterBg) {
+      BF.hideKilluaGodspeedOuterBg();
+    }
+
     // Particles
     ctx.strokeStyle = COLORS.ink;
     ctx.lineWidth = 1.5;

@@ -601,14 +601,21 @@
         ball._denkoTimer = (ball._denkoTimer || 0) - dt;
         ball._trailCd = (ball._trailCd || 0) - dt;
 
-        // 0. Godspeed Lightning Trail: continuous crackling electric afterimages behind Killua
+        // 0. Godspeed Lightning Trail: continuous connected jagged lightning ribbon + Kanmuru afterimages
         if (ball._trailCd <= 0) {
-          ball._trailCd = 0.08;
-          g.entities.push(spawnElectricAfterimage(ball.x, ball.y, ball.radius * 0.85, 0.22));
-          if (rt.rng() < 0.65) {
-            const jx = ball.x + (rt.rng() - 0.5) * 34;
-            const jy = ball.y + (rt.rng() - 0.5) * 34;
-            g.entities.push(spawnLightningBoltVisual(ball.x, ball.y, jx, jy, "#7dd3fc", 0.16, 4.5));
+          ball._trailCd = 0.045;
+          if (typeof ball._prevTrailX === "number" && typeof ball._prevTrailY === "number") {
+            const distMoved = Math.hypot(ball.x - ball._prevTrailX, ball.y - ball._prevTrailY);
+            if (distMoved > 6 && distMoved < 180) {
+              g.entities.push(spawnLightningBoltVisual(ball._prevTrailX, ball._prevTrailY, ball.x, ball.y, "#38bdf8", 0.28, 8));
+              g.entities.push(spawnLightningBoltVisual(ball._prevTrailX, ball._prevTrailY, ball.x, ball.y, "#ffffff", 0.2, 3.2));
+            }
+          }
+          ball._prevTrailX = ball.x;
+          ball._prevTrailY = ball.y;
+          ball._afterimageTick = ((ball._afterimageTick || 0) + 1) % 2;
+          if (ball._afterimageTick === 0) {
+            g.entities.push(spawnElectricAfterimage(ball.x, ball.y, ball.radius * 0.92, 0.34));
           }
         }
 
@@ -884,4 +891,169 @@
     skillDesc: "Throws 2 wall-bouncing Alloy Yo-Yos that snap back for double hits, and uses Rhythm Echo decoys to blink behind enemies with Izutsushi Lightning Palm!",
     skills: [SKILL_ALLOY_YOYO, SKILL_RHYTHM_ECHO],
   };
+  function ensureKilluaAppLayer() {
+    if (typeof document === "undefined") return;
+    const appEl = document.querySelector(".app");
+    if (appEl && appEl.style.position !== "relative") {
+      appEl.style.position = "relative";
+      appEl.style.zIndex = "1";
+    }
+  }
+
+  function hideKilluaGodspeedOuterBg() {
+    if (typeof document === "undefined") return;
+    const bgCanvas = document.getElementById("killua-godspeed-outer-canvas");
+    if (bgCanvas) bgCanvas.style.display = "none";
+  }
+
+  function syncKilluaGodspeedOuterBg(alpha) {
+    if (typeof document === "undefined" || !document.body || !document.createElement) return;
+    const id = "killua-godspeed-outer-canvas";
+    let bgCanvas = document.getElementById(id);
+
+    const screenBattle = document.getElementById("screen-battle");
+    const battleVisible = !screenBattle || !screenBattle.classList.contains("hidden");
+    const shouldShow = alpha > 0.01 && battleVisible;
+
+    if (!shouldShow) {
+      if (bgCanvas) bgCanvas.style.display = "none";
+      return;
+    }
+
+    ensureKilluaAppLayer();
+    if (!bgCanvas) {
+      bgCanvas = document.createElement("canvas");
+      bgCanvas.id = id;
+      bgCanvas.style.cssText =
+        "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:0;";
+      document.body.insertBefore(bgCanvas, document.body.firstChild);
+    }
+
+    const w = window.innerWidth || 1280;
+    const h = window.innerHeight || 720;
+    if (bgCanvas.width !== w) bgCanvas.width = w;
+    if (bgCanvas.height !== h) bgCanvas.height = h;
+    bgCanvas.style.display = "block";
+    bgCanvas._lastDrawTs = performance.now();
+
+    if (!bgCanvas._watchdogActive && typeof requestAnimationFrame === "function") {
+      bgCanvas._watchdogActive = true;
+      const tickWatchdog = () => {
+        const sb = document.getElementById("screen-battle");
+        const active = !sb || !sb.classList.contains("hidden");
+        const stale = performance.now() - (bgCanvas._lastDrawTs || 0) > 260;
+        if (!active || stale) {
+          bgCanvas.style.display = "none";
+          bgCanvas._watchdogActive = false;
+          return;
+        }
+        requestAnimationFrame(tickWatchdog);
+      };
+      requestAnimationFrame(tickWatchdog);
+    }
+
+    const sc = bgCanvas.getContext("2d");
+    if (!sc) return;
+    const now = performance.now() * 0.001;
+
+    sc.save();
+    sc.clearRect(0, 0, w, h);
+    sc.globalAlpha = Math.min(1, alpha);
+
+    // 1. Deep Thunderstorm Night Sky
+    const sky = sc.createLinearGradient(0, 0, 0, h);
+    sky.addColorStop(0, "#020617");
+    sky.addColorStop(0.5, "#0c1938");
+    sky.addColorStop(1, "#082f49");
+    sc.fillStyle = sky;
+    sc.fillRect(0, 0, w, h);
+
+    // 2. Electric Cyan Storm Aura behind the arena
+    const stormGlow = sc.createRadialGradient(w * 0.5, h * 0.45, 40, w * 0.5, h * 0.45, Math.max(w, h) * 0.65);
+    stormGlow.addColorStop(0, "rgba(56, 189, 248, 0.42)");
+    stormGlow.addColorStop(0.4, "rgba(14, 165, 233, 0.2)");
+    stormGlow.addColorStop(1, "rgba(2, 6, 23, 0)");
+    sc.fillStyle = stormGlow;
+    sc.fillRect(0, 0, w, h);
+
+    // 3. Flashing Background Storm Lightning Bolts in Outer Sky
+    sc.lineCap = "round";
+    sc.lineJoin = "round";
+    for (let i = 0; i < 4; i++) {
+      const pulse = Math.sin(now * 9 + i * 2.3);
+      if (pulse < 0.35) continue;
+      const bx = w * (0.14 + i * 0.24) + Math.sin(now * 17 + i) * 18;
+      sc.globalAlpha = Math.min(1, alpha) * (pulse - 0.35) * 1.4;
+      sc.strokeStyle = "#38bdf8";
+      sc.lineWidth = 4;
+      sc.beginPath();
+      sc.moveTo(bx, 0);
+      sc.lineTo(bx + (i % 2 ? 26 : -26), h * 0.28);
+      sc.lineTo(bx - (i % 2 ? 18 : -18), h * 0.58);
+      sc.lineTo(bx + (i % 2 ? 22 : -22), h * 0.9);
+      sc.stroke();
+    }
+    sc.restore();
+  }
+
+  function drawKilluaGodspeedOverlay(c, game, owner) {
+    const ultLeft = owner ? Math.max(0, owner.ultTimer || 0) : 0;
+    const alpha = Math.min(1, ultLeft / 0.4);
+    syncKilluaGodspeedOuterBg(alpha);
+    if (alpha <= 0.01) return;
+
+    const now = typeof performance !== "undefined" ? performance.now() * 0.001 : 0;
+    c.save();
+    c.globalAlpha = alpha;
+
+    // 1. Storm-Blue Electric Godspeed Arena Floor
+    const floorGrad = c.createRadialGradient(
+      WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, 24,
+      WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, WORLD_SIZE * 0.72
+    );
+    floorGrad.addColorStop(0, "rgba(8, 36, 72, 0.86)");
+    floorGrad.addColorStop(1, "rgba(2, 8, 26, 0.93)");
+    c.fillStyle = floorGrad;
+    c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+    // Neon-cyan circuit grid lines across arena
+    c.strokeStyle = "rgba(56, 189, 248, 0.20)";
+    c.lineWidth = 1.2;
+    const step = WORLD_SIZE / 8;
+    for (let i = 1; i < 8; i++) {
+      c.beginPath();
+      c.moveTo(i * step, 0);
+      c.lineTo(i * step, WORLD_SIZE);
+      c.moveTo(0, i * step);
+      c.lineTo(WORLD_SIZE, i * step);
+      c.stroke();
+    }
+
+    // 2. Crackling Electric Speed-Lines Border around Arena
+    c.strokeStyle = "#38bdf8";
+    c.lineWidth = 5;
+    c.strokeRect(4, 4, WORLD_SIZE - 8, WORLD_SIZE - 8);
+    c.strokeStyle = "#e0f2fe";
+    c.lineWidth = 2;
+    c.strokeRect(10, 10, WORLD_SIZE - 20, WORLD_SIZE - 20);
+
+    // 3. Periodic Ambient Electric Arcs flashing inside the storm arena
+    for (let i = 0; i < 3; i++) {
+      const tick = Math.floor(now * 12 + i * 3.1);
+      const bx = ((tick * 137 + i * 97) % (WORLD_SIZE - 80)) + 40;
+      c.globalAlpha = alpha * 0.38;
+      c.strokeStyle = i % 2 === 0 ? "#7dd3fc" : "#e0f2fe";
+      c.lineWidth = 2.5;
+      c.beginPath();
+      c.moveTo(bx, 12);
+      c.lineTo(bx + (tick % 2 ? 18 : -18), WORLD_SIZE * 0.36);
+      c.lineTo(bx - (tick % 2 ? 14 : -14), WORLD_SIZE * 0.68);
+      c.lineTo(bx + 8, WORLD_SIZE - 14);
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  BF.drawKilluaGodspeedOverlay = drawKilluaGodspeedOverlay;
+  BF.hideKilluaGodspeedOuterBg = hideKilluaGodspeedOuterBg;
 })();
