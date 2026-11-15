@@ -3187,6 +3187,8 @@
         flashTimer: 0,
         ultTimer: fl.ult ? 5 : 0,
         evolved: fl.evolved !== undefined ? Boolean(fl.evolved) : (fl.starterOnly ? false : Boolean(cfg.evolved)),
+        evoTier: fl.evoTier !== undefined ? fl.evoTier : (fl.starterOnly ? 0 : (cfg.evoTier !== undefined ? cfg.evoTier : (fl.evolved ? 1 : 0))),
+        mugetsuMode: Boolean(fl.mugetsuMode),
         apeMode: Boolean(fl.apeMode),
         kyuubiMode: Boolean(fl.kyuubiMode),
         curseMarkMode: Boolean(fl.curseMarkMode),
@@ -3468,12 +3470,18 @@
     return list.find((f) => f.id === detailFormId) || list[0] || null;
   }
 
-  function applyDetailEvoPreference(charId, useEvo) {
+  function applyDetailEvoPreference(charId, tierOrBool) {
     if (!EVOLUTION_SPECS || !EVOLUTION_SPECS[charId]) return;
-    if (useEvo && !(isFighterEvolved && isFighterEvolved(charId))) return;
-    setEvolutionEquipped(charId, Boolean(useEvo));
-    if (selectedRosterIds[0] === charId) setSlotEvoEquipped(0, charId, Boolean(useEvo));
-    if (selectedRosterIds[1] === charId) setSlotEvoEquipped(1, charId, Boolean(useEvo));
+    const tier = typeof tierOrBool === "number" ? tierOrBool : (tierOrBool ? 1 : 0);
+    if (tier === 2 && !(isFighterTier2Evolved && isFighterTier2Evolved(charId))) return;
+    if (tier === 1 && !(isFighterEvolved && isFighterEvolved(charId))) return;
+    if (setEquippedEvoTier) {
+      setEquippedEvoTier(charId, tier);
+    } else {
+      setEvolutionEquipped(charId, tier >= 1);
+    }
+    if (selectedRosterIds[0] === charId) setSlotEvoTier(0, charId, tier);
+    if (selectedRosterIds[1] === charId) setSlotEvoTier(1, charId, tier);
     refreshSlotConfigs();
     setupUnifiedSelectors();
     updateUnifiedSetupUI();
@@ -3485,12 +3493,16 @@
     const stageBox = document.getElementById("detail-stage-list");
     const box = document.getElementById("detail-form-list");
     const evolved = Boolean(isFighterEvolved && isFighterEvolved(cfg.id));
+    const evolved2 = Boolean(isFighterTier2Evolved && isFighterTier2Evolved(cfg.id));
+    const equippedTier = getEquippedEvoTier ? getEquippedEvoTier(cfg.id) : (evolved ? 1 : 0);
     const eqSkins = getEquippedSkinsForChar ? getEquippedSkinsForChar(cfg.id) : [];
     const stages = (BF.EVO_STAGES && BF.EVO_STAGES[cfg.id]) || null;
     const allForms = BF.FORMS[cfg.id] || [];
 
     const activeStageId = stages
-      ? (form && form.stage ? form.stage : (isEvolutionEquipped && isEvolutionEquipped(cfg.id) ? "evolved" : "starter"))
+      ? (form && form.stage
+          ? form.stage
+          : (equippedTier === 2 ? "tier2" : (equippedTier === 1 ? "evolved" : "starter")))
       : null;
 
     if (stageBox) {
@@ -3501,16 +3513,17 @@
         stageBox.classList.remove("hidden");
         stageBox.innerHTML = "";
         for (const st of stages) {
-          const lockedSt = Boolean(st.evolved && !evolved);
+          const stTier = st.evoTier || (st.evolved ? 1 : 0);
+          const lockedSt = stTier === 2 ? !evolved2 : (stTier === 1 ? !evolved : false);
           const isStActive = st.id === activeStageId;
           const sb = document.createElement("button");
           sb.type = "button";
-          sb.className = `stage-btn${st.evolved ? " stage-evo" : ""}${lockedSt ? " locked-evo" : ""}${isStActive ? " active" : ""}`;
-          sb.textContent = lockedSt ? `🔒 ${st.label}` : (st.evolved ? `✨ ${st.label}` : st.label);
+          sb.className = `stage-btn${stTier >= 1 ? " stage-evo" : ""}${lockedSt ? " locked-evo" : ""}${isStActive ? " active" : ""}`;
+          sb.textContent = lockedSt ? `🔒 ${st.label}` : (stTier === 2 ? `🔥 ${st.label}` : (stTier === 1 ? `✨ ${st.label}` : st.label));
           sb.addEventListener("click", () => {
             sound.unlock();
             detailFormId = st.defaultForm;
-            applyDetailEvoPreference(cfg.id, Boolean(st.evolved));
+            applyDetailEvoPreference(cfg.id, stTier);
             updateCharDetailUI();
           });
           stageBox.appendChild(sb);
@@ -3524,7 +3537,8 @@
         ? allForms.filter((f) => f.stage === activeStageId)
         : allForms;
       for (const f of visibleForms) {
-        const lockedEvo = Boolean(f.evolved && !evolved);
+        const fTier = f.evoTier || (f.evolved ? 1 : 0);
+        const lockedEvo = fTier === 2 ? !evolved2 : (fTier === 1 ? !evolved : false);
         const b = document.createElement("button");
         b.type = "button";
         b.className = `form-chip${f.ult ? " ult" : ""}${lockedEvo ? " locked-evo" : ""}${form && f.id === form.id ? " active" : ""}`;
@@ -3541,7 +3555,7 @@
           sound.unlock();
           detailFormId = f.id;
           if (stages) {
-            applyDetailEvoPreference(cfg.id, Boolean(f.evolved));
+            applyDetailEvoPreference(cfg.id, fTier);
           }
           updateCharDetailUI();
         });
@@ -3550,85 +3564,153 @@
     }
     const detailEvoBox = document.getElementById("detail-evo-box");
     const evoSpec = EVOLUTION_SPECS && EVOLUTION_SPECS[cfg.id];
+    const evo2Spec = EVOLUTION_TIER2_SPECS && EVOLUTION_TIER2_SPECS[cfg.id];
     if (detailEvoBox) {
-      if (!evoSpec) {
+      if (!evoSpec && !evo2Spec) {
         detailEvoBox.classList.add("hidden");
         detailEvoBox.innerHTML = "";
       } else {
         detailEvoBox.classList.remove("hidden");
-        const equipped = isEvolutionEquipped(cfg.id);
-        const isGems = evoSpec.currency === "gems";
-        const canAfford = (isGems ? playerWallet.gems : playerWallet.coins) >= evoSpec.cost;
-        const costBadge = isGems
-          ? `💎 ${evoSpec.cost.toLocaleString()} GEMS`
-          : `🪙 ${evoSpec.cost.toLocaleString()} GOLD`;
-        detailEvoBox.innerHTML =
-          `<div class="power-header">` +
-            `<span class="power-badge badge-gold">✨ FIGHTER EVOLUTION</span>` +
-            `<span class="power-cd">${evolved ? "UNLOCKED" : costBadge}</span>` +
-          `</div>` +
-          `<h3 class="power-title">${evoSpec.evolvedName}</h3>` +
-          `<p class="power-desc">${evoSpec.desc}</p>` +
-          `<div id="detail-evo-actions" class="evo-bar"></div>`;
-        const actBox = detailEvoBox.querySelector("#detail-evo-actions");
-        if (actBox) {
-          if (evolved) {
-            const row = document.createElement("div");
-            row.className = "evo-switch-row";
-            const bStart = document.createElement("button");
-            bStart.type = "button";
-            bStart.className = `evo-switch-btn${!equipped ? " active" : ""}`;
-            bStart.textContent = evoSpec.starterLabel;
-            bStart.addEventListener("click", () => {
-              sound.unlock();
-              sound.playBallHit();
-              detailFormId = cfg.id === "ichigo" ? "shikai" : "base";
-              applyDetailEvoPreference(cfg.id, false);
-              updateCharDetailUI();
-            });
-            const bEvo = document.createElement("button");
-            bEvo.type = "button";
-            bEvo.className = `evo-switch-btn evo-mode${equipped ? " active" : ""}`;
-            bEvo.textContent = `✨ ${evoSpec.evolvedLabel}`;
-            bEvo.addEventListener("click", () => {
-              sound.unlock();
-              sound.playCritHit();
-              detailFormId = cfg.id === "naruto" ? "sage" : "base";
-              applyDetailEvoPreference(cfg.id, true);
-              updateCharDetailUI();
-            });
-            row.appendChild(bStart);
-            row.appendChild(bEvo);
-            actBox.appendChild(row);
-          } else {
-            const isGems = evoSpec.currency === "gems";
-            const haveAmt = isGems ? playerWallet.gems : playerWallet.coins;
-            const canAfford = haveAmt >= evoSpec.cost;
-            const curIcon = isGems ? "💎" : "🪙";
-            const curLabel = isGems ? "GEMS" : "GOLD";
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "btn-evolve-gold";
-            btn.textContent = canAfford
-              ? `✨ EVOLVE NOW (${curIcon} ${evoSpec.cost.toLocaleString()} ${curLabel})`
-              : `🔒 NEED ${evoSpec.cost.toLocaleString()} ${curLabel} (YOU HAVE ${haveAmt.toLocaleString()})`;
-            btn.addEventListener("click", () => {
-              sound.unlock();
-              if ((isGems ? playerWallet.gems : playerWallet.coins) < evoSpec.cost) {
-                sound.playWallBounce();
-                return;
-              }
-              const res = evolveFighter(cfg.id);
-              if (res.ok) {
+        detailEvoBox.innerHTML = "";
+        if (evoSpec) {
+          const isGems = evoSpec.currency === "gems";
+          const costBadge = isGems
+            ? `💎 ${evoSpec.cost.toLocaleString()} GEMS`
+            : `🪙 ${evoSpec.cost.toLocaleString()} GOLD`;
+          const tier1Wrap = document.createElement("div");
+          tier1Wrap.innerHTML =
+            `<div class="power-header">` +
+              `<span class="power-badge badge-gold">✨ FIGHTER EVOLUTION</span>` +
+              `<span class="power-cd">${evolved ? "UNLOCKED" : costBadge}</span>` +
+            `</div>` +
+            `<h3 class="power-title">${evoSpec.evolvedName}</h3>` +
+            `<p class="power-desc">${evoSpec.desc}</p>` +
+            `<div id="detail-evo-actions" class="evo-bar"></div>`;
+          const actBox = tier1Wrap.querySelector("#detail-evo-actions");
+          if (actBox) {
+            if (evolved) {
+              const row = document.createElement("div");
+              row.className = "evo-switch-row";
+              const bStart = document.createElement("button");
+              bStart.type = "button";
+              bStart.className = `evo-switch-btn${equippedTier === 0 ? " active" : ""}`;
+              bStart.textContent = evoSpec.starterLabel;
+              bStart.addEventListener("click", () => {
+                sound.unlock();
+                sound.playBallHit();
+                detailFormId = cfg.id === "ichigo" ? "shikai" : "base";
+                applyDetailEvoPreference(cfg.id, 0);
+                updateCharDetailUI();
+              });
+              const bEvo = document.createElement("button");
+              bEvo.type = "button";
+              bEvo.className = `evo-switch-btn evo-mode${equippedTier === 1 ? " active" : ""}`;
+              bEvo.textContent = `✨ ${evoSpec.evolvedLabel}`;
+              bEvo.addEventListener("click", () => {
+                sound.unlock();
                 sound.playCritHit();
                 detailFormId = cfg.id === "naruto" ? "sage" : "base";
-                applyDetailEvoPreference(cfg.id, true);
-                updateShopUI();
+                applyDetailEvoPreference(cfg.id, 1);
                 updateCharDetailUI();
+              });
+              row.appendChild(bStart);
+              row.appendChild(bEvo);
+              if (evolved2 && evo2Spec) {
+                const bEvo2 = document.createElement("button");
+                bEvo2.type = "button";
+                bEvo2.className = `evo-switch-btn evo-mode${equippedTier === 2 ? " active" : ""}`;
+                bEvo2.textContent = `🔥 ${evo2Spec.evolvedLabel}`;
+                bEvo2.addEventListener("click", () => {
+                  sound.unlock();
+                  sound.playCritHit();
+                  detailFormId = "dangai";
+                  applyDetailEvoPreference(cfg.id, 2);
+                  updateCharDetailUI();
+                });
+                row.appendChild(bEvo2);
               }
-            });
-            actBox.appendChild(btn);
+              actBox.appendChild(row);
+            } else {
+              const haveAmt = isGems ? playerWallet.gems : playerWallet.coins;
+              const canAfford = haveAmt >= evoSpec.cost;
+              const curIcon = isGems ? "💎" : "🪙";
+              const curLabel = isGems ? "GEMS" : "GOLD";
+              const btn = document.createElement("button");
+              btn.type = "button";
+              btn.className = "btn-evolve-gold";
+              btn.textContent = canAfford
+                ? `✨ EVOLVE NOW (${curIcon} ${evoSpec.cost.toLocaleString()} ${curLabel})`
+                : `🔒 NEED ${evoSpec.cost.toLocaleString()} ${curLabel} (YOU HAVE ${haveAmt.toLocaleString()})`;
+              btn.addEventListener("click", () => {
+                sound.unlock();
+                if ((isGems ? playerWallet.gems : playerWallet.coins) < evoSpec.cost) {
+                  sound.playWallBounce();
+                  return;
+                }
+                const res = evolveFighter(cfg.id);
+                if (res.ok) {
+                  sound.playCritHit();
+                  detailFormId = cfg.id === "naruto" ? "sage" : "base";
+                  applyDetailEvoPreference(cfg.id, 1);
+                  updateShopUI();
+                  updateCharDetailUI();
+                }
+              });
+              actBox.appendChild(btn);
+            }
           }
+          detailEvoBox.appendChild(tier1Wrap);
+        }
+
+        if (evo2Spec) {
+          const tier2Wrap = document.createElement("div");
+          tier2Wrap.style.marginTop = evoSpec ? "12px" : "0";
+          tier2Wrap.style.paddingTop = evoSpec ? "12px" : "0";
+          tier2Wrap.style.borderTop = evoSpec ? "2px dashed rgba(255,255,255,0.16)" : "none";
+          const cost2Badge = `💎 ${evo2Spec.cost.toLocaleString()} GEMS`;
+          tier2Wrap.innerHTML =
+            `<div class="power-header">` +
+              `<span class="power-badge badge-purple">🔥 2ND EVOLUTION</span>` +
+              `<span class="power-cd">${evolved2 ? "UNLOCKED" : cost2Badge}</span>` +
+            `</div>` +
+            `<h3 class="power-title">${evo2Spec.evolvedName}</h3>` +
+            `<p class="power-desc">${evo2Spec.desc}</p>` +
+            `<div class="evo-bar"></div>`;
+          const act2Box = tier2Wrap.querySelector(".evo-bar");
+          if (act2Box && !evolved2) {
+            const btn2 = document.createElement("button");
+            btn2.type = "button";
+            btn2.className = "btn-evolve-gold";
+            if (!evolved) {
+              btn2.textContent = "🔒 UNLOCK EVO 1 FIRST";
+              btn2.addEventListener("click", () => {
+                sound.unlock();
+                sound.playWallBounce();
+              });
+            } else {
+              const canAfford2 = playerWallet.gems >= evo2Spec.cost;
+              btn2.textContent = canAfford2
+                ? `🔥 2ND EVOLVE NOW (💎 ${evo2Spec.cost.toLocaleString()} GEMS)`
+                : `🔒 NEED ${evo2Spec.cost.toLocaleString()} GEMS (YOU HAVE ${playerWallet.gems.toLocaleString()})`;
+              btn2.addEventListener("click", () => {
+                sound.unlock();
+                if (playerWallet.gems < evo2Spec.cost) {
+                  sound.playWallBounce();
+                  return;
+                }
+                const res2 = evolveFighterTier2(cfg.id);
+                if (res2.ok) {
+                  sound.playCritHit();
+                  detailFormId = "dangai";
+                  applyDetailEvoPreference(cfg.id, 2);
+                  updateShopUI();
+                  updateCharDetailUI();
+                }
+              });
+            }
+            act2Box.appendChild(btn2);
+          }
+          detailEvoBox.appendChild(tier2Wrap);
         }
       }
     }
@@ -3749,11 +3831,16 @@
   }
 
   function updateCharDetailUI() {
-    const cfg = CHARACTER_ROSTER[detailCharId] || CHARACTER_ROSTER.goku;
-    if (!cfg) return;
+    const rawCfg = CHARACTER_ROSTER[detailCharId] || CHARACTER_ROSTER.goku;
+    if (!rawCfg) return;
+
+    const form = activeForm();
+    const previewTier = form && form.evoTier === 2
+      ? 2
+      : (form && form.evolved ? 1 : (form && form.starterOnly ? 0 : (getEquippedEvoTier ? getEquippedEvoTier(rawCfg.id) : 0)));
+    const cfg = getEffectiveCharConfig(rawCfg.id, previewTier);
 
     const tr = TRANSFORM_DETAILS[cfg.id] || null;
-    const form = activeForm();
     const showingUlt = Boolean(tr && form && form.ult);
 
     if (detailHeroBox) detailHeroBox.classList.toggle("is-ult-preview", showingUlt);
@@ -3788,12 +3875,23 @@
       detailEmpoweredBox.classList.toggle("hidden", !tr);
       if (tr) {
         const isSukunaEvo = cfg.id === "sukuna" && cfg.evolved;
-        if (detailEmpName) detailEmpName.textContent = isSukunaEvo ? "HEIAN ERA: HITEN & KAMUTOKE" : tr.ultSkillName;
-        if (detailEmpCd) detailEmpCd.textContent = isSukunaEvo ? "HP <= 200 • 1.7S CD" : tr.ultSkillCd;
+        const isIchigoTier2 = cfg.id === "ichigo" && previewTier === 2;
+        if (detailEmpName) {
+          detailEmpName.textContent = isIchigoTier2
+            ? "FINAL GETSUGA TENSHO: MUGETSU"
+            : (isSukunaEvo ? "HEIAN ERA: HITEN & KAMUTOKE" : tr.ultSkillName);
+        }
+        if (detailEmpCd) {
+          detailEmpCd.textContent = isIchigoTier2
+            ? "5.5S ROAMING • FINISHER"
+            : (isSukunaEvo ? "HP <= 200 • 1.7S CD" : tr.ultSkillCd);
+        }
         if (detailEmpDesc) {
-          detailEmpDesc.textContent = isSukunaEvo
-            ? "At HP <= 200, permanently becomes 4-Arm Heian Era (+60 HP, +15% Speed) wielding Hiten & Kamutoke: Multi-Area Kamutoke Sky Lightning, Hiten Fire Breath, and Incomplete Malevolent Shrine!"
-            : tr.ultSkillDesc;
+          detailEmpDesc.textContent = isIchigoTier2
+            ? "Transforms into Mugetsu inside a Pitch-Black Void World, firing rapid jet-black crescent slashes (20 DMG) before ending with an arena-splitting vertical MUGETSU!! slash (34 piercing DMG)!"
+            : (isSukunaEvo
+                ? "At HP <= 200, permanently becomes 4-Arm Heian Era (+60 HP, +15% Speed) wielding Hiten & Kamutoke: Multi-Area Kamutoke Sky Lightning, Hiten Fire Breath, and Incomplete Malevolent Shrine!"
+                : tr.ultSkillDesc);
         }
       }
     }

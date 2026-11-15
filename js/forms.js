@@ -22,6 +22,7 @@
     ichigo: [
       { id: "starter", label: "BASE (SHIKAI)", evolved: false, defaultForm: "shikai" },
       { id: "evolved", label: "BANKAI (EVO)", evolved: true, defaultForm: "base" },
+      { id: "tier2", label: "DANGAI (2ND EVO)", evoTier: 2, evolved: true, defaultForm: "dangai" },
     ],
     sasuke: [
       { id: "starter", label: "BASE (SHARINGAN)", evolved: false, defaultForm: "base" },
@@ -62,6 +63,8 @@
       { id: "base", stage: "evolved", label: "BANKAI", evolved: true, desc: "Evolved Base (25k Gold): Starts directly in Bankai with Tensa Zangetsu (or Arrancar tattered outfit)!" },
       { id: "hollow", stage: "evolved", label: "HOLLOW MASK (ULT)", ult: true, evolved: true, desc: "Evolved Ult: Dons Hollow Mask (or Arrancar Arc Half-Mask skin) with Black Getsuga Tensho!" },
       { id: "vasto", stage: "evolved", label: "VASTO LORDE (HP≤200)", ult: true, evolved: true, vastoLordeMode: true, desc: "Evolved HP <= 200: Permanent Vasto Lorde (or Long-Hair Half-Vasto Mythic skin) with Sonído & Gran Rey Cero!" },
+      { id: "dangai", stage: "tier2", label: "DANGAI", evoTier: 2, evolved: true, desc: "2nd Evo (4,000 Gems): Post-Dangai Ichigo (+55 HP, +22 SPD, Slow-Immune) with Chain Tensa Zangetsu, Mountain Cleave & Chain Shunpo!" },
+      { id: "mugetsu", stage: "tier2", label: "MUGETSU (ULT)", ult: true, evoTier: 2, evolved: true, mugetsuMode: true, desc: "2nd Evo Ult (5.5s Roaming -> Finisher): Unleashes Mugetsu inside a Pitch-Black World with rapid jet-black slashes & arena-splitting MUGETSU!" },
     ],
     dio: [
       { id: "base", label: "BASE", desc: "Golden headband, green heart and a sly smirk." },
