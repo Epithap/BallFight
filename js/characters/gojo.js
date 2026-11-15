@@ -679,95 +679,231 @@
   }
 
   function spawnShinjukuPurpleCinematic(owner, g) {
-    // Like Garou Gamma Ray Burst: Gojo himself rises above/outside the arena -> Red & Blue collide -> Hollow Nuke -> Gojo descends!
-    const duration = 2.15;
+    // External overlay canvas (like Garou Gamma Ray) so Gojo visibly floats above the arena!
+    const duration = 2.25;
     const startX = owner.x;
     const startY = owner.y;
     const skyX = WORLD_SIZE * 0.5;
-    const skyY = -22;
-    owner.invuln = Math.max(owner.invuln || 0, duration + 0.2);
+    const skyY = -36;
+    owner.invuln = Math.max(owner.invuln || 0, duration + 0.25);
     g.sound.playTimeStop();
     rt.addShake(0.45, 10);
-    return {
+
+    let extCanvas = null;
+    let extCtx = null;
+    let lastActiveTs = typeof performance !== "undefined" ? performance.now() : Date.now();
+    let entRef = null;
+
+    const cleanupExt = () => {
+      owner._hiddenOffScreen = false;
+      if (extCanvas && extCanvas.parentNode) {
+        extCanvas.parentNode.removeChild(extCanvas);
+      }
+      extCanvas = null;
+      extCtx = null;
+    };
+
+    if (typeof document !== "undefined" && document.body && document.createElement) {
+      const oldExt = document.getElementById("gojo-nuke-ext-canvas");
+      if (oldExt && oldExt.parentNode) oldExt.parentNode.removeChild(oldExt);
+      extCanvas = document.createElement("canvas");
+      extCanvas.id = "gojo-nuke-ext-canvas";
+      extCanvas.style.cssText =
+        "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:95;";
+      extCanvas.width = window.innerWidth || 1280;
+      extCanvas.height = window.innerHeight || 720;
+      document.body.appendChild(extCanvas);
+      extCtx = extCanvas.getContext("2d");
+
+      if (typeof requestAnimationFrame === "function") {
+        const tickExtWatchdog = () => {
+          if (!extCanvas || !extCanvas.parentNode) return;
+          const sb = document.getElementById("screen-battle");
+          const battleHidden = Boolean(sb && sb.classList.contains("hidden"));
+          const stale = (typeof performance !== "undefined" ? performance.now() : Date.now()) - lastActiveTs > 240;
+          const detached = Boolean(entRef && g && Array.isArray(g.entities) && !g.entities.includes(entRef));
+          if (battleHidden || stale || detached || !owner.alive || (entRef && entRef.dead)) {
+            cleanupExt();
+            return;
+          }
+          requestAnimationFrame(tickExtWatchdog);
+        };
+        requestAnimationFrame(tickExtWatchdog);
+      }
+    }
+
+    const drawExternalGojoAndOrbs = (p) => {
+      if (!extCtx || !extCanvas) return;
+      const w = extCanvas.width;
+      const h = extCanvas.height;
+      extCtx.clearRect(0, 0, w, h);
+
+      const arenaCanvas = rt.ctx && rt.ctx.canvas ? rt.ctx.canvas : null;
+      const rect = arenaCanvas && arenaCanvas.getBoundingClientRect ? arenaCanvas.getBoundingClientRect() : null;
+      const cx = rect ? rect.left + rect.width * 0.5 : w * 0.5;
+      const topY = rect ? Math.max(44, rect.top - 26) : 84;
+      const arenaMidY = rect ? rect.top + rect.height * 0.48 : h * 0.52;
+      const spanX = rect ? rect.width * 0.36 : 160;
+      const sc = rect ? Math.max(0.75, rect.width / WORLD_SIZE) : 1;
+
+      // Interpolate Gojo screen position: Ascend from arena -> Hover above arena -> Descend
+      let gy = topY;
+      if (p < 0.22) {
+        const rp = easeOut(p / 0.22);
+        const sy = rect ? rect.top + (startY / WORLD_SIZE) * rect.height : arenaMidY;
+        gy = sy + (topY - sy) * rp;
+      } else if (p >= 0.82) {
+        const dp = easeOut((p - 0.82) / 0.18);
+        const sy = rect ? rect.top + (startY / WORLD_SIZE) * rect.height : arenaMidY;
+        gy = topY + (sy - topY) * dp;
+      }
+
+      // Draw Gojo floating visibly above the arena with blazing Six Eyes aura
+      extCtx.save();
+      extCtx.translate(cx, gy);
+      extCtx.scale(sc, sc);
+      const r = owner.radius || 28;
+      extCtx.fillStyle = "rgba(56, 189, 248, 0.32)";
+      extCtx.beginPath(); extCtx.arc(0, 0, r * 1.65, 0, Math.PI * 2); extCtx.fill();
+      extCtx.fillStyle = "rgba(186, 230, 253, 0.38)";
+      extCtx.beginPath(); extCtx.arc(0, 0, r * 1.25, 0, Math.PI * 2); extCtx.fill();
+
+      // Chibi Gojo body (Shinjuku black compression shirt + skin + hair + Six Eyes)
+      extCtx.fillStyle = "#f9e8dc";
+      extCtx.strokeStyle = COLORS.ink;
+      extCtx.lineWidth = 3.2;
+      extCtx.beginPath(); extCtx.arc(0, 0, r, 0, Math.PI * 2); extCtx.fill(); extCtx.stroke();
+      extCtx.save();
+      extCtx.beginPath(); extCtx.arc(0, 0, r - 1.5, 0, Math.PI * 2); extCtx.clip();
+      extCtx.fillStyle = "#11131d";
+      extCtx.fillRect(-r, r * 0.50, r * 2, r * 0.55);
+      extCtx.restore();
+      // White spiky hair
+      extCtx.fillStyle = "#f4f7ff";
+      extCtx.beginPath();
+      extCtx.moveTo(-r * 0.9, -r * 0.26); extCtx.lineTo(-r * 0.78, -r * 1.16);
+      extCtx.lineTo(-r * 0.31, -r * 0.99); extCtx.lineTo(0, -r * 1.24);
+      extCtx.lineTo(r * 0.31, -r * 0.99); extCtx.lineTo(r * 0.78, -r * 1.16);
+      extCtx.lineTo(r * 0.9, -r * 0.26); extCtx.closePath();
+      extCtx.fill(); extCtx.stroke();
+      // Glowing Six Eyes
+      extCtx.fillStyle = "#38bdf8";
+      extCtx.beginPath(); extCtx.arc(-r * 0.3, -r * 0.08, r * 0.22, 0, Math.PI * 2); extCtx.arc(r * 0.3, -r * 0.08, r * 0.22, 0, Math.PI * 2); extCtx.fill();
+      extCtx.fillStyle = "#ffffff";
+      extCtx.beginPath(); extCtx.arc(-r * 0.3, -r * 0.08, r * 0.09, 0, Math.PI * 2); extCtx.arc(r * 0.3, -r * 0.08, r * 0.09, 0, Math.PI * 2); extCtx.fill();
+      extCtx.restore();
+
+      // Phase 2 (0.20..0.54): Red (left) & Blue (right) ignite above/flanking Gojo, then dive & collide in arena!
+      if (p >= 0.20 && p < 0.55) {
+        const sp = (p - 0.20) / 0.35;
+        const merge = sp < 0.45 ? 0 : Math.pow((sp - 0.45) / 0.55, 1.5);
+        const rx = (cx - spanX) + (spanX * merge);
+        const bx = (cx + spanX) - (spanX * merge);
+        const oy = (topY + 12) + (arenaMidY - topY - 12) * merge;
+        const orbSc = sc * (0.9 + sp * 0.35);
+
+        // Energy tether arcs from Gojo to Red & Blue
+        extCtx.strokeStyle = "rgba(255, 50, 90, 0.55)";
+        extCtx.lineWidth = 3 * sc;
+        extCtx.beginPath(); extCtx.moveTo(cx, gy); extCtx.lineTo(rx, oy); extCtx.stroke();
+        extCtx.strokeStyle = "rgba(56, 189, 248, 0.55)";
+        extCtx.beginPath(); extCtx.moveTo(cx, gy); extCtx.lineTo(bx, oy); extCtx.stroke();
+
+        // Red Orb
+        extCtx.fillStyle = "rgba(255, 30, 66, 0.38)";
+        extCtx.beginPath(); extCtx.arc(rx, oy, 36 * orbSc, 0, Math.PI * 2); extCtx.fill();
+        extCtx.fillStyle = "#ff1e42";
+        extCtx.beginPath(); extCtx.arc(rx, oy, 20 * orbSc, 0, Math.PI * 2); extCtx.fill();
+        extCtx.fillStyle = "#ffe4e6";
+        extCtx.beginPath(); extCtx.arc(rx, oy, 8 * orbSc, 0, Math.PI * 2); extCtx.fill();
+
+        // Blue Orb
+        extCtx.fillStyle = "rgba(0, 180, 255, 0.38)";
+        extCtx.beginPath(); extCtx.arc(bx, oy, 36 * orbSc, 0, Math.PI * 2); extCtx.fill();
+        extCtx.fillStyle = "#0ea5e9";
+        extCtx.beginPath(); extCtx.arc(bx, oy, 20 * orbSc, 0, Math.PI * 2); extCtx.fill();
+        extCtx.fillStyle = "#e0f2fe";
+        extCtx.beginPath(); extCtx.arc(bx, oy, 8 * orbSc, 0, Math.PI * 2); extCtx.fill();
+      }
+    };
+
+    entRef = {
       timer: 0,
       duration,
       nuked: false,
       dead: false,
       update(dt, gg) {
+        lastActiveTs = typeof performance !== "undefined" ? performance.now() : Date.now();
         this.timer += dt;
         const p = Math.min(1, this.timer / this.duration);
         if (!owner.alive || this.timer >= this.duration) {
+          cleanupExt();
           const pad = (BF.CONSTANTS && BF.CONSTANTS.ARENA_PAD) || 26;
           owner.x = Math.min(WORLD_SIZE - pad - owner.radius, Math.max(pad + owner.radius, startX));
           owner.y = Math.min(WORLD_SIZE - pad - owner.radius, Math.max(pad + owner.radius, startY));
-          owner.vx = (gg.rng() - 0.5) * 180;
-          owner.vy = 160;
-          gg.entities.push(rt.spawnShockRing(owner.x, owner.y, "#38bdf8", 95, 0.34));
+          owner.vx = (gg.rng() - 0.5) * 200;
+          owner.vy = 180;
+          gg.entities.push(rt.spawnShockRing(owner.x, owner.y, "#38bdf8", 110, 0.36));
           this.dead = true;
           return;
         }
+        owner._hiddenOffScreen = true;
+        owner.x = skyX;
+        owner.y = skyY;
         owner.vx = 0;
         owner.vy = 0;
-        if (p < 0.24) {
-          // Phase 1: Actual Gojo ball ascends upward out of the arena!
-          const rp = easeOut(p / 0.24);
-          owner.x = startX + (skyX - startX) * rp;
-          owner.y = startY + (skyY - startY) * rp;
-        } else if (p < 0.80) {
-          // Phase 2 & 3: Gojo hovers above/outside top edge while Red & Blue fuse & explode!
-          owner.x = skyX;
-          owner.y = skyY;
-          if (p >= 0.52 && !this.nuked) {
-            this.nuked = true;
-            triggerUnlimitedHollowPurple(owner, gg);
-          }
-        } else {
-          // Phase 4: Gojo descends back into the arena!
-          const dp = easeOut((p - 0.80) / 0.20);
-          owner.x = skyX + (startX - skyX) * dp;
-          owner.y = skyY + (startY - skyY) * dp;
+
+        if (p >= 0.54 && !this.nuked) {
+          this.nuked = true;
+          triggerUnlimitedHollowPurple(owner, gg);
         }
       },
       render(c) {
         const p = Math.min(1, this.timer / this.duration);
+        drawExternalGojoAndOrbs(p);
+
         const cx = WORLD_SIZE * 0.5;
         const cy = WORLD_SIZE * 0.5;
         c.save();
-        // Phase 2 (0.24..0.52): Blue & Red orbs spiral together in the arena below Gojo
-        if (p >= 0.24 && p < 0.52) {
-          const sp = (p - 0.24) / 0.28;
-          const orbitR = (1 - sp * 0.94) * 165;
-          const ang = sp * Math.PI * 2.6;
-          const bx = cx + Math.cos(ang) * orbitR;
-          const by = cy + Math.sin(ang) * orbitR * 0.6;
-          const rx = cx - Math.cos(ang) * orbitR;
-          const ry = cy - Math.sin(ang) * orbitR * 0.6;
 
-          c.fillStyle = "rgba(0, 180, 255, 0.38)";
-          c.beginPath(); c.arc(bx, by, 44, 0, Math.PI * 2); c.fill();
-          c.fillStyle = "#38bdf8";
-          c.beginPath(); c.arc(bx, by, 23, 0, Math.PI * 2); c.fill();
-
-          c.fillStyle = "rgba(255, 30, 66, 0.38)";
-          c.beginPath(); c.arc(rx, ry, 44, 0, Math.PI * 2); c.fill();
-          c.fillStyle = "#ff1e42";
-          c.beginPath(); c.arc(rx, ry, 23, 0, Math.PI * 2); c.fill();
-        }
-        // Phase 3 (0.52..0.85): Full-Arena Hollow Nuke Violet Shockwave
-        if (p >= 0.52 && p < 0.86) {
-          const ep = (p - 0.52) / 0.34;
+        // Phase 3 (0.54..0.88): Super Flashy Full-Arena Hollow Nuke!
+        if (p >= 0.54 && p < 0.90) {
+          const ep = (p - 0.54) / 0.36;
           const ek = ep > 0.65 ? (1 - ep) / 0.35 : 1;
-          const rNuke = 45 + Math.min(1, ep * 1.15) * 380;
-          c.fillStyle = `rgba(147, 51, 234, ${(0.52 * ek).toFixed(3)})`;
+          const rNuke = 50 + Math.min(1, ep * 1.15) * 410;
+
+          // Blinding violet-white initial flash
+          if (ep < 0.25) {
+            c.fillStyle = `rgba(243, 232, 255, ${(0.78 * (1 - ep / 0.25)).toFixed(3)})`;
+            c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+          }
+
+          // Multi-layered Hollow Nuke sphere
+          c.fillStyle = `rgba(126, 34, 206, ${(0.56 * ek).toFixed(3)})`;
           c.beginPath(); c.arc(cx, cy, rNuke, 0, Math.PI * 2); c.fill();
-          c.fillStyle = `rgba(216, 180, 254, ${(0.64 * ek).toFixed(3)})`;
-          c.beginPath(); c.arc(cx, cy, rNuke * 0.58, 0, Math.PI * 2); c.fill();
-          c.fillStyle = `rgba(255, 255, 255, ${(0.88 * ek).toFixed(3)})`;
+          c.fillStyle = `rgba(216, 180, 254, ${(0.68 * ek).toFixed(3)})`;
+          c.beginPath(); c.arc(cx, cy, rNuke * 0.60, 0, Math.PI * 2); c.fill();
+          c.fillStyle = `rgba(255, 255, 255, ${(0.92 * ek).toFixed(3)})`;
           c.beginPath(); c.arc(cx, cy, rNuke * 0.28, 0, Math.PI * 2); c.fill();
+
+          // 14 Radiating Violet-White Limitless Energy Rays
+          c.lineCap = "round";
+          for (let i = 0; i < 14; i++) {
+            const a = (i / 14) * Math.PI * 2 + ep * 0.6;
+            const rIn = rNuke * 0.18;
+            const rOut = rNuke * 1.12;
+            c.strokeStyle = i % 2 === 0 ? `rgba(192, 132, 252, ${(0.82 * ek).toFixed(2)})` : `rgba(255, 255, 255, ${(0.88 * ek).toFixed(2)})`;
+            c.lineWidth = i % 2 === 0 ? 7 * ek : 4 * ek;
+            c.beginPath();
+            c.moveTo(cx + Math.cos(a) * rIn, cy + Math.sin(a) * rIn);
+            c.lineTo(cx + Math.cos(a) * rOut, cy + Math.sin(a) * rOut);
+            c.stroke();
+          }
         }
         c.restore();
       },
     };
+    return entRef;
   }
 
   const SKILL_LIMITLESS_ALTERNATE = {
