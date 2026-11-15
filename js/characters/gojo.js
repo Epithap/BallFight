@@ -458,38 +458,63 @@
               }
             }
           }
-          gg.entities.push(rt.spawnShockRing(this.x, this.y, "#38bdf8", 135, 0.36));
+          gg.entities.push(rt.spawnShockRing(this.x, this.y, "#38bdf8", 165, 0.40));
+          gg.entities.push(rt.spawnShockRing(this.x, this.y, "#e0f2fe", 115, 0.28));
+          rt.addShake(0.32, 9);
           gg.sound.playCritHit();
         }
       },
       render(c) {
         c.save();
+        const spin = this.traveled * 2.2;
+        // Gravity tether connecting Gojo to the orbiting Max Blue singularity
+        c.strokeStyle = "rgba(56, 189, 248, 0.36)";
+        c.lineWidth = 3;
+        c.beginPath();
+        c.moveTo(owner.x, owner.y);
+        c.lineTo(this.x, this.y);
+        c.stroke();
+
         // Expanding spiral trail arc around Gojo
-        c.strokeStyle = "rgba(56, 189, 248, 0.45)";
-        c.lineWidth = 8;
+        c.strokeStyle = "rgba(14, 165, 233, 0.50)";
+        c.lineWidth = 9;
         c.lineCap = "round";
         c.beginPath();
-        c.arc(owner.x, owner.y, this.orbitR, this.angle - 1.1, this.angle);
+        c.arc(owner.x, owner.y, this.orbitR, this.angle - 1.25, this.angle);
         c.stroke();
 
         // Gravitational pull-pulse rings on enemies being dragged
         for (const pl of this.pulses) {
           const pk = Math.max(0, pl.life / pl.maxLife);
-          c.strokeStyle = `rgba(125, 211, 252, ${(pk * 0.85).toFixed(2)})`;
-          c.lineWidth = 3 * pk + 1;
+          c.strokeStyle = `rgba(125, 211, 252, ${(pk * 0.90).toFixed(2)})`;
+          c.lineWidth = 3.5 * pk + 1;
           c.beginPath();
-          c.arc(pl.x, pl.y, 18 + (1 - pk) * 34, 0, Math.PI * 2);
+          c.arc(pl.x, pl.y, 18 + (1 - pk) * 38, 0, Math.PI * 2);
           c.stroke();
         }
 
-        // Larger Blue singularity orb
+        // Cool Black-Hole Singularity Blue Orb + Rotating Accretion Rings
         c.translate(this.x, this.y);
-        c.fillStyle = "rgba(0, 180, 255, 0.34)";
-        c.beginPath(); c.arc(0, 0, 44, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "rgba(0, 180, 255, 0.26)";
+        c.beginPath(); c.arc(0, 0, 48, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "rgba(56, 189, 248, 0.45)";
+        c.beginPath(); c.arc(0, 0, 32, 0, Math.PI * 2); c.fill();
+
+        // Rotating accretion ellipses
+        c.strokeStyle = "rgba(224, 242, 254, 0.85)";
+        c.lineWidth = 2.4;
+        c.beginPath(); c.ellipse(0, 0, 42, 14, spin, 0, Math.PI * 2); c.stroke();
+        c.strokeStyle = "rgba(56, 189, 248, 0.80)";
+        c.beginPath(); c.ellipse(0, 0, 42, 14, -spin * 0.8, 0, Math.PI * 2); c.stroke();
+
+        // Abyssal singularity core + bright event horizon
         c.fillStyle = "#0ea5e9";
-        c.beginPath(); c.arc(0, 0, 25, 0, Math.PI * 2); c.fill();
-        c.fillStyle = "#e0f2fe";
-        c.beginPath(); c.arc(0, 0, 11, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.arc(0, 0, 22, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "#020617";
+        c.beginPath(); c.arc(0, 0, 12, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = "#e0f2fe";
+        c.lineWidth = 2.5;
+        c.stroke();
         c.restore();
       },
     };
@@ -758,39 +783,21 @@
         gy = topY + (sy - topY) * dp;
       }
 
-      // Draw Gojo floating visibly above the arena with blazing Six Eyes aura
+      // Draw Gojo using his ACTUAL original Shinjuku costume & Six Eyes face drawers!
       extCtx.save();
       extCtx.translate(cx, gy);
       extCtx.scale(sc, sc);
       const r = owner.radius || 28;
-      extCtx.fillStyle = "rgba(56, 189, 248, 0.32)";
-      extCtx.beginPath(); extCtx.arc(0, 0, r * 1.65, 0, Math.PI * 2); extCtx.fill();
-      extCtx.fillStyle = "rgba(186, 230, 253, 0.38)";
-      extCtx.beginPath(); extCtx.arc(0, 0, r * 1.25, 0, Math.PI * 2); extCtx.fill();
-
-      // Chibi Gojo body (Shinjuku black compression shirt + skin + hair + Six Eyes)
-      extCtx.fillStyle = "#f9e8dc";
+      extCtx.fillStyle = owner.color || "#1b1d2b";
+      extCtx.beginPath(); extCtx.arc(0, 0, r, 0, Math.PI * 2); extCtx.fill();
+      extCtx.lineWidth = 4;
       extCtx.strokeStyle = COLORS.ink;
-      extCtx.lineWidth = 3.2;
-      extCtx.beginPath(); extCtx.arc(0, 0, r, 0, Math.PI * 2); extCtx.fill(); extCtx.stroke();
-      extCtx.save();
-      extCtx.beginPath(); extCtx.arc(0, 0, r - 1.5, 0, Math.PI * 2); extCtx.clip();
-      extCtx.fillStyle = "#11131d";
-      extCtx.fillRect(-r, r * 0.50, r * 2, r * 0.55);
-      extCtx.restore();
-      // White spiky hair
-      extCtx.fillStyle = "#f4f7ff";
-      extCtx.beginPath();
-      extCtx.moveTo(-r * 0.9, -r * 0.26); extCtx.lineTo(-r * 0.78, -r * 1.16);
-      extCtx.lineTo(-r * 0.31, -r * 0.99); extCtx.lineTo(0, -r * 1.24);
-      extCtx.lineTo(r * 0.31, -r * 0.99); extCtx.lineTo(r * 0.78, -r * 1.16);
-      extCtx.lineTo(r * 0.9, -r * 0.26); extCtx.closePath();
-      extCtx.fill(); extCtx.stroke();
-      // Glowing Six Eyes
-      extCtx.fillStyle = "#38bdf8";
-      extCtx.beginPath(); extCtx.arc(-r * 0.3, -r * 0.08, r * 0.22, 0, Math.PI * 2); extCtx.arc(r * 0.3, -r * 0.08, r * 0.22, 0, Math.PI * 2); extCtx.fill();
-      extCtx.fillStyle = "#ffffff";
-      extCtx.beginPath(); extCtx.arc(-r * 0.3, -r * 0.08, r * 0.09, 0, Math.PI * 2); extCtx.arc(r * 0.3, -r * 0.08, r * 0.09, 0, Math.PI * 2); extCtx.fill();
+      extCtx.stroke();
+      if (rt.drawSkinFace) rt.drawSkinFace(owner, r, extCtx);
+      if (BF.COSTUME_DRAWERS && BF.COSTUME_DRAWERS.gojo) BF.COSTUME_DRAWERS.gojo(owner, r, extCtx);
+      if (BF.FACE_DRAWERS && BF.FACE_DRAWERS.gojo) {
+        BF.FACE_DRAWERS.gojo(owner, r, extCtx, { ex: 0, ey: 0, ult: true, cast: true });
+      }
       extCtx.restore();
 
       // Phase 2 (0.20..0.54): Red (left) & Blue (right) ignite above/flanking Gojo, then dive & collide in arena!
