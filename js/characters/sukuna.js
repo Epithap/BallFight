@@ -1914,29 +1914,49 @@
   }
 
   function spawnMahoragaWorldSlash(x, y, ang, owner, target, g) {
-    const len = 760;
-    const x1 = x - Math.cos(ang) * 90;
-    const y1 = y - Math.sin(ang) * 90;
+    const len = 780;
+    const x1 = x - Math.cos(ang) * 110;
+    const y1 = y - Math.sin(ang) * 110;
     const x2 = x + Math.cos(ang) * len;
     const y2 = y + Math.sin(ang) * len;
+
+    // Precompute spatial fracture shards along the dimension cut
+    const shards = [];
+    const perpX = -Math.sin(ang);
+    const perpY = Math.cos(ang);
+    for (let i = 0; i < 10; i++) {
+      const t = 0.1 + (i / 9) * 0.8;
+      const sx = x1 + (x2 - x1) * t;
+      const sy = y1 + (y2 - y1) * t;
+      const side = i % 2 === 0 ? 1 : -1;
+      const slen = 28 + (i % 3) * 18;
+      shards.push({
+        sx,
+        sy,
+        ex: sx + perpX * side * slen + Math.cos(ang) * 14,
+        ey: sy + perpY * side * slen + Math.sin(ang) * 14,
+      });
+    }
 
     // Deal 30 piercing DMG (bypasses Infinity & Shields)
     if (target && target.alive) {
       const dealt = g.applyDamage(target, 30, { pierce: true });
       target.flashTimer = 0.25;
-      target.vx = Math.cos(ang) * 460;
-      target.vy = Math.sin(ang) * 460;
+      target.vx = Math.cos(ang) * 480;
+      target.vy = Math.sin(ang) * 480;
       g.spawnDamageText(target.x, target.y - target.radius - 18, dealt, "#ef4444", true, "WORLD-CUTTING SLASH!");
       if (g.spawnCritBurst) g.spawnCritBurst(target.x, target.y);
+      g.spawnSparks(target.x, target.y, "#ef4444", "#fef08a");
     }
-    g.entities.push(rt.spawnShockRing(x, y, "#dc2626", 190, 0.45));
-    g.entities.push(rt.spawnShockRing(x, y, "#facc15", 130, 0.35));
+    g.entities.push(rt.spawnShockRing(x, y, "#dc2626", 210, 0.48));
+    g.entities.push(rt.spawnShockRing(x, y, "#facc15", 145, 0.36));
     g.sound.playCritHit();
-    rt.addShake(0.45, 13);
+    rt.addShake(0.48, 14);
 
     return {
-      life: 0.48,
-      maxLife: 0.48,
+      isFreezeCinematic: true,
+      life: 0.52,
+      maxLife: 0.52,
       dead: false,
       update(dt) {
         this.life -= dt;
@@ -1944,22 +1964,135 @@
       },
       render() {},
       renderOverlay(c) {
-        const k = Math.max(0, this.life / this.maxLife);
+        const p = 1 - Math.max(0, this.life / this.maxLife);
+        const k = Math.max(0, 1 - p);
         c.save();
-        c.globalAlpha = Math.min(1, k * 1.4);
+        c.globalAlpha = Math.min(1, k * 1.45);
         c.lineCap = "round";
+
         // Outer crimson spatial tear
         c.strokeStyle = "#dc2626";
-        c.lineWidth = 28 * k;
+        c.lineWidth = (34 + p * 10) * k;
         c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+
+        // Spatial fracture shards branching off the cut
+        c.strokeStyle = "#ef4444";
+        c.lineWidth = 5 * k;
+        for (const s of shards) {
+          c.beginPath(); c.moveTo(s.sx, s.sy); c.lineTo(s.ex, s.ey); c.stroke();
+        }
+        c.strokeStyle = "#09090b";
+        c.lineWidth = 2.4 * k;
+        for (const s of shards) {
+          c.beginPath(); c.moveTo(s.sx, s.sy); c.lineTo(s.ex, s.ey); c.stroke();
+        }
+
         // Pitch-black void core
         c.strokeStyle = "#09090b";
-        c.lineWidth = 14 * k;
+        c.lineWidth = 16 * k;
         c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
-        // Razor white-gold edge
+
+        // Razor white-gold dimension edge
         c.strokeStyle = "#fef08a";
-        c.lineWidth = 4 * k;
+        c.lineWidth = 4.5 * k;
         c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+        c.restore();
+      },
+    };
+  }
+
+  function spawnMahoragaWorldSlashCinematic(mahoraga, owner, target, g) {
+    const duration = 0.95;
+    const chargeDur = 0.56;
+    g.hitStop = duration;
+    g.sound.playCritHit();
+    rt.addShake(0.25, 6);
+
+    return {
+      isFreezeCinematic: true,
+      timer: 0,
+      duration,
+      slashed: false,
+      dead: false,
+      update(dt, gg) {
+        this.timer += dt;
+        const liveTarget = gg.balls.find((b) => b !== owner && b.alive) || target;
+        if (liveTarget) mahoraga.facing = liveTarget.x >= mahoraga.x ? 1 : -1;
+
+        if (this.timer < chargeDur) {
+          mahoraga.wheelAngle += dt * 14;
+          mahoraga.slashAnim = -0.85 * Math.min(1, this.timer / 0.42);
+        } else {
+          if (!this.slashed) {
+            this.slashed = true;
+            mahoraga.finaleSlashFired = true;
+            mahoraga.slashAnim = 1.45;
+            mahoraga.wheelAngle += Math.PI / 2;
+            const ang = liveTarget && liveTarget.alive
+              ? Math.atan2(liveTarget.y - mahoraga.y, liveTarget.x - mahoraga.x)
+              : (mahoraga.facing >= 0 ? 0 : Math.PI);
+            gg.entities.push(spawnMahoragaWorldSlash(mahoraga.x, mahoraga.y, ang, owner, liveTarget, gg));
+          }
+          mahoraga.finaleTimer = Math.max(0, this.duration - this.timer);
+          mahoraga.slashAnim = Math.max(0, mahoraga.slashAnim - dt * 3.2);
+        }
+
+        if (this.timer >= this.duration || !owner.alive) {
+          gg.spawnSparks(mahoraga.x, mahoraga.y, "#09090b", "#facc15");
+          gg.entities.push(rt.spawnShockRing(mahoraga.x, mahoraga.y, "#0f172a", 95, 0.32));
+          mahoraga.dead = true;
+          this.dead = true;
+        }
+      },
+      render() {},
+      renderOverlay(c) {
+        const liveTarget = target && target.alive ? target : null;
+        const ang = liveTarget
+          ? Math.atan2(liveTarget.y - mahoraga.y, liveTarget.x - mahoraga.x)
+          : (mahoraga.facing >= 0 ? 0 : Math.PI);
+
+        c.save();
+        if (this.timer < chargeDur) {
+          const cp = Math.min(1, this.timer / chargeDur);
+          // Dark void freeze veil
+          c.fillStyle = `rgba(6, 4, 14, ${(0.56 * Math.min(1, cp * 2)).toFixed(3)})`;
+          c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+          // Converging crimson & gold charge rings around Mahoraga
+          const r1 = 92 * (1 - cp * 0.72);
+          c.strokeStyle = "#ef4444";
+          c.lineWidth = 3.5;
+          c.beginPath(); c.arc(mahoraga.x, mahoraga.y, r1, 0, Math.PI * 2); c.stroke();
+          c.strokeStyle = "#facc15";
+          c.lineWidth = 2.2;
+          c.beginPath(); c.arc(mahoraga.x, mahoraga.y, r1 * 0.65, 0, Math.PI * 2); c.stroke();
+
+          // Razor-thin crimson targeting cut line through enemy
+          c.strokeStyle = `rgba(239, 68, 68, ${(0.35 + cp * 0.55).toFixed(3)})`;
+          c.lineWidth = 1.5 + cp * 2.5;
+          c.setLineDash([12, 8]);
+          c.beginPath();
+          c.moveTo(mahoraga.x, mahoraga.y);
+          c.lineTo(mahoraga.x + Math.cos(ang) * 760, mahoraga.y + Math.sin(ang) * 760);
+          c.stroke();
+          c.setLineDash([]);
+
+          // Charge callout text
+          c.textAlign = "center";
+          c.textBaseline = "middle";
+          c.lineJoin = "round";
+          c.font = "bold 24px 'Fredoka', 'Nunito', sans-serif";
+          c.lineWidth = 6;
+          c.strokeStyle = "#09090b";
+          c.strokeText("WORLD-CUTTING SLASH!", WORLD_SIZE * 0.5, WORLD_SIZE - 54);
+          c.fillStyle = "#ef4444";
+          c.fillText("WORLD-CUTTING SLASH!", WORLD_SIZE * 0.5, WORLD_SIZE - 54);
+        } else if (this.timer < chargeDur + 0.09) {
+          // Brief white-crimson slash impact flash
+          const fk = 1 - (this.timer - chargeDur) / 0.09;
+          c.fillStyle = `rgba(254, 226, 226, ${(0.42 * fk).toFixed(3)})`;
+          c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+        }
         c.restore();
       },
     };
@@ -2007,30 +2140,16 @@
 
         const target = gg.balls.find((b) => b !== owner && b.alive);
 
-        // Finale: right before expiring, charge & unleash World-Cutting Slash (30 DMG) then vanish!
+        // Finale: freeze screen to charge & unleash World-Cutting Slash (30 DMG), then vanish!
         if (this.life <= 0.85 && !this.finaleStarted) {
           this.finaleStarted = true;
-          this.finaleTimer = 0.85;
+          this.finaleTimer = 0.39;
           this.dashTimer = 0;
           gg.spawnDamageText(this.x, this.y - 44, 0, "#ef4444", true, "ADAPTATION COMPLETE!");
-          gg.entities.push(rt.spawnShockRing(this.x, this.y, "#dc2626", 95, 0.32));
+          gg.entities.push(spawnMahoragaWorldSlashCinematic(this, owner, target, gg));
         }
 
         if (this.finaleStarted) {
-          this.finaleTimer -= dt;
-          if (target) this.facing = target.x >= this.x ? 1 : -1;
-          if (this.finaleTimer <= 0.42 && !this.finaleSlashFired) {
-            this.finaleSlashFired = true;
-            this.slashAnim = 1.25;
-            this.wheelAngle += Math.PI / 2;
-            const ang = target ? Math.atan2(target.y - this.y, target.x - this.x) : (this.facing >= 0 ? 0 : Math.PI);
-            gg.entities.push(spawnMahoragaWorldSlash(this.x, this.y, ang, owner, target, gg));
-          }
-          if (this.finaleTimer <= 0) {
-            gg.spawnSparks(this.x, this.y, "#09090b", "#facc15");
-            gg.entities.push(rt.spawnShockRing(this.x, this.y, "#0f172a", 88, 0.3));
-            this.dead = true;
-          }
           return;
         }
 
