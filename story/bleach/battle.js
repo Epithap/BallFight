@@ -695,7 +695,7 @@
         });
         if (dist <= 110) {
           const diff = Math.abs(Math.atan2(Math.sin(angToPlayer - boss.aimAng), Math.cos(angToPlayer - boss.aimAng)));
-          if (diff <= 0.96) damagePlayer(boss.enraged ? 28 : 24, player, boss.aimAng);
+          if (diff <= 0.96) damagePlayer(boss.enraged ? 13 : 10, player, boss.aimAng);
         }
       } else if (boss.pattern === "line") {
         boss.x = Math.max(46, Math.min(394, boss.x + boss.lungeVx * dt));
@@ -703,7 +703,7 @@
         spawnSparks(boss.x, boss.y, "#ef4444", 3, 120);
         if (!boss.hitApplied && dist <= boss.r + player.r + 14) {
           boss.hitApplied = true;
-          damagePlayer(boss.enraged ? 40 : 34, player, boss.aimAng);
+          damagePlayer(boss.enraged ? 18 : 14, player, boss.aimAng);
         }
       } else if (boss.pattern === "circle" && !boss.hitApplied) {
         boss.hitApplied = true;
@@ -713,7 +713,7 @@
           const a = (i * TAU) / 10;
           spikes.push({ x: boss.x + Math.cos(a) * 68, y: boss.y + Math.sin(a) * 68, life: 0.48, maxLife: 0.48 });
         }
-        if (dist <= 118) damagePlayer(boss.enraged ? 48 : 42, player, angToPlayer);
+        if (dist <= 118) damagePlayer(boss.enraged ? 20 : 16, player, angToPlayer);
       } else if (boss.pattern === "barrage" && !boss.hitApplied) {
         boss.hitApplied = true;
         const count = boss.enraged ? 5 : 3;
@@ -727,7 +727,7 @@
             vx: Math.cos(a) * (boss.enraged ? 265 : 225),
             vy: Math.sin(a) * (boss.enraged ? 265 : 225),
             r: 12,
-            dmg: 22,
+            dmg: 8,
             life: 2.2,
             deflected: false,
           });
@@ -746,7 +746,7 @@
           const proj = dx * Math.cos(a) + dy * Math.sin(a);
           const perp = Math.abs(-dx * Math.sin(a) + dy * Math.cos(a));
           if (proj > 0 && proj <= 160 && perp <= 26) {
-            damagePlayer(36, player, a);
+            damagePlayer(15, player, a);
           }
         }
       }
