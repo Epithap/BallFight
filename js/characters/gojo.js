@@ -1004,7 +1004,7 @@
       if (!target) return false;
 
       const incompleteShrineActive = g.entities.some((e) => e.isIncompleteShrine && !e.dead && e.domainOwner !== ball);
-      if (ball.ultTimer > 0 && !ball.domainUsedInUlt && !incompleteShrineActive) {
+      if (ball.ultTimer > 0 && !ball.domainUsedInUlt && !incompleteShrineActive && !ball._hiddenOffScreen) {
         ball.domainUsedInUlt = true;
         rt.triggerDomainExpansion(ball, {
           type: "unlimited_void",

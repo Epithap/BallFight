@@ -564,6 +564,12 @@
           loser.flashTimer = 0.22;
           loser.squash = 1.0;
 
+          // Restore winner's movement velocity (Domain Clash zeroes both fighters' vx/vy)
+          const wSpd = Math.max(240, winner.baseSpeed || 240);
+          const wAng = kAng + Math.PI + (rt().rng() - 0.5) * 0.6;
+          winner.vx = Math.cos(wAng) * wSpd;
+          winner.vy = Math.sin(wAng) * wSpd;
+
           g.entities.push(rt().spawnShockRing(splitX, WORLD_SIZE * 0.5, winSpec.color, 220, 0.55));
           g.entities.push(rt().spawnShockRing(splitX, WORLD_SIZE * 0.5, COLORS.white, 150, 0.38));
           g.entities.push(rt().spawnBanner(`DOMAIN OVERPOWER: ${winSpec.name}!`, winSpec.color));
@@ -875,6 +881,13 @@
         if (!ent.isDomain && !ent.isDomainClash && !ent.isSummon && !ent.keepDuringDomainClash) ent.dead = true;
       }
       rt().floatingTexts.length = 0;
+      const pad = (BF.CONSTANTS && BF.CONSTANTS.ARENA_PAD) || 26;
+      for (const f of [owner, enemy]) {
+        if (!f) continue;
+        f._hiddenOffScreen = false;
+        f.x = Math.min(WORLD_SIZE - pad - (f.radius || 22), Math.max(pad + (f.radius || 22), f.x));
+        f.y = Math.min(WORLD_SIZE - pad - (f.radius || 22), Math.max(pad + (f.radius || 22), f.y));
+      }
       owner.effects = owner.effects.filter((ef) => ef.type !== "stun");
       owner.cast = null;
       owner.channelTimer = 0;
