@@ -726,86 +726,165 @@
   BF.COSTUME_DRAWERS.sukuna = (ball, r, c) => {
     const isHeian = Boolean(ball.heianEraMode || ball.previewHeianEra);
     const isMeguna = Boolean((ball.evolved || ball.previewMeguna) && !isHeian);
+    const nowS = performance.now() * 0.004;
 
-    // 1. Meguna Floating Mahoraga Dharma Wheel (behind/above head)
+    // 1. Meguna: Ten Shadows Aura + Sculpted Golden Mahoraga Dharma Wheel behind head
     if (isMeguna) {
+      // Subtle Ten Shadows dark-purple shadow aura
       c.save();
-      c.translate(0, -r * 1.18);
+      c.strokeStyle = "rgba(126, 34, 206, 0.55)";
+      c.lineWidth = 3.5;
+      c.beginPath();
+      c.arc(0, 0, r * 1.14 + Math.sin(nowS * 1.4) * 1.5, 0, Math.PI * 2);
+      c.stroke();
+      c.restore();
+
+      // Golden Eight-Handled Mahoraga Dharma Wheel
+      c.save();
+      c.translate(0, -r * 0.92);
       c.rotate(ball.mahoragaWheelSpin || (performance.now() * 0.0008));
-      const wr = r * 0.48;
-      c.strokeStyle = COLORS.ink;
-      c.lineWidth = 4.2;
-      c.beginPath(); c.arc(0, 0, wr, 0, Math.PI * 2); c.stroke();
-      c.strokeStyle = "#facc15";
-      c.lineWidth = 2.4;
-      c.beginPath(); c.arc(0, 0, wr, 0, Math.PI * 2); c.stroke();
+      const wr = r * 0.54;
+      // Soft golden halo glow
+      const wg = c.createRadialGradient(0, 0, wr * 0.2, 0, 0, wr * 1.25);
+      wg.addColorStop(0, "rgba(250, 204, 21, 0.28)");
+      wg.addColorStop(1, "rgba(250, 204, 21, 0)");
+      c.fillStyle = wg;
+      c.beginPath(); c.arc(0, 0, wr * 1.25, 0, Math.PI * 2); c.fill();
+
+      // 8 Spokes + Handle Knobs
       for (let i = 0; i < 8; i++) {
         const a = (i / 8) * Math.PI * 2;
-        c.beginPath();
-        c.moveTo(0, 0);
-        c.lineTo(Math.cos(a) * (wr + 4), Math.sin(a) * (wr + 4));
-        c.stroke();
+        const hx = Math.cos(a) * (wr + 5.5);
+        const hy = Math.sin(a) * (wr + 5.5);
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 4.6;
+        c.beginPath(); c.moveTo(0, 0); c.lineTo(hx, hy); c.stroke();
+        c.strokeStyle = "#eab308";
+        c.lineWidth = 2.4;
+        c.beginPath(); c.moveTo(0, 0); c.lineTo(hx, hy); c.stroke();
+
         c.fillStyle = "#fef08a";
-        c.beginPath();
-        c.arc(Math.cos(a) * (wr + 4), Math.sin(a) * (wr + 4), 2.5, 0, Math.PI * 2);
-        c.fill();
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 1.8;
+        c.beginPath(); c.arc(hx, hy, 3.2, 0, Math.PI * 2); c.fill(); c.stroke();
       }
+      // Double wheel rim + center hub
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 5.4;
+      c.beginPath(); c.arc(0, 0, wr, 0, Math.PI * 2); c.stroke();
+      c.strokeStyle = "#facc15";
+      c.lineWidth = 2.8;
+      c.beginPath(); c.arc(0, 0, wr, 0, Math.PI * 2); c.stroke();
+      c.fillStyle = "#fef08a";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 2;
+      c.beginPath(); c.arc(0, 0, 4.2, 0, Math.PI * 2); c.fill(); c.stroke();
       c.restore();
     }
 
-    // 2. Heian Era 4 Animated Arms (2 upper combat arms + 2 lower chanting arms + Kamutoke Vajra)
+    // 2. Heian Era: Crimson Aura + 4 Tattooed Arms + Kamutoke Vajra
     if (isHeian) {
-      const nowS = performance.now() * 0.004;
+      c.save();
+      c.strokeStyle = "rgba(220, 38, 38, 0.55)";
+      c.lineWidth = 4;
+      c.beginPath();
+      c.arc(0, 0, r * 1.18 + Math.sin(nowS * 1.8) * 1.8, 0, Math.PI * 2);
+      c.stroke();
+      c.restore();
+
       for (const side of [-1, 1]) {
-        // Upper arm
+        // Upper muscular combat arm with black Sukuna cuff bands
         c.save();
-        c.translate(side * r * 0.92, r * 0.12);
-        c.rotate(side * (-0.35 + Math.sin(nowS) * 0.12));
-        c.fillStyle = "#fca5a5";
+        c.translate(side * r * 0.9, -r * 0.04);
+        c.rotate(side * (-0.52 + Math.sin(nowS) * 0.1));
+        c.fillStyle = "#fed7aa";
         c.strokeStyle = COLORS.ink;
         c.lineWidth = 2.4;
-        c.beginPath(); c.roundRect(-4, -2, 8, r * 0.56, 4); c.fill(); c.stroke();
-        // Kamutoke golden vajra in upper-right hand
+        c.beginPath(); c.roundRect(-4.5, -2, 9, r * 0.62, 4.5); c.fill(); c.stroke();
+        // Black cursed wrist/bicep bands
+        c.fillStyle = "#09090b";
+        c.fillRect(-4.5, r * 0.14, 9, 3.5);
+        c.fillRect(-4.5, r * 0.42, 9, 3.5);
+        // Fist
+        c.fillStyle = "#fed7aa";
+        c.beginPath(); c.arc(0, r * 0.62, 4.8, 0, Math.PI * 2); c.fill(); c.stroke();
+
+        // Kamutoke golden vajra thunderbolt in upper-right hand
         if (side === 1) {
+          c.save();
+          c.translate(0, r * 0.62);
+          c.rotate(0.35);
+          // Pronged vajra ends
           c.fillStyle = "#facc15";
-          c.beginPath(); c.roundRect(-5, r * 0.44, 10, 14, 3); c.fill(); c.stroke();
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 2;
+          c.beginPath();
+          c.moveTo(-4, -14); c.lineTo(0, -21); c.lineTo(4, -14);
+          c.lineTo(3, 14); c.lineTo(0, 21); c.lineTo(-3, 14);
+          c.closePath();
+          c.fill(); c.stroke();
+          // Handle grip
+          c.fillStyle = "#dc2626";
+          c.fillRect(-3.2, -5, 6.4, 10);
+          c.strokeRect(-3.2, -5, 6.4, 10);
+          c.restore();
         }
         c.restore();
 
-        // Lower chanting arm
+        // Lower chanting / hand-sign arm
         c.save();
-        c.translate(side * r * 0.78, r * 0.56);
-        c.rotate(side * (0.45 + Math.cos(nowS) * 0.1));
-        c.fillStyle = "#f87171";
+        c.translate(side * r * 0.78, r * 0.5);
+        c.rotate(side * (0.62 + Math.cos(nowS) * 0.08));
+        c.fillStyle = "#fdba74";
         c.strokeStyle = COLORS.ink;
         c.lineWidth = 2.2;
-        c.beginPath(); c.roundRect(-3.5, -2, 7, r * 0.46, 3.5); c.fill(); c.stroke();
+        c.beginPath(); c.roundRect(-4, -2, 8, r * 0.5, 4); c.fill(); c.stroke();
+        c.fillStyle = "#09090b";
+        c.fillRect(-4, r * 0.28, 8, 3);
+        c.fillStyle = "#fdba74";
+        c.beginPath(); c.arc(0, r * 0.5, 4.2, 0, Math.PI * 2); c.fill(); c.stroke();
         c.restore();
       }
     }
 
     rt.drawSkinFace(ball, r, c);
 
-    // 3. Outfit (Meguna Dark Jujutsu Uniform vs Sukuna/Heian Shredded Haori)
+    // 3. Outfit (Meguna Dark Jujutsu High Uniform vs Yuji/Heian Shredded Haori)
     c.save();
     c.beginPath();
     c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
     c.clip();
     if (isMeguna) {
+      // Dark Jujutsu High uniform + sharp lapels + gold collar button
       c.fillStyle = "#0f172a";
       c.beginPath();
-      c.moveTo(-r, r * 0.46);
-      c.lineTo(0, r * 0.78);
-      c.lineTo(r, r * 0.46);
+      c.moveTo(-r, r * 0.44);
+      c.lineTo(0, r * 0.76);
+      c.lineTo(r, r * 0.44);
       c.lineTo(r, r * 1.1);
       c.lineTo(-r, r * 1.1);
       c.closePath();
       c.fill();
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 2.4;
       c.stroke();
-      c.fillStyle = "#7e22ce";
-      c.fillRect(-r * 0.34, r * 0.78, r * 0.68, r * 0.34);
+      // Inner purple-crimson Ten Shadows collar trim
+      c.fillStyle = "#581c87";
+      c.beginPath();
+      c.moveTo(-r * 0.46, r * 0.58);
+      c.lineTo(0, r * 0.82);
+      c.lineTo(r * 0.46, r * 0.58);
+      c.lineTo(r * 0.36, r * 1.1);
+      c.lineTo(-r * 0.36, r * 1.1);
+      c.closePath();
+      c.fill();
+      // Gold Jujutsu button
+      c.fillStyle = "#facc15";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 1.6;
+      c.beginPath(); c.arc(0, r * 0.82, 3.2, 0, Math.PI * 2); c.fill(); c.stroke();
     } else {
-      c.fillStyle = "#f1f5f9";
+      c.fillStyle = "#f8fafc";
       c.beginPath();
       c.moveTo(-r, r * 0.46);
       c.lineTo(0, r * 0.82);
@@ -832,19 +911,36 @@
       c.closePath();
       c.fill();
 
-      // Crimson inner sash
+      // Crimson inner sash (with gold trim in Heian Era)
       c.fillStyle = "#dc2626";
       c.fillRect(-r * 0.35, r * 0.78, r * 0.7, r * 0.35);
+      if (isHeian) {
+        c.fillStyle = "#facc15";
+        c.fillRect(-r * 0.35, r * 0.78, r * 0.7, 3);
+      }
     }
 
-    // Heian Era bone-like right facial mask plate
+    // Heian Era: Sculpted Angular Bone-Mask Plate on Right Side of Face (keeps 4 eyes visible!)
     if (isHeian) {
-      c.fillStyle = "#cbd5e1";
+      c.fillStyle = "#e2e8f0";
       c.strokeStyle = COLORS.ink;
       c.lineWidth = 2.2;
       c.beginPath();
-      c.ellipse(r * 0.44, -r * 0.06, r * 0.36, r * 0.42, 0.12, 0, Math.PI * 2);
+      c.moveTo(r * 0.24, -r * 0.44);
+      c.lineTo(r * 0.74, -r * 0.32);
+      c.lineTo(r * 0.84, r * 0.08);
+      c.lineTo(r * 0.56, r * 0.36);
+      c.lineTo(r * 0.22, r * 0.22);
+      c.quadraticCurveTo(r * 0.32, -r * 0.08, r * 0.24, -r * 0.44);
+      c.closePath();
       c.fill();
+      c.stroke();
+      // Subtle chitin ridge line on mask
+      c.strokeStyle = "#94a3b8";
+      c.lineWidth = 1.6;
+      c.beginPath();
+      c.moveTo(r * 0.44, -r * 0.32);
+      c.lineTo(r * 0.62, r * 0.22);
       c.stroke();
     }
     c.restore();
