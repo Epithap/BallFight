@@ -2662,7 +2662,7 @@
 
     const mainNav = document.getElementById("main-nav");
     if (mainNav) {
-      mainNav.classList.toggle("hidden", targetId === "screen-battle");
+      mainNav.classList.toggle("hidden", targetId === "screen-battle" || targetId === "screen-story-play");
       mainNav.querySelectorAll(".nav-btn").forEach((item) => {
         item.classList.toggle("active", item.getAttribute("data-target") === targetId);
       });
@@ -2692,6 +2692,7 @@
       updateShopUI();
     }
   }
+  BF.switchScreen = switchScreen;
 
   // Navigation Event Handlers
   document.querySelectorAll(".cartoon-nav .nav-btn").forEach((btn) => {

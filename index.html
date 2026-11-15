@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="story/story.css">
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -96,6 +97,175 @@
             <span class="route-line"></span>
             <span class="node boss"><svg><use href="#i-crown"/></svg></span>
           </div>
+        </div>
+
+        <!-- STORY SAGA (2D Action-RPG Overworld Mode — v1.4 Prototype) -->
+        <div class="story-saga-card">
+          <div class="story-saga-head">
+            <div class="stamp stamp-yellow">STORY SAGA</div>
+            <span class="story-badge-new">v1.4 BETA</span>
+          </div>
+          <p class="card-desc">Step into iconic anime storylines from Episode 1 — explore the world, live the story, and awaken legendary powers.</p>
+          <div class="story-saga-preview">
+            <button id="btn-open-story-saga" class="btn btn-green btn-wide" type="button">PLAY SAGA</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= STORY SAGA SELECTOR ================= -->
+      <section id="screen-story-select" class="screen screen-story-select hidden">
+        <div class="story-select-card">
+          <div class="story-select-top">
+            <div class="stamp stamp-yellow">STORY SAGA</div>
+            <button id="btn-story-back-home" class="btn" type="button">← BACK</button>
+          </div>
+          <div class="story-saga-grid">
+            <div class="saga-chapter-card">
+              <div class="saga-banner-box saga-banner-bleach">
+                <div>
+                  <div class="saga-banner-title">BLEACH SAGA</div>
+                  <div class="saga-banner-sub">EP. 1 • DEATH &amp; STRAWBERRY</div>
+                </div>
+                <canvas id="story-bleach-mascot" class="saga-banner-mascot" width="84" height="84"></canvas>
+              </div>
+              <p class="card-desc">Fifteen-year-old Ichigo Kurosaki has been able to see ghosts for as long as he can remember. One fateful night in Karakura Town, a mysterious girl in black robes descends under the full moon while a monstrous spirit stalks the streets near Kurosaki Clinic.</p>
+              <button id="btn-play-bleach-saga" class="btn btn-green btn-wide" type="button">START EPISODE 1</button>
+            </div>
+
+            <div class="saga-chapter-card locked">
+              <div class="saga-banner-box saga-banner-locked">
+                <div>
+                  <div class="saga-banner-title">NARUTO SAGA</div>
+                  <div class="saga-banner-sub">COMING IN NEXT UPDATE</div>
+                </div>
+                <span class="ribbon"><svg><use href="#i-lock"/></svg>SOON</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= STORY SAGA PLAY (460px Mobile Portrait Frame) ================= -->
+      <section id="screen-story-play" class="screen screen-story-play hidden">
+        <div class="story-phone-frame">
+          <canvas id="story-canvas"></canvas>
+
+          <!-- Animated Cutscene Overlay -->
+          <div id="story-cutscene" class="story-cutscene hidden">
+            <canvas id="story-cutscene-canvas" width="460" height="680"></canvas>
+            <button id="story-cutscene-skip" class="story-cutscene-skip" type="button">SKIP ▶</button>
+          </div>
+
+          <!-- Top-Left HUD: Stat + Quest -->
+          <div class="story-hud-tl">
+            <div class="story-status-box">
+              <div class="story-zone-row">
+                <span id="story-zone-name">ICHIGO'S BEDROOM</span>
+                <span>HUMAN</span>
+              </div>
+              <div class="story-bar-wrap">
+                <div id="story-hp-fill" class="story-bar-fill story-bar-hp" style="width:100%"></div>
+                <span id="story-hp-text" class="story-bar-label">HP 100/100</span>
+              </div>
+            </div>
+            <div class="story-quest-box">
+              <div id="story-quest-title" class="story-quest-title">EP. 1: DEATH &amp; STRAWBERRY</div>
+              <div id="story-quest-desc">Explore Ichigo's bedroom.</div>
+            </div>
+          </div>
+
+          <!-- Top-Right HUD: MAPs + EXIT -->
+          <div class="story-hud-tr">
+            <div class="story-minimap-frame">
+              <canvas id="story-minimap" width="104" height="78"></canvas>
+            </div>
+            <button id="story-btn-exit" class="story-mini-btn" type="button">EXIT</button>
+          </div>
+
+          <!-- Boss HP Bar (Shown during 1v1 Boss Battle) -->
+          <div id="story-boss-hud" class="story-boss-hud hidden">
+            <div class="story-boss-head">
+              <span id="story-boss-name">FISHBONE D · HOLLOW</span>
+              <span id="story-boss-hp-text">600 / 600</span>
+            </div>
+            <div class="story-boss-track">
+              <div id="story-boss-fill" class="story-boss-fill" style="width:100%"></div>
+            </div>
+          </div>
+
+          <!-- Bottom-Left Virtual Joystick -->
+          <div id="story-joystick" class="story-joystick-zone">
+            <div class="story-joystick-base">
+              <div id="story-joystick-knob" class="story-joystick-knob"></div>
+            </div>
+          </div>
+
+          <!-- Bottom-Right Action Cluster (Interact + Combat Pad) -->
+          <div class="story-actions">
+            <button id="story-interact-btn" class="story-interact-btn hidden" type="button">INSPECT (F)</button>
+            <button id="story-btn-atk" class="story-skill-btn locked" type="button">
+              NO SKILL<span class="story-skill-key">HUMAN</span>
+            </button>
+
+            <!-- 5-Button Mobile Combat Arc (Shown during 1v1 Battle) -->
+            <div id="story-combat-pad" class="story-combat-pad hidden">
+              <button id="story-cbtn-ulti" class="story-cbtn story-cbtn-ulti" type="button">
+                <span class="cbtn-lbl">ULTI</span>
+                <span id="story-cd-ulti" class="cbtn-sub">0%</span>
+              </button>
+              <button id="story-cbtn-skill" class="story-cbtn story-cbtn-skill" type="button">
+                <span class="cbtn-lbl">SKILL</span>
+                <span id="story-cd-skill" class="cbtn-sub">K</span>
+              </button>
+              <button id="story-cbtn-block" class="story-cbtn story-cbtn-block" type="button">
+                <span class="cbtn-lbl">BLOCK</span>
+                <span id="story-cd-block" class="cbtn-sub">Q</span>
+              </button>
+              <button id="story-cbtn-dodge" class="story-cbtn story-cbtn-dodge" type="button">
+                <span class="cbtn-lbl">DODGE</span>
+                <span id="story-cd-dodge" class="cbtn-sub">L</span>
+              </button>
+              <button id="story-cbtn-atk" class="story-cbtn story-cbtn-atk" type="button">
+                <span class="cbtn-lbl">ATK</span>
+                <span class="cbtn-sub">J</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Battle Result Modal (Victory / Retry) -->
+          <div id="story-battle-result" class="story-battle-result hidden">
+            <div class="story-result-card">
+              <div id="story-result-badge" class="stamp stamp-yellow">VICTORY!</div>
+              <h3 id="story-result-title" class="story-result-title">HOLLOW PURIFIED!</h3>
+              <p id="story-result-desc" class="story-result-desc">You defeated Fishbone D and protected Karakura Town!</p>
+              <div class="story-result-actions">
+                <button id="story-btn-retry" class="btn btn-green hidden" type="button">RETRY BATTLE</button>
+                <button id="story-btn-result-ok" class="btn btn-green" type="button">BACK TO SAGA</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- VN Dual-Portrait Dialogue Box (Prototype Image 2) -->
+          <div id="story-vn-wrap" class="story-vn-wrap hidden">
+            <div class="story-vn-portraits">
+              <div id="story-vn-left" class="story-vn-slot hidden">
+                <canvas id="story-vn-canvas-left" width="68" height="68"></canvas>
+              </div>
+              <div id="story-vn-right" class="story-vn-slot hidden">
+                <canvas id="story-vn-canvas-right" width="68" height="68"></canvas>
+              </div>
+            </div>
+            <div class="story-vn-box">
+              <div id="story-vn-name" class="story-vn-name">???</div>
+              <div id="story-vn-text" class="story-vn-text">...</div>
+              <div class="story-vn-footer">
+                <button id="story-vn-next" class="btn btn-green" type="button">NEXT ▶</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating Toast -->
+          <div id="story-toast" class="story-toast hidden"></div>
         </div>
       </section>
 
@@ -689,5 +859,12 @@
   <script src="js/characters/denji.js"></script>
   <script src="js/characters/garou.js"></script>
   <script src="game.js"></script>
+  <script src="story/quests.js"></script>
+  <script src="story/bleach/npcs.js"></script>
+  <script src="story/bleach/maps.js"></script>
+  <script src="story/bleach/cutscenes.js"></script>
+  <script src="story/bleach/battle.js"></script>
+  <script src="story/engine.js"></script>
+  <script src="story/ui.js"></script>
 </body>
 </html>
