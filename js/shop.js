@@ -97,7 +97,7 @@
     },
     sukuna: {
       charId: "sukuna",
-      evolvedName: "MEGUNA (SHINJUKU)",
+      evolvedName: "HEIAN CALAMITY",
       evolvedRole: "TEN SHADOWS • MAHORAGA & HEIAN FORM",
       starterLabel: "STARTER (YUJI VESSEL)",
       evolvedLabel: "EVOLVED (MEGUNA)",
