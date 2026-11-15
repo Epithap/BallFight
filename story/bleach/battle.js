@@ -12,6 +12,162 @@
   let ultFlash = 0;
   let enrageBanner = 0;
 
+  // ===== LAYERED ANIME COMBAT SFX (Web Audio, zero GC noise buffer) =====
+  const SFX = (() => {
+    let ctx = null;
+    let noiseBuf = null;
+
+    function ready() {
+      if (window.BallFight && window.BallFight.sound && window.BallFight.sound.enabled === false) return null;
+      if (!ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        ctx = new AC();
+        const len = ctx.sampleRate;
+        noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+        const data = noiseBuf.getChannelData(0);
+        for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      }
+      if (ctx.state === "suspended") ctx.resume().catch(() => {});
+      return ctx.state === "running" ? ctx : null;
+    }
+
+    function noiseSweep(c, dur, fStart, fEnd, type, vol, delay = 0) {
+      const now = c.currentTime + delay;
+      const src = c.createBufferSource();
+      src.buffer = noiseBuf;
+      const flt = c.createBiquadFilter();
+      flt.type = type;
+      flt.frequency.setValueAtTime(fStart, now);
+      flt.frequency.exponentialRampToValueAtTime(Math.max(40, fEnd), now + dur);
+      flt.Q.value = type === "bandpass" ? 2.2 : 0.8;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(vol, now + Math.min(0.015, dur * 0.2));
+      g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      src.connect(flt); flt.connect(g); g.connect(c.destination);
+      src.start(now); src.stop(now + dur + 0.02);
+    }
+
+    function tone(c, dur, fStart, fEnd, type, vol, delay = 0) {
+      const now = c.currentTime + delay;
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(fStart, now);
+      if (fEnd !== fStart) o.frequency.exponentialRampToValueAtTime(Math.max(25, fEnd), now + dur);
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(vol, now + Math.min(0.012, dur * 0.2));
+      g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      o.connect(g); g.connect(c.destination);
+      o.start(now); o.stop(now + dur + 0.02);
+    }
+
+    return {
+      unlock: () => ready(),
+      whoosh(heavy = false) {
+        const c = ready(); if (!c) return;
+        noiseSweep(c, heavy ? 0.19 : 0.12, heavy ? 1900 : 2500, heavy ? 280 : 460, "bandpass", heavy ? 0.24 : 0.16);
+        tone(c, 0.09, heavy ? 520 : 840, heavy ? 210 : 380, "triangle", 0.07);
+      },
+      slashHit(heavy = false) {
+        const c = ready(); if (!c) return;
+        noiseSweep(c, heavy ? 0.14 : 0.09, 3400, 700, "highpass", heavy ? 0.22 : 0.15);
+        tone(c, heavy ? 0.16 : 0.10, heavy ? 150 : 190, 42, "sine", heavy ? 0.28 : 0.18);
+      },
+      skillWindup() {
+        const c = ready(); if (!c) return;
+        tone(c, 0.13, 320, 920, "sine", 0.11);
+        noiseSweep(c, 0.13, 800, 2400, "bandpass", 0.09);
+      },
+      reiatsuCleave() {
+        const c = ready(); if (!c) return;
+        noiseSweep(c, 0.28, 2200, 240, "bandpass", 0.28);
+        tone(c, 0.24, 175, 36, "sine", 0.32);
+        tone(c, 0.22, 660, 330, "triangle", 0.12);
+      },
+      shunpo() {
+        const c = ready(); if (!c) return;
+        noiseSweep(c, 0.10, 4200, 900, "highpass", 0.20);
+        tone(c, 0.09, 1350, 280, "sine", 0.13);
+      },
+      blockRaise() {
+        const c = ready(); if (!c) return;
+        tone(c, 0.08, 720, 960, "triangle", 0.10);
+      },
+      guardHit() {
+        const c = ready(); if (!c) return;
+        tone(c, 0.11, 240, 85, "triangle", 0.20);
+        noiseSweep(c, 0.08, 1200, 400, "bandpass", 0.14);
+      },
+      parryClang() {
+        const c = ready(); if (!c) return;
+        tone(c, 0.34, 1240, 1180, "sine", 0.20);
+        tone(c, 0.28, 1860, 1780, "triangle", 0.14);
+        tone(c, 0.22, 140, 38, "sine", 0.28);
+        noiseSweep(c, 0.16, 3600, 800, "highpass", 0.22);
+      },
+      deflect() {
+        const c = ready(); if (!c) return;
+        tone(c, 0.18, 980, 1480, "sine", 0.16);
+        noiseSweep(c, 0.10, 2800, 900, "highpass", 0.15);
+      },
+      ultiCutIn() {
+        const c = ready(); if (!c) return;
+        tone(c, 0.34, 95, 420, "sawtooth", 0.14);
+        noiseSweep(c, 0.34, 400, 2200, "bandpass", 0.16);
+      },
+      ultiImpact() {
+        const c = ready(); if (!c) return;
+        tone(c, 0.45, 130, 26, "sine", 0.36);
+        noiseSweep(c, 0.42, 2600, 180, "bandpass", 0.32);
+        tone(c, 0.30, 880, 440, "triangle", 0.14, 0.04);
+      },
+      bossTelegraph(pat) {
+        const c = ready(); if (!c) return;
+        if (pat === "barrage") {
+          tone(c, 0.28, 180, 520, "sawtooth", 0.09);
+        } else {
+          tone(c, 0.24, 110, 62, "sawtooth", 0.10);
+          noiseSweep(c, 0.20, 600, 250, "bandpass", 0.09);
+        }
+      },
+      bossAttack(pat) {
+        const c = ready(); if (!c) return;
+        if (pat === "circle" || pat === "cross") {
+          tone(c, 0.32, 125, 28, "sine", 0.32);
+          noiseSweep(c, 0.28, 1400, 180, "lowpass", 0.26);
+        } else if (pat === "line") {
+          noiseSweep(c, 0.26, 1600, 320, "bandpass", 0.24);
+          tone(c, 0.18, 140, 55, "sawtooth", 0.15);
+        } else if (pat === "barrage") {
+          tone(c, 0.16, 540, 130, "sawtooth", 0.14);
+          noiseSweep(c, 0.12, 2200, 600, "bandpass", 0.12);
+        } else {
+          noiseSweep(c, 0.16, 1500, 340, "bandpass", 0.22);
+          tone(c, 0.14, 130, 52, "sawtooth", 0.14);
+        }
+      },
+      bossEnrage() {
+        const c = ready(); if (!c) return;
+        tone(c, 0.48, 165, 68, "sawtooth", 0.18);
+        tone(c, 0.45, 220, 88, "square", 0.09);
+        noiseSweep(c, 0.45, 900, 220, "bandpass", 0.22);
+      },
+      playerHurt() {
+        const c = ready(); if (!c) return;
+        tone(c, 0.18, 160, 44, "sawtooth", 0.22);
+        noiseSweep(c, 0.12, 1800, 300, "lowpass", 0.20);
+      },
+      victory() {
+        const c = ready(); if (!c) return;
+        tone(c, 0.22, 523.25, 523.25, "triangle", 0.14, 0);
+        tone(c, 0.22, 659.25, 659.25, "triangle", 0.14, 0.09);
+        tone(c, 0.36, 783.99, 783.99, "triangle", 0.16, 0.18);
+      },
+    };
+  })();
+
   const pState = {
     hp: 100,
     maxHp: 100,
@@ -170,6 +326,7 @@
   }
 
   function start(player) {
+    SFX.unlock();
     resetBattle(player);
     S.UI.setBattleMode(true);
     S.UI.showToast("1v1 BOSS BATTLE! DEFEAT FISHBONE D!");
@@ -204,6 +361,7 @@
       boss.speed = 124;
       enrageBanner = 1.45;
       shake = 12;
+      SFX.bossEnrage();
       slashes.push({ x: boss.x, y: boss.y, ang: 0, r: 150, color: "#ef4444", life: 0.45, maxLife: 0.45, ring: true });
       spawnFloat(boss.x, boss.y - 56, "ENRAGED!!", "#ef4444", 1.35);
       spawnSparks(boss.x, boss.y, "#ef4444", 28, 230);
@@ -211,6 +369,7 @@
 
     if (boss.hp <= 0 && !resultShown) {
       resultShown = true;
+      SFX.victory();
       spawnSparks(boss.x, boss.y, "#fef08a", 38, 250);
       spawnSparks(boss.x, boss.y, "#38bdf8", 30, 220);
       shake = 14;
@@ -226,6 +385,7 @@
     if (pState.hp <= 0 || resultShown) return;
     if (pState.iframe > 0) {
       pState.ulti = Math.min(100, pState.ulti + 3);
+      SFX.shunpo();
       spawnFloat(player.x, player.y - 30, "PERFECT DODGE! +3%", "#4ade80", 1.12);
       spawnSparks(player.x, player.y, "#4ade80", 12, 160);
       return;
@@ -239,6 +399,7 @@
         boss.chainLeft = 0;
         hitStop = 0.095;
         shake = 11;
+        SFX.parryClang();
         spawnFloat(player.x, player.y - 34, "PERFECT PARRY!!", "#ffe047", 1.4);
         spawnSparks(player.x, player.y, "#ffe047", 26, 230);
         slashes.push({ x: player.x, y: player.y, ang: 0, r: 62, color: "#ffe047", life: 0.30, maxLife: 0.30, ring: true });
@@ -250,6 +411,7 @@
       const reduced = Math.max(3, Math.round(dmg * 0.25));
       pState.hp = Math.max(0, pState.hp - reduced);
       shake = Math.max(shake, 4);
+      SFX.guardHit();
       spawnFloat(player.x, player.y - 26, `GUARD -${reduced}`, "#fbbf24", 0.95);
       spawnSparks(player.x, player.y, "#fbbf24", 9, 130);
       return;
@@ -258,6 +420,7 @@
     pState.hp = Math.max(0, pState.hp - dmg);
     pState.hurtFlash = 0.26;
     shake = Math.max(shake, 9);
+    SFX.playerHurt();
     player.x = Math.max(38, Math.min(402, player.x + Math.cos(knockAng) * 26));
     player.y = Math.max(140, Math.min(474, player.y + Math.sin(knockAng) * 26));
     spawnFloat(player.x, player.y - 28, `-${dmg}`, "#ef4444", 1.2);
@@ -277,6 +440,7 @@
     pState.atkCd = 0.25;
     pState.combo = (pState.combo % 3) + 1;
     pState.comboReset = 0.9;
+    SFX.whoosh(pState.combo === 3);
 
     const ang = Math.atan2(boss.y - player.y, boss.x - player.x);
     pState.aimX = Math.cos(ang);
@@ -316,6 +480,7 @@
     if (dist <= arcR + boss.r + 14) {
       const dmg = pState.combo === 3 ? 5 : pState.combo === 2 ? 3 : 2;
       pState.ulti = Math.min(100, pState.ulti + 1);
+      SFX.slashHit(pState.combo === 3);
       damageBoss(
         dmg,
         player,
@@ -342,12 +507,14 @@
     pState.swingBaseAng = ang;
     pState.swingDir = 1;
     pState.swingType = "skill";
+    SFX.skillWindup();
     spawnSparks(player.x, player.y, "#38bdf8", 14, 150);
   }
 
   function executeReiatsuCleave(player, ang) {
     const dx = Math.cos(ang);
     const dy = Math.sin(ang);
+    SFX.reiatsuCleave();
     // Ep 1 Lore-Accurate: Dash-Lunge + Raw Sky-Blue Reiatsu Shockwave Cleave (no Getsuga projectile)
     player.x = Math.max(38, Math.min(402, player.x + dx * 34));
     player.y = Math.max(140, Math.min(474, player.y + dy * 34));
@@ -385,6 +552,7 @@
     }
     pState.dashVx = dx * 560;
     pState.dashVy = dy * 560;
+    SFX.shunpo();
     slashes.push({ x: player.x, y: player.y, ang: 0, r: 34, color: "#818cf8", life: 0.2, maxLife: 0.2, ring: true });
     spawnSparks(player.x, player.y, "#818cf8", 14, 150);
   }
@@ -394,6 +562,7 @@
     pState.blockCd = 1.35;
     pState.blockTime = 0.85;
     pState.parryWindow = 0.26;
+    SFX.blockRaise();
     slashes.push({ x: 0, y: 0, ang: 0, r: 36, color: "#ffe047", life: 0.18, maxLife: 0.18, ring: true, followPlayer: true });
   }
 
@@ -407,6 +576,7 @@
     pState.iframe = 0.95;
     ultFlash = 0.90;
     shake = 10;
+    SFX.ultiCutIn();
 
     player.facing = Math.cos(pState.ultAng) >= 0 ? 1 : -1;
     pState.swingDuration = 0.54;
@@ -476,6 +646,7 @@
         boss.timer = boss.teleDuration;
         boss.hitApplied = false;
         boss.state = "telegraph";
+        SFX.bossTelegraph(boss.pattern);
       }
     } else if (boss.state === "telegraph") {
       if ((boss.pattern === "line" || boss.pattern === "barrage") && boss.timer > boss.teleDuration * 0.42) {
@@ -487,6 +658,7 @@
         boss.timer = boss.pattern === "line" ? 0.42 : 0.24;
         boss.lungeVx = Math.cos(boss.aimAng) * (boss.enraged ? 600 : 520);
         boss.lungeVy = Math.sin(boss.aimAng) * (boss.enraged ? 600 : 520);
+        SFX.bossAttack(boss.pattern);
         if (boss.pattern === "line") {
           slashes.push({ x: boss.x, y: boss.y, ang: 0, r: 52, color: "#ef4444", life: 0.22, maxLife: 0.22, ring: true });
           spawnSparks(boss.x, boss.y, "#ef4444", 12, 160);
@@ -627,6 +799,7 @@
         player.x = Math.max(38, Math.min(402, player.x + (dx / d) * step));
         player.y = Math.max(140, Math.min(474, player.y + (dy / d) * step));
         shake = 16;
+        SFX.ultiImpact();
         slashes.push({ x: player.x, y: player.y, ang: 0, r: 175, color: "#38bdf8", life: 0.46, maxLife: 0.46, ring: true });
         slashes.push({
           x: player.x + Math.cos(pState.ultAng) * 34,
@@ -711,6 +884,7 @@
           bp.vy = Math.sin(ang) * 420;
           bp.life = 1.4;
           pState.ulti = Math.min(100, pState.ulti + 3);
+          SFX.deflect();
           spawnFloat(player.x, player.y - 30, "DEFLECT! +3%", "#ffe047", 1.25);
           spawnSparks(bp.x, bp.y, "#ffe047", 14, 180);
           continue;
