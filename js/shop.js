@@ -108,7 +108,7 @@
       evolvedSkillName: "TEN SHADOWS • HITEN & KAMUTOKE",
       evolvedSkillDesc: "Meguna: Divine Dog -> Max Elephant + Giant Max Nue. Heian Era: Multi-Area Kamutoke Sky Lightning & Hiten Fire Breath!",
       evolvedUltName: "MAHORAGA / INCOMPLETE SHRINE",
-      evolvedUltDesc: "Meguna Ult: Summons Mahoraga (3s auto-lock lunges + 30 DMG World-Cutting Slash finale). Heian Ult: Summons Incomplete Malevolent Shrine for 7s!",
+      evolvedUltDesc: "Meguna Ult: Summons Mahoraga (3s auto-lock lunges + 30 DMG World-Cutting Slash finale). Heian Transform: Immediately opens Incomplete Malevolent Shrine for 10s!",
       bonusHp: 40,
       bonusSpeed: 15,
     },

@@ -1003,23 +1003,33 @@
   function spawnKamutokeAreaStrike(x, y, owner, g) {
     const cx = Math.max(40, Math.min(WORLD_SIZE - 40, x));
     const cy = Math.max(40, Math.min(WORLD_SIZE - 40, y));
-    // Sky-to-ground golden Kamutoke lightning bolt
+    // Wide sky-to-ground golden Kamutoke lightning bolt + 3 jagged side branches
     const segs = [];
-    let lx = cx + (g.rng() - 0.5) * 32;
-    let ly = cy - 220;
+    const branches = [];
+    let lx = cx + (g.rng() - 0.5) * 38;
+    let ly = cy - 245;
     segs.push([lx, ly]);
     for (let i = 1; i <= 7; i++) {
       const t = i / 7;
-      lx = cx + (1 - t) * (lx - cx) + (i < 7 ? (g.rng() - 0.5) * 30 : 0);
-      ly = (cy - 220) + t * 220;
+      lx = cx + (1 - t) * (lx - cx) + (i < 7 ? (g.rng() - 0.5) * 38 : 0);
+      ly = (cy - 245) + t * 245;
       segs.push([lx, ly]);
+      if (i === 2 || i === 4 || i === 5) {
+        const dir = i % 2 === 0 ? 1 : -1;
+        branches.push([
+          [lx, ly],
+          [lx + dir * (22 + g.rng() * 18), ly + 22],
+          [lx + dir * (38 + g.rng() * 24), ly + 48],
+        ]);
+      }
     }
     g.entities.push({
       x: cx,
       y: cy,
       segs,
-      life: 0.28,
-      maxLife: 0.28,
+      branches,
+      life: 0.34,
+      maxLife: 0.34,
       dead: false,
       update(dt) {
         this.life -= dt;
@@ -1032,28 +1042,42 @@
         c.globalAlpha = k;
         c.lineCap = "round";
         c.lineJoin = "round";
-        c.fillStyle = "rgba(250, 204, 21, 0.32)";
-        c.beginPath(); c.ellipse(this.x, this.y, 44 * k, 18 * k, 0, 0, Math.PI * 2); c.fill();
+        // Wide golden electric ground corona
+        const grad = c.createRadialGradient(this.x, this.y, 4, this.x, this.y, 72 * k);
+        grad.addColorStop(0, "rgba(255, 255, 255, 0.85)");
+        grad.addColorStop(0.4, "rgba(250, 204, 21, 0.58)");
+        grad.addColorStop(1, "rgba(234, 179, 8, 0)");
+        c.fillStyle = grad;
+        c.beginPath(); c.ellipse(this.x, this.y, 72 * k, 32 * k, 0, 0, Math.PI * 2); c.fill();
+        // Side branches
+        c.strokeStyle = "#facc15";
+        c.lineWidth = 4.2 * k;
+        for (const br of this.branches) {
+          c.beginPath();
+          br.forEach(([bx, by], idx) => (idx === 0 ? c.moveTo(bx, by) : c.lineTo(bx, by)));
+          c.stroke();
+        }
+        // Main wide thunderbolt
         c.strokeStyle = "#eab308";
-        c.lineWidth = 11 * k;
+        c.lineWidth = 17 * k;
         c.beginPath();
         this.segs.forEach(([sx, sy], i) => (i === 0 ? c.moveTo(sx, sy) : c.lineTo(sx, sy)));
         c.stroke();
         c.strokeStyle = "#fef08a";
-        c.lineWidth = 5 * k;
+        c.lineWidth = 8.5 * k;
         c.stroke();
         c.strokeStyle = "#ffffff";
-        c.lineWidth = 2.2 * k;
+        c.lineWidth = 3.6 * k;
         c.stroke();
         c.restore();
       },
     });
-    g.entities.push(rt.spawnShockRing(cx, cy, "#facc15", 92, 0.3));
-    g.entities.push(rt.spawnShockRing(cx, cy, "#fef08a", 56, 0.22));
+    g.entities.push(rt.spawnShockRing(cx, cy, "#facc15", 118, 0.34));
+    g.entities.push(rt.spawnShockRing(cx, cy, "#fef08a", 76, 0.25));
     g.spawnSparks(cx, cy, "#facc15", "#ffffff");
     for (const tt of g.balls) {
       if (tt === owner || !tt.alive) continue;
-      if (Math.hypot(tt.x - cx, tt.y - cy) <= 78 + tt.radius) {
+      if (Math.hypot(tt.x - cx, tt.y - cy) <= 95 + tt.radius) {
         const dealt = g.applyDamage(tt, 8);
         g.spawnDamageText(tt.x, tt.y - tt.radius - 14, dealt, "#facc15", true, "KAMUTOKE!");
         tt.flashTimer = 0.14;
@@ -1066,8 +1090,8 @@
   function spawnHitenFireStream(owner, target) {
     let ang = target ? Math.atan2(target.y - owner.y, target.x - owner.x) : 0;
     return {
-      life: 0.56,
-      maxLife: 0.56,
+      life: 0.62,
+      maxLife: 0.62,
       tickCd: 0.04,
       dead: false,
       update(dt, g) {
@@ -1089,17 +1113,17 @@
           this.tickCd = 0.13;
           const muzzleX = owner.x + Math.cos(ang) * (owner.radius + 22);
           const muzzleY = owner.y + Math.sin(ang) * (owner.radius + 22);
-          g.spawnSparks(muzzleX + Math.cos(ang) * 48, muzzleY + Math.sin(ang) * 48, "#f97316", "#fef08a");
+          g.spawnSparks(muzzleX + Math.cos(ang) * 75, muzzleY + Math.sin(ang) * 75, "#f97316", "#fef08a");
           if (liveTarget) {
             const dx = liveTarget.x - owner.x;
             const dy = liveTarget.y - owner.y;
             const dist = Math.hypot(dx, dy) || 1;
             const dot = (dx / dist) * Math.cos(ang) + (dy / dist) * Math.sin(ang);
-            if (dist <= 235 + liveTarget.radius && dot >= 0.62) {
+            if (dist <= 275 + liveTarget.radius && dot >= 0.48) {
               const dealt = g.applyDamage(liveTarget, 4);
               liveTarget.flashTimer = 0.1;
-              liveTarget.vx += Math.cos(ang) * 145;
-              liveTarget.vy += Math.sin(ang) * 145;
+              liveTarget.vx += Math.cos(ang) * 155;
+              liveTarget.vy += Math.sin(ang) * 155;
               g.addEffect(liveTarget, "burn", 1.8);
               g.spawnDamageText(liveTarget.x, liveTarget.y - liveTarget.radius - 12, dealt, "#f97316", false, "HITEN FLAME!");
               g.sound.playBallHit();
@@ -1109,41 +1133,65 @@
       },
       render(c) {
         const k = Math.max(0, this.life / this.maxLife);
-        const now = performance.now() * 0.018;
+        const now = performance.now() * 0.022;
         const muzzleX = owner.x + Math.cos(ang) * (owner.radius + 18);
         const muzzleY = owner.y + Math.sin(ang) * (owner.radius + 18);
-        const len = 215 * Math.min(1, (1 - k) * 4.5 + 0.35);
+        const len = 265 * Math.min(1, (1 - k) * 4.5 + 0.35);
 
         c.save();
         c.translate(muzzleX, muzzleY);
         c.rotate(ang);
         c.globalAlpha = Math.min(1, k * 1.6);
 
-        // Outer crimson-orange fire cone
+        // Glowing fire ring at Hiten trident muzzle
+        c.fillStyle = "rgba(254, 240, 138, 0.75)";
+        c.beginPath(); c.arc(0, 0, 14 + Math.sin(now * 1.5) * 3, 0, Math.PI * 2); c.fill();
+
+        // Wide outer crimson-orange fire plume
         const grad = c.createLinearGradient(0, 0, len, 0);
-        grad.addColorStop(0, "rgba(254, 240, 138, 0.95)");
-        grad.addColorStop(0.35, "rgba(249, 115, 22, 0.85)");
-        grad.addColorStop(0.8, "rgba(220, 38, 38, 0.6)");
-        grad.addColorStop(1, "rgba(220, 38, 38, 0)");
+        grad.addColorStop(0, "rgba(254, 240, 138, 0.96)");
+        grad.addColorStop(0.28, "rgba(249, 115, 22, 0.90)");
+        grad.addColorStop(0.72, "rgba(220, 38, 38, 0.72)");
+        grad.addColorStop(1, "rgba(185, 28, 28, 0)");
         c.fillStyle = grad;
         c.beginPath();
-        c.moveTo(0, -6);
-        c.quadraticCurveTo(len * 0.5, -34 + Math.sin(now) * 8, len, -56 + Math.cos(now * 1.3) * 10);
-        c.lineTo(len, 56 + Math.sin(now * 1.3) * 10);
-        c.quadraticCurveTo(len * 0.5, 34 + Math.cos(now) * 8, 0, 6);
+        c.moveTo(0, -10);
+        c.quadraticCurveTo(len * 0.48, -56 + Math.sin(now) * 11, len, -88 + Math.cos(now * 1.3) * 14);
+        c.lineTo(len, 88 + Math.sin(now * 1.3) * 14);
+        c.quadraticCurveTo(len * 0.48, 56 + Math.cos(now) * 11, 0, 10);
         c.closePath();
         c.fill();
 
-        // Inner white-gold flame tongue
-        c.fillStyle = "rgba(254, 249, 195, 0.85)";
+        // Mid golden-amber flame wave
+        c.fillStyle = "rgba(250, 204, 21, 0.78)";
         c.beginPath();
-        c.moveTo(0, -3);
-        c.lineTo(len * 0.62, -18 + Math.sin(now * 1.5) * 5);
-        c.lineTo(len * 0.72, 0);
-        c.lineTo(len * 0.62, 18 + Math.cos(now * 1.5) * 5);
-        c.lineTo(0, 3);
+        c.moveTo(0, -6);
+        c.quadraticCurveTo(len * 0.42, -32 + Math.cos(now * 1.4) * 7, len * 0.82, -46 + Math.sin(now * 1.7) * 9);
+        c.lineTo(len * 0.88, 0);
+        c.lineTo(len * 0.82, 46 + Math.cos(now * 1.7) * 9);
+        c.quadraticCurveTo(len * 0.42, 32 + Math.sin(now * 1.4) * 7, 0, 6);
         c.closePath();
         c.fill();
+
+        // White-hot inner fire tongue
+        c.fillStyle = "rgba(254, 249, 195, 0.92)";
+        c.beginPath();
+        c.moveTo(0, -3.5);
+        c.lineTo(len * 0.56, -18 + Math.sin(now * 1.8) * 5);
+        c.lineTo(len * 0.68, 0);
+        c.lineTo(len * 0.56, 18 + Math.cos(now * 1.8) * 5);
+        c.lineTo(0, 3.5);
+        c.closePath();
+        c.fill();
+
+        // Swirling fireballs along the wide flame stream
+        c.fillStyle = "rgba(254, 240, 138, 0.88)";
+        for (let i = 0; i < 5; i++) {
+          const ft = ((now * 0.08 + i * 0.2) % 1);
+          const fx = ft * len * 0.9;
+          const fy = Math.sin(now * 1.4 + i * 2.3) * (ft * 56);
+          c.beginPath(); c.arc(fx, fy, (1 - ft * 0.5) * 8, 0, Math.PI * 2); c.fill();
+        }
         c.restore();
       },
     };
@@ -2481,7 +2529,7 @@
   }
 
   function spawnIncompleteShrineDomain(owner, g) {
-    const duration = 7.0;
+    const duration = 10.0;
     g.entities.push(rt.spawnShockRing(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, "#dc2626", 260, 0.55));
     g.sound.playCritHit();
     rt.addShake(0.42, 11);

@@ -45,6 +45,9 @@
   function triggerSukunaHeianTransform(b) {
     if (!b || !b.alive || b.heianEraMode) return;
     b.heianEraMode = true;
+    b.ultCharge = 0;
+    b.ultTimer = 10.0;
+    b.domainUsedInUlt = true;
     b.radius = Math.round(b.baseRadius * 1.1);
     b.baseSpeed = Math.round(b.baseSpeed * 1.15);
     const dr = Array.isArray(b.damageRange) ? b.damageRange : [10, 15];
@@ -53,6 +56,7 @@
     if (b.skills && b.skills[0]) {
       b.skills[0]._cd = 0;
     }
+    rt().addEffect(b, "haste", 10.0, { factor: 1.24 });
     rt().entities.push(rt().spawnBanner("TRUE FORM: HEIAN ERA!", "#dc2626"));
     rt().entities.push(rt().spawnShockRing(b.x, b.y, "#dc2626", 190, 0.58));
     rt().entities.push(rt().spawnShockRing(b.x, b.y, "#fef08a", 140, 0.44));
@@ -61,6 +65,10 @@
     rt().sound.playCritHit();
     rt().shakeTime = Math.max(rt().shakeTime, 0.52);
     rt().shakeIntensity = Math.max(rt().shakeIntensity, 13);
+    if (BF.spawnIncompleteShrineCinematic) {
+      const g = rt().makeGameProxy();
+      g.entities.push(BF.spawnIncompleteShrineCinematic(b, g));
+    }
   }
 
   function triggerSasukeCurseMarkTransform(b) {
@@ -87,6 +95,9 @@
   function triggerSukunaHeianTransform(b) {
     if (!b || !b.alive || b.heianEraMode) return;
     b.heianEraMode = true;
+    b.ultCharge = 0;
+    b.ultTimer = 10.0;
+    b.domainUsedInUlt = true;
     b.radius = Math.round(b.baseRadius * 1.1);
     b.baseSpeed = Math.round(b.baseSpeed * 1.15);
     const dr = Array.isArray(b.damageRange) ? b.damageRange : [10, 15];
@@ -95,6 +106,7 @@
     if (b.skills && b.skills[0]) {
       b.skills[0]._cd = 0;
     }
+    rt().addEffect(b, "haste", 10.0, { factor: 1.24 });
     rt().entities.push(rt().spawnBanner("TRUE FORM: HEIAN ERA!", "#dc2626"));
     rt().entities.push(rt().spawnShockRing(b.x, b.y, "#dc2626", 190, 0.58));
     rt().entities.push(rt().spawnShockRing(b.x, b.y, "#fef08a", 140, 0.44));
@@ -103,6 +115,10 @@
     rt().sound.playCritHit();
     rt().shakeTime = Math.max(rt().shakeTime, 0.52);
     rt().shakeIntensity = Math.max(rt().shakeIntensity, 13);
+    if (BF.spawnIncompleteShrineCinematic) {
+      const g = rt().makeGameProxy();
+      g.entities.push(BF.spawnIncompleteShrineCinematic(b, g));
+    }
   }
 
   function triggerSasukeSusanooArmorTransform(b) {
@@ -167,6 +183,9 @@
   function triggerSukunaHeianTransform(b) {
     if (!b || !b.alive || b.heianEraMode) return;
     b.heianEraMode = true;
+    b.ultCharge = 0;
+    b.ultTimer = 10.0;
+    b.domainUsedInUlt = true;
     b.radius = Math.round(b.baseRadius * 1.1);
     b.baseSpeed = Math.round(b.baseSpeed * 1.15);
     const dr = Array.isArray(b.damageRange) ? b.damageRange : [10, 15];
@@ -175,6 +194,7 @@
     if (b.skills && b.skills[0]) {
       b.skills[0]._cd = 0;
     }
+    rt().addEffect(b, "haste", 10.0, { factor: 1.24 });
     rt().entities.push(rt().spawnBanner("TRUE FORM: HEIAN ERA!", "#dc2626"));
     rt().entities.push(rt().spawnShockRing(b.x, b.y, "#dc2626", 190, 0.58));
     rt().entities.push(rt().spawnShockRing(b.x, b.y, "#fef08a", 140, 0.44));
@@ -183,6 +203,10 @@
     rt().sound.playCritHit();
     rt().shakeTime = Math.max(rt().shakeTime, 0.52);
     rt().shakeIntensity = Math.max(rt().shakeIntensity, 13);
+    if (BF.spawnIncompleteShrineCinematic) {
+      const g = rt().makeGameProxy();
+      g.entities.push(BF.spawnIncompleteShrineCinematic(b, g));
+    }
   }
 
   function activateUltimate(ball) {

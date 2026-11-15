@@ -516,7 +516,7 @@
   function activateUltimate(ball) { return BF.Transforms.activateUltimate(ball); }
 
   function chargeUlt(ball) {
-    if (!ball.alive || ball.ultTimer > 0) return;
+    if (!ball.alive || ball.ultTimer > 0 || ball.heianEraMode) return;
     ball.ultCharge = Math.min(ULT_CHARGES_REQUIRED, ball.ultCharge + 1);
     if (ball.ultCharge >= ULT_CHARGES_REQUIRED) {
       activateUltimate(ball);

@@ -80,8 +80,8 @@
       { id: "ult", stage: "starter", label: "KING OF CURSES", ult: true, starterOnly: true, desc: "Starter Ult: Fuga Fire Arrow. First skill opens Malevolent Shrine (can trigger Domain Clash)." },
       { id: "evolved_base", stage: "evolved", label: "MEGUNA", evolved: true, previewMeguna: true, desc: "Evolved Base (3,000 Gems): Mahoraga Wheel Adaptation (up to 30% DMG reduction), Max Nue wide lightning flyover + crash, and Divine Dog -> Max Elephant flood zone!" },
       { id: "meguna_ult", stage: "evolved", label: "SUMMON MAHORAGA (ULT)", evolved: true, ult: true, previewMahoraga: true, desc: "Meguna Ult: Summons Eight-Handled Sword Mahoraga for 10s to actively chase and slash enemies with the Sword of Extermination!" },
-      { id: "heian_era", stage: "evolved", label: "HEIAN ERA (HP≤200)", evolved: true, heianEraMode: true, previewHeianEra: true, desc: "Evolved HP <= 200: Permanent 4-Arm True Form wielding Hiten Trident & Kamutoke (+60 HP, +15% Speed, +3 DMG) with Multi-Area Sky Lightning & Hiten Fire Breath!" },
-      { id: "heian_ult", stage: "evolved", label: "INCOMPLETE SHRINE (ULT)", evolved: true, ult: true, heianEraMode: true, previewHeianEra: true, desc: "Heian Era Ult: Strobe flicker Domain Expansion! Summons the horned, multi-eyed Incomplete Malevolent Shrine for 7s of piercing arena slashes!" },
+      { id: "heian_era", stage: "evolved", label: "HEIAN ERA (HP≤200)", evolved: true, heianEraMode: true, previewHeianEra: true, desc: "Evolved HP <= 200: Permanent 4-Arm True Form wielding Hiten Trident & Kamutoke (+60 HP, +15% Speed, +3 DMG). Immediately opens 10s Incomplete Malevolent Shrine (no Ult charge in Heian)!" },
+      { id: "heian_ult", stage: "evolved", label: "INCOMPLETE SHRINE (10S)", evolved: true, ult: true, heianEraMode: true, previewHeianEra: true, desc: "Triggers immediately on Heian Transform: Strobe flicker Domain Expansion! Summons the horned, multi-eyed Incomplete Malevolent Shrine for 10s!" },
     ],
     killua: [
       { id: "base", label: "ASSASSIN", desc: "50kg Alloy Yo-Yo, Narukami Thunderbolt and Rhythm Echo afterimage clones." },
