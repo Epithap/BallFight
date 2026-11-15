@@ -730,6 +730,114 @@
     };
   }
 
+  function spawnNueLightningBolt(x, y) {
+    const segs = [];
+    let cx = x + (Math.random() - 0.5) * 34;
+    let cy = y - 165;
+    segs.push([cx, cy]);
+    for (let i = 1; i <= 6; i++) {
+      const t = i / 6;
+      cx = x + (1 - t) * (cx - x) + (i < 6 ? (Math.random() - 0.5) * 32 : 0);
+      cy = (y - 165) + t * 165;
+      segs.push([cx, cy]);
+    }
+    return {
+      x,
+      y,
+      segs,
+      life: 0.24,
+      maxLife: 0.24,
+      dead: false,
+      update(dt) {
+        this.life -= dt;
+        if (this.life <= 0) this.dead = true;
+      },
+      render() {},
+      renderOverlay(c) {
+        const k = Math.max(0, this.life / this.maxLife);
+        c.save();
+        c.globalAlpha = k;
+        c.lineCap = "round";
+        c.lineJoin = "round";
+        c.fillStyle = "rgba(192, 132, 252, 0.35)";
+        c.beginPath(); c.ellipse(this.x, this.y, 38 * k, 16 * k, 0, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = "#a855f7";
+        c.lineWidth = 10 * k;
+        c.beginPath();
+        this.segs.forEach(([sx, sy], i) => (i === 0 ? c.moveTo(sx, sy) : c.lineTo(sx, sy)));
+        c.stroke();
+        c.strokeStyle = "#facc15";
+        c.lineWidth = 5 * k;
+        c.stroke();
+        c.strokeStyle = "#ffffff";
+        c.lineWidth = 2.2 * k;
+        c.stroke();
+        c.restore();
+      },
+    };
+  }
+
+  function spawnNueCrashExplosion(x, y) {
+    const arcs = [];
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+      const pts = [[0, 0]];
+      for (let s = 1; s <= 4; s++) {
+        const r = s * 34;
+        const jit = (Math.random() - 0.5) * 26;
+        pts.push([Math.cos(a) * r - Math.sin(a) * jit, Math.sin(a) * r + Math.cos(a) * jit]);
+      }
+      arcs.push(pts);
+    }
+    return {
+      x,
+      y,
+      arcs,
+      life: 0.52,
+      maxLife: 0.52,
+      dead: false,
+      update(dt) {
+        this.life -= dt;
+        if (this.life <= 0) this.dead = true;
+      },
+      render() {},
+      renderOverlay(c) {
+        const p = 1 - Math.max(0, this.life / this.maxLife);
+        const k = 1 - p;
+        const rad = 36 + 122 * easeOut(p);
+        c.save();
+        c.translate(this.x, this.y);
+        c.globalAlpha = Math.min(1, k * 1.4);
+
+        const grad = c.createRadialGradient(0, 0, rad * 0.1, 0, 0, rad);
+        grad.addColorStop(0, "rgba(255, 255, 255, 0.92)");
+        grad.addColorStop(0.35, "rgba(250, 204, 21, 0.65)");
+        grad.addColorStop(0.7, "rgba(168, 85, 247, 0.48)");
+        grad.addColorStop(1, "rgba(126, 34, 206, 0)");
+        c.fillStyle = grad;
+        c.beginPath(); c.arc(0, 0, rad, 0, Math.PI * 2); c.fill();
+
+        c.lineCap = "round";
+        c.lineJoin = "round";
+        for (const pts of this.arcs) {
+          c.strokeStyle = "#c084fc";
+          c.lineWidth = 6 * k;
+          c.beginPath();
+          pts.forEach(([px, py], i) => (i === 0 ? c.moveTo(px * (0.4 + p * 0.7), py * (0.4 + p * 0.7)) : c.lineTo(px * (0.4 + p * 0.7), py * (0.4 + p * 0.7))));
+          c.stroke();
+          c.strokeStyle = "#fef08a";
+          c.lineWidth = 2.4 * k;
+          c.stroke();
+        }
+
+        c.strokeStyle = "#facc15";
+        c.lineWidth = 4.5 * k;
+        c.beginPath(); c.arc(0, 0, rad * 0.95, 0, Math.PI * 2); c.stroke();
+        c.restore();
+      },
+    };
+  }
+
   function spawnMaxNueFlyover(owner, startX, startY, ang) {
     const speed = 520;
     const distMax = 440;
@@ -753,13 +861,15 @@
 
         // Drop lightning along wide corridor under Max Nue
         if (this.boltCd <= 0) {
-          this.boltCd = 0.14;
+          this.boltCd = 0.13;
           const perp = this.ang + Math.PI * 0.5;
-          const off = (g.rng() - 0.5) * halfCorridor * 1.4;
+          const off = (g.rng() - 0.5) * halfCorridor * 1.45;
           const bx = Math.max(30, Math.min(WORLD_SIZE - 30, this.x + Math.cos(perp) * off));
           const by = Math.max(30, Math.min(WORLD_SIZE - 30, this.y + Math.sin(perp) * off));
-          g.entities.push(rt.spawnShockRing(bx, by, "#a855f7", 54, 0.24));
-          g.entities.push(rt.spawnShockRing(bx, by, "#facc15", 32, 0.18));
+          g.entities.push(spawnNueLightningBolt(bx, by));
+          g.entities.push(rt.spawnShockRing(bx, by, "#a855f7", 62, 0.25));
+          g.entities.push(rt.spawnShockRing(bx, by, "#facc15", 38, 0.18));
+          g.spawnSparks(bx, by, "#facc15", "#c084fc");
           for (const tt of g.balls) {
             if (tt === owner || !tt.alive) continue;
             if (Math.hypot(tt.x - this.x, tt.y - this.y) <= halfCorridor + tt.radius) {
@@ -776,10 +886,12 @@
           this.dead = true;
           const ex = Math.max(46, Math.min(WORLD_SIZE - 46, this.x));
           const ey = Math.max(46, Math.min(WORLD_SIZE - 46, this.y));
-          g.entities.push(rt.spawnShockRing(ex, ey, "#a855f7", 135, 0.44));
-          g.entities.push(rt.spawnShockRing(ex, ey, "#facc15", 95, 0.34));
+          g.entities.push(spawnNueCrashExplosion(ex, ey));
+          g.entities.push(rt.spawnShockRing(ex, ey, "#a855f7", 155, 0.46));
+          g.entities.push(rt.spawnShockRing(ex, ey, "#facc15", 112, 0.36));
           g.spawnSparks(ex, ey, "#a855f7", "#facc15");
-          rt.addShake(0.36, 10);
+          g.spawnCritBurst(ex, ey, "#facc15", "#c084fc");
+          rt.addShake(0.42, 12);
           g.sound.playCritHit();
           for (const tt of g.balls) {
             if (tt === owner || !tt.alive) continue;
@@ -1788,7 +1900,7 @@
         c.textBaseline = "middle";
         c.lineJoin = "round";
         const chant = p < 0.52 ? "WITH THIS TREASURE I SUMMON..." : "EIGHT-HANDLED SWORD: MAHORAGA!";
-        c.font = `bold ${p < 0.52 ? 22 : 27}px ${FONT}`;
+        c.font = `bold ${p < 0.52 ? 22 : 27}px 'Fredoka', 'Nunito', sans-serif`;
         c.lineWidth = 7;
         c.strokeStyle = "#09090b";
         c.strokeText(chant, cx, WORLD_SIZE - 58);
