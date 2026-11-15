@@ -78,8 +78,8 @@
     gojo: [
       { id: "base", stage: "starter", label: "BLINDFOLD", starterOnly: true, desc: "Starter Base: White hair, black blindfold, Limitless Red / Blue alternating casts." },
       { id: "ult", stage: "starter", label: "SIX EYES", ult: true, starterOnly: true, desc: "Starter Ult: Blindfold off, Infinity up, Hollow Purple & Unlimited Void unlocked." },
-      { id: "evolved_base", stage: "evolved", label: "SHINJUKU", evolved: true, previewShinjuku: true, desc: "Evolved Base (3,000 Gems): Black compression shirt, blindfold off, Six Eyes & Infinity Distortion Aura (+40 HP, +15 Speed). Maximum Output: Blue & Reversal Red: Black Flash Warp!" },
-      { id: "shinjuku_ult", stage: "evolved", label: "UNLIMITED PURPLE (ULT)", evolved: true, ult: true, previewShinjuku: true, desc: "Shinjuku Ult: Freeze Chant Cinematic! Fuses Blue & Red into an omnidirectional Unlimited Hollow Purple Nuke & opens Unlimited Void!" },
+      { id: "evolved_base", stage: "evolved", label: "SHINJUKU", evolved: true, previewShinjuku: true, desc: "Evolved Base (3,000 Gems): Black compression shirt, Six Eyes & blazing cyan aura (+40 HP, +15 Speed). Max Blue & Max Red (pushes enemy back into Black Flash)!" },
+      { id: "shinjuku_ult", stage: "evolved", label: "HOLLOW NUKE (ULT)", evolved: true, ult: true, previewShinjuku: true, desc: "Shinjuku Ult: Gojo ascends, fuses Blue & Red into an arena-wide Hollow Nuke, then descends & unlocks Unlimited Void!" },
     ],
     sukuna: [
       { id: "base", stage: "starter", label: "YUJI VESSEL", starterOnly: true, desc: "Starter Base: Four eyes, cursed markings, Cleave Dash & Dismantle x3." },

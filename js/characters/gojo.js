@@ -378,36 +378,102 @@
     };
   }
 
+  function spawnRedReturnBlackFlash({ owner, target, hitX, hitY }) {
+    const duration = 0.58;
+    const blackFlashAt = 0.30;
+    const angFromOwner = Math.atan2(hitY - owner.y, hitX - owner.x);
+    const orbStartX = hitX + Math.cos(angFromOwner) * 44;
+    const orbStartY = hitY + Math.sin(angFromOwner) * 44;
+    return {
+      timer: 0,
+      duration,
+      orbX: orbStartX,
+      orbY: orbStartY,
+      flashed: false,
+      dead: false,
+      update(dt, gg) {
+        this.timer += dt;
+        if (!owner.alive || !target.alive) {
+          this.dead = true;
+          return;
+        }
+        if (this.timer < blackFlashAt) {
+          const p = this.timer / blackFlashAt;
+          const ang = Math.atan2(owner.y - target.y, owner.x - target.x);
+          const stopDist = owner.radius + target.radius + 10;
+          const destX = owner.x - Math.cos(ang) * stopDist;
+          const destY = owner.y - Math.sin(ang) * stopDist;
+          const pad = (BF.CONSTANTS && BF.CONSTANTS.ARENA_PAD) || 26;
+          target.x = Math.max(pad + target.radius, Math.min(WORLD_SIZE - pad - target.radius, target.x + (destX - target.x) * Math.min(1, dt * 11)));
+          target.y = Math.max(pad + target.radius, Math.min(WORLD_SIZE - pad - target.radius, target.y + (destY - target.y) * Math.min(1, dt * 11)));
+          target.vx = Math.cos(ang) * 420;
+          target.vy = Math.sin(ang) * 420;
+          this.orbX = target.x - Math.cos(ang) * (target.radius + 16 * (1 - p * 0.4));
+          this.orbY = target.y - Math.sin(ang) * (target.radius + 16 * (1 - p * 0.4));
+        } else if (!this.flashed) {
+          this.flashed = true;
+          const kAng = Math.atan2(target.y - owner.y, target.x - owner.x);
+          const bfDmg = gg.applyDamage(target, Math.round(14 + gg.rng() * 3));
+          target.flashTimer = 0.22;
+          target.squash = 1.08;
+          target.vx = Math.cos(kAng) * 790;
+          target.vy = Math.sin(kAng) * 790;
+          gg.entities.push(spawnBlackFlashBurst(target.x, target.y));
+          gg.entities.push(rt.spawnShockRing(target.x, target.y, "#09090b", 135, 0.38));
+          gg.entities.push(rt.spawnShockRing(target.x, target.y, "#ef4444", 105, 0.30));
+          gg.spawnSparks(target.x, target.y, "#09090b", "#ef4444");
+          gg.spawnDamageText(target.x, target.y - target.radius - 18, bfDmg, "#ef4444", true, "BLACK FLASH!");
+          rt.setHitStop(0.24);
+          rt.addShake(0.42, 13);
+          gg.sound.playCritHit();
+        }
+        if (this.timer >= this.duration) this.dead = true;
+      },
+      render(c) {
+        if (this.flashed) return;
+        const p = Math.min(1, this.timer / blackFlashAt);
+        c.save();
+        // Glowing Red orb pushing target back toward Gojo
+        c.fillStyle = "rgba(255, 30, 66, 0.34)";
+        c.beginPath(); c.arc(this.orbX, this.orbY, 24 + p * 8, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "#ff1e42";
+        c.beginPath(); c.arc(this.orbX, this.orbY, 13, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "#ffe4e6";
+        c.beginPath(); c.arc(this.orbX, this.orbY, 6, 0, Math.PI * 2); c.fill();
+        c.restore();
+      },
+    };
+  }
+
   function triggerUnlimitedHollowPurple(owner, g) {
     const cx = WORLD_SIZE * 0.5;
     const cy = WORLD_SIZE * 0.5;
-    g.entities.push(spawnHollowPurpleBurst(cx, cy, 340));
-    g.entities.push(rt.spawnShockRing(cx, cy, "#e9d5ff", 340, 0.72));
-    g.entities.push(rt.spawnShockRing(cx, cy, "#9333ea", 270, 0.56));
-    g.entities.push(rt.spawnBanner("UNLIMITED HOLLOW PURPLE!", "#c084fc"));
+    g.entities.push(spawnHollowPurpleBurst(cx, cy, 355));
+    g.entities.push(rt.spawnShockRing(cx, cy, "#e9d5ff", 355, 0.72));
+    g.entities.push(rt.spawnShockRing(cx, cy, "#9333ea", 285, 0.56));
+    g.entities.push(rt.spawnBanner("HOLLOW NUKE!", "#c084fc"));
     g.sound.playCritHit();
-    rt.addShake(0.65, 15);
+    rt.addShake(0.68, 16);
     for (const tt of g.balls) {
       if (!tt.alive) continue;
       if (tt === owner) {
-        // Gojo takes minimal self-scratch like Shinjuku manga!
         if (tt.hp > 18) g.applyDamage(tt, 6);
         continue;
       }
-      const dmg = Math.round(36 + g.rng() * 8);
+      const dmg = Math.round(38 + g.rng() * 8);
       const dealt = g.applyDamage(tt, dmg, { pierce: true });
       tt.flashTimer = 0.25;
       tt.squash = 1.1;
       const kAng = Math.atan2(tt.y - cy, tt.x - cx);
-      tt.vx = Math.cos(kAng) * 760;
-      tt.vy = Math.sin(kAng) * 760;
+      tt.vx = Math.cos(kAng) * 780;
+      tt.vy = Math.sin(kAng) * 780;
       g.spawnSparks(tt.x, tt.y, "#c084fc", COLORS.white);
-      g.spawnDamageText(tt.x, tt.y - tt.radius - 16, dealt, "#e9d5ff", true, "UNLIMITED PURPLE!");
+      g.spawnDamageText(tt.x, tt.y - tt.radius - 16, dealt, "#e9d5ff", true, "HOLLOW NUKE!");
     }
   }
 
   function spawnShinjukuPurpleCinematic(owner, g) {
-    const duration = 1.65;
+    const duration = 2.35;
     g.hitStop = duration;
     g.sound.playTimeStop();
     rt.addShake(0.55, 11);
@@ -415,12 +481,17 @@
       isFreezeCinematic: true,
       timer: 0,
       duration,
+      nuked: false,
       dead: false,
       update(dt, gg) {
         this.timer += dt;
+        const p = this.timer / this.duration;
+        if (p >= 0.62 && !this.nuked) {
+          this.nuked = true;
+          triggerUnlimitedHollowPurple(owner, gg);
+        }
         if (this.timer >= this.duration) {
           this.dead = true;
-          triggerUnlimitedHollowPurple(owner, gg);
         }
       },
       render() {},
@@ -428,54 +499,113 @@
         const p = Math.min(1, this.timer / this.duration);
         const cx = WORLD_SIZE * 0.5;
         const cy = WORLD_SIZE * 0.5;
+        const fadeAll = p > 0.90 ? (1 - p) / 0.10 : 1;
         c.save();
 
-        // Dark cosmic backdrop
-        c.fillStyle = `rgba(10, 6, 24, ${(0.84 * (p > 0.88 ? (1 - p) / 0.12 : 1)).toFixed(3)})`;
+        // Dark cosmic sky backdrop
+        c.fillStyle = `rgba(10, 6, 24, ${(0.86 * fadeAll).toFixed(3)})`;
         c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
-        // Phase 1 (0..0.68): Blue & Red spiraling inward to collide!
-        if (p < 0.68) {
-          const sp = p / 0.68;
-          const orbitR = (1 - sp * 0.92) * 145;
-          const ang = sp * Math.PI * 3.2;
-          const bx = cx + Math.cos(ang) * orbitR;
-          const by = cy + Math.sin(ang) * orbitR;
-          const rx = cx - Math.cos(ang) * orbitR;
-          const ry = cy - Math.sin(ang) * orbitR;
-
-          // Blue orb
-          c.fillStyle = "rgba(0, 180, 255, 0.35)";
-          c.beginPath(); c.arc(bx, by, 38, 0, Math.PI * 2); c.fill();
-          c.fillStyle = "#38bdf8";
-          c.beginPath(); c.arc(bx, by, 20, 0, Math.PI * 2); c.fill();
-
-          // Red orb
-          c.fillStyle = "rgba(255, 30, 66, 0.35)";
-          c.beginPath(); c.arc(rx, ry, 38, 0, Math.PI * 2); c.fill();
-          c.fillStyle = "#ff1e42";
-          c.beginPath(); c.arc(rx, ry, 20, 0, Math.PI * 2); c.fill();
-        } else {
-          // Phase 2 (0.68..1.0): Hollow Purple Singularity flash
-          const fp = (p - 0.68) / 0.32;
-          const rSing = 32 + fp * 175;
-          c.fillStyle = `rgba(147, 51, 234, ${(0.55 * (1 - fp * 0.35)).toFixed(3)})`;
-          c.beginPath(); c.arc(cx, cy, rSing, 0, Math.PI * 2); c.fill();
-          c.fillStyle = `rgba(243, 232, 255, ${(0.92 * (1 - fp * 0.4)).toFixed(3)})`;
-          c.beginPath(); c.arc(cx, cy, rSing * 0.45, 0, Math.PI * 2); c.fill();
+        // Compute Gojo Y position: Rise (0..0.28) -> Hover (0.28..0.82) -> Descend (0.82..1.0)
+        let gojoY = cy - 125;
+        if (p < 0.28) {
+          const rp = easeOut(p / 0.28);
+          gojoY = (cy + 95) - rp * 220;
+        } else if (p > 0.82) {
+          const dp = (p - 0.82) / 0.18;
+          gojoY = (cy - 125) + dp * dp * 145;
         }
 
-        // Chant text
+        // Phase 1: Vertical ascending cyan speed-lines while Gojo rises
+        if (p < 0.32) {
+          c.strokeStyle = "rgba(56, 189, 248, 0.45)";
+          c.lineWidth = 3;
+          for (let i = 0; i < 10; i++) {
+            const lx = 60 + i * 52;
+            const ly = ((p * 900 + i * 75) % WORLD_SIZE);
+            c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx, ly + 55); c.stroke();
+          }
+        }
+
+        // Phase 2 (0.26..0.60): Blue & Red appear and spiral into collision!
+        if (p >= 0.26 && p < 0.60) {
+          const sp = (p - 0.26) / 0.34;
+          const orbitR = (1 - sp * 0.94) * 155;
+          const ang = sp * Math.PI * 2.8;
+          const nucY = cy - 10;
+          const bx = cx + Math.cos(ang) * orbitR;
+          const by = nucY + Math.sin(ang) * orbitR * 0.55;
+          const rx = cx - Math.cos(ang) * orbitR;
+          const ry = nucY - Math.sin(ang) * orbitR * 0.55;
+
+          c.fillStyle = "rgba(0, 180, 255, 0.36)";
+          c.beginPath(); c.arc(bx, by, 40, 0, Math.PI * 2); c.fill();
+          c.fillStyle = "#38bdf8";
+          c.beginPath(); c.arc(bx, by, 21, 0, Math.PI * 2); c.fill();
+
+          c.fillStyle = "rgba(255, 30, 66, 0.36)";
+          c.beginPath(); c.arc(rx, ry, 40, 0, Math.PI * 2); c.fill();
+          c.fillStyle = "#ff1e42";
+          c.beginPath(); c.arc(rx, ry, 21, 0, Math.PI * 2); c.fill();
+        }
+
+        // Phase 3 (0.60..0.88): Massive Hollow Nuke Explosion!
+        if (p >= 0.60 && p < 0.90) {
+          const ep = (p - 0.60) / 0.30;
+          const rNuke = 38 + Math.min(1, ep * 1.15) * 340;
+          const ek = ep > 0.7 ? (1 - ep) / 0.3 : 1;
+          c.fillStyle = `rgba(147, 51, 234, ${(0.62 * ek).toFixed(3)})`;
+          c.beginPath(); c.arc(cx, cy - 10, rNuke, 0, Math.PI * 2); c.fill();
+          c.fillStyle = `rgba(216, 180, 254, ${(0.72 * ek).toFixed(3)})`;
+          c.beginPath(); c.arc(cx, cy - 10, rNuke * 0.62, 0, Math.PI * 2); c.fill();
+          c.fillStyle = `rgba(255, 255, 255, ${(0.92 * ek).toFixed(3)})`;
+          c.beginPath(); c.arc(cx, cy - 10, rNuke * 0.30, 0, Math.PI * 2); c.fill();
+        }
+
+        // Draw ascending/descending Gojo silhouette with Six Eyes glow
+        c.save();
+        c.translate(cx, gojoY);
+        c.globalAlpha = fadeAll;
+        c.fillStyle = "rgba(56, 189, 248, 0.34)";
+        c.beginPath(); c.arc(0, 0, 42, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "#11131d";
+        c.strokeStyle = "#e0f2fe";
+        c.lineWidth = 3;
+        c.beginPath(); c.arc(0, 0, 24, 0, Math.PI * 2); c.fill(); c.stroke();
+        // Spiky white hair
+        c.fillStyle = "#f4f7ff";
+        c.beginPath();
+        c.moveTo(-22, -6); c.lineTo(-16, -28); c.lineTo(-4, -22);
+        c.lineTo(0, -34); c.lineTo(6, -22); c.lineTo(18, -28); c.lineTo(22, -6);
+        c.closePath();
+        c.fill();
+        // Glowing Six Eyes
+        c.fillStyle = "#38bdf8";
+        c.beginPath(); c.arc(-8, -2, 4.5, 0, Math.PI * 2); c.arc(8, -2, 4.5, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "#ffffff";
+        c.beginPath(); c.arc(-8, -2, 2, 0, Math.PI * 2); c.arc(8, -2, 2, 0, Math.PI * 2); c.fill();
+        c.restore();
+
+        // Landing ripple at Phase 4
+        if (p >= 0.90) {
+          const lp = (p - 0.90) / 0.10;
+          c.strokeStyle = `rgba(56, 189, 248, ${(1 - lp).toFixed(3)})`;
+          c.lineWidth = 4;
+          c.beginPath(); c.arc(cx, gojoY + 12, 28 + lp * 95, 0, Math.PI * 2); c.stroke();
+        }
+
+        // Chant / Nuke Banner
         c.textAlign = "center";
         c.textBaseline = "middle";
         c.lineJoin = "round";
+        c.globalAlpha = fadeAll;
         c.font = "bold 24px 'Fredoka', 'Nunito', sans-serif";
         c.lineWidth = 7;
         c.strokeStyle = "#09090b";
-        const chant = p < 0.34 ? "NINE ROPES... POLARIZED LIGHT..." : p < 0.68 ? "CROW AND DECLARATION..." : "UNLIMITED HOLLOW PURPLE!";
-        c.strokeText(chant, cx, WORLD_SIZE - 56);
-        c.fillStyle = p < 0.68 ? "#e0f2fe" : "#e9d5ff";
-        c.fillText(chant, cx, WORLD_SIZE - 56);
+        const chant = p < 0.28 ? "THROUGHOUT HEAVEN AND EARTH..." : p < 0.60 ? "NINE ROPES... POLARIZED LIGHT..." : "HOLLOW NUKE!";
+        c.strokeText(chant, cx, WORLD_SIZE - 52);
+        c.fillStyle = p < 0.60 ? "#e0f2fe" : "#e9d5ff";
+        c.fillText(chant, cx, WORLD_SIZE - 52);
         c.restore();
       },
     };
@@ -538,26 +668,18 @@
               label: isEvo ? "REVERSAL RED!" : "REVERSAL RED!",
               shape: "limitless_red",
               onImpact(tt, gg2, proj) {
-                const kAng = Math.atan2(tt.y - b.y, tt.x - b.x);
-                tt.vx = Math.cos(kAng) * 640;
-                tt.vy = Math.sin(kAng) * 640;
-                tt.squash = 0.95;
-                gg2.entities.push(rt.spawnShockRing(proj.x, proj.y, "#ff1e42", 125, 0.4));
-                gg2.spawnSparks(proj.x, proj.y, "#ff1e42", COLORS.white);
                 if (isEvo && b.alive && tt.alive) {
-                  // Shinjuku Instant Warp + Black Flash Punch!
-                  const pad = (BF.CONSTANTS && BF.CONSTANTS.ARENA_PAD) || 26;
-                  const wx = Math.max(pad + b.radius, Math.min(WORLD_SIZE - pad - b.radius, tt.x - Math.cos(kAng) * (tt.radius + b.radius + 8)));
-                  const wy = Math.max(pad + b.radius, Math.min(WORLD_SIZE - pad - b.radius, tt.y - Math.sin(kAng) * (tt.radius + b.radius + 8)));
-                  b.x = wx;
-                  b.y = wy;
-                  const bfDmg = gg2.applyDamage(tt, Math.round(11 + gg2.rng() * 3));
-                  tt.vx = Math.cos(kAng) * 760;
-                  tt.vy = Math.sin(kAng) * 760;
-                  gg2.entities.push(spawnBlackFlashBurst(tt.x, tt.y));
-                  gg2.spawnDamageText(tt.x, tt.y - tt.radius - 18, bfDmg, "#ef4444", true, "BLACK FLASH!");
-                  rt.setHitStop(0.14);
-                  rt.addShake(0.35, 11);
+                  // Max Red loops behind target and blasts them back toward Gojo into a Black Flash!
+                  gg2.entities.push(rt.spawnShockRing(proj.x, proj.y, "#ff1e42", 115, 0.34));
+                  gg2.spawnSparks(proj.x, proj.y, "#ff1e42", COLORS.white);
+                  gg2.entities.push(spawnRedReturnBlackFlash({ owner: b, target: tt, hitX: proj.x, hitY: proj.y }));
+                } else {
+                  const kAng = Math.atan2(tt.y - b.y, tt.x - b.x);
+                  tt.vx = Math.cos(kAng) * 640;
+                  tt.vy = Math.sin(kAng) * 640;
+                  tt.squash = 0.95;
+                  gg2.entities.push(rt.spawnShockRing(proj.x, proj.y, "#ff1e42", 125, 0.4));
+                  gg2.spawnSparks(proj.x, proj.y, "#ff1e42", COLORS.white);
                 }
                 gg2.chargeUlt(b);
                 rt.addShake(0.25, 7);
