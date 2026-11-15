@@ -657,127 +657,244 @@
       c.lineCap = "round";
 
       if (isMugetsu) {
-        // Pitch-Black & Violet-Crimson Reiatsu Smoke Aura
-        const pulse = Math.sin(t * 2.8) * 3;
-        c.fillStyle = "rgba(88, 28, 135, 0.34)";
+        // Dark Swirling Black Reiatsu Tendrils / Smoke Aura (subtle, no harsh neon outline)
+        const pulse = Math.sin(t * 2.4) * 2.5;
+        c.fillStyle = "rgba(9, 9, 11, 0.42)";
         c.beginPath();
-        c.arc(0, -r * 0.05, r * 1.48 + pulse, 0, Math.PI * 2);
+        c.arc(0, 0, r * 1.46 + pulse, 0, Math.PI * 2);
         c.fill();
 
-        c.fillStyle = "#050208";
-        c.strokeStyle = "#a855f7";
-        c.lineWidth = 2.5;
+        c.fillStyle = "rgba(88, 28, 135, 0.16)";
         c.beginPath();
-        for (let i = 0; i < 24; i++) {
-          const a = (i / 24) * Math.PI * 2 - Math.PI * 0.5;
-          const wob = Math.sin(t * 3.5 + i * 1.2) * 3;
-          const rad = i % 2 === 0 ? r * 1.32 + wob : r * 1.04;
-          const px = Math.cos(a) * rad;
-          const py = Math.sin(a) * rad;
-          if (i === 0) c.moveTo(px, py);
-          else c.lineTo(px, py);
-        }
+        c.arc(0, 0, r * 1.28 + pulse * 0.6, 0, Math.PI * 2);
+        c.fill();
+
+        // Flowing Jet-Black Reiatsu Wisps & Long Cascading Hair behind shoulders
+        c.fillStyle = "#060609";
+        c.strokeStyle = "#18181b";
+        c.lineWidth = 2.0;
+        c.beginPath();
+        c.moveTo(-r * 0.96, -r * 0.32);
+        c.quadraticCurveTo(-r * 1.48, r * 0.12, -r * 1.38, r * 0.68);
+        c.lineTo(-r * 1.05, r * 0.56);
+        c.quadraticCurveTo(-r * 1.18, r * 0.88, -r * 0.88, r * 1.02);
+        c.lineTo(-r * 0.58, r * 0.78);
+        c.lineTo(r * 0.58, r * 0.78);
+        c.lineTo(r * 0.88, r * 1.02);
+        c.quadraticCurveTo(r * 1.18, r * 0.88, r * 1.05, r * 0.56);
+        c.lineTo(r * 1.38, r * 0.68);
+        c.quadraticCurveTo(r * 1.48, r * 0.12, r * 0.96, -r * 0.32);
         c.closePath();
         c.fill();
         c.stroke();
-
-        // Cascading Jet-Black Long Mugetsu Hair flowing behind body
-        c.fillStyle = "#050308";
+      } else {
+        // Dangai Longer Back/Neck Hair Strands
+        c.fillStyle = "#ea580c";
         c.strokeStyle = COLORS.ink;
-        c.lineWidth = 2.6;
+        c.lineWidth = 2.4;
         c.beginPath();
-        c.moveTo(-r * 0.92, -r * 0.35);
-        c.lineTo(-r * 1.5, r * 0.15);
-        c.lineTo(-r * 1.25, r * 0.55);
-        c.lineTo(-r * 1.48, r * 0.96);
-        c.lineTo(-r * 0.72, r * 0.78);
-        c.lineTo(r * 0.72, r * 0.78);
-        c.lineTo(r * 1.48, r * 0.96);
-        c.lineTo(r * 1.25, r * 0.55);
-        c.lineTo(r * 1.5, r * 0.15);
-        c.lineTo(r * 0.92, -r * 0.35);
+        c.moveTo(-r * 0.88, -r * 0.15);
+        c.lineTo(-r * 1.12, r * 0.32);
+        c.lineTo(-r * 0.78, r * 0.38);
+        c.lineTo(r * 0.78, r * 0.38);
+        c.lineTo(r * 1.12, r * 0.32);
+        c.lineTo(r * 0.88, -r * 0.15);
         c.closePath();
         c.fill();
         c.stroke();
       }
 
-      rt.drawSkinFace(ball, r, c);
+      // Custom Chill/Stoic Face Base (replaces default wide-eyed drawSkinFace)
+      c.fillStyle = "#fed7aa";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 3;
+      c.beginPath();
+      c.arc(0, 0, r, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
 
-      // Outfit: Torn Shihakusho (Dangai) or Dark-Grey Mugetsu Bandages
+      // Subtle cel-shading on lower face
       c.save();
       c.beginPath();
       c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
       c.clip();
+      c.fillStyle = "rgba(234, 88, 12, 0.10)";
+      c.beginPath();
+      c.arc(r * 0.15, r * 0.2, r * 0.95, 0, Math.PI * 2);
+      c.fill();
+
+      // Outfit: Torn Shihakusho (Dangai) or Dark-Grey Mugetsu Bandages
       if (isMugetsu) {
+        // Mugetsu Grey Bandage Wrap across lower face & neck
+        c.fillStyle = "#475569";
+        c.fillRect(-r, r * 0.12, r * 2, r);
         c.fillStyle = "#334155";
-        c.fillRect(-r, r * 0.16, r * 2, r);
-        c.strokeStyle = "#0f172a";
-        c.lineWidth = 2.2;
+        c.fillRect(-r, r * 0.56, r * 2, r * 0.5);
+        c.strokeStyle = "#1e293b";
+        c.lineWidth = 2.0;
         for (let bi = 0; bi < 4; bi++) {
           c.beginPath();
-          c.moveTo(-r, r * (0.24 + bi * 0.18));
-          c.lineTo(r, r * (0.34 + bi * 0.18));
+          c.moveTo(-r, r * (0.18 + bi * 0.18));
+          c.lineTo(r, r * (0.28 + bi * 0.18));
           c.stroke();
         }
+        // Top bandage edge across nose bridge
+        c.strokeStyle = "#0f172a";
+        c.lineWidth = 2.2;
+        c.beginPath();
+        c.moveTo(-r, r * 0.12);
+        c.quadraticCurveTo(0, r * 0.06, r, r * 0.12);
+        c.stroke();
       } else {
-        // Dangai Torn Dark Shihakusho + Black Chain Links on Right Arm
+        // Dangai Torn Dark Shihakusho + White V-Collar + Right-Arm Chain
         c.fillStyle = "#09090b";
-        c.fillRect(-r, r * 0.44, r * 2, r * 0.7);
+        c.fillRect(-r, r * 0.42, r * 2, r * 0.72);
+        // White V-collar
         c.strokeStyle = "#f8fafc";
         c.lineWidth = 3;
         c.beginPath();
-        c.moveTo(-r * 0.36, r * 0.46);
-        c.lineTo(0, r * 0.74);
-        c.lineTo(r * 0.36, r * 0.46);
+        c.moveTo(-r * 0.4, r * 0.42);
+        c.lineTo(0, r * 0.78);
+        c.lineTo(r * 0.4, r * 0.42);
         c.stroke();
-        // Black iron chain coiled across right shoulder/arm
-        c.strokeStyle = "#475569";
+        // Exposed chest skin inside V-collar
+        c.fillStyle = "#fdba74";
+        c.beginPath();
+        c.moveTo(-r * 0.34, r * 0.42);
+        c.lineTo(0, r * 0.72);
+        c.lineTo(r * 0.34, r * 0.42);
+        c.closePath();
+        c.fill();
+        // Black iron chain coiled along right arm
+        c.strokeStyle = "#52525b";
         c.lineWidth = 3.2;
         c.beginPath();
-        c.moveTo(r * 0.25, r * 0.48);
-        c.lineTo(r * 0.85, r * 0.85);
+        c.moveTo(r * 0.32, r * 0.44);
+        c.lineTo(r * 0.62, r * 0.62);
+        c.lineTo(r * 0.85, r * 0.86);
         c.stroke();
       }
       c.restore();
 
-      // Hair: Jet-Black Spiky Long Hair (Mugetsu) vs Longer Spiky Orange Hair (Dangai)
-      c.fillStyle = isMugetsu ? "#050308" : "#ea580c";
-      c.strokeStyle = isMugetsu ? "#a855f7" : COLORS.ink;
-      c.lineWidth = 2.6;
+      // Chill / Piercing Anime Eyes & Expression
+      if (hurt) {
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 2.4;
+        c.beginPath();
+        c.moveTo(-r * 0.42, -r * 0.1);
+        c.lineTo(-r * 0.18, -r * 0.02);
+        c.lineTo(-r * 0.42, r * 0.06);
+        c.moveTo(r * 0.42, -r * 0.1);
+        c.lineTo(r * 0.18, -r * 0.02);
+        c.lineTo(r * 0.42, r * 0.06);
+        c.stroke();
+      } else if (isMugetsu) {
+        // Mugetsu: Sharp Narrow Piercing Crimson Eyes (half-lidded, intense)
+        for (const dir of [-1, 1]) {
+          const ex = dir * r * 0.31;
+          const ey = -r * 0.04;
+          // Sharp slanted eye white
+          c.fillStyle = "#fef2f2";
+          c.beginPath();
+          c.moveTo(ex - dir * r * 0.15, ey - r * 0.04);
+          c.quadraticCurveTo(ex, ey - r * 0.07, ex + dir * r * 0.13, ey + r * 0.01);
+          c.quadraticCurveTo(ex, ey + r * 0.09, ex - dir * r * 0.15, ey - r * 0.04);
+          c.closePath();
+          c.fill();
+          // Crimson iris + dark pupil
+          c.fillStyle = "#dc2626";
+          c.beginPath();
+          c.arc(ex, ey, r * 0.062, 0, Math.PI * 2);
+          c.fill();
+          c.fillStyle = "#09090b";
+          c.beginPath();
+          c.arc(ex, ey, r * 0.028, 0, Math.PI * 2);
+          c.fill();
+          // Sharp upper lash / brow line
+          c.strokeStyle = "#050507";
+          c.lineWidth = 2.4;
+          c.beginPath();
+          c.moveTo(ex - dir * r * 0.17, ey - r * 0.06);
+          c.lineTo(ex + dir * r * 0.15, ey + r * 0.01);
+          c.stroke();
+        }
+      } else {
+        // Dangai: Calm, Chill Half-Lidded Stoic Eyes + Flat Neutral Mouth
+        for (const dir of [-1, 1]) {
+          const ex = dir * r * 0.30;
+          const ey = -r * 0.04;
+          // Half-lidded almond eye
+          c.fillStyle = "#ffffff";
+          c.beginPath();
+          c.moveTo(ex - dir * r * 0.15, ey - r * 0.02);
+          c.lineTo(ex + dir * r * 0.14, ey - r * 0.01);
+          c.quadraticCurveTo(ex, ey + r * 0.12, ex - dir * r * 0.15, ey - r * 0.02);
+          c.closePath();
+          c.fill();
+          // Calm amber-brown iris + pupil
+          c.fillStyle = "#92400e";
+          c.beginPath();
+          c.arc(ex, ey + r * 0.02, r * 0.068, 0, Math.PI * 2);
+          c.fill();
+          c.fillStyle = "#09090b";
+          c.beginPath();
+          c.arc(ex, ey + r * 0.02, r * 0.032, 0, Math.PI * 2);
+          c.fill();
+          // Tiny chill glint
+          c.fillStyle = "#ffffff";
+          c.beginPath();
+          c.arc(ex - r * 0.025, ey, r * 0.018, 0, Math.PI * 2);
+          c.fill();
+          // Relaxed flat upper eyelid
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 2.2;
+          c.beginPath();
+          c.moveTo(ex - dir * r * 0.16, ey - r * 0.03);
+          c.lineTo(ex + dir * r * 0.15, ey - r * 0.01);
+          c.stroke();
+          // Thin relaxed brow just above eyelid
+          c.lineWidth = 1.8;
+          c.beginPath();
+          c.moveTo(ex - dir * r * 0.15, ey - r * 0.12);
+          c.lineTo(ex + dir * r * 0.13, ey - r * 0.09);
+          c.stroke();
+        }
+        // Calm stoic mouth
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 2.0;
+        c.beginPath();
+        c.moveTo(-r * 0.11, r * 0.24);
+        c.lineTo(r * 0.11, r * 0.23);
+        c.stroke();
+      }
+
+      // Hair: Sleek Jet-Black Bangs (Mugetsu) vs Longer Spiky Orange Hair (Dangai)
+      c.fillStyle = isMugetsu ? "#07070b" : "#ea580c";
+      c.strokeStyle = isMugetsu ? "#18181b" : COLORS.ink;
+      c.lineWidth = 2.4;
       c.beginPath();
-      c.moveTo(-r * 0.94, 0);
-      c.lineTo(-r * 1.16, -r * 0.42);
-      c.lineTo(-r * 0.82, -r * 0.56);
-      c.lineTo(-r * 0.95, -r * 0.98);
+      c.moveTo(-r * 0.96, r * 0.04);
+      c.lineTo(-r * 1.14, -r * 0.42);
+      c.lineTo(-r * 0.84, -r * 0.56);
+      c.lineTo(-r * 0.94, -r * 0.96);
       c.lineTo(-r * 0.44, -r * 0.82);
-      c.lineTo(-r * 0.16, -r * 1.18);
-      c.lineTo(r * 0.16, -r * 0.86);
-      c.lineTo(r * 0.52, -r * 1.12);
-      c.lineTo(r * 0.78, -r * 0.74);
-      c.lineTo(r * 1.15, -r * 0.48);
-      c.lineTo(r * 0.94, 0);
-      c.lineTo(r * 0.65, -r * 0.26);
-      c.lineTo(r * 0.25, -r * 0.14);
-      c.lineTo(0, -r * 0.32);
-      c.lineTo(-r * 0.32, -r * 0.12);
-      c.lineTo(-r * 0.66, -r * 0.26);
+      c.lineTo(-r * 0.14, -r * 1.18);
+      c.lineTo(r * 0.18, -r * 0.86);
+      c.lineTo(r * 0.54, -r * 1.12);
+      c.lineTo(r * 0.80, -r * 0.74);
+      c.lineTo(r * 1.14, -r * 0.46);
+      c.lineTo(r * 0.96, r * 0.04);
+      // Long framing bangs over forehead
+      c.lineTo(r * 0.68, -r * 0.20);
+      c.lineTo(r * 0.34, -r * 0.08);
+      c.lineTo(r * 0.06, -r * 0.26);
+      c.lineTo(-r * 0.16, -r * 0.04);
+      c.lineTo(-r * 0.42, -r * 0.22);
+      c.lineTo(-r * 0.72, -r * 0.12);
       c.closePath();
       c.fill();
       c.stroke();
 
-      // Eyes: Glowing Crimson Slit Eyes (Mugetsu) vs Calm Amber-Gold Eyes (Dangai)
-      if (!hurt) {
-        c.fillStyle = isMugetsu ? "#ef4444" : "#f59e0b";
-        c.beginPath();
-        c.arc(-r * 0.28, -r * 0.04, r * 0.11, 0, Math.PI * 2);
-        c.arc(r * 0.28, -r * 0.04, r * 0.11, 0, Math.PI * 2);
-        c.fill();
-        c.fillStyle = isMugetsu ? "#fecaca" : "#09090b";
-        c.beginPath();
-        c.arc(-r * 0.28, -r * 0.04, r * 0.045, 0, Math.PI * 2);
-        c.arc(r * 0.28, -r * 0.04, r * 0.045, 0, Math.PI * 2);
-        c.fill();
-      }
       c.restore();
       return;
     }
