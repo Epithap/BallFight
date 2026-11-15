@@ -2456,73 +2456,146 @@
     };
   }
 
-  function drawIncompleteShrineStructure(c, cx, cy, scale, alpha) {
+  function drawIncompleteShrineStructure(c, cx, cy, scale, alpha, pulse = 0) {
     c.save();
     c.translate(cx, cy);
     c.scale(scale, scale);
     c.globalAlpha = alpha;
 
-    // Jagged black cursed-energy roots / pillars behind shrine
-    c.fillStyle = "#09090b";
-    for (const [rx, rw, rh] of [[-85, 22, 190], [-42, 28, 220], [42, 28, 220], [85, 22, 190]]) {
+    // 1. Towering Abyssal Black-Crimson Cursed Pillars & Thorny Tendrils
+    for (const [rx, rw, rh] of [[-128, 18, 175], [-88, 26, 225], [-44, 32, 255], [44, 32, 255], [88, 26, 225], [128, 18, 175]]) {
+      const pGrad = c.createLinearGradient(rx, 130, rx, -rh);
+      pGrad.addColorStop(0, "#09090b");
+      pGrad.addColorStop(0.65, "#1f0509");
+      pGrad.addColorStop(1, "rgba(127, 29, 29, 0)");
+      c.fillStyle = pGrad;
       c.beginPath();
-      c.moveTo(rx - rw * 0.6, 110);
-      c.lineTo(rx - rw * 0.2, -rh);
-      c.lineTo(rx + rw * 0.25, -rh + 28);
-      c.lineTo(rx + rw * 0.6, 110);
+      c.moveTo(rx - rw * 0.65, 130);
+      c.lineTo(rx - rw * 0.18, -rh);
+      c.lineTo(rx + rw * 0.22, -rh + 32);
+      c.lineTo(rx + rw * 0.65, 130);
       c.closePath();
       c.fill();
     }
 
-    // Twisted dark-flesh & bone shrine body
-    c.fillStyle = "#451a1a";
+    // 2. Crimson-Black Cursed Energy Halo behind the Shrine
+    const halo = c.createRadialGradient(0, -10, 20, 0, -10, 175 + pulse * 14);
+    halo.addColorStop(0, "rgba(220, 38, 38, 0.62)");
+    halo.addColorStop(0.55, "rgba(127, 29, 29, 0.34)");
+    halo.addColorStop(1, "rgba(9, 9, 11, 0)");
+    c.fillStyle = halo;
+    c.beginPath(); c.arc(0, -10, 175 + pulse * 14, 0, Math.PI * 2); c.fill();
+
+    // 3. Skeletal Ribcage Bone Spikes jutting from both flanks
+    for (const side of [-1, 1]) {
+      for (let i = 0; i < 4; i++) {
+        const by = -48 + i * 32;
+        const bx = side * (62 + i * 7);
+        c.fillStyle = "#cbd5e1";
+        c.strokeStyle = "#09090b";
+        c.lineWidth = 2.6;
+        c.beginPath();
+        c.moveTo(bx * 0.72, by + 8);
+        c.quadraticCurveTo(bx * 1.25, by - 14, bx * 1.52, by - 26);
+        c.quadraticCurveTo(bx * 1.18, by + 4, bx * 0.72, by + 18);
+        c.closePath();
+        c.fill(); c.stroke();
+      }
+    }
+
+    // 4. Sculpted Twisted Dark-Flesh Monolith Body
+    const bodyGrad = c.createLinearGradient(0, -95, 0, 115);
+    bodyGrad.addColorStop(0, "#450a0a");
+    bodyGrad.addColorStop(0.45, "#2b090c");
+    bodyGrad.addColorStop(1, "#0f0406");
+    c.fillStyle = bodyGrad;
     c.strokeStyle = "#09090b";
-    c.lineWidth = 3.5;
+    c.lineWidth = 4;
     c.beginPath();
-    c.moveTo(-88, 95);
-    c.quadraticCurveTo(-96, -20, -48, -72);
-    c.lineTo(48, -72);
-    c.quadraticCurveTo(96, -20, 88, 95);
+    c.moveTo(-104, 108);
+    c.bezierCurveTo(-116, 35, -96, -45, -54, -84);
+    c.quadraticCurveTo(0, -108, 54, -84);
+    c.bezierCurveTo(96, -45, 116, 35, 104, 108);
     c.closePath();
     c.fill(); c.stroke();
 
-    // Giant curved bone horns crowning the Incomplete Shrine
+    // Organic cursed-flesh muscle/vein ridges
+    c.strokeStyle = "rgba(185, 28, 28, 0.55)";
+    c.lineWidth = 2.2;
     for (const side of [-1, 1]) {
-      c.fillStyle = "#cbd5e1";
-      c.strokeStyle = "#09090b";
-      c.lineWidth = 3;
       c.beginPath();
-      c.moveTo(side * 22, -68);
-      c.quadraticCurveTo(side * 74, -124, side * 94, -68);
-      c.quadraticCurveTo(side * 66, -92, side * 32, -52);
-      c.closePath();
-      c.fill(); c.stroke();
+      c.moveTo(side * 22, -74);
+      c.quadraticCurveTo(side * 68, -22, side * 82, 85);
+      c.moveTo(side * 42, -52);
+      c.quadraticCurveTo(side * 86, 8, side * 94, 96);
+      c.stroke();
     }
 
-    // Crimson shrine drape & gaping bone teeth arch
-    c.fillStyle = "#7f1d1d";
+    // 5. Massive Sweeping Bone Horns & Crown Skull Crest
+    for (const side of [-1, 1]) {
+      c.fillStyle = "#e2e8f0";
+      c.strokeStyle = "#09090b";
+      c.lineWidth = 3.2;
+      c.beginPath();
+      c.moveTo(side * 20, -82);
+      c.bezierCurveTo(side * 68, -148, side * 124, -124, side * 116, -62);
+      c.bezierCurveTo(side * 96, -102, side * 58, -108, side * 34, -64);
+      c.closePath();
+      c.fill(); c.stroke();
+      // Horn ridges
+      c.strokeStyle = "#64748b";
+      c.lineWidth = 1.6;
+      c.beginPath();
+      c.moveTo(side * 46, -102); c.lineTo(side * 52, -88);
+      c.moveTo(side * 72, -110); c.lineTo(side * 74, -95);
+      c.moveTo(side * 96, -104); c.lineTo(side * 92, -88);
+      c.stroke();
+    }
+
+    // 6. Gaping Abyssal Maw, Sharp Fangs & Bleeding Crimson Drape
+    c.fillStyle = "#09090b";
+    c.strokeStyle = "#7f1d1d";
+    c.lineWidth = 3;
+    c.beginPath();
+    c.ellipse(0, -12, 48, 38, 0, 0, Math.PI * 2);
+    c.fill(); c.stroke();
+    // Upper & lower bone fangs
+    c.fillStyle = "#f1f5f9";
+    c.strokeStyle = "#09090b";
+    c.lineWidth = 1.5;
+    for (let tx = -34; tx <= 34; tx += 11.3) {
+      c.beginPath(); c.moveTo(tx - 4.5, -24); c.lineTo(tx, -10); c.lineTo(tx + 4.5, -24); c.closePath(); c.fill(); c.stroke();
+      c.beginPath(); c.moveTo(tx - 4.5, 16); c.lineTo(tx, 3); c.lineTo(tx + 4.5, 16); c.closePath(); c.fill(); c.stroke();
+    }
+    // Bleeding crimson shrine drape over top of maw
+    c.fillStyle = "#991b1b";
     c.strokeStyle = "#09090b";
     c.lineWidth = 2.8;
     c.beginPath();
-    c.ellipse(0, -18, 40, 32, 0, Math.PI, Math.PI * 2);
-    c.lineTo(40, 18);
-    c.lineTo(-40, 18);
+    c.moveTo(-46, -24);
+    c.quadraticCurveTo(0, -56, 46, -24);
+    c.lineTo(36, -14);
+    c.quadraticCurveTo(0, -24, -36, -14);
     c.closePath();
     c.fill(); c.stroke();
-    c.fillStyle = "#e2e8f0";
-    for (let tx = -30; tx <= 30; tx += 12) {
-      c.fillRect(tx - 3.5, 8, 7, 11);
-    }
 
-    // Multiple glowing golden-white eyes embedded in the Incomplete Shrine
-    const eyes = [[-36, -34, 11], [36, -34, 11], [-50, 4, 13], [50, 4, 13], [-34, 40, 10], [34, 40, 10]];
+    // 7. 8 Glowing Golden-Amber Eyes embedded asymmetrically in the Shrine
+    const eyes = [
+      [-40, -48, 11], [40, -48, 11],
+      [-58, -10, 14], [58, -10, 14],
+      [-52, 32, 13], [52, 32, 13],
+      [-28, 64, 10], [28, 64, 10],
+    ];
     for (const [ex, ey, er] of eyes) {
+      const rGlow = er * (1 + pulse * 0.08);
       c.fillStyle = "#fef9c3";
       c.strokeStyle = "#09090b";
-      c.lineWidth = 2.4;
-      c.beginPath(); c.ellipse(ex, ey, er, er * 0.62, ex < 0 ? 0.25 : -0.25, 0, Math.PI * 2); c.fill(); c.stroke();
+      c.lineWidth = 2.6;
+      c.beginPath(); c.ellipse(ex, ey, rGlow, rGlow * 0.58, ex < 0 ? 0.28 : -0.28, 0, Math.PI * 2); c.fill(); c.stroke();
       c.fillStyle = "#f59e0b";
-      c.beginPath(); c.arc(ex, ey, er * 0.28, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.arc(ex, ey, rGlow * 0.34, 0, Math.PI * 2); c.fill();
+      c.fillStyle = "#09090b";
+      c.beginPath(); c.ellipse(ex, ey, rGlow * 0.12, rGlow * 0.32, 0, 0, Math.PI * 2); c.fill();
     }
 
     c.restore();
@@ -2530,14 +2603,30 @@
 
   function spawnIncompleteShrineDomain(owner, g) {
     const duration = 10.0;
-    g.entities.push(rt.spawnShockRing(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, "#dc2626", 260, 0.55));
+    g.entities.push(rt.spawnShockRing(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, "#dc2626", 290, 0.58));
+    g.entities.push(rt.spawnShockRing(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, "#09090b", 220, 0.45));
     g.sound.playCritHit();
-    rt.addShake(0.42, 11);
+    rt.addShake(0.45, 12);
+
+    // Ambient ash embers & flying slash streaks inside the Domain
+    const embers = [];
+    for (let i = 0; i < 24; i++) {
+      embers.push({
+        x: Math.random() * WORLD_SIZE,
+        y: Math.random() * WORLD_SIZE,
+        vy: -28 - Math.random() * 44,
+        vx: (Math.random() - 0.5) * 26,
+        sz: 2 + Math.random() * 3,
+      });
+    }
 
     return {
       life: duration,
       maxLife: duration,
-      slashCd: 0.14,
+      slashCd: 0.12,
+      ambSlashCd: 0.08,
+      slashes: [],
+      embers,
       dead: false,
       update(dt, gg) {
         this.life -= dt;
@@ -2545,14 +2634,31 @@
           this.dead = true;
           return;
         }
+        for (const e of this.embers) {
+          e.x += e.vx * dt;
+          e.y += e.vy * dt;
+          if (e.y < -10) { e.y = WORLD_SIZE + 10; e.x = gg.rng() * WORLD_SIZE; }
+        }
+        for (let i = this.slashes.length - 1; i >= 0; i--) {
+          this.slashes[i].life -= dt;
+          if (this.slashes[i].life <= 0) this.slashes.splice(i, 1);
+        }
+        this.ambSlashCd -= dt;
+        if (this.ambSlashCd <= 0) {
+          this.ambSlashCd = 0.09;
+          const sx = 45 + gg.rng() * (WORLD_SIZE - 90);
+          const sy = 45 + gg.rng() * (WORLD_SIZE - 90);
+          const ang = gg.rng() * Math.PI * 2;
+          this.slashes.push({ x: sx, y: sy, ang, len: 55 + gg.rng() * 75, life: 0.2, maxLife: 0.2 });
+        }
         this.slashCd -= dt;
         if (this.slashCd <= 0) {
-          this.slashCd = 0.26;
+          this.slashCd = 0.25;
           for (const tt of gg.balls) {
             if (tt === owner || !tt.alive) continue;
             const dealt = gg.applyDamage(tt, 4, { pierce: true });
             tt.flashTimer = 0.08;
-            gg.entities.push(spawnCleaveSlashEffect(tt.x + (gg.rng() - 0.5) * 26, tt.y + (gg.rng() - 0.5) * 26, 44));
+            gg.entities.push(spawnCleaveSlashEffect(tt.x + (gg.rng() - 0.5) * 28, tt.y + (gg.rng() - 0.5) * 28, 48));
             gg.spawnDamageText(tt.x, tt.y - tt.radius - 12, dealt, "#ef4444", false, "SHRINE!");
             gg.sound.playBallHit();
           }
@@ -2560,20 +2666,70 @@
       },
       render(c) {
         const k = Math.min(1, this.life * 2);
+        const now = performance.now() * 0.004;
+        const pulse = Math.sin(now * 2.2) * 0.5 + 0.5;
         c.save();
-        c.fillStyle = `rgba(30, 6, 12, ${(0.24 * k).toFixed(3)})`;
+
+        // Deep crimson-black domain atmosphere + terrifying edge vignette
+        c.fillStyle = `rgba(38, 4, 10, ${(0.32 * k).toFixed(3)})`;
         c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
-        drawIncompleteShrineStructure(c, WORLD_SIZE * 0.5, WORLD_SIZE * 0.48, 0.92, 0.42 * k);
+        const vig = c.createRadialGradient(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, WORLD_SIZE * 0.24, WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, WORLD_SIZE * 0.72);
+        vig.addColorStop(0, "rgba(0, 0, 0, 0)");
+        vig.addColorStop(1, `rgba(9, 2, 5, ${(0.58 * k).toFixed(3)})`);
+        c.fillStyle = vig;
+        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+        // Rotating dark-crimson Domain ring on arena floor
+        c.save();
+        c.translate(WORLD_SIZE * 0.5, WORLD_SIZE * 0.55);
+        c.rotate(now * 0.25);
+        c.globalAlpha = 0.36 * k;
+        c.strokeStyle = "#dc2626";
+        c.lineWidth = 3;
+        c.setLineDash([18, 12]);
+        c.beginPath(); c.arc(0, 0, 175, 0, Math.PI * 2); c.stroke();
+        c.setLineDash([]);
+        c.restore();
+
+        // Grand Incomplete Malevolent Shrine looming in the background
+        drawIncompleteShrineStructure(c, WORLD_SIZE * 0.5, WORLD_SIZE * 0.44, 1.05, 0.72 * k, pulse);
+
+        // Rising crimson/black ash embers
+        for (const e of this.embers) {
+          c.fillStyle = e.sz > 3.5 ? `rgba(239, 68, 68, ${(0.7 * k).toFixed(2)})` : `rgba(15, 23, 42, ${(0.75 * k).toFixed(2)})`;
+          c.beginPath(); c.arc(e.x, e.y, e.sz, 0, Math.PI * 2); c.fill();
+        }
+
+        // Relentless arena-wide slash streaks
+        c.lineCap = "round";
+        for (const s of this.slashes) {
+          const sk = Math.max(0, s.life / s.maxLife);
+          const dx = Math.cos(s.ang) * s.len * 0.5;
+          const dy = Math.sin(s.ang) * s.len * 0.5;
+          c.globalAlpha = sk * 0.85 * k;
+          c.strokeStyle = "#09090b";
+          c.lineWidth = 6 * sk;
+          c.beginPath(); c.moveTo(s.x - dx, s.y - dy); c.lineTo(s.x + dx, s.y + dy); c.stroke();
+          c.strokeStyle = "#ef4444";
+          c.lineWidth = 2.5 * sk;
+          c.stroke();
+        }
         c.restore();
       },
     };
   }
 
   function spawnIncompleteShrineCinematic(owner, g) {
-    const duration = 1.65;
+    const duration = 2.15;
     g.hitStop = duration;
     g.sound.playCritHit();
-    rt.addShake(0.45, 11);
+    rt.addShake(0.65, 14);
+
+    // Precompute dramatic radial speedlines & slash fractures
+    const rays = [];
+    for (let i = 0; i < 18; i++) {
+      rays.push((i / 18) * Math.PI * 2 + (i % 2) * 0.08);
+    }
 
     return {
       isFreezeCinematic: true,
@@ -2590,45 +2746,91 @@
       render() {},
       renderOverlay(c) {
         const p = Math.min(1, this.timer / this.duration);
+        const cx = WORLD_SIZE * 0.5;
+        const cy = WORLD_SIZE * 0.5;
         c.save();
 
-        if (p < 0.52) {
-          // Phase 1: Gelap - Terang - Gelap - Terang strobe flicker!
-          const beat = Math.floor((p / 0.52) * 4);
+        if (p < 0.40) {
+          // Phase 1: Terrifying Gelap -> Terang -> Gelap -> Terang strobe flicker + domain fracture!
+          const beat = Math.floor((p / 0.40) * 5);
           const isBright = beat % 2 === 1;
-          c.fillStyle = isBright ? "rgba(254, 226, 226, 0.82)" : "rgba(6, 4, 12, 0.92)";
+          c.fillStyle = isBright ? "rgba(254, 226, 226, 0.88)" : "rgba(6, 2, 8, 0.94)";
           c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
-          // Black-crimson domain slash cracks across screen
-          c.strokeStyle = isBright ? "#09090b" : "#dc2626";
-          c.lineWidth = 6;
-          c.beginPath();
-          c.moveTo(40, 80 + beat * 45); c.lineTo(WORLD_SIZE - 40, WORLD_SIZE - 90 - beat * 30);
-          c.moveTo(WORLD_SIZE - 55, 70 + beat * 30); c.lineTo(55, WORLD_SIZE - 75);
-          c.stroke();
+          // Violent black-crimson slash fractures tearing across screen
+          c.lineCap = "round";
+          for (let i = 0; i < 4; i++) {
+            c.strokeStyle = isBright ? "#09090b" : "#dc2626";
+            c.lineWidth = 8 - i;
+            c.beginPath();
+            c.moveTo(20, 60 + ((beat * 70 + i * 110) % 420));
+            c.lineTo(WORLD_SIZE - 20, WORLD_SIZE - 60 - ((beat * 55 + i * 95) % 380));
+            c.stroke();
+          }
+
+          // Bold trembling warning text
+          c.textAlign = "center";
+          c.textBaseline = "middle";
+          c.lineJoin = "round";
+          c.font = "bold 28px 'Fredoka', 'Nunito', sans-serif";
+          c.lineWidth = 8;
+          c.strokeStyle = isBright ? "#dc2626" : "#09090b";
+          c.strokeText("DOMAIN EXPANSION...", cx, cy);
+          c.fillStyle = isBright ? "#09090b" : "#fef2f2";
+          c.fillText("DOMAIN EXPANSION...", cx, cy);
         } else {
-          // Phase 2: Incomplete Malevolent Shrine emerges dramatically!
-          const ep = (p - 0.52) / 0.48;
-          const fadeOut = ep > 0.86 ? (1 - ep) / 0.14 : 1;
-          c.fillStyle = `rgba(12, 6, 12, ${(0.84 * fadeOut).toFixed(3)})`;
+          // Phase 2: Grand Incomplete Malevolent Shrine erupts in blood-red sky & speed-lines!
+          const ep = (p - 0.40) / 0.60;
+          const fadeOut = ep > 0.88 ? (1 - ep) / 0.12 : 1;
+
+          // Blood-crimson abyssal sky backdrop
+          const bg = c.createRadialGradient(cx, cy * 0.9, 30, cx, cy, WORLD_SIZE * 0.78);
+          bg.addColorStop(0, `rgba(127, 29, 29, ${(0.92 * fadeOut).toFixed(3)})`);
+          bg.addColorStop(0.55, `rgba(28, 4, 10, ${(0.94 * fadeOut).toFixed(3)})`);
+          bg.addColorStop(1, `rgba(5, 2, 6, ${(0.96 * fadeOut).toFixed(3)})`);
+          c.fillStyle = bg;
           c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
-          const riseY = WORLD_SIZE * 0.56 - Math.min(1, ep * 1.45) * 48;
-          const sc = 0.85 + Math.min(1, ep * 1.35) * 0.42;
-          drawIncompleteShrineStructure(c, WORLD_SIZE * 0.5, riseY, sc, fadeOut);
-        }
+          // Radiating black & crimson impact speed-lines
+          c.save();
+          c.globalAlpha = 0.48 * fadeOut;
+          for (let i = 0; i < rays.length; i++) {
+            const a = rays[i] + ep * 0.12;
+            c.strokeStyle = i % 2 === 0 ? "#09090b" : "#ef4444";
+            c.lineWidth = i % 2 === 0 ? 5 : 2.5;
+            c.beginPath();
+            c.moveTo(cx + Math.cos(a) * 65, cy + Math.sin(a) * 65);
+            c.lineTo(cx + Math.cos(a) * 440, cy + Math.sin(a) * 440);
+            c.stroke();
+          }
+          c.restore();
 
-        // Dramatic Domain Expansion Callout
-        c.textAlign = "center";
-        c.textBaseline = "middle";
-        c.lineJoin = "round";
-        const label = p < 0.52 ? "DOMAIN EXPANSION..." : "INCOMPLETE MALEVOLENT SHRINE!";
-        c.font = `bold ${p < 0.52 ? 24 : 25}px 'Fredoka', 'Nunito', sans-serif`;
-        c.lineWidth = 7;
-        c.strokeStyle = "#09090b";
-        c.strokeText(label, WORLD_SIZE * 0.5, WORLD_SIZE - 54);
-        c.fillStyle = p < 0.52 ? "#fef2f2" : "#ef4444";
-        c.fillText(label, WORLD_SIZE * 0.5, WORLD_SIZE - 54);
+          // Towering Shrine rising & zooming forward menacingly
+          const riseY = cy * 1.12 - Math.min(1, ep * 1.6) * 52;
+          const sc = 0.95 + Math.min(1, ep * 1.4) * 0.48;
+          const pulse = Math.sin(ep * 18) * 0.5 + 0.5;
+          drawIncompleteShrineStructure(c, cx, riseY, sc, fadeOut, pulse);
+
+          // Expanding crimson Domain shockwave ring at lock-in
+          if (ep > 0.55) {
+            const rp = (ep - 0.55) / 0.45;
+            c.strokeStyle = `rgba(239, 68, 68, ${((1 - rp) * 0.85 * fadeOut).toFixed(3)})`;
+            c.lineWidth = 8 * (1 - rp) + 2;
+            c.beginPath(); c.arc(cx, cy, 70 + rp * 340, 0, Math.PI * 2); c.stroke();
+          }
+
+          // Grand Title Banner at bottom
+          c.textAlign = "center";
+          c.textBaseline = "middle";
+          c.lineJoin = "round";
+          c.globalAlpha = fadeOut;
+          c.font = "bold 26px 'Fredoka', 'Nunito', sans-serif";
+          c.lineWidth = 8;
+          c.strokeStyle = "#09090b";
+          c.strokeText("INCOMPLETE MALEVOLENT SHRINE!", cx, WORLD_SIZE - 52);
+          c.fillStyle = "#ef4444";
+          c.fillText("INCOMPLETE MALEVOLENT SHRINE!", cx, WORLD_SIZE - 52);
+        }
 
         c.restore();
       },
