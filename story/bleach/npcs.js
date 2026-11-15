@@ -376,11 +376,7 @@
         c.rotate(-0.22);
       }
 
-      if (opts.chargeGlow) {
-        c.shadowColor = "#38bdf8";
-        c.shadowBlur = 14 * opts.chargeGlow;
-      }
-
+      // Fast layered glow (no shadowBlur for 60fps mobile)
       // Long broad silver blade
       c.fillStyle = opts.chargeGlow ? "#e0f2fe" : "#f1f5f9";
       c.strokeStyle = INK;
@@ -1098,8 +1094,10 @@
     if (bossState === "telegraph" && pattern === "barrage") {
       const orbR = (4 + animProg * 9) * s;
       c.save();
-      c.shadowColor = "#c026d3";
-      c.shadowBlur = 14;
+      c.globalAlpha = 0.4;
+      c.fillStyle = "#c026d3";
+      c.beginPath(); c.arc(0, 11 * s, orbR * 1.45, 0, TAU); c.fill();
+      c.globalAlpha = 1;
       c.fillStyle = "#fae8ff";
       c.strokeStyle = "#db2777";
       c.lineWidth = 2.5;

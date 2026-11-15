@@ -321,7 +321,7 @@
         player,
         pState.combo === 3 ? "#38bdf8" : "#ffffff",
         0,
-        pState.combo === 3 ? 0.05 : 0.022
+        0
       );
     }
   }
@@ -661,7 +661,9 @@
       pState.dashTime -= dt;
       player.x = Math.max(38, Math.min(402, player.x + pState.dashVx * dt));
       player.y = Math.max(140, Math.min(474, player.y + pState.dashVy * dt));
-      pState.afterimages.push({ x: player.x, y: player.y, facing: player.facing, life: 0.24, maxLife: 0.24 });
+      if (pState.afterimages.length < 4 && (pState.afterimages.length === 0 || pState.afterimages[pState.afterimages.length - 1].life < 0.19)) {
+        pState.afterimages.push({ x: player.x, y: player.y, facing: player.facing, life: 0.24, maxLife: 0.24 });
+      }
     } else if (pState.ultTimer <= 0.54) {
       const spd = pState.blockTime > 0 ? 64 : 172;
       const len = Math.hypot(moveX, moveY);
@@ -863,16 +865,21 @@
       S.BleachChars.drawRukia(c, 84, 158, 17, t, { mood: "serious" });
     }
 
-    // 3. Shunpo Dodge Afterimages
+    // 3. Shunpo Dodge Afterimages (lightweight cyan ghosts for 60fps mobile)
     for (const af of pState.afterimages) {
+      const a = (af.life / af.maxLife) * 0.48;
       c.save();
-      c.globalAlpha = (af.life / af.maxLife) * 0.50;
-      S.BleachChars.drawShinigamiIchigo(c, af.x, af.y, player.r, t, af.facing, {
-        noShadow: true,
-        mood: "battle",
-        scaleX: 1.32,
-        scaleY: 0.78,
-      });
+      c.globalAlpha = a;
+      c.translate(af.x, af.y);
+      c.scale(1.32, 0.78);
+      c.fillStyle = "#38bdf8";
+      c.beginPath();
+      c.arc(0, 0, player.r, 0, TAU);
+      c.fill();
+      c.fillStyle = "#e0f2fe";
+      c.beginPath();
+      c.arc(0, -player.r * 0.2, player.r * 0.65, 0, TAU);
+      c.fill();
       c.restore();
     }
 
@@ -896,8 +903,6 @@
     // 5. Fishbone D Boss (with full windup / attack / stagger / enraged animations)
     if (boss.hp > 0 && S.BleachChars) {
       const animProg = boss.state === "telegraph" ? 1 - Math.max(0, boss.timer / boss.teleDuration) : 0;
-      c.save();
-      if (boss.hurtFlash > 0) c.filter = "brightness(2.2)";
       S.BleachChars.drawFishboneHollow(c, boss.x, boss.y, boss.r, t, {
         talking: boss.state === "telegraph" || boss.state === "attack",
         bossState: boss.state,
@@ -905,7 +910,13 @@
         pattern: boss.pattern,
         enraged: boss.enraged,
       });
-      c.restore();
+      if (boss.hurtFlash > 0) {
+        c.save();
+        c.globalAlpha = Math.min(0.65, boss.hurtFlash * 4);
+        c.fillStyle = "#ffffff";
+        c.beginPath(); c.arc(boss.x, boss.y - 6, boss.r * 1.15, 0, TAU); c.fill();
+        c.restore();
+      }
     }
 
     // 6. Shinigami Ichigo + Rotating Hex Guard Shield
@@ -913,8 +924,12 @@
       const ichiOpts = computeIchigoAnimOpts();
       c.save();
       if (pState.iframe > 0) c.globalAlpha = 0.68;
-      if (pState.hurtFlash > 0) c.filter = "brightness(1.9) saturate(1.8)";
       S.BleachChars.drawShinigamiIchigo(c, player.x, player.y, player.r, t, player.facing, ichiOpts);
+      if (pState.hurtFlash > 0) {
+        c.globalAlpha = Math.min(0.6, pState.hurtFlash * 2.6);
+        c.fillStyle = "#ef4444";
+        c.beginPath(); c.arc(player.x, player.y, player.r * 1.05, 0, TAU); c.fill();
+      }
       c.restore();
 
       if (pState.blockTime > 0) {
@@ -958,11 +973,13 @@
       c.restore();
     }
 
-    // 7b. Boss Hollow Cero Orbs
+    // 7b. Boss Hollow Cero Orbs (fast glow without shadowBlur)
     for (const bp of bossProjectiles) {
       c.save();
-      c.shadowColor = bp.deflected ? "#ffe047" : "#c026d3";
-      c.shadowBlur = 14;
+      c.globalAlpha = 0.35;
+      c.fillStyle = bp.deflected ? "#ffe047" : "#c026d3";
+      c.beginPath(); c.arc(bp.x, bp.y, bp.r * 1.45, 0, TAU); c.fill();
+      c.globalAlpha = 1;
       c.fillStyle = bp.deflected ? "#fef08a" : "#18181b";
       c.strokeStyle = bp.deflected ? "#f59e0b" : "#e879f9";
       c.lineWidth = 3;
@@ -979,10 +996,10 @@
       const cy = (player.y + boss.y) * 0.5;
       c.save();
       c.globalAlpha = Math.min(1, p * 1.35);
-      c.shadowColor = "#38bdf8";
-      c.shadowBlur = 26;
       const pw = 66 * p;
-      c.fillStyle = "rgba(14, 165, 233, 0.52)";
+      c.fillStyle = "rgba(56, 189, 248, 0.25)";
+      c.fillRect(cx - pw * 0.8, cy - 260, pw * 1.6, 290);
+      c.fillStyle = "rgba(14, 165, 233, 0.55)";
       c.fillRect(cx - pw * 0.5, cy - 260, pw, 290);
       c.fillStyle = "#e0f2fe";
       c.fillRect(cx - pw * 0.2, cy - 260, pw * 0.4, 290);
@@ -994,7 +1011,7 @@
       c.restore();
     }
 
-    // 8. Flashy Slash Arcs & Shockwave Rings
+    // 8. Flashy Slash Arcs & Shockwave Rings (layered glow, zero shadowBlur lag)
     for (const sl of slashes) {
       const p = sl.life / sl.maxLife;
       const sx = sl.followPlayer ? player.x : sl.x;
@@ -1011,14 +1028,22 @@
         c.translate(sx, sy);
         c.rotate(sl.ang);
         if (sl.flip) c.scale(1, -1);
-        c.shadowColor = sl.color;
-        c.shadowBlur = sl.heavy ? 18 : 12;
-        c.strokeStyle = sl.color;
-        c.lineWidth = (sl.heavy ? 10 : 7) * p;
         c.lineCap = "round";
+        // Outer soft glow stroke
+        c.globalAlpha = p * 0.35;
+        c.strokeStyle = sl.color;
+        c.lineWidth = (sl.heavy ? 18 : 13) * p;
         c.beginPath();
         c.arc(0, 0, sl.r, -1.12, 1.12);
         c.stroke();
+        // Main colored arc
+        c.globalAlpha = p;
+        c.strokeStyle = sl.color;
+        c.lineWidth = (sl.heavy ? 9 : 6.5) * p;
+        c.beginPath();
+        c.arc(0, 0, sl.r, -1.12, 1.12);
+        c.stroke();
+        // Crisp white core
         c.strokeStyle = "#ffffff";
         c.lineWidth = (sl.heavy ? 3.5 : 2.4) * p;
         c.beginPath();
