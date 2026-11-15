@@ -2320,6 +2320,7 @@
     rt.addShake(0.35, 9);
 
     return {
+      isSummon: true,
       x: startX,
       y: startY,
       vx: 0,
@@ -2340,6 +2341,7 @@
       wheelAngle: 0,
       dead: false,
       update(dt, gg) {
+        if (gg.entities.some((e) => e.isDomainClash && !e.dead)) return;
         this.life -= dt;
         this.wheelAngle += dt * (this.finaleStarted ? 9.5 : 2.2);
         if (this.slashAnim > 0) this.slashAnim = Math.max(0, this.slashAnim - dt * 3.8);

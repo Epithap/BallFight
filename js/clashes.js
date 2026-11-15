@@ -862,9 +862,9 @@
         enemy.domainUsedInUlt = true;
         rt().addEffect(enemy, "haste", 8.0, { factor: 1.15 });
       }
-      // Clear stuns, active casts, & stray projectiles/vortexes so both sorcerers face off cleanly in the Domain Clash
+      // Clear stuns, active casts, & stray projectiles/vortexes so both sorcerers face off cleanly in the Domain Clash (keep active summons like Mahoraga!)
       for (const ent of g.entities) {
-        if (!ent.isDomain && !ent.isDomainClash) ent.dead = true;
+        if (!ent.isDomain && !ent.isDomainClash && !ent.isSummon && !ent.keepDuringDomainClash) ent.dead = true;
       }
       rt().floatingTexts.length = 0;
       owner.effects = owner.effects.filter((ef) => ef.type !== "stun");
