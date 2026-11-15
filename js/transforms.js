@@ -499,60 +499,56 @@
         return;
       }
 
+      // Heian Era: Domain Expansion: Incomplete Malevolent Shrine (strobe flicker + Shrine emerges)!
+      if (ball.heianEraMode) {
+        rt().beginCast(ball, {
+          kind: "powerup",
+          duration: 0.4,
+          color: "#dc2626",
+          fire(b, g) {
+            b.ultTimer = 7.0;
+            b.domainUsedInUlt = true;
+            rt().addEffect(b, "haste", 7.0, { factor: 1.24 });
+            if (BF.spawnIncompleteShrineCinematic) {
+              g.entities.push(BF.spawnIncompleteShrineCinematic(b, g));
+            }
+          },
+        });
+        return;
+      }
+
       rt().beginCast(ball, {
         kind: "fuga_arrow",
-        duration: ball.heianEraMode ? 0.65 : 0.85,
-        color: ball.heianEraMode ? "#dc2626" : "#f97316",
+        duration: 0.85,
+        color: "#f97316",
         fire(b, g) {
-          b.ultTimer = b.heianEraMode ? 14.0 : 13.0;
+          b.ultTimer = 13.0;
           b.domainUsedInUlt = false;
-          rt().addEffect(b, "haste", b.ultTimer, { factor: b.heianEraMode ? 1.24 : 1.15 });
+          rt().addEffect(b, "haste", b.ultTimer, { factor: 1.15 });
           const t = g.balls.find((x) => x !== b && x.alive);
           if (!t) return;
           const ang = Math.atan2(t.y - b.y, t.x - b.x);
           const m = rt().castMuzzle(b, ang, 24);
-          g.entities.push(rt().spawnShockRing(m.x, m.y, b.heianEraMode ? "#dc2626" : "#fb923c", 145, 0.45));
+          g.entities.push(rt().spawnShockRing(m.x, m.y, "#fb923c", 145, 0.45));
           rt().shakeTime = Math.max(rt().shakeTime, 0.35);
           rt().shakeIntensity = Math.max(rt().shakeIntensity, 9);
-
-          // Heian Era: also fires a shield/Infinity-piercing World-Cutting Slash alongside Thermobaric Fuga!
-          if (b.heianEraMode) {
-            g.entities.push(rt().spawnProjectile({
-              owner: b,
-              target: t,
-              x: m.x,
-              y: m.y,
-              speed: 860,
-              radius: 36,
-              damage: 22,
-              color: "#fef2f2",
-              label: "WORLD SLASH!",
-              shape: "dismantle_slash",
-              pierceInfinity: true,
-              ignoresShield: true,
-              onImpact(tt, gg) {
-                if (BF.spawnCleaveSlashEffect) gg.entities.push(BF.spawnCleaveSlashEffect(tt.x, tt.y, 58));
-                gg.sound.playCritHit();
-              },
-            }));
-          }
 
           g.entities.push(rt().spawnProjectile({
             owner: b,
             target: t,
             x: m.x,
             y: m.y,
-            speed: b.heianEraMode ? 640 : 560,
-            radius: b.heianEraMode ? 42 : 36,
-            damage: b.heianEraMode ? Math.round(34 + rt().rng() * 8) : Math.round(26 + rt().rng() * 6),
-            color: b.heianEraMode ? "#dc2626" : "#f97316",
-            label: b.heianEraMode ? "FURNACE: OPEN!" : "FUGA!",
+            speed: 560,
+            radius: 36,
+            damage: Math.round(26 + rt().rng() * 6),
+            color: "#f97316",
+            label: "FUGA!",
             shape: "fuga_arrow",
             onImpact(tt, gg, proj) {
-              BF.triggerFugaExplosion(proj.x, proj.y, b, gg, tt, b.heianEraMode ? 260 : 225);
+              BF.triggerFugaExplosion(proj.x, proj.y, b, gg, tt, 225);
             },
             onOutOfBounds(gg, proj) {
-              BF.triggerFugaExplosion(proj.x, proj.y, b, gg, null, b.heianEraMode ? 260 : 225);
+              BF.triggerFugaExplosion(proj.x, proj.y, b, gg, null, 225);
             },
           }));
         },

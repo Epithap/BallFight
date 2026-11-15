@@ -864,7 +864,7 @@
           : ball.vastoLordeMode
           ? "SONÍDO SLASH"
           : ball.heianEraMode
-          ? "WORLD SLASH / KAMUTOKE"
+          ? "KAMUTOKE / HITEN FLAME"
           : ball.costume === "sukuna" && ball.evolved
           ? "TEN SHADOWS (DOG / NUE)"
           : skill.name
@@ -3612,11 +3612,11 @@
       detailEmpoweredBox.classList.toggle("hidden", !tr);
       if (tr) {
         const isSukunaEvo = cfg.id === "sukuna" && cfg.evolved;
-        if (detailEmpName) detailEmpName.textContent = isSukunaEvo ? "HEIAN ERA: WORLD SLASH & KAMUTOKE" : tr.ultSkillName;
-        if (detailEmpCd) detailEmpCd.textContent = isSukunaEvo ? "CD: 1.7S" : tr.ultSkillCd;
+        if (detailEmpName) detailEmpName.textContent = isSukunaEvo ? "HEIAN ERA: HITEN & KAMUTOKE" : tr.ultSkillName;
+        if (detailEmpCd) detailEmpCd.textContent = isSukunaEvo ? "HP <= 200 • 1.7S CD" : tr.ultSkillCd;
         if (detailEmpDesc) {
           detailEmpDesc.textContent = isSukunaEvo
-            ? "At HP <= 200, permanently becomes 4-Arm Heian Era (+60 HP, +15% Speed): World-Cutting Slash (24 DMG, pierces Infinity & Shields!), 4-Arm Cleave + Kamutoke Lightning, and Furnace: Open!"
+            ? "At HP <= 200, permanently becomes 4-Arm Heian Era (+60 HP, +15% Speed) wielding Hiten & Kamutoke: Multi-Area Kamutoke Sky Lightning, Hiten Fire Breath, and Incomplete Malevolent Shrine!"
             : tr.ultSkillDesc;
         }
       }

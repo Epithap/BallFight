@@ -1000,20 +1000,153 @@
     };
   }
 
-  function spawnKamutokeStrike(x, y, owner, g) {
-    g.entities.push(rt.spawnShockRing(x, y, "#facc15", 115, 0.36));
-    g.entities.push(rt.spawnShockRing(x, y, "#fef08a", 72, 0.24));
-    g.spawnSparks(x, y, "#facc15", "#ffffff");
+  function spawnKamutokeAreaStrike(x, y, owner, g) {
+    const cx = Math.max(40, Math.min(WORLD_SIZE - 40, x));
+    const cy = Math.max(40, Math.min(WORLD_SIZE - 40, y));
+    // Sky-to-ground golden Kamutoke lightning bolt
+    const segs = [];
+    let lx = cx + (g.rng() - 0.5) * 32;
+    let ly = cy - 220;
+    segs.push([lx, ly]);
+    for (let i = 1; i <= 7; i++) {
+      const t = i / 7;
+      lx = cx + (1 - t) * (lx - cx) + (i < 7 ? (g.rng() - 0.5) * 30 : 0);
+      ly = (cy - 220) + t * 220;
+      segs.push([lx, ly]);
+    }
+    g.entities.push({
+      x: cx,
+      y: cy,
+      segs,
+      life: 0.28,
+      maxLife: 0.28,
+      dead: false,
+      update(dt) {
+        this.life -= dt;
+        if (this.life <= 0) this.dead = true;
+      },
+      render() {},
+      renderOverlay(c) {
+        const k = Math.max(0, this.life / this.maxLife);
+        c.save();
+        c.globalAlpha = k;
+        c.lineCap = "round";
+        c.lineJoin = "round";
+        c.fillStyle = "rgba(250, 204, 21, 0.32)";
+        c.beginPath(); c.ellipse(this.x, this.y, 44 * k, 18 * k, 0, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = "#eab308";
+        c.lineWidth = 11 * k;
+        c.beginPath();
+        this.segs.forEach(([sx, sy], i) => (i === 0 ? c.moveTo(sx, sy) : c.lineTo(sx, sy)));
+        c.stroke();
+        c.strokeStyle = "#fef08a";
+        c.lineWidth = 5 * k;
+        c.stroke();
+        c.strokeStyle = "#ffffff";
+        c.lineWidth = 2.2 * k;
+        c.stroke();
+        c.restore();
+      },
+    });
+    g.entities.push(rt.spawnShockRing(cx, cy, "#facc15", 92, 0.3));
+    g.entities.push(rt.spawnShockRing(cx, cy, "#fef08a", 56, 0.22));
+    g.spawnSparks(cx, cy, "#facc15", "#ffffff");
     for (const tt of g.balls) {
       if (tt === owner || !tt.alive) continue;
-      if (Math.hypot(tt.x - x, tt.y - y) <= 105 + tt.radius) {
-        const dealt = g.applyDamage(tt, 12);
+      if (Math.hypot(tt.x - cx, tt.y - cy) <= 78 + tt.radius) {
+        const dealt = g.applyDamage(tt, 8);
         g.spawnDamageText(tt.x, tt.y - tt.radius - 14, dealt, "#facc15", true, "KAMUTOKE!");
-        tt.flashTimer = 0.16;
-        g.addEffect(tt, "stun", 0.6);
+        tt.flashTimer = 0.14;
+        g.addEffect(tt, "stun", 0.35);
       }
     }
     g.sound.playCritHit();
+  }
+
+  function spawnHitenFireStream(owner, target) {
+    let ang = target ? Math.atan2(target.y - owner.y, target.x - owner.x) : 0;
+    return {
+      life: 0.56,
+      maxLife: 0.56,
+      tickCd: 0.04,
+      dead: false,
+      update(dt, g) {
+        this.life -= dt;
+        if (this.life <= 0 || !owner.alive) {
+          this.dead = true;
+          return;
+        }
+        const liveTarget = g.balls.find((b) => b !== owner && b.alive);
+        if (liveTarget) {
+          const targetAng = Math.atan2(liveTarget.y - owner.y, liveTarget.x - owner.x);
+          let diff = targetAng - ang;
+          while (diff > Math.PI) diff -= Math.PI * 2;
+          while (diff < -Math.PI) diff += Math.PI * 2;
+          ang += diff * Math.min(1, dt * 7.5);
+        }
+        this.tickCd -= dt;
+        if (this.tickCd <= 0) {
+          this.tickCd = 0.13;
+          const muzzleX = owner.x + Math.cos(ang) * (owner.radius + 22);
+          const muzzleY = owner.y + Math.sin(ang) * (owner.radius + 22);
+          g.spawnSparks(muzzleX + Math.cos(ang) * 48, muzzleY + Math.sin(ang) * 48, "#f97316", "#fef08a");
+          if (liveTarget) {
+            const dx = liveTarget.x - owner.x;
+            const dy = liveTarget.y - owner.y;
+            const dist = Math.hypot(dx, dy) || 1;
+            const dot = (dx / dist) * Math.cos(ang) + (dy / dist) * Math.sin(ang);
+            if (dist <= 235 + liveTarget.radius && dot >= 0.62) {
+              const dealt = g.applyDamage(liveTarget, 4);
+              liveTarget.flashTimer = 0.1;
+              liveTarget.vx += Math.cos(ang) * 145;
+              liveTarget.vy += Math.sin(ang) * 145;
+              g.addEffect(liveTarget, "burn", 1.8);
+              g.spawnDamageText(liveTarget.x, liveTarget.y - liveTarget.radius - 12, dealt, "#f97316", false, "HITEN FLAME!");
+              g.sound.playBallHit();
+            }
+          }
+        }
+      },
+      render(c) {
+        const k = Math.max(0, this.life / this.maxLife);
+        const now = performance.now() * 0.018;
+        const muzzleX = owner.x + Math.cos(ang) * (owner.radius + 18);
+        const muzzleY = owner.y + Math.sin(ang) * (owner.radius + 18);
+        const len = 215 * Math.min(1, (1 - k) * 4.5 + 0.35);
+
+        c.save();
+        c.translate(muzzleX, muzzleY);
+        c.rotate(ang);
+        c.globalAlpha = Math.min(1, k * 1.6);
+
+        // Outer crimson-orange fire cone
+        const grad = c.createLinearGradient(0, 0, len, 0);
+        grad.addColorStop(0, "rgba(254, 240, 138, 0.95)");
+        grad.addColorStop(0.35, "rgba(249, 115, 22, 0.85)");
+        grad.addColorStop(0.8, "rgba(220, 38, 38, 0.6)");
+        grad.addColorStop(1, "rgba(220, 38, 38, 0)");
+        c.fillStyle = grad;
+        c.beginPath();
+        c.moveTo(0, -6);
+        c.quadraticCurveTo(len * 0.5, -34 + Math.sin(now) * 8, len, -56 + Math.cos(now * 1.3) * 10);
+        c.lineTo(len, 56 + Math.sin(now * 1.3) * 10);
+        c.quadraticCurveTo(len * 0.5, 34 + Math.cos(now) * 8, 0, 6);
+        c.closePath();
+        c.fill();
+
+        // Inner white-gold flame tongue
+        c.fillStyle = "rgba(254, 249, 195, 0.85)";
+        c.beginPath();
+        c.moveTo(0, -3);
+        c.lineTo(len * 0.62, -18 + Math.sin(now * 1.5) * 5);
+        c.lineTo(len * 0.72, 0);
+        c.lineTo(len * 0.62, 18 + Math.cos(now * 1.5) * 5);
+        c.lineTo(0, 3);
+        c.closePath();
+        c.fill();
+        c.restore();
+      },
+    };
   }
 
   const SKILL_SHRINE_ALTERNATE = {
@@ -1076,48 +1209,25 @@
           if (!t) return;
           const baseAng = Math.atan2(t.y - b.y, t.x - b.x);
           if (mode === "dismantle") {
-            // Heian Era: World-Cutting Dismantle (pierces Infinity & Shields!) + flanking slashes
+            // Heian Era Skill A: Kamutoke Lightning Rain across multiple areas!
             if (b.heianEraMode) {
-              const m = rt.castMuzzle(b, baseAng, 18);
-              gg.entities.push(spawnDismantleMuzzleFlash(m.x, m.y, baseAng, 0));
-              gg.entities.push(rt.spawnProjectile({
-                owner: b,
-                target: t,
-                x: m.x,
-                y: m.y,
-                speed: 880,
-                radius: 34,
-                damage: 24,
-                color: "#fef2f2",
-                label: "WORLD-CUTTING SLASH!",
-                shape: "dismantle_slash",
-                pierceInfinity: true,
-                ignoresShield: true,
-                onImpact(tt, g2) {
-                  g2.entities.push(spawnCleaveSlashEffect(tt.x, tt.y, 54));
-                  g2.addEffect(tt, "slow", 0.5, { factor: 0.65 });
-                  g2.chargeUlt(b);
-                },
-              }));
-              for (const tilt of [-0.22, 0.22]) {
-                gg.entities.push(rt.spawnProjectile({
-                  owner: b,
-                  target: t,
-                  x: m.x,
-                  y: m.y,
-                  speed: 740,
-                  radius: 22,
-                  damage: 6,
-                  color: "#ef4444",
-                  label: "DISMANTLE!",
-                  shape: "dismantle_slash",
-                  slashTilt: tilt,
-                  onImpact(tt, g2) {
-                    g2.entities.push(spawnCleaveSlashEffect(tt.x, tt.y, 34));
-                  },
-                }));
-              }
-              gg.spawnDamageText(b.x, b.y - b.radius - 14, 0, "#fef2f2", true, "WORLD-CUTTING SLASH!");
+              const spots = [
+                [t.x, t.y],
+                [t.x - 115, t.y - 75],
+                [t.x + 115, t.y + 70],
+                [b.x + Math.cos(baseAng) * 165 + (gg.rng() - 0.5) * 90, b.y + Math.sin(baseAng) * 165 + (gg.rng() - 0.5) * 90],
+                [95 + gg.rng() * (WORLD_SIZE - 190), 95 + gg.rng() * (WORLD_SIZE - 190)],
+              ];
+              spots.forEach(([sx, sy], idx) => {
+                if (idx === 0) {
+                  spawnKamutokeAreaStrike(sx, sy, b, gg);
+                } else {
+                  gg.entities.push(rt.spawnDelayedAction(idx * 0.09, (gNow) => {
+                    if (b.alive) spawnKamutokeAreaStrike(sx, sy, b, gNow);
+                  }));
+                }
+              });
+              gg.spawnDamageText(b.x, b.y - b.radius - 14, 0, "#facc15", true, "KAMUTOKE STORM!");
               return;
             }
 
@@ -1176,20 +1286,24 @@
               return;
             }
 
-            // Heian Era: 4-Arm Cleave + Kamutoke Lightning | Starter: Cleave Dash
-            const dashMult = b.heianEraMode ? 3.15 : 2.85;
+            // Heian Era Skill B: Hiten Fire Breath / Flame Stream from weapon!
+            if (b.heianEraMode) {
+              gg.entities.push(spawnHitenFireStream(b, t));
+              gg.entities.push(rt.spawnShockRing(b.x, b.y, "#f97316", 92, 0.28));
+              gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#f97316", true, "HITEN FLAME!");
+              gg.sound.playCritHit();
+              return;
+            }
+
+            // Starter: Cleave Dash
+            const dashMult = 2.85;
             const dashSpeed = b.baseSpeed * dashMult;
             b.vx = Math.cos(baseAng) * dashSpeed;
             b.vy = Math.sin(baseAng) * dashSpeed;
-            b.cleaveDashTimer = b.heianEraMode ? 0.45 : 0.42;
+            b.cleaveDashTimer = 0.42;
             b.cleaveDashHit = false;
-            gg.entities.push(rt.spawnShockRing(b.x, b.y, b.heianEraMode ? "#facc15" : "#dc2626", 95, 0.28));
-            if (b.heianEraMode) {
-              spawnKamutokeStrike(t.x, t.y, b, gg);
-              gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#facc15", true, "CLEAVE & KAMUTOKE!");
-            } else {
-              gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#dc2626", false, "CLEAVE DASH!");
-            }
+            gg.entities.push(rt.spawnShockRing(b.x, b.y, "#dc2626", 95, 0.28));
+            gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#dc2626", false, "CLEAVE DASH!");
           }
         },
       });
@@ -1328,7 +1442,45 @@
         c.fillStyle = "#fed7aa";
         c.beginPath(); c.arc(0, r * 0.62, 4.8, 0, Math.PI * 2); c.fill(); c.stroke();
 
-        // Kamutoke golden vajra thunderbolt in upper-right hand
+        // Hiten Trident Spear in upper-left hand (side === -1)
+        if (side === -1) {
+          c.save();
+          c.translate(0, r * 0.62);
+          c.rotate(-0.42);
+          // Long dark shaft
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 5.4;
+          c.lineCap = "round";
+          c.beginPath(); c.moveTo(0, 14); c.lineTo(0, -r * 1.45); c.stroke();
+          c.strokeStyle = "#451a03";
+          c.lineWidth = 2.8;
+          c.stroke();
+          // White cloth ribbon tied below trident head
+          c.fillStyle = "#f8fafc";
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 1.6;
+          c.beginPath(); c.roundRect(-3.8, -r * 1.05, 7.6, 5, 2); c.fill(); c.stroke();
+          // Curved bronze crescent cross-guard
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 4.6;
+          c.beginPath(); c.arc(0, -r * 1.18, 9, Math.PI * 0.12, Math.PI * 0.88); c.stroke();
+          c.strokeStyle = "#f59e0b";
+          c.lineWidth = 2.2;
+          c.stroke();
+          // Sharp silver-crimson spear tip
+          c.fillStyle = "#e2e8f0";
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 2;
+          c.beginPath();
+          c.moveTo(-4, -r * 1.18);
+          c.lineTo(0, -r * 1.65);
+          c.lineTo(4, -r * 1.18);
+          c.closePath();
+          c.fill(); c.stroke();
+          c.restore();
+        }
+
+        // Kamutoke Dual-Ring Vajra Thunderbolt in upper-right hand (side === 1)
         if (side === 1) {
           c.save();
           c.translate(0, r * 0.62);
@@ -1338,14 +1490,25 @@
           c.strokeStyle = COLORS.ink;
           c.lineWidth = 2;
           c.beginPath();
-          c.moveTo(-4, -14); c.lineTo(0, -21); c.lineTo(4, -14);
-          c.lineTo(3, 14); c.lineTo(0, 21); c.lineTo(-3, 14);
+          c.moveTo(-4, -14); c.lineTo(0, -22); c.lineTo(4, -14);
+          c.lineTo(3, 14); c.lineTo(0, 22); c.lineTo(-3, 14);
           c.closePath();
           c.fill(); c.stroke();
-          // Handle grip
+          // Twin white-gold guard rings (JJK Kamutoke signature!)
+          for (const ry of [-7.5, 7.5]) {
+            c.strokeStyle = COLORS.ink;
+            c.lineWidth = 3.4;
+            c.beginPath(); c.ellipse(0, ry, 6.2, 2.8, 0, 0, Math.PI * 2); c.stroke();
+            c.strokeStyle = "#fef08a";
+            c.lineWidth = 1.6;
+            c.stroke();
+          }
+          // Dark crimson grip
           c.fillStyle = "#dc2626";
-          c.fillRect(-3.2, -5, 6.4, 10);
-          c.strokeRect(-3.2, -5, 6.4, 10);
+          c.strokeStyle = COLORS.ink;
+          c.lineWidth = 1.8;
+          c.fillRect(-3.2, -4.5, 6.4, 9);
+          c.strokeRect(-3.2, -4.5, 6.4, 9);
           c.restore();
         }
         c.restore();
@@ -2245,9 +2408,189 @@
     };
   }
 
+  function drawIncompleteShrineStructure(c, cx, cy, scale, alpha) {
+    c.save();
+    c.translate(cx, cy);
+    c.scale(scale, scale);
+    c.globalAlpha = alpha;
+
+    // Jagged black cursed-energy roots / pillars behind shrine
+    c.fillStyle = "#09090b";
+    for (const [rx, rw, rh] of [[-85, 22, 190], [-42, 28, 220], [42, 28, 220], [85, 22, 190]]) {
+      c.beginPath();
+      c.moveTo(rx - rw * 0.6, 110);
+      c.lineTo(rx - rw * 0.2, -rh);
+      c.lineTo(rx + rw * 0.25, -rh + 28);
+      c.lineTo(rx + rw * 0.6, 110);
+      c.closePath();
+      c.fill();
+    }
+
+    // Twisted dark-flesh & bone shrine body
+    c.fillStyle = "#451a1a";
+    c.strokeStyle = "#09090b";
+    c.lineWidth = 3.5;
+    c.beginPath();
+    c.moveTo(-88, 95);
+    c.quadraticCurveTo(-96, -20, -48, -72);
+    c.lineTo(48, -72);
+    c.quadraticCurveTo(96, -20, 88, 95);
+    c.closePath();
+    c.fill(); c.stroke();
+
+    // Giant curved bone horns crowning the Incomplete Shrine
+    for (const side of [-1, 1]) {
+      c.fillStyle = "#cbd5e1";
+      c.strokeStyle = "#09090b";
+      c.lineWidth = 3;
+      c.beginPath();
+      c.moveTo(side * 22, -68);
+      c.quadraticCurveTo(side * 74, -124, side * 94, -68);
+      c.quadraticCurveTo(side * 66, -92, side * 32, -52);
+      c.closePath();
+      c.fill(); c.stroke();
+    }
+
+    // Crimson shrine drape & gaping bone teeth arch
+    c.fillStyle = "#7f1d1d";
+    c.strokeStyle = "#09090b";
+    c.lineWidth = 2.8;
+    c.beginPath();
+    c.ellipse(0, -18, 40, 32, 0, Math.PI, Math.PI * 2);
+    c.lineTo(40, 18);
+    c.lineTo(-40, 18);
+    c.closePath();
+    c.fill(); c.stroke();
+    c.fillStyle = "#e2e8f0";
+    for (let tx = -30; tx <= 30; tx += 12) {
+      c.fillRect(tx - 3.5, 8, 7, 11);
+    }
+
+    // Multiple glowing golden-white eyes embedded in the Incomplete Shrine
+    const eyes = [[-36, -34, 11], [36, -34, 11], [-50, 4, 13], [50, 4, 13], [-34, 40, 10], [34, 40, 10]];
+    for (const [ex, ey, er] of eyes) {
+      c.fillStyle = "#fef9c3";
+      c.strokeStyle = "#09090b";
+      c.lineWidth = 2.4;
+      c.beginPath(); c.ellipse(ex, ey, er, er * 0.62, ex < 0 ? 0.25 : -0.25, 0, Math.PI * 2); c.fill(); c.stroke();
+      c.fillStyle = "#f59e0b";
+      c.beginPath(); c.arc(ex, ey, er * 0.28, 0, Math.PI * 2); c.fill();
+    }
+
+    c.restore();
+  }
+
+  function spawnIncompleteShrineDomain(owner, g) {
+    const duration = 7.0;
+    g.entities.push(rt.spawnShockRing(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, "#dc2626", 260, 0.55));
+    g.sound.playCritHit();
+    rt.addShake(0.42, 11);
+
+    return {
+      life: duration,
+      maxLife: duration,
+      slashCd: 0.14,
+      dead: false,
+      update(dt, gg) {
+        this.life -= dt;
+        if (this.life <= 0 || !owner.alive) {
+          this.dead = true;
+          return;
+        }
+        this.slashCd -= dt;
+        if (this.slashCd <= 0) {
+          this.slashCd = 0.26;
+          for (const tt of gg.balls) {
+            if (tt === owner || !tt.alive) continue;
+            const dealt = gg.applyDamage(tt, 4, { pierce: true });
+            tt.flashTimer = 0.08;
+            gg.entities.push(spawnCleaveSlashEffect(tt.x + (gg.rng() - 0.5) * 26, tt.y + (gg.rng() - 0.5) * 26, 44));
+            gg.spawnDamageText(tt.x, tt.y - tt.radius - 12, dealt, "#ef4444", false, "SHRINE!");
+            gg.sound.playBallHit();
+          }
+        }
+      },
+      render(c) {
+        const k = Math.min(1, this.life * 2);
+        c.save();
+        c.fillStyle = `rgba(30, 6, 12, ${(0.24 * k).toFixed(3)})`;
+        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+        drawIncompleteShrineStructure(c, WORLD_SIZE * 0.5, WORLD_SIZE * 0.48, 0.92, 0.42 * k);
+        c.restore();
+      },
+    };
+  }
+
+  function spawnIncompleteShrineCinematic(owner, g) {
+    const duration = 1.65;
+    g.hitStop = duration;
+    g.sound.playCritHit();
+    rt.addShake(0.45, 11);
+
+    return {
+      isFreezeCinematic: true,
+      timer: 0,
+      duration,
+      dead: false,
+      update(dt, gg) {
+        this.timer += dt;
+        if (this.timer >= this.duration) {
+          this.dead = true;
+          gg.entities.push(spawnIncompleteShrineDomain(owner, gg));
+        }
+      },
+      render() {},
+      renderOverlay(c) {
+        const p = Math.min(1, this.timer / this.duration);
+        c.save();
+
+        if (p < 0.52) {
+          // Phase 1: Gelap - Terang - Gelap - Terang strobe flicker!
+          const beat = Math.floor((p / 0.52) * 4);
+          const isBright = beat % 2 === 1;
+          c.fillStyle = isBright ? "rgba(254, 226, 226, 0.82)" : "rgba(6, 4, 12, 0.92)";
+          c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+          // Black-crimson domain slash cracks across screen
+          c.strokeStyle = isBright ? "#09090b" : "#dc2626";
+          c.lineWidth = 6;
+          c.beginPath();
+          c.moveTo(40, 80 + beat * 45); c.lineTo(WORLD_SIZE - 40, WORLD_SIZE - 90 - beat * 30);
+          c.moveTo(WORLD_SIZE - 55, 70 + beat * 30); c.lineTo(55, WORLD_SIZE - 75);
+          c.stroke();
+        } else {
+          // Phase 2: Incomplete Malevolent Shrine emerges dramatically!
+          const ep = (p - 0.52) / 0.48;
+          const fadeOut = ep > 0.86 ? (1 - ep) / 0.14 : 1;
+          c.fillStyle = `rgba(12, 6, 12, ${(0.84 * fadeOut).toFixed(3)})`;
+          c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+          const riseY = WORLD_SIZE * 0.56 - Math.min(1, ep * 1.45) * 48;
+          const sc = 0.85 + Math.min(1, ep * 1.35) * 0.42;
+          drawIncompleteShrineStructure(c, WORLD_SIZE * 0.5, riseY, sc, fadeOut);
+        }
+
+        // Dramatic Domain Expansion Callout
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+        c.lineJoin = "round";
+        const label = p < 0.52 ? "DOMAIN EXPANSION..." : "INCOMPLETE MALEVOLENT SHRINE!";
+        c.font = `bold ${p < 0.52 ? 24 : 25}px 'Fredoka', 'Nunito', sans-serif`;
+        c.lineWidth = 7;
+        c.strokeStyle = "#09090b";
+        c.strokeText(label, WORLD_SIZE * 0.5, WORLD_SIZE - 54);
+        c.fillStyle = p < 0.52 ? "#fef2f2" : "#ef4444";
+        c.fillText(label, WORLD_SIZE * 0.5, WORLD_SIZE - 54);
+
+        c.restore();
+      },
+    };
+  }
+
   BF.triggerFugaExplosion = triggerFugaExplosion;
   BF.spawnMalevolentShrineDomain = spawnMalevolentShrineDomain;
   BF.spawnCleaveSlashEffect = spawnCleaveSlashEffect;
   BF.spawnMahoragaSummon = spawnMahoragaSummon;
   BF.spawnMahoragaRitualCinematic = spawnMahoragaRitualCinematic;
+  BF.spawnIncompleteShrineCinematic = spawnIncompleteShrineCinematic;
 })();
