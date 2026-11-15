@@ -301,9 +301,9 @@
 
     const btnOw = document.getElementById("btn-enter-open-world");
     if (btnOw) {
-      btnOw.disabled = !unlocked;
-      btnOw.style.opacity = unlocked ? "1" : "0.55";
-      btnOw.textContent = unlocked ? "ENTER WORLD" : "🔒 ENTER WORLD (CLEAR PROLOGUE)";
+      btnOw.disabled = true;
+      btnOw.style.opacity = "0.55";
+      btnOw.textContent = "🔒 ENTER WORLD (COMING SOON)";
     }
   }
 
@@ -316,6 +316,8 @@
   }
 
   function launchOpenWorld() {
+    // Locked for now (COMING SOON) until ready to resume Open World development
+    return;
     const st = S.Quests.getState();
     if (!S.Quests.isOpenWorldUnlocked() && st.phase !== "ep1_cleared") return;
     cancelAnimationFrame(mascotRaf);
