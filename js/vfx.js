@@ -16,7 +16,7 @@
   }
 
   // Helper to spawn a solid-outlined projectile entity aimed at the opponent
-  function spawnProjectile({ owner, target, x, y, speed, radius, damage, color, label, shape, slashTilt = 0, onImpact, onOutOfBounds }) {
+  function spawnProjectile({ owner, target, x, y, speed, radius, damage, color, label, shape, slashTilt = 0, pierceInfinity = false, ignoresShield = false, onImpact, onOutOfBounds }) {
     const dx = target.x - x;
     const dy = target.y - y;
     const len = Math.hypot(dx, dy) || 1;
@@ -33,12 +33,14 @@
       angle,
       shape,
       slashTilt,
+      pierceInfinity,
+      ignoresShield,
       spin: 0,
       infinityHoldTimer: 0,
       infinityTagged: false,
       dead: false,
       update(dt, game) {
-        const infFactor = getInfinitySlowFactor(target, this.x, this.y);
+        const infFactor = this.pierceInfinity ? 1 : getInfinitySlowFactor(target, this.x, this.y);
         if (infFactor <= 0) {
           if (!this.infinityTagged) {
             this.infinityTagged = true;
@@ -89,7 +91,7 @@
         const dist = Math.hypot(target.x - this.x, target.y - this.y);
         if (dist <= target.radius + this.radius) {
           this.dead = true;
-          const dealt = game.applyDamage(target, damage);
+          const dealt = game.applyDamage(target, damage, this.ignoresShield ? { ignoresShield: true } : undefined);
           target.flashTimer = 0.12;
           target.squash = 0.9;
           game.spawnSparks(this.x, this.y, color, target.color);

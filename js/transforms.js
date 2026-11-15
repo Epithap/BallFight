@@ -42,6 +42,27 @@
     rt().shakeIntensity = Math.max(rt().shakeIntensity, 10);
   }
 
+  function triggerSukunaHeianTransform(b) {
+    if (!b || !b.alive || b.heianEraMode) return;
+    b.heianEraMode = true;
+    b.radius = Math.round(b.baseRadius * 1.1);
+    b.baseSpeed = Math.round(b.baseSpeed * 1.15);
+    const dr = Array.isArray(b.damageRange) ? b.damageRange : [10, 15];
+    b.damageRange = [dr[0] + 3, dr[1] + 3];
+    b.hp = Math.min(b.maxHp, b.hp + 60);
+    if (b.skills && b.skills[0]) {
+      b.skills[0]._cd = 0;
+    }
+    rt().entities.push(rt().spawnBanner("TRUE FORM: HEIAN ERA!", "#dc2626"));
+    rt().entities.push(rt().spawnShockRing(b.x, b.y, "#dc2626", 190, 0.58));
+    rt().entities.push(rt().spawnShockRing(b.x, b.y, "#fef08a", 140, 0.44));
+    rt().spawnSparks(b.x, b.y, "#dc2626", "#fef08a");
+    rt().spawnDamageText(b.x, b.y - b.radius - 16, 0, "#ef4444", true, "HEIAN ERA (+60 HP)!");
+    rt().sound.playCritHit();
+    rt().shakeTime = Math.max(rt().shakeTime, 0.52);
+    rt().shakeIntensity = Math.max(rt().shakeIntensity, 13);
+  }
+
   function triggerSasukeCurseMarkTransform(b) {
     if (!b || !b.alive || b.curseMarkMode) return;
     b.curseMarkMode = true;
@@ -61,6 +82,27 @@
     rt().sound.playCritHit();
     rt().shakeTime = Math.max(rt().shakeTime, 0.42);
     rt().shakeIntensity = Math.max(rt().shakeIntensity, 10);
+  }
+
+  function triggerSukunaHeianTransform(b) {
+    if (!b || !b.alive || b.heianEraMode) return;
+    b.heianEraMode = true;
+    b.radius = Math.round(b.baseRadius * 1.1);
+    b.baseSpeed = Math.round(b.baseSpeed * 1.15);
+    const dr = Array.isArray(b.damageRange) ? b.damageRange : [10, 15];
+    b.damageRange = [dr[0] + 3, dr[1] + 3];
+    b.hp = Math.min(b.maxHp, b.hp + 60);
+    if (b.skills && b.skills[0]) {
+      b.skills[0]._cd = 0;
+    }
+    rt().entities.push(rt().spawnBanner("TRUE FORM: HEIAN ERA!", "#dc2626"));
+    rt().entities.push(rt().spawnShockRing(b.x, b.y, "#dc2626", 190, 0.58));
+    rt().entities.push(rt().spawnShockRing(b.x, b.y, "#fef08a", 140, 0.44));
+    rt().spawnSparks(b.x, b.y, "#dc2626", "#fef08a");
+    rt().spawnDamageText(b.x, b.y - b.radius - 16, 0, "#ef4444", true, "HEIAN ERA (+60 HP)!");
+    rt().sound.playCritHit();
+    rt().shakeTime = Math.max(rt().shakeTime, 0.52);
+    rt().shakeIntensity = Math.max(rt().shakeIntensity, 13);
   }
 
   function triggerSasukeSusanooArmorTransform(b) {
@@ -122,6 +164,27 @@
     rt().shakeIntensity = Math.max(rt().shakeIntensity, 10);
   }
 
+  function triggerSukunaHeianTransform(b) {
+    if (!b || !b.alive || b.heianEraMode) return;
+    b.heianEraMode = true;
+    b.radius = Math.round(b.baseRadius * 1.1);
+    b.baseSpeed = Math.round(b.baseSpeed * 1.15);
+    const dr = Array.isArray(b.damageRange) ? b.damageRange : [10, 15];
+    b.damageRange = [dr[0] + 3, dr[1] + 3];
+    b.hp = Math.min(b.maxHp, b.hp + 60);
+    if (b.skills && b.skills[0]) {
+      b.skills[0]._cd = 0;
+    }
+    rt().entities.push(rt().spawnBanner("TRUE FORM: HEIAN ERA!", "#dc2626"));
+    rt().entities.push(rt().spawnShockRing(b.x, b.y, "#dc2626", 190, 0.58));
+    rt().entities.push(rt().spawnShockRing(b.x, b.y, "#fef08a", 140, 0.44));
+    rt().spawnSparks(b.x, b.y, "#dc2626", "#fef08a");
+    rt().spawnDamageText(b.x, b.y - b.radius - 16, 0, "#ef4444", true, "HEIAN ERA (+60 HP)!");
+    rt().sound.playCritHit();
+    rt().shakeTime = Math.max(rt().shakeTime, 0.52);
+    rt().shakeIntensity = Math.max(rt().shakeIntensity, 13);
+  }
+
   function activateUltimate(ball) {
     if (!ball.alive) return;
     ball.ultCharge = 0;
@@ -139,7 +202,11 @@
       star_time_stop: ["STAR PLATINUM: THE WORLD!", "#9b59b6"],
       berserker_armor: ["BERSERKER ARMOR!", COLORS.red],
       hollow_purple: ["HOLLOW PURPLE!", "#b84dff"],
-      fuga: ["OPEN: FUGA!", "#f97316"],
+      fuga: ball.heianEraMode
+        ? ["WORLD SLASH & FUGA!", "#dc2626"]
+        : ball.evolved
+        ? ["MAHORAGA & FUGA!", "#a855f7"]
+        : ["OPEN: FUGA!", "#f97316"],
       godspeed: ["GODSPEED: KANMURU!", "#38bdf8"],
       arise: ["ARISE: SHADOW ARMY!", "#a855f7"],
       hero_of_hell: ["HERO OF HELL!", "#ea580c"],
@@ -414,35 +481,77 @@
       if (!rt().balls.find((x) => x !== ball && x.alive)) return;
       rt().beginCast(ball, {
         kind: "fuga_arrow",
-        duration: 0.85,
-        color: "#f97316",
+        duration: ball.heianEraMode ? 0.65 : 0.85,
+        color: ball.heianEraMode ? "#dc2626" : "#f97316",
         fire(b, g) {
-          b.ultTimer = 13.0;
+          b.ultTimer = b.heianEraMode ? 14.0 : 13.0;
           b.domainUsedInUlt = false;
-          rt().addEffect(b, "haste", 13.0, { factor: 1.15 });
+          rt().addEffect(b, "haste", b.ultTimer, { factor: b.heianEraMode ? 1.24 : 1.15 });
           const t = g.balls.find((x) => x !== b && x.alive);
           if (!t) return;
           const ang = Math.atan2(t.y - b.y, t.x - b.x);
           const m = rt().castMuzzle(b, ang, 24);
-          g.entities.push(rt().spawnShockRing(m.x, m.y, "#fb923c", 135, 0.45));
+          g.entities.push(rt().spawnShockRing(m.x, m.y, b.heianEraMode ? "#dc2626" : "#fb923c", 145, 0.45));
           rt().shakeTime = Math.max(rt().shakeTime, 0.35);
-          rt().shakeIntensity = Math.max(rt().shakeIntensity, 8);
+          rt().shakeIntensity = Math.max(rt().shakeIntensity, 9);
+
+          // Heian Era: also fires a shield/Infinity-piercing World-Cutting Slash alongside Thermobaric Fuga!
+          if (b.heianEraMode) {
+            g.entities.push(rt().spawnProjectile({
+              owner: b,
+              target: t,
+              x: m.x,
+              y: m.y,
+              speed: 860,
+              radius: 36,
+              damage: 22,
+              color: "#fef2f2",
+              label: "WORLD SLASH!",
+              shape: "dismantle_slash",
+              pierceInfinity: true,
+              ignoresShield: true,
+              onImpact(tt, gg) {
+                if (BF.spawnCleaveSlashEffect) gg.entities.push(BF.spawnCleaveSlashEffect(tt.x, tt.y, 58));
+                gg.sound.playCritHit();
+              },
+            }));
+          } else if (b.evolved) {
+            // Meguna: Mahoraga Shadow Slash + +1 Adaptation stack
+            b.mahoragaAdaptStacks = Math.min(5, (b.mahoragaAdaptStacks || 0) + 1);
+            g.entities.push(rt().spawnProjectile({
+              owner: b,
+              target: t,
+              x: m.x,
+              y: m.y,
+              speed: 780,
+              radius: 30,
+              damage: 16,
+              color: "#fef08a",
+              label: "MAHORAGA SLASH!",
+              shape: "dismantle_slash",
+              pierceInfinity: (b.mahoragaAdaptStacks || 0) >= 5,
+              onImpact(tt, gg) {
+                if (BF.spawnCleaveSlashEffect) gg.entities.push(BF.spawnCleaveSlashEffect(tt.x, tt.y, 46));
+              },
+            }));
+          }
+
           g.entities.push(rt().spawnProjectile({
             owner: b,
             target: t,
             x: m.x,
             y: m.y,
-            speed: 560,
-            radius: 36,
-            damage: Math.round(26 + rt().rng() * 6),
-            color: "#f97316",
-            label: "FUGA!",
+            speed: b.heianEraMode ? 640 : 560,
+            radius: b.heianEraMode ? 42 : 36,
+            damage: b.heianEraMode ? Math.round(34 + rt().rng() * 8) : Math.round(26 + rt().rng() * 6),
+            color: b.heianEraMode ? "#dc2626" : "#f97316",
+            label: b.heianEraMode ? "FURNACE: OPEN!" : "FUGA!",
             shape: "fuga_arrow",
             onImpact(tt, gg, proj) {
-              BF.triggerFugaExplosion(proj.x, proj.y, b, gg, tt);
+              BF.triggerFugaExplosion(proj.x, proj.y, b, gg, tt, b.heianEraMode ? 260 : 225);
             },
             onOutOfBounds(gg, proj) {
-              BF.triggerFugaExplosion(proj.x, proj.y, b, gg, null);
+              BF.triggerFugaExplosion(proj.x, proj.y, b, gg, null, b.heianEraMode ? 260 : 225);
             },
           }));
         },
@@ -558,6 +667,7 @@
     triggerSasukeSusanooArmorTransform,
     triggerIchigoInnerDemonTransform,
     triggerIchigoVastoTransform,
+    triggerSukunaHeianTransform,
     activateUltimate,
   };
 })();

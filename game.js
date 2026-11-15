@@ -505,6 +505,7 @@
   function triggerSasukeSusanooArmorTransform(b) { return BF.Transforms.triggerSasukeSusanooArmorTransform(b); }
   function triggerIchigoInnerDemonTransform(b) { return BF.Transforms.triggerIchigoInnerDemonTransform(b); }
   function triggerIchigoVastoTransform(b) { return BF.Transforms.triggerIchigoVastoTransform(b); }
+  function triggerSukunaHeianTransform(b) { return BF.Transforms.triggerSukunaHeianTransform(b); }
   function activateUltimate(ball) { return BF.Transforms.activateUltimate(ball); }
 
   function chargeUlt(ball) {
@@ -575,13 +576,20 @@
     return { amount: Math.max(1, Math.round(base * variance * ultBoost)), isCrit: false };
   }
 
-  function applyDamage(ball, rawAmount) {
+  function applyDamage(ball, rawAmount, opts = {}) {
     if (game._cosmicCutsceneTimer > 0 || ball._hiddenOffScreen) return 0;
     let dmg = rawAmount;
-    const shield = ball.getEffect("shield");
+    const shield = !opts.ignoresShield && ball.getEffect("shield");
     if (shield && dmg > 0) {
       const reduction = shield.data?.reduction ?? 0.35;
       dmg = Math.max(1, dmg * (1 - reduction));
+    }
+    // Meguna Mahoraga Adaptation / Heian Era passive damage reduction
+    if (!opts.ignoresShield && ball.costume === "sukuna" && ball.evolved && dmg > 0) {
+      const adaptRed = ball.heianEraMode
+        ? 0.25
+        : Math.min(0.3, (ball.mahoragaAdaptStacks || 0) * 0.06);
+      if (adaptRed > 0) dmg = Math.max(1, dmg * (1 - adaptRed));
     }
     const amount = Math.max(0, Math.round(dmg));
     if (amount <= 0) return 0;
@@ -605,6 +613,9 @@
       } else if (!ball.evolved && ball.hp <= 100 && !ball.innerDemonMode) {
         triggerIchigoInnerDemonTransform(ball);
       }
+    }
+    if (ball.alive && ball.hp > 0 && ball.costume === "sukuna" && ball.evolved && ball.hp <= 200 && !ball.heianEraMode) {
+      triggerSukunaHeianTransform(ball);
     }
     runSkillHook(ball, "onDamaged", amount, game);
     return amount;
@@ -3031,6 +3042,9 @@
         previewIndraSusanoo: Boolean(fl.previewIndraSusanoo),
         vastoLordeMode: Boolean(fl.vastoLordeMode),
         innerDemonMode: Boolean(fl.innerDemonMode),
+        heianEraMode: Boolean(fl.heianEraMode),
+        previewHeianEra: Boolean(fl.previewHeianEra),
+        previewMeguna: Boolean(fl.previewMeguna),
         gear4Mode: fl.gear4Mode || null,
         _isCosmicGarou: Boolean(fl.cosmicMode),
         cast: null,
@@ -3189,16 +3203,20 @@
           row.appendChild(btnEvo);
           setupEvoBar.appendChild(row);
         } else {
-          const canAfford = playerWallet.coins >= evoSpec.cost;
+          const isGems = evoSpec.currency === "gems";
+          const haveAmt = isGems ? playerWallet.gems : playerWallet.coins;
+          const canAfford = haveAmt >= evoSpec.cost;
+          const curIcon = isGems ? "💎" : "🪙";
+          const curLabel = isGems ? "GEMS" : "GOLD";
           const btn = document.createElement("button");
           btn.type = "button";
           btn.className = "btn-evolve-gold";
           btn.textContent = canAfford
-            ? `✨ EVOLVE: ${evoSpec.evolvedLabel} (🪙 ${evoSpec.cost.toLocaleString()} GOLD)`
-            : `🔒 EVOLVE: ${evoSpec.evolvedLabel} (🪙 ${evoSpec.cost.toLocaleString()} GOLD • HAVE ${playerWallet.coins.toLocaleString()})`;
+            ? `✨ EVOLVE: ${evoSpec.evolvedLabel} (${curIcon} ${evoSpec.cost.toLocaleString()} ${curLabel})`
+            : `🔒 EVOLVE: ${evoSpec.evolvedLabel} (${curIcon} ${evoSpec.cost.toLocaleString()} ${curLabel} • HAVE ${haveAmt.toLocaleString()})`;
           btn.addEventListener("click", () => {
             sound.unlock();
-            if (playerWallet.coins < evoSpec.cost) {
+            if ((isGems ? playerWallet.gems : playerWallet.coins) < evoSpec.cost) {
               sound.playWallBounce();
               return;
             }
@@ -3371,15 +3389,20 @@
             row.appendChild(bEvo);
             actBox.appendChild(row);
           } else {
+            const isGems = evoSpec.currency === "gems";
+            const haveAmt = isGems ? playerWallet.gems : playerWallet.coins;
+            const canAfford = haveAmt >= evoSpec.cost;
+            const curIcon = isGems ? "💎" : "🪙";
+            const curLabel = isGems ? "GEMS" : "GOLD";
             const btn = document.createElement("button");
             btn.type = "button";
             btn.className = "btn-evolve-gold";
             btn.textContent = canAfford
-              ? `✨ EVOLVE NOW (🪙 ${evoSpec.cost.toLocaleString()} GOLD)`
-              : `🔒 NEED ${evoSpec.cost.toLocaleString()} GOLD (YOU HAVE ${playerWallet.coins.toLocaleString()})`;
+              ? `✨ EVOLVE NOW (${curIcon} ${evoSpec.cost.toLocaleString()} ${curLabel})`
+              : `🔒 NEED ${evoSpec.cost.toLocaleString()} ${curLabel} (YOU HAVE ${haveAmt.toLocaleString()})`;
             btn.addEventListener("click", () => {
               sound.unlock();
-              if (playerWallet.coins < evoSpec.cost) {
+              if ((isGems ? playerWallet.gems : playerWallet.coins) < evoSpec.cost) {
                 sound.playWallBounce();
                 return;
               }

@@ -95,6 +95,19 @@
       bonusHp: 25,
       bonusSpeed: 10,
     },
+    sukuna: {
+      charId: "sukuna",
+      evolvedName: "MEGUNA (SHINJUKU)",
+      evolvedRole: "TEN SHADOWS • MAHORAGA & HEIAN FORM",
+      starterLabel: "STARTER (YUJI VESSEL)",
+      evolvedLabel: "EVOLVED (MEGUNA)",
+      cost: 3000,
+      currency: "gems",
+      requirementText: "3,000 GEMS",
+      desc: "Transforms Sukuna into Shinjuku Meguna (Mahoraga Wheel Adaptation, Piercing Water & Nue Dive) and UNLOCKS permanent 4-Arm Heian Era True Form at HP <= 200 with World-Cutting Slash (pierces Infinity & Shields) + Kamutoke!",
+      bonusHp: 40,
+      bonusSpeed: 15,
+    },
   };
 
   function loadWallet() {
@@ -161,8 +174,13 @@
     const spec = EVOLUTION_SPECS[charId];
     if (!spec) return { ok: false, reason: "NO_EVO" };
     if (isFighterEvolved(charId)) return { ok: true, already: true };
-    if (playerWallet.coins < spec.cost) return { ok: false, reason: "INSUFFICIENT_COINS", needed: spec.cost };
-    playerWallet.coins -= spec.cost;
+    if (spec.currency === "gems") {
+      if (playerWallet.gems < spec.cost) return { ok: false, reason: "INSUFFICIENT_GEMS", needed: spec.cost };
+      playerWallet.gems -= spec.cost;
+    } else {
+      if (playerWallet.coins < spec.cost) return { ok: false, reason: "INSUFFICIENT_COINS", needed: spec.cost };
+      playerWallet.coins -= spec.cost;
+    }
     playerWallet.evolvedFighters.add(charId);
     playerWallet.equippedEvolutions[charId] = true;
     saveWallet();
