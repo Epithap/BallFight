@@ -11,6 +11,8 @@
   let hitStop = 0;
   let ultFlash = 0;
   let enrageBanner = 0;
+  let deathState = null; // null | "boss" | "player"
+  let deathTimer = 0;
 
   // ===== LAYERED ANIME COMBAT SFX (Web Audio, zero GC noise buffer) =====
   const SFX = (() => {
@@ -257,6 +259,8 @@
     hitStop = 0;
     ultFlash = 0;
     enrageBanner = 0;
+    deathState = null;
+    deathTimer = 0;
 
     player.x = 220;
     player.y = 200;
@@ -367,17 +371,21 @@
       spawnSparks(boss.x, boss.y, "#ef4444", 28, 230);
     }
 
-    if (boss.hp <= 0 && !resultShown) {
-      resultShown = true;
+    if (boss.hp <= 0 && !deathState && !resultShown) {
+      deathState = "boss";
+      deathTimer = 1.55;
+      boss.state = "stagger";
+      bossProjectiles.length = 0;
+      pState.dashTime = 0;
+      pState.swingTimer = 0;
+      pState.blockTime = 0;
+      pState.ultTimer = 0;
       SFX.victory();
-      spawnSparks(boss.x, boss.y, "#fef08a", 38, 250);
-      spawnSparks(boss.x, boss.y, "#38bdf8", 30, 220);
+      slashes.push({ x: boss.x, y: boss.y, ang: 0, r: 120, color: "#38bdf8", life: 0.55, maxLife: 0.55, ring: true });
+      spawnFloat(boss.x, boss.y - 44, "PURIFIED!!", "#38bdf8", 1.35);
+      spawnSparks(boss.x, boss.y, "#fef08a", 34, 240);
+      spawnSparks(boss.x, boss.y, "#38bdf8", 28, 210);
       shake = 14;
-      setTimeout(() => {
-        if (!active) return;
-        S.Quests.setPhase("ep1_cleared");
-        S.UI.showBattleResult(true);
-      }, 700);
     }
   }
 
@@ -426,17 +434,24 @@
     spawnFloat(player.x, player.y - 28, `-${dmg}`, "#ef4444", 1.2);
     spawnSparks(player.x, player.y, "#ef4444", 14, 175);
 
-    if (pState.hp <= 0 && !resultShown) {
-      resultShown = true;
-      setTimeout(() => {
-        if (active) S.UI.showBattleResult(false);
-      }, 450);
+    if (pState.hp <= 0 && !deathState && !resultShown) {
+      deathState = "player";
+      deathTimer = 1.45;
+      boss.state = "recover";
+      bossProjectiles.length = 0;
+      pState.dashTime = 0;
+      pState.swingTimer = 0;
+      pState.blockTime = 0;
+      pState.ultTimer = 0;
+      slashes.push({ x: player.x, y: player.y, ang: 0, r: 68, color: "#ef4444", life: 0.45, maxLife: 0.45, ring: true });
+      spawnFloat(player.x, player.y - 38, "DEFEATED...", "#ef4444", 1.3);
+      spawnSparks(player.x, player.y, "#ef4444", 24, 180);
     }
   }
 
   // ===== PLAYER 5-BUTTON COMBAT ACTIONS =====
   function basicAttack(player) {
-    if (!active || resultShown || pState.atkCd > 0 || pState.ultTimer > 0) return;
+    if (!active || resultShown || deathState || pState.atkCd > 0 || pState.ultTimer > 0) return;
     pState.atkCd = 0.25;
     pState.combo = (pState.combo % 3) + 1;
     pState.comboReset = 0.9;
@@ -492,7 +507,7 @@
   }
 
   function useSkill(player) {
-    if (!active || resultShown || pState.skillCd > 0 || pState.ultTimer > 0) return;
+    if (!active || resultShown || deathState || pState.skillCd > 0 || pState.ultTimer > 0) return;
     pState.skillCd = 4.2;
     const ang = Math.atan2(boss.y - player.y, boss.x - player.x);
     pState.aimX = Math.cos(ang);
@@ -535,7 +550,7 @@
   }
 
   function useDodge(player, moveX, moveY) {
-    if (!active || resultShown || pState.dodgeCd > 0 || pState.ultTimer > 0) return;
+    if (!active || resultShown || deathState || pState.dodgeCd > 0 || pState.ultTimer > 0) return;
     pState.dodgeCd = 2.2;
     pState.iframe = 0.38;
     pState.dashTime = 0.18;
@@ -558,7 +573,7 @@
   }
 
   function useBlock() {
-    if (!active || resultShown || pState.blockCd > 0 || pState.ultTimer > 0) return;
+    if (!active || resultShown || deathState || pState.blockCd > 0 || pState.ultTimer > 0) return;
     pState.blockCd = 1.35;
     pState.blockTime = 0.85;
     pState.parryWindow = 0.26;
@@ -567,7 +582,7 @@
   }
 
   function useUlti(player) {
-    if (!active || resultShown || pState.ulti < 100 || pState.ultTimer > 0) return;
+    if (!active || resultShown || deathState || pState.ulti < 100 || pState.ultTimer > 0) return;
     pState.ulti = 0;
     pState.ultTimer = 0.90;
     pState.ultTicksLeft = 4;
@@ -766,6 +781,49 @@
     if (enrageBanner > 0) enrageBanner = Math.max(0, enrageBanner - dt);
     if (hitStop > 0) {
       hitStop -= dt;
+      return;
+    }
+
+    // Freeze both Ichigo & Boss while Death Animation plays on screen
+    if (deathState) {
+      deathTimer = Math.max(0, deathTimer - dt);
+      if (deathState === "boss" && Math.random() < 0.55) {
+        particles.push({
+          x: boss.x + (Math.random() - 0.5) * 44,
+          y: boss.y + (Math.random() - 0.5) * 32,
+          vx: (Math.random() - 0.5) * 24,
+          vy: -55 - Math.random() * 65,
+          r: 2.5 + Math.random() * 2.8,
+          color: Math.random() < 0.65 ? "#38bdf8" : "#fef08a",
+          life: 0.55,
+          maxLife: 0.55,
+        });
+      }
+      for (let i = slashes.length - 1; i >= 0; i--) {
+        slashes[i].life -= dt;
+        if (slashes[i].life <= 0) slashes.splice(i, 1);
+      }
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const pt = particles[i];
+        pt.x += pt.vx * dt; pt.y += pt.vy * dt;
+        pt.life -= dt;
+        if (pt.life <= 0) particles.splice(i, 1);
+      }
+      for (let i = floats.length - 1; i >= 0; i--) {
+        const fl = floats[i];
+        fl.y += fl.vy * dt; fl.life -= dt;
+        if (fl.life <= 0) floats.splice(i, 1);
+      }
+      if (deathTimer <= 0 && !resultShown) {
+        resultShown = true;
+        if (deathState === "boss") {
+          S.Quests.setPhase("ep1_cleared");
+          S.UI.showBattleResult(true);
+        } else {
+          S.UI.showBattleResult(false);
+        }
+      }
+      syncBattleHud();
       return;
     }
 
@@ -1074,17 +1132,41 @@
       c.restore();
     }
 
-    // 5. Fishbone D Boss (with full windup / attack / stagger / enraged animations)
-    if (boss.hp > 0 && S.BleachChars) {
+    // 5. Fishbone D Boss (stays visible & dissolves during deathState === "boss")
+    if ((boss.hp > 0 || deathState === "boss") && S.BleachChars) {
       const animProg = boss.state === "telegraph" ? 1 - Math.max(0, boss.timer / boss.teleDuration) : 0;
-      S.BleachChars.drawFishboneHollow(c, boss.x, boss.y, boss.r, t, {
-        talking: boss.state === "telegraph" || boss.state === "attack",
-        bossState: boss.state,
-        animProg,
-        pattern: boss.pattern,
-        enraged: boss.enraged,
-      });
-      if (boss.hurtFlash > 0) {
+      c.save();
+      if (deathState === "boss") {
+        const dp = 1 - Math.max(0, deathTimer / 1.55);
+        const vib = dp < 0.45 ? Math.sin(t * 70) * 4.5 : 0;
+        const alpha = Math.max(0, 1 - Math.max(0, dp - 0.30) / 0.70);
+        c.globalAlpha = alpha;
+        c.translate(boss.x + vib, boss.y - dp * 14);
+        c.rotate(dp * 0.22);
+        c.scale(1 + dp * 0.14, Math.max(0.4, 1 - dp * 0.48));
+        S.BleachChars.drawFishboneHollow(c, 0, 0, boss.r, t, {
+          talking: true,
+          bossState: "stagger",
+          animProg: 0,
+          pattern: boss.pattern,
+          enraged: false,
+        });
+        c.strokeStyle = "#38bdf8";
+        c.lineWidth = 3;
+        c.beginPath();
+        c.arc(0, 0, boss.r * (0.8 + dp * 1.9), 0, TAU);
+        c.stroke();
+      } else {
+        S.BleachChars.drawFishboneHollow(c, boss.x, boss.y, boss.r, t, {
+          talking: boss.state === "telegraph" || boss.state === "attack",
+          bossState: boss.state,
+          animProg,
+          pattern: boss.pattern,
+          enraged: boss.enraged,
+        });
+      }
+      c.restore();
+      if (boss.hurtFlash > 0 && !deathState) {
         c.save();
         c.globalAlpha = Math.min(0.65, boss.hurtFlash * 4);
         c.fillStyle = "#ffffff";
@@ -1093,16 +1175,26 @@
       }
     }
 
-    // 6. Shinigami Ichigo + Rotating Hex Guard Shield
+    // 6. Shinigami Ichigo + Death Collapse / Rotating Hex Guard Shield
     if (S.BleachChars) {
       const ichiOpts = computeIchigoAnimOpts();
       c.save();
-      if (pState.iframe > 0) c.globalAlpha = 0.68;
-      S.BleachChars.drawShinigamiIchigo(c, player.x, player.y, player.r, t, player.facing, ichiOpts);
-      if (pState.hurtFlash > 0) {
-        c.globalAlpha = Math.min(0.6, pState.hurtFlash * 2.6);
-        c.fillStyle = "#ef4444";
-        c.beginPath(); c.arc(player.x, player.y, player.r * 1.05, 0, TAU); c.fill();
+      if (deathState === "player") {
+        const dp = 1 - Math.max(0, deathTimer / 1.45);
+        const fall = Math.min(1, dp * 2.2);
+        c.globalAlpha = Math.max(0.55, 1 - dp * 0.35);
+        c.translate(player.x, player.y + fall * 8);
+        c.rotate((player.facing || 1) * fall * 1.42);
+        c.scale(1, 1 - fall * 0.16);
+        S.BleachChars.drawShinigamiIchigo(c, 0, 0, player.r, t, player.facing, { mood: "shocked", noShadow: false });
+      } else {
+        if (pState.iframe > 0) c.globalAlpha = 0.68;
+        S.BleachChars.drawShinigamiIchigo(c, player.x, player.y, player.r, t, player.facing, ichiOpts);
+        if (pState.hurtFlash > 0) {
+          c.globalAlpha = Math.min(0.6, pState.hurtFlash * 2.6);
+          c.fillStyle = "#ef4444";
+          c.beginPath(); c.arc(player.x, player.y, player.r * 1.05, 0, TAU); c.fill();
+        }
       }
       c.restore();
 
