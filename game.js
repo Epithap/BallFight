@@ -2158,7 +2158,7 @@
     if (drawer) drawer(ball, r, c);
 
     const tilt = { luffy: -0.02, ichigo: 0.12, dio: -0.08, jotaro: -0.1 }[ball.costume];
-    if (tilt !== undefined && !(ball.costume === "ichigo" && (ball.ultTimer > 0 || ball.vastoLordeMode))) {
+    if (tilt !== undefined && !(ball.costume === "ichigo" && (ball.ultTimer > 0 || ball.vastoLordeMode || ball.evoTier === 2))) {
       c.strokeStyle = COLORS.ink;
       c.lineWidth = 3.5;
       c.lineCap = "round";
