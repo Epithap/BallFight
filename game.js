@@ -640,7 +640,7 @@
       }
     }
     if (ball.alive && ball.hp > 0 && ball.costume === "ichigo") {
-      if (ball.evolved && ball.hp <= 200 && !ball.vastoLordeMode) {
+      if (ball.evolved && ball.evoTier !== 2 && ball.hp <= 200 && !ball.vastoLordeMode) {
         triggerIchigoVastoTransform(ball);
       } else if (!ball.evolved && ball.hp <= 100 && !ball.innerDemonMode) {
         triggerIchigoInnerDemonTransform(ball);
@@ -1825,7 +1825,7 @@
         }
       }
       if (ball.costume === "ichigo" && ball.hp > 0) {
-        if (ball.evolved && ball.hp <= 200 && !ball.vastoLordeMode) {
+        if (ball.evolved && ball.evoTier !== 2 && ball.hp <= 200 && !ball.vastoLordeMode) {
           triggerIchigoVastoTransform(ball);
         } else if (!ball.evolved && ball.hp <= 100 && !ball.innerDemonMode) {
           triggerIchigoInnerDemonTransform(ball);

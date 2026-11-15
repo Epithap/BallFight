@@ -161,7 +161,7 @@
   }
 
   function triggerIchigoVastoTransform(b) {
-    if (!b || !b.alive || b.vastoLordeMode) return;
+    if (!b || !b.alive || b.vastoLordeMode || b.evoTier === 2) return;
     b.vastoLordeMode = true;
     b.radius = Math.round(b.baseRadius * 1.08);
     b.baseSpeed = Math.round(b.baseSpeed * 1.26);

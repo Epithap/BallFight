@@ -325,24 +325,39 @@
             fire(b, g) {
               const t = g.balls.find((x) => x !== b && x.alive);
               if (!t) return;
-              g.entities.push(spawnShunpoAfterimage(b.x, b.y, b.radius, true));
-              g.entities.push(rt.spawnShockRing(b.x, b.y, "#e2e8f0", 85, 0.24));
+              const startX = b.x;
+              const startY = b.y;
               const ang = Math.atan2(t.y - b.y, t.x - b.x);
               const pad = b.radius + 14;
               const bx = Math.max(pad, Math.min(WORLD_SIZE - pad, t.x + Math.cos(ang) * (t.radius + b.radius + 16)));
               const by = Math.max(pad, Math.min(WORLD_SIZE - pad, t.y + Math.sin(ang) * (t.radius + b.radius + 16)));
+
+              // Flashy multi-afterimage Shunpo trail along the teleport path
+              for (const frac of [0, 0.35, 0.7]) {
+                const ax = startX + (bx - startX) * frac;
+                const ay = startY + (by - startY) * frac;
+                g.entities.push(spawnShunpoAfterimage(ax, ay, b.radius * (1 - frac * 0.15), true));
+              }
+              g.entities.push(rt.spawnShockRing(startX, startY, "#f8fafc", 110, 0.28));
+              g.entities.push(rt.spawnShockRing(startX, startY, "#09090b", 80, 0.22));
+
               b.x = bx;
               b.y = by;
               const spd = Math.max(Math.hypot(b.vx, b.vy), b.baseSpeed);
               b.vx = -Math.cos(ang) * spd;
               b.vy = -Math.sin(ang) * spd;
               const dealt = g.applyDamage(t, 14);
-              t.flashTimer = 0.14;
+              t.flashTimer = 0.16;
               g.addEffect(t, "stun", 0.25);
-              g.entities.push(spawnZangetsuSlashEffect(t.x, t.y, ang, 86, true));
-              g.entities.push(rt.spawnShockRing(t.x, t.y, "#09090b", 96, 0.28));
-              g.spawnSparks(t.x, t.y, "#e2e8f0", "#09090b");
+              // Twin X-cross Zangetsu slashes + layered shockrings + double sparks + +1 Ulti
+              g.entities.push(spawnZangetsuSlashEffect(t.x, t.y, ang + 0.42, 98, true));
+              g.entities.push(spawnZangetsuSlashEffect(t.x, t.y, ang - 0.42, 98, true));
+              g.entities.push(rt.spawnShockRing(t.x, t.y, "#09090b", 128, 0.32));
+              g.entities.push(rt.spawnShockRing(t.x, t.y, "#f8fafc", 96, 0.26));
+              g.spawnSparks(t.x, t.y, "#f8fafc", "#09090b");
+              g.spawnSparks(t.x, t.y, "#94a3b8", "#f8fafc");
               g.spawnDamageText(t.x, t.y - t.radius - 14, dealt, "#e2e8f0", true, "CHAIN SHUNPO!");
+              g.chargeUlt(b);
               g.sound.playCritHit();
             },
           });
@@ -2056,8 +2071,16 @@
   function triggerMugetsuTransform(ball) {
     if (!ball || !ball.alive) return;
     const duration = 5.5;
+    ball.cast = null;
+    ball.vastoLordeMode = false;
     ball.mugetsuMode = true;
     ball.ultTimer = duration;
+    if (Math.hypot(ball.vx, ball.vy) < 40) {
+      const a = Math.random() * Math.PI * 2;
+      const spd = ball.baseSpeed || 280;
+      ball.vx = Math.cos(a) * spd;
+      ball.vy = Math.sin(a) * spd;
+    }
     rt.addEffect(ball, "haste", duration, { factor: 1.38 });
     rt.addEffect(ball, "shield", duration, { reduction: 0.25 });
     if (ball.skills[0]) ball.skills[0]._cd = 0.15;
