@@ -79,7 +79,7 @@
       { id: "base", stage: "starter", label: "YUJI VESSEL", starterOnly: true, desc: "Starter Base: Four eyes, cursed markings, Cleave Dash & Dismantle x3." },
       { id: "ult", stage: "starter", label: "KING OF CURSES", ult: true, starterOnly: true, desc: "Starter Ult: Fuga Fire Arrow. First skill opens Malevolent Shrine (can trigger Domain Clash)." },
       { id: "evolved_base", stage: "evolved", label: "MEGUNA", evolved: true, previewMeguna: true, desc: "Evolved Base (3,000 Gems): Mahoraga Wheel Adaptation (up to 30% DMG reduction), Max Nue wide lightning flyover + crash, and Divine Dog -> Max Elephant flood zone!" },
-      { id: "meguna_ult", stage: "evolved", label: "MAHORAGA & FUGA (ULT)", evolved: true, ult: true, previewMeguna: true, desc: "Meguna Ult: Fires Mahoraga Slash + Shadow Fuga and opens 6.5s Malevolent Shrine!" },
+      { id: "meguna_ult", stage: "evolved", label: "SUMMON MAHORAGA (ULT)", evolved: true, ult: true, previewMeguna: true, desc: "Meguna Ult: Summons Eight-Handled Sword Mahoraga for 10s to actively chase and slash enemies with the Sword of Extermination!" },
       { id: "heian_era", stage: "evolved", label: "HEIAN ERA (HP≤200)", evolved: true, heianEraMode: true, previewHeianEra: true, desc: "Evolved HP <= 200: Permanent 4-Arm True Form (+60 HP, +15% Speed, +3 DMG) with World-Cutting Slash (pierces Infinity & Shields) & Kamutoke!" },
       { id: "heian_ult", stage: "evolved", label: "WORLD SLASH & FUGA", evolved: true, ult: true, heianEraMode: true, previewHeianEra: true, desc: "Heian Era Ult: Piercing World-Cutting Slash + Thermobaric Furnace: Open (34-42 DMG, 260px AoE) & 7s Heian Shrine!" },
     ],

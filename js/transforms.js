@@ -205,7 +205,7 @@
       fuga: ball.heianEraMode
         ? ["WORLD SLASH & FUGA!", "#dc2626"]
         : ball.evolved
-        ? ["MAHORAGA & FUGA!", "#a855f7"]
+        ? ["SUMMON: MAHORAGA!", "#facc15"]
         : ["OPEN: FUGA!", "#f97316"],
       godspeed: ["GODSPEED: KANMURU!", "#38bdf8"],
       arise: ["ARISE: SHADOW ARMY!", "#a855f7"],
@@ -479,6 +479,24 @@
       });
     } else if (ball.ult === "fuga") {
       if (!rt().balls.find((x) => x !== ball && x.alive)) return;
+
+      // Meguna (Evolved Base): Summon Mahoraga to fight alongside Meguna (no Fuga/Domain!)
+      if (ball.evolved && !ball.heianEraMode) {
+        rt().beginCast(ball, {
+          kind: "powerup",
+          duration: 0.55,
+          color: "#facc15",
+          fire(b, g) {
+            b.ultTimer = 10.0;
+            rt().addEffect(b, "haste", 10.0, { factor: 1.15 });
+            if (BF.spawnMahoragaSummon) {
+              g.entities.push(BF.spawnMahoragaSummon(b, g));
+            }
+          },
+        });
+        return;
+      }
+
       rt().beginCast(ball, {
         kind: "fuga_arrow",
         duration: ball.heianEraMode ? 0.65 : 0.85,
@@ -513,25 +531,6 @@
               onImpact(tt, gg) {
                 if (BF.spawnCleaveSlashEffect) gg.entities.push(BF.spawnCleaveSlashEffect(tt.x, tt.y, 58));
                 gg.sound.playCritHit();
-              },
-            }));
-          } else if (b.evolved) {
-            // Meguna: Mahoraga Shadow Slash + +1 Adaptation stack
-            b.mahoragaAdaptStacks = Math.min(5, (b.mahoragaAdaptStacks || 0) + 1);
-            g.entities.push(rt().spawnProjectile({
-              owner: b,
-              target: t,
-              x: m.x,
-              y: m.y,
-              speed: 780,
-              radius: 30,
-              damage: 16,
-              color: "#fef08a",
-              label: "MAHORAGA SLASH!",
-              shape: "dismantle_slash",
-              pierceInfinity: (b.mahoragaAdaptStacks || 0) >= 5,
-              onImpact(tt, gg) {
-                if (BF.spawnCleaveSlashEffect) gg.entities.push(BF.spawnCleaveSlashEffect(tt.x, tt.y, 46));
               },
             }));
           }
