@@ -104,7 +104,7 @@
       cost: 3000,
       currency: "gems",
       requirementText: "3,000 GEMS",
-      desc: "Transforms Sukuna into Shinjuku Meguna (Mahoraga Wheel Adaptation, Piercing Water & Nue Dive) and UNLOCKS permanent 4-Arm Heian Era True Form at HP <= 200 with World-Cutting Slash (pierces Infinity & Shields) + Kamutoke!",
+      desc: "Transforms Sukuna into Shinjuku Meguna (Mahoraga Wheel Adaptation, Max Nue wide lightning flyover & Divine Dog -> Max Elephant flood zone) and UNLOCKS permanent 4-Arm Heian Era True Form at HP <= 200 with World-Cutting Slash (pierces Infinity & Shields) + Kamutoke!",
       bonusHp: 40,
       bonusSpeed: 15,
     },

@@ -479,6 +479,278 @@
     };
   }
 
+  function spawnWaterDamageZone(owner, cx, cy) {
+    const x = Math.max(46, Math.min(WORLD_SIZE - 46, cx));
+    const y = Math.max(46, Math.min(WORLD_SIZE - 46, cy));
+    const rad = 92;
+    return {
+      x,
+      y,
+      life: 3.2,
+      maxLife: 3.2,
+      tickCd: 0.25,
+      dead: false,
+      update(dt, g) {
+        this.life -= dt;
+        this.tickCd -= dt;
+        if (this.tickCd <= 0) {
+          this.tickCd = 0.55;
+          for (const tt of g.balls) {
+            if (tt === owner || !tt.alive) continue;
+            if (Math.hypot(tt.x - this.x, tt.y - this.y) <= rad + tt.radius) {
+              const dmg = g.applyDamage(tt, 4);
+              g.spawnDamageText(tt.x, tt.y - tt.radius - 10, dmg, "#38bdf8", false, "FLOOD!");
+              g.addEffect(tt, "slow", 0.5, { factor: 0.72 });
+            }
+          }
+        }
+        if (this.life <= 0) this.dead = true;
+      },
+      render(c) {
+        const p = 1 - Math.max(0, this.life / this.maxLife);
+        const alpha = Math.min(1, this.life * 1.4) * 0.75;
+        c.save();
+        c.translate(this.x, this.y);
+        c.globalAlpha = alpha;
+        c.fillStyle = "rgba(14, 165, 233, 0.28)";
+        c.beginPath(); c.arc(0, 0, rad, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = "#38bdf8";
+        c.lineWidth = 3;
+        c.beginPath(); c.arc(0, 0, rad * (0.86 + Math.sin(p * 18) * 0.05), 0, Math.PI * 2); c.stroke();
+        c.strokeStyle = "#bae6fd";
+        c.lineWidth = 2;
+        c.beginPath(); c.arc(0, 0, rad * 0.55, p * 8, p * 8 + Math.PI * 1.3); c.stroke();
+        c.restore();
+      },
+    };
+  }
+
+  function spawnMaxElephantDrop(owner, tx, ty) {
+    const cx = Math.max(46, Math.min(WORLD_SIZE - 46, tx));
+    const cy = Math.max(46, Math.min(WORLD_SIZE - 46, ty));
+    return {
+      x: cx,
+      y: cy,
+      life: 0.42,
+      maxLife: 0.42,
+      slammed: false,
+      dead: false,
+      update(dt, g) {
+        this.life -= dt;
+        if (this.life <= 0 && !this.slammed) {
+          this.slammed = true;
+          this.dead = true;
+          g.entities.push(rt.spawnShockRing(cx, cy, "#38bdf8", 118, 0.38));
+          g.entities.push(rt.spawnShockRing(cx, cy, "#1e293b", 82, 0.28));
+          g.spawnSparks(cx, cy, "#38bdf8", "#0f172a");
+          rt.addShake(0.32, 9);
+          g.sound.playCritHit();
+          for (const tt of g.balls) {
+            if (tt === owner || !tt.alive) continue;
+            if (Math.hypot(tt.x - cx, tt.y - cy) <= 95 + tt.radius) {
+              const dealt = g.applyDamage(tt, 14);
+              g.spawnDamageText(tt.x, tt.y - tt.radius - 14, dealt, "#38bdf8", true, "MAX ELEPHANT!");
+              const kAng = Math.atan2(tt.y - cy, tt.x - cx);
+              tt.vx = Math.cos(kAng) * 420;
+              tt.vy = Math.sin(kAng) * 420;
+              tt.flashTimer = 0.16;
+              g.addEffect(tt, "stun", 0.4);
+            }
+          }
+          g.entities.push(spawnWaterDamageZone(owner, cx, cy));
+        }
+      },
+      render(c) {
+        const p = 1 - Math.max(0, this.life / this.maxLife);
+        const dropY = -120 * (1 - p);
+        c.save();
+        c.translate(cx, cy);
+        // Target shadow ring on ground
+        c.fillStyle = "rgba(15, 23, 42, 0.35)";
+        c.beginPath(); c.ellipse(0, 0, 42 * (0.5 + 0.5 * p), 20 * (0.5 + 0.5 * p), 0, 0, Math.PI * 2); c.fill();
+        // Dropping Max Elephant silhouette
+        c.translate(0, dropY);
+        c.fillStyle = "#1e293b";
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 3;
+        c.beginPath(); c.roundRect(-34, -30, 68, 52, 18); c.fill(); c.stroke();
+        // Ears + Trunk + Tusks
+        c.fillStyle = "#334155";
+        c.beginPath(); c.ellipse(-36, -6, 14, 20, -0.2, 0, Math.PI * 2); c.fill(); c.stroke();
+        c.beginPath(); c.ellipse(36, -6, 14, 20, 0.2, 0, Math.PI * 2); c.fill(); c.stroke();
+        c.fillStyle = "#0f172a";
+        c.beginPath(); c.roundRect(-8, 6, 16, 26, 6); c.fill(); c.stroke();
+        c.fillStyle = "#f8fafc";
+        c.beginPath(); c.moveTo(-16, 12); c.lineTo(-24, 24); c.lineTo(-10, 18); c.closePath(); c.fill(); c.stroke();
+        c.beginPath(); c.moveTo(16, 12); c.lineTo(24, 24); c.lineTo(10, 18); c.closePath(); c.fill(); c.stroke();
+        c.restore();
+      },
+    };
+  }
+
+  function spawnDivineDogShikigami(owner, target, x, y) {
+    const ang = Math.atan2(target.y - y, target.x - x);
+    const speed = 780;
+    return {
+      x,
+      y,
+      vx: Math.cos(ang) * speed,
+      vy: Math.sin(ang) * speed,
+      ang,
+      radius: 22,
+      life: 1.2,
+      dead: false,
+      update(dt, g) {
+        this.life -= dt;
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+        if (this.x < -30 || this.x > WORLD_SIZE + 30 || this.y < -30 || this.y > WORLD_SIZE + 30 || this.life <= 0) {
+          this.dead = true;
+          return;
+        }
+        if (target && target.alive && Math.hypot(target.x - this.x, target.y - this.y) <= target.radius + this.radius) {
+          this.dead = true;
+          const adaptBonus = (owner.mahoragaAdaptStacks || 0) >= 5 ? 8 : 0;
+          const dealt = g.applyDamage(target, 10 + adaptBonus);
+          target.flashTimer = 0.14;
+          g.spawnSparks(this.x, this.y, "#0f172a", "#f8fafc");
+          g.spawnDamageText(target.x, target.y - target.radius - 12, dealt, "#e2e8f0", false, "DIVINE DOG!");
+          g.addEffect(target, "slow", 0.45, { factor: 0.72 });
+          g.chargeUlt(owner);
+          g.sound.playBallHit();
+          // Trigger Max Elephant drop on the hit enemy!
+          g.entities.push(spawnMaxElephantDrop(owner, target.x, target.y));
+        }
+      },
+      render(c) {
+        c.save();
+        c.translate(this.x, this.y);
+        c.rotate(this.ang);
+        // Shadow Wolf (Divine Dog: Totality)
+        c.fillStyle = "#0f172a";
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 2.6;
+        c.beginPath();
+        c.moveTo(22, 0);
+        c.lineTo(4, -14);
+        c.lineTo(-18, -10);
+        c.lineTo(-12, 0);
+        c.lineTo(-18, 10);
+        c.lineTo(4, 14);
+        c.closePath();
+        c.fill(); c.stroke();
+        // Glowing red eyes & white snout marking
+        c.fillStyle = "#ef4444";
+        c.beginPath(); c.arc(10, -4, 2.5, 0, Math.PI * 2); c.arc(10, 4, 2.5, 0, Math.PI * 2); c.fill();
+        c.restore();
+      },
+    };
+  }
+
+  function spawnMaxNueFlyover(owner, startX, startY, ang) {
+    const speed = 520;
+    const distMax = 440;
+    const halfCorridor = 72;
+    return {
+      x: startX,
+      y: startY,
+      startX,
+      startY,
+      ang,
+      traveled: 0,
+      boltCd: 0.04,
+      bolts: [],
+      dead: false,
+      update(dt, g) {
+        const step = speed * dt;
+        this.x += Math.cos(this.ang) * step;
+        this.y += Math.sin(this.ang) * step;
+        this.traveled += step;
+        this.boltCd -= dt;
+
+        // Drop lightning along wide corridor under Max Nue
+        if (this.boltCd <= 0) {
+          this.boltCd = 0.14;
+          const perp = this.ang + Math.PI * 0.5;
+          const off = (g.rng() - 0.5) * halfCorridor * 1.4;
+          const bx = Math.max(30, Math.min(WORLD_SIZE - 30, this.x + Math.cos(perp) * off));
+          const by = Math.max(30, Math.min(WORLD_SIZE - 30, this.y + Math.sin(perp) * off));
+          g.entities.push(rt.spawnShockRing(bx, by, "#a855f7", 54, 0.24));
+          g.entities.push(rt.spawnShockRing(bx, by, "#facc15", 32, 0.18));
+          for (const tt of g.balls) {
+            if (tt === owner || !tt.alive) continue;
+            if (Math.hypot(tt.x - this.x, tt.y - this.y) <= halfCorridor + tt.radius) {
+              const dealt = g.applyDamage(tt, 5);
+              g.spawnDamageText(tt.x, tt.y - tt.radius - 10, dealt, "#facc15", false, "NUE BOLT!");
+              g.addEffect(tt, "stun", 0.22);
+            }
+          }
+        }
+
+        // End of flight (or hit arena boundary): Max Nue dives down & explodes!
+        const outOfBounds = this.x < 46 || this.x > WORLD_SIZE - 46 || this.y < 46 || this.y > WORLD_SIZE - 46;
+        if (this.traveled >= distMax || outOfBounds) {
+          this.dead = true;
+          const ex = Math.max(46, Math.min(WORLD_SIZE - 46, this.x));
+          const ey = Math.max(46, Math.min(WORLD_SIZE - 46, this.y));
+          g.entities.push(rt.spawnShockRing(ex, ey, "#a855f7", 135, 0.44));
+          g.entities.push(rt.spawnShockRing(ex, ey, "#facc15", 95, 0.34));
+          g.spawnSparks(ex, ey, "#a855f7", "#facc15");
+          rt.addShake(0.36, 10);
+          g.sound.playCritHit();
+          for (const tt of g.balls) {
+            if (tt === owner || !tt.alive) continue;
+            if (Math.hypot(tt.x - ex, tt.y - ey) <= 122 + tt.radius) {
+              const dealt = g.applyDamage(tt, 14);
+              g.spawnDamageText(tt.x, tt.y - tt.radius - 16, dealt, "#c084fc", true, "MAX NUE CRASH!");
+              const kAng = Math.atan2(tt.y - ey, tt.x - ex);
+              tt.vx = Math.cos(kAng) * 480;
+              tt.vy = Math.sin(kAng) * 480;
+              tt.flashTimer = 0.18;
+              g.addEffect(tt, "stun", 0.5);
+            }
+          }
+        }
+      },
+      render(c) {
+        const wingFlap = Math.sin(performance.now() * 0.025) * 12;
+        c.save();
+        // Wide purple corridor indicator
+        c.save();
+        c.translate(this.startX, this.startY);
+        c.rotate(this.ang);
+        c.fillStyle = "rgba(168, 85, 247, 0.14)";
+        c.fillRect(0, -halfCorridor, distMax, halfCorridor * 2);
+        c.strokeStyle = "rgba(192, 132, 252, 0.45)";
+        c.lineWidth = 2;
+        c.strokeRect(0, -halfCorridor, distMax, halfCorridor * 2);
+        c.restore();
+
+        // Giant Max Nue Shikigami body & wide wings
+        c.translate(this.x, this.y);
+        c.rotate(this.ang);
+        c.fillStyle = "#1e1b4b";
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 3;
+        c.beginPath();
+        c.moveTo(28, 0);
+        c.lineTo(-10, -76 - wingFlap);
+        c.lineTo(-26, -34);
+        c.lineTo(-20, 0);
+        c.lineTo(-26, 34);
+        c.lineTo(-10, 76 + wingFlap);
+        c.closePath();
+        c.fill(); c.stroke();
+        // White owl mask + amber eyes
+        c.fillStyle = "#f8fafc";
+        c.beginPath(); c.arc(14, 0, 12, 0, Math.PI * 2); c.fill(); c.stroke();
+        c.fillStyle = "#facc15";
+        c.beginPath(); c.arc(18, -4, 3, 0, Math.PI * 2); c.arc(18, 4, 3, 0, Math.PI * 2); c.fill();
+        c.restore();
+      },
+    };
+  }
+
   function spawnKamutokeStrike(x, y, owner, g) {
     g.entities.push(rt.spawnShockRing(x, y, "#facc15", 115, 0.36));
     g.entities.push(rt.spawnShockRing(x, y, "#fef08a", 72, 0.24));
@@ -600,10 +872,17 @@
               return;
             }
 
-            // Starter / Meguna Dismantle x3 (+ Piercing Water for Meguna)
+            if (b.evolved) {
+              // Meguna: Summon Divine Dog -> on hit drops Max Elephant + Water Damage Area!
+              const m = rt.castMuzzle(b, baseAng, 18);
+              gg.entities.push(spawnDivineDogShikigami(b, t, m.x, m.y));
+              gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#e2e8f0", false, "DIVINE DOG!");
+              return;
+            }
+
+            // Starter Dismantle x3
             const tilts = [-0.08, 0.08, 0];
             let ultCharged = false;
-            const slashDmg = b.evolved ? 6 : 4;
             const launchSlash = (idx, gNow) => {
               if (!b.alive || b.domainClashTimer > 0) return;
               const liveTarget = gNow.balls.find((x) => x !== b && x.alive);
@@ -619,9 +898,9 @@
                 target: liveTarget,
                 x: m.x,
                 y: m.y,
-                speed: b.evolved ? 780 : 720,
-                radius: b.evolved ? 25 : 23,
-                damage: slashDmg,
+                speed: 720,
+                radius: 23,
+                damage: 4,
                 color: "#ef4444",
                 label: "DISMANTLE!",
                 shape: "dismantle_slash",
@@ -639,47 +918,26 @@
             launchSlash(0, gg);
             gg.entities.push(rt.spawnDelayedAction(0.13, (gNow) => launchSlash(1, gNow)));
             gg.entities.push(rt.spawnDelayedAction(0.26, (gNow) => launchSlash(2, gNow)));
-
-            if (b.evolved) {
-              // Meguna bonus: Piercing Water (Max Elephant) jet
-              const m = rt.castMuzzle(b, baseAng, 18);
-              const adaptBonus = (b.mahoragaAdaptStacks || 0) >= 5 ? 10 : 0;
-              gg.entities.push(rt.spawnProjectile({
-                owner: b,
-                target: t,
-                x: m.x,
-                y: m.y,
-                speed: 840,
-                radius: 18,
-                damage: 12 + adaptBonus,
-                color: "#38bdf8",
-                label: adaptBonus ? "ADAPTED WATER!" : "PIERCING WATER!",
-                shape: "orb",
-                onImpact(tt, g2) {
-                  const kAng = Math.atan2(tt.y - b.y, tt.x - b.x);
-                  tt.vx = Math.cos(kAng) * 460;
-                  tt.vy = Math.sin(kAng) * 460;
-                  g2.entities.push(rt.spawnShockRing(tt.x, tt.y, "#38bdf8", 72, 0.28));
-                },
-              }));
-              gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#38bdf8", false, "DISMANTLE + WATER!");
-            } else {
-              gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#ef4444", false, "DISMANTLE x3!");
-            }
+            gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#ef4444", false, "DISMANTLE x3!");
           } else {
-            // Cleave Dash (Heian: 4-Arm Cleave + Kamutoke Lightning | Meguna: Nue Shadow Dive | Starter: Cleave)
-            const dashMult = b.heianEraMode ? 3.15 : b.evolved ? 3.0 : 2.85;
+            // Meguna: Giant Max Nue flyover dropping lightning in wide corridor + landing explosion!
+            if (b.evolved && !b.heianEraMode) {
+              gg.entities.push(spawnMaxNueFlyover(b, b.x, b.y, baseAng));
+              gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#a855f7", true, "MAX NUE!");
+              return;
+            }
+
+            // Heian Era: 4-Arm Cleave + Kamutoke Lightning | Starter: Cleave Dash
+            const dashMult = b.heianEraMode ? 3.15 : 2.85;
             const dashSpeed = b.baseSpeed * dashMult;
             b.vx = Math.cos(baseAng) * dashSpeed;
             b.vy = Math.sin(baseAng) * dashSpeed;
             b.cleaveDashTimer = b.heianEraMode ? 0.45 : 0.42;
             b.cleaveDashHit = false;
-            gg.entities.push(rt.spawnShockRing(b.x, b.y, b.heianEraMode ? "#facc15" : b.evolved ? "#a855f7" : "#dc2626", 95, 0.28));
+            gg.entities.push(rt.spawnShockRing(b.x, b.y, b.heianEraMode ? "#facc15" : "#dc2626", 95, 0.28));
             if (b.heianEraMode) {
               spawnKamutokeStrike(t.x, t.y, b, gg);
               gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#facc15", true, "CLEAVE & KAMUTOKE!");
-            } else if (b.evolved) {
-              gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#a855f7", false, "NUE SHADOW CLEAVE!");
             } else {
               gg.spawnDamageText(b.x, b.y - b.radius - 12, 0, "#dc2626", false, "CLEAVE DASH!");
             }
