@@ -630,6 +630,23 @@
       c.beginPath();
       c.ellipse(0, 0, r * 1.44, r * 0.6, -spin, 0, Math.PI * 2);
       c.stroke();
+
+      if (isShinjuku) {
+        // Blazing cyan cursed-energy flame wisps rising around Shinjuku Gojo
+        for (let i = 0; i < 6; i++) {
+          const a = -Math.PI * 0.85 + i * 0.34 + Math.sin(spin * 2 + i) * 0.08;
+          const dist = r * (1.26 + (i % 2) * 0.16);
+          const fx = Math.cos(a) * dist;
+          const fy = Math.sin(a) * dist - Math.abs(Math.sin(spin * 2.5 + i)) * r * 0.28;
+          c.fillStyle = i % 2 === 0 ? "rgba(56, 189, 248, 0.55)" : "rgba(186, 230, 253, 0.62)";
+          c.beginPath();
+          c.moveTo(fx - r * 0.16, fy + r * 0.14);
+          c.quadraticCurveTo(fx - r * 0.06, fy - r * 0.34, fx + r * 0.04, fy - r * 0.42);
+          c.quadraticCurveTo(fx + r * 0.18, fy - r * 0.05, fx + r * 0.16, fy + r * 0.14);
+          c.closePath();
+          c.fill();
+        }
+      }
       c.restore();
     }
 

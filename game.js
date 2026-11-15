@@ -2329,7 +2329,7 @@
     drawCostume(ball, r, c);
 
     const hasFullFaceMask =
-      (ball.costume === "gojo" && !(ball.ultTimer > 0)) ||
+      (ball.costume === "gojo" && !(ball.ultTimer > 0 || ball.evolved || ball.previewShinjuku)) ||
       (ball.costume === "guts" && ball.ultTimer > 0) ||
       (ball.costume === "ichigo" && (ball.vastoLordeMode || ball.innerDemonMode || (ball.evolved && ball.ultTimer > 0))) ||
       (ball.costume === "goku" && ball.apeMode) ||

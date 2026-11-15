@@ -618,15 +618,24 @@
 
   // Honored Chibi Sorcerer (Six Eyes): big crystalline sky-blue chibi eyes, white lashes & brows, smug smirk.
   F.gojo = (ball, r, c, s) => {
+    const isShinjuku = Boolean(ball.evolved || ball.previewShinjuku);
     for (const side of [-1, 1]) {
+      if (isShinjuku) {
+        const gx = side * r * 0.30 + (s.ex || 0);
+        const gy = -r * 0.08 + (s.ey || 0);
+        c.fillStyle = "rgba(56, 189, 248, 0.38)";
+        c.beginPath(); c.arc(gx, gy, r * 0.32, 0, TAU); c.fill();
+        c.fillStyle = "rgba(186, 230, 253, 0.30)";
+        c.beginPath(); c.arc(gx, gy, r * 0.22, 0, TAU); c.fill();
+      }
       eye(c, r, side, {
-        rx: 0.25,
-        ry: 0.24,
-        slant: 0.1,
-        iris: 0.15,
-        color: "#38bdf8",
-        innerRing: "#e0f2fe",
-        pupilColor: "#0c4a6e",
+        rx: isShinjuku ? 0.265 : 0.25,
+        ry: isShinjuku ? 0.25 : 0.24,
+        slant: isShinjuku ? 0.16 : 0.1,
+        iris: isShinjuku ? 0.165 : 0.15,
+        color: isShinjuku ? "#0ea5e9" : "#38bdf8",
+        innerRing: isShinjuku ? "#bae6fd" : "#e0f2fe",
+        pupilColor: isShinjuku ? "#0369a1" : "#0c4a6e",
         hl2: true,
         lash: true,
         lashColor: "#f8fafc",
@@ -634,9 +643,9 @@
         ex: s.ex,
         ey: s.ey,
       });
-      brow(c, side, r, 0.40, 0.05, 3.4, 0.36, "#e2e8f0");
+      brow(c, side, r, 0.40, isShinjuku ? 0.11 : 0.05, 3.4, 0.36, "#e2e8f0");
     }
-    mouth(c, r, s.cast ? "grin" : "smug");
+    mouth(c, r, s.cast || isShinjuku ? "grin" : "smug");
   };
 
   // Chibi King of Curses: big crimson slit eyes + compact cheekbone eye slits + fanged smirk.
