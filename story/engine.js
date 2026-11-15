@@ -120,8 +120,16 @@
     const stepX = vx * player.speed * dt;
     const stepY = vy * player.speed * dt;
 
-    if (canStandAt(player.x + stepX, player.y, map)) player.x += stepX;
-    if (canStandAt(player.x, player.y + stepY, map)) player.y += stepY;
+    const currentlyValid = canStandAt(player.x, player.y, map);
+    if (currentlyValid) {
+      if (canStandAt(player.x + stepX, player.y, map)) player.x += stepX;
+      if (canStandAt(player.x, player.y + stepY, map)) player.y += stepY;
+    } else {
+      // Unstuck safety: if spawned/pushed inside an obstacle, allow moving within map bounds to escape
+      const pad = player.r + 2;
+      if (player.x + stepX >= pad && player.x + stepX <= map.w - pad) player.x += stepX;
+      if (player.y + stepY >= pad && player.y + stepY <= map.h - pad) player.y += stepY;
+    }
 
     // Cycle live expressions naturally on Ichigo in the room
     player.moodTimer -= dt;
@@ -647,6 +655,11 @@
 
   function stop() {
     running = false;
+    dialogueOpen = false;
+    for (const k in keys) keys[k] = false;
+    joy.dx = 0;
+    joy.dy = 0;
+    joy.active = false;
     cancelAnimationFrame(rafId);
   }
 

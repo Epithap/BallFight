@@ -376,10 +376,19 @@
       return;
     }
 
+    const SAFE_SPAWNS = {
+      ichigo_bedroom: { x: 215, y: 285 },
+      kurosaki_clinic: { x: 220, y: 390 },
+      karakura_street: { x: 220, y: 240 },
+      karakura_high: { x: 220, y: 280 },
+      urahara_shop: { x: 220, y: 320 },
+      riverbank_park: { x: 220, y: 200 },
+    };
     const targetZone = st.zone || "karakura_street";
+    const spawn = SAFE_SPAWNS[targetZone] || { x: 220, y: 240 };
     S.Quests.setZone(targetZone);
     syncHud();
-    S.Engine.start({ resumeOpenWorld: true, x: st.x || 220, y: st.y || 240 });
+    S.Engine.start({ resumeOpenWorld: true, x: spawn.x, y: spawn.y });
     showToast("WELCOME BACK TO KARAKURA TOWN OPEN WORLD!");
   }
 
