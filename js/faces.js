@@ -185,6 +185,10 @@
       c.arc(0, r * (depth - 0.06), r * 0.11, 0, TAU);
       c.fill();
       c.restore();
+      c.beginPath();
+      c.moveTo(-r * half, r * y0);
+      c.quadraticCurveTo(0, r * depth, r * half, r * y0);
+      c.closePath();
       c.stroke();
     };
 
