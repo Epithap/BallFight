@@ -2590,6 +2590,13 @@
       BF.drawMoonArenaOverlay(ctx, game);
     }
 
+    const gutsBerserkOwner = balls.find((b) => b.alive && b.costume === "guts" && b.ultTimer > 0);
+    if (gutsBerserkOwner && BF.drawGutsEclipseOverlay) {
+      BF.drawGutsEclipseOverlay(ctx, game, gutsBerserkOwner);
+    } else if (BF.hideGutsEclipseOuterBg) {
+      BF.hideGutsEclipseOuterBg();
+    }
+
     // Particles
     ctx.strokeStyle = COLORS.ink;
     ctx.lineWidth = 1.5;

@@ -1049,6 +1049,215 @@
       },
     };
   }
+  function ensureEclipseAppLayer() {
+    if (typeof document === "undefined") return;
+    const appEl = document.querySelector(".app");
+    if (appEl && appEl.style.position !== "relative") {
+      appEl.style.position = "relative";
+      appEl.style.zIndex = "1";
+    }
+  }
+
+  function hideGutsEclipseOuterBg() {
+    if (typeof document === "undefined") return;
+    const bgCanvas = document.getElementById("guts-eclipse-outer-canvas");
+    if (bgCanvas) bgCanvas.style.display = "none";
+  }
+
+  function syncGutsEclipseOuterBg(alpha) {
+    if (typeof document === "undefined" || !document.body || !document.createElement) return;
+    const id = "guts-eclipse-outer-canvas";
+    let bgCanvas = document.getElementById(id);
+
+    const screenBattle = document.getElementById("screen-battle");
+    const battleVisible = !screenBattle || !screenBattle.classList.contains("hidden");
+    const shouldShow = alpha > 0.01 && battleVisible;
+
+    if (!shouldShow) {
+      if (bgCanvas) bgCanvas.style.display = "none";
+      return;
+    }
+
+    ensureEclipseAppLayer();
+    if (!bgCanvas) {
+      bgCanvas = document.createElement("canvas");
+      bgCanvas.id = id;
+      bgCanvas.style.cssText =
+        "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:0;";
+      document.body.insertBefore(bgCanvas, document.body.firstChild);
+    }
+
+    const w = window.innerWidth || 1280;
+    const h = window.innerHeight || 720;
+    if (bgCanvas.width !== w) bgCanvas.width = w;
+    if (bgCanvas.height !== h) bgCanvas.height = h;
+    bgCanvas.style.display = "block";
+    bgCanvas._lastDrawTs = performance.now();
+
+    if (!bgCanvas._watchdogActive && typeof requestAnimationFrame === "function") {
+      bgCanvas._watchdogActive = true;
+      const tickWatchdog = () => {
+        const sb = document.getElementById("screen-battle");
+        const active = !sb || !sb.classList.contains("hidden");
+        const stale = performance.now() - (bgCanvas._lastDrawTs || 0) > 260;
+        if (!active || stale) {
+          bgCanvas.style.display = "none";
+          bgCanvas._watchdogActive = false;
+          return;
+        }
+        requestAnimationFrame(tickWatchdog);
+      };
+      requestAnimationFrame(tickWatchdog);
+    }
+
+    const sc = bgCanvas.getContext("2d");
+    if (!sc) return;
+    const now = performance.now() * 0.001;
+
+    sc.save();
+    sc.clearRect(0, 0, w, h);
+    sc.globalAlpha = Math.min(1, alpha);
+
+    // 1. Dark Otherworldly Eclipse Dimension Sky
+    const deep = sc.createLinearGradient(0, 0, 0, h);
+    deep.addColorStop(0, "#080104");
+    deep.addColorStop(0.42, "#190308");
+    deep.addColorStop(0.78, "#2c070b");
+    deep.addColorStop(1, "#0d0205");
+    sc.fillStyle = deep;
+    sc.fillRect(0, 0, w, h);
+
+    // 2. Giant Golden-Yellow Eclipse Corona Glow radiating behind the arena
+    const sunY = h * 0.24;
+    const corona = sc.createRadialGradient(w * 0.5, sunY, 30, w * 0.5, sunY, Math.max(w, h) * 0.68);
+    corona.addColorStop(0, "rgba(254, 240, 138, 0.78)");
+    corona.addColorStop(0.18, "rgba(250, 204, 21, 0.55)");
+    corona.addColorStop(0.42, "rgba(234, 88, 12, 0.34)");
+    corona.addColorStop(0.72, "rgba(185, 28, 28, 0.22)");
+    corona.addColorStop(1, "rgba(8, 1, 4, 0)");
+    sc.fillStyle = corona;
+    sc.fillRect(0, 0, w, h);
+
+    // 3. Sweeping Golden-Crimson Eclipse Horizon Mist & Floating Embers
+    for (let i = 0; i < 18; i++) {
+      const ex = ((i * 173 + now * (24 + (i % 4) * 9)) % (w + 60)) - 30;
+      const ey = h - ((i * 97 + now * (42 + (i % 5) * 14)) % (h + 40));
+      const er = 2.2 + (i % 3) * 1.4;
+      sc.fillStyle = i % 2 === 0 ? "#fde047" : "#ef4444";
+      sc.globalAlpha = Math.min(1, alpha) * (0.45 + 0.4 * Math.sin(now * 4 + i));
+      sc.beginPath();
+      sc.arc(ex, ey, er, 0, Math.PI * 2);
+      sc.fill();
+    }
+    sc.restore();
+  }
+
+  function drawGutsEclipseOverlay(c, game, owner) {
+    const ultLeft = owner ? Math.max(0, owner.ultTimer || 0) : 0;
+    const alpha = Math.min(1, ultLeft / 0.45);
+    syncGutsEclipseOuterBg(alpha);
+    if (alpha <= 0.01) return;
+
+    const now = typeof performance !== "undefined" ? performance.now() * 0.001 : 0;
+    const cx = WORLD_SIZE * 0.5;
+    const moonY = WORLD_SIZE * 0.34;
+    const moonR = 68;
+
+    c.save();
+    c.globalAlpha = alpha;
+
+    // 1. Dark Otherworldly Eclipse Floor (replaces green checkered board)
+    const sky = c.createLinearGradient(0, 0, 0, WORLD_SIZE);
+    sky.addColorStop(0, "rgba(10, 2, 6, 0.94)");
+    sky.addColorStop(0.55, "rgba(26, 5, 10, 0.90)");
+    sky.addColorStop(1, "rgba(12, 2, 5, 0.94)");
+    c.fillStyle = sky;
+    c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+    // Subtle dark crimson grid lines so arena tiles remain readable in Eclipse
+    c.strokeStyle = "rgba(220, 38, 38, 0.12)";
+    c.lineWidth = 1;
+    const step = WORLD_SIZE / 8;
+    for (let i = 1; i < 8; i++) {
+      c.beginPath();
+      c.moveTo(i * step, 0);
+      c.lineTo(i * step, WORLD_SIZE);
+      c.moveTo(0, i * step);
+      c.lineTo(WORLD_SIZE, i * step);
+      c.stroke();
+    }
+
+    // 2. Blazing Golden-Yellow Eclipse Corona behind the Black Moon
+    const corona = c.createRadialGradient(cx, moonY, moonR * 0.85, cx, moonY, moonR * 3.1);
+    corona.addColorStop(0, "rgba(254, 240, 138, 0.96)");
+    corona.addColorStop(0.22, "rgba(250, 204, 21, 0.78)");
+    corona.addColorStop(0.48, "rgba(245, 158, 11, 0.38)");
+    corona.addColorStop(0.75, "rgba(220, 38, 38, 0.22)");
+    corona.addColorStop(1, "rgba(10, 2, 6, 0)");
+    c.fillStyle = corona;
+    c.beginPath();
+    c.arc(cx, moonY, moonR * 3.1, 0, Math.PI * 2);
+    c.fill();
+
+    // Pulsing solar flare rays around the Eclipse Moon
+    c.save();
+    c.translate(cx, moonY);
+    c.rotate(now * 0.14);
+    for (let i = 0; i < 16; i++) {
+      const a = (i / 16) * Math.PI * 2;
+      const len = moonR * (1.35 + 0.28 * Math.sin(now * 3.2 + i * 1.3));
+      c.strokeStyle = i % 2 === 0 ? "rgba(253, 224, 71, 0.55)" : "rgba(245, 158, 11, 0.38)";
+      c.lineWidth = i % 2 === 0 ? 4 : 2.5;
+      c.beginPath();
+      c.moveTo(Math.cos(a) * (moonR * 0.98), Math.sin(a) * (moonR * 0.98));
+      c.lineTo(Math.cos(a) * len, Math.sin(a) * len);
+      c.stroke();
+    }
+    c.restore();
+
+    // 3. Jet-Black Eclipsed Moon with Sharp Golden Rim
+    c.fillStyle = "#060204";
+    c.strokeStyle = "#fde047";
+    c.lineWidth = 4;
+    c.beginPath();
+    c.arc(cx, moonY, moonR, 0, Math.PI * 2);
+    c.fill();
+    c.stroke();
+
+    // 4. Faint Glowing Brand of Sacrifice etched onto the Eclipse Floor
+    c.save();
+    c.translate(cx, WORLD_SIZE * 0.72);
+    c.strokeStyle = "rgba(220, 38, 38, 0.32)";
+    c.lineWidth = 3;
+    c.beginPath();
+    c.moveTo(0, -34);
+    c.lineTo(0, 34);
+    c.moveTo(-20, -14);
+    c.lineTo(20, 12);
+    c.lineTo(0, 34);
+    c.lineTo(-20, 12);
+    c.lineTo(20, -14);
+    c.moveTo(-16, -24);
+    c.lineTo(0, -8);
+    c.lineTo(16, -24);
+    c.stroke();
+    c.restore();
+
+    // 5. Drifting Golden & Crimson Eclipse Embers inside the Arena
+    for (let i = 0; i < 16; i++) {
+      const ex = ((i * 71 + now * (18 + (i % 3) * 8)) % (WORLD_SIZE - 20)) + 10;
+      const ey = WORLD_SIZE - ((i * 53 + now * (36 + (i % 4) * 11)) % (WORLD_SIZE - 16));
+      c.fillStyle = i % 3 === 0 ? "#fde047" : "#ef4444";
+      c.globalAlpha = alpha * (0.4 + 0.45 * Math.sin(now * 5 + i));
+      c.beginPath();
+      c.arc(ex, ey, 2 + (i % 2) * 1.4, 0, Math.PI * 2);
+      c.fill();
+    }
+    c.restore();
+  }
+
+  BF.drawGutsEclipseOverlay = drawGutsEclipseOverlay;
+  BF.hideGutsEclipseOuterBg = hideGutsEclipseOuterBg;
   BF.spawnBerserkerEclipseCinematic = spawnBerserkerEclipseCinematic;
 })();
 
