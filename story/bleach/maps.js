@@ -805,10 +805,11 @@
         c.fillStyle = "#f59e0b";
         c.fillRect(380, 286, 10, 12);
 
-        // 7. Detailed Overturned Waiting Room Couch + Scattered Cushions (Left)
+        // 7. Waiting Room Couch (Overturned in Prologue -> Neat & Upright in Arc 1)
+        const isRepaired = S.Quests && S.Quests.isOpenWorldUnlocked();
         c.save();
         c.translate(102, 274);
-        c.rotate(-0.14);
+        if (!isRepaired) c.rotate(-0.14);
         c.fillStyle = "rgba(18, 11, 28, 0.24)";
         c.beginPath(); c.roundRect(-52, -26, 108, 60, 9); c.fill();
         c.fillStyle = "#0f766e";
@@ -823,49 +824,51 @@
         c.beginPath(); c.roundRect(2, -10, 40, 34, 5); c.fill(); c.stroke();
         c.restore();
 
-        // Scattered Clinic Magazine & Cushion on floor
-        c.save();
-        c.translate(72, 336);
-        c.rotate(0.28);
-        c.fillStyle = "#f97316";
-        c.strokeStyle = INK;
-        c.lineWidth = 2;
-        c.beginPath(); c.roundRect(-12, -9, 24, 18, 4); c.fill(); c.stroke();
-        c.restore();
+        if (!isRepaired) {
+          // Scattered Clinic Magazine & Cushion on floor
+          c.save();
+          c.translate(72, 336);
+          c.rotate(0.28);
+          c.fillStyle = "#f97316";
+          c.strokeStyle = INK;
+          c.lineWidth = 2;
+          c.beginPath(); c.roundRect(-12, -9, 24, 18, 4); c.fill(); c.stroke();
+          c.restore();
 
-        // 8. Hollow Claw Gouges + Dark Scorch + Shattered Glass Shards
-        c.save();
-        c.fillStyle = "rgba(15, 23, 42, 0.16)";
-        c.beginPath(); c.ellipse(216, 318, 26, 14, -0.2, 0, Math.PI * 2); c.fill();
-        c.strokeStyle = "#7f1d1d";
-        c.lineWidth = 4.2;
-        c.lineCap = "round";
-        for (let k = -1; k <= 1; k++) {
-          c.beginPath();
-          c.moveTo(204 + k * 10, 303);
-          c.lineTo(215 + k * 10, 331);
-          c.stroke();
-        }
-        c.strokeStyle = "#ef4444";
-        c.lineWidth = 2;
-        for (let k = -1; k <= 1; k++) {
-          c.beginPath();
-          c.moveTo(204 + k * 10, 303);
-          c.lineTo(215 + k * 10, 331);
-          c.stroke();
-        }
-        c.restore();
+          // 8. Hollow Claw Gouges + Dark Scorch + Shattered Glass Shards
+          c.save();
+          c.fillStyle = "rgba(15, 23, 42, 0.16)";
+          c.beginPath(); c.ellipse(216, 318, 26, 14, -0.2, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = "#7f1d1d";
+          c.lineWidth = 4.2;
+          c.lineCap = "round";
+          for (let k = -1; k <= 1; k++) {
+            c.beginPath();
+            c.moveTo(204 + k * 10, 303);
+            c.lineTo(215 + k * 10, 331);
+            c.stroke();
+          }
+          c.strokeStyle = "#ef4444";
+          c.lineWidth = 2;
+          for (let k = -1; k <= 1; k++) {
+            c.beginPath();
+            c.moveTo(204 + k * 10, 303);
+            c.lineTo(215 + k * 10, 331);
+            c.stroke();
+          }
+          c.restore();
 
-        c.fillStyle = "rgba(186, 230, 253, 0.90)";
-        c.strokeStyle = INK;
-        c.lineWidth = 1.6;
-        for (const [gx, gy] of [[182, 418], [208, 402], [246, 410], [234, 430], [196, 432]]) {
-          c.beginPath();
-          c.moveTo(gx, gy - 5);
-          c.lineTo(gx + 6, gy + 3);
-          c.lineTo(gx - 4, gy + 5);
-          c.closePath();
-          c.fill(); c.stroke();
+          c.fillStyle = "rgba(186, 230, 253, 0.90)";
+          c.strokeStyle = INK;
+          c.lineWidth = 1.6;
+          for (const [gx, gy] of [[182, 418], [208, 402], [246, 410], [234, 430], [196, 432]]) {
+            c.beginPath();
+            c.moveTo(gx, gy - 5);
+            c.lineTo(gx + 6, gy + 3);
+            c.lineTo(gx - 4, gy + 5);
+            c.closePath();
+            c.fill(); c.stroke();
+          }
         }
 
         // 9. Front Sliding Exit Door (Bottom)
@@ -886,6 +889,8 @@
     karakura_street: {
       id: "karakura_street",
       name: "KARAKURA STREET (NIGHT)",
+      getName: () =>
+        S.Quests && S.Quests.isOpenWorldUnlocked() ? "KARAKURA STREET (DAY)" : "KARAKURA STREET (NIGHT)",
       w: 440,
       h: 520,
       bg: "#1e293b",
@@ -992,11 +997,13 @@
         },
       ],
       drawGround(c, t = 0) {
-        // 1. Stone-Tiled Sidewalk & Textured Night Asphalt Road
-        c.fillStyle = "#475569";
+        const isDay = S.Quests && S.Quests.isOpenWorldUnlocked();
+
+        // 1. Stone-Tiled Sidewalk & Asphalt Road (Night in Prologue -> Bright Day in Arc 1)
+        c.fillStyle = isDay ? "#cbd5e1" : "#475569";
         c.fillRect(0, 120, 440, 82);
         // Sidewalk stone tile grid
-        c.strokeStyle = "rgba(15, 23, 42, 0.28)";
+        c.strokeStyle = isDay ? "rgba(71, 85, 105, 0.22)" : "rgba(15, 23, 42, 0.28)";
         c.lineWidth = 1.4;
         for (let sx = 0; sx < 440; sx += 28) {
           c.beginPath(); c.moveTo(sx, 120); c.lineTo(sx, 194); c.stroke();
@@ -1006,64 +1013,66 @@
         }
 
         // Asphalt road
-        c.fillStyle = "#171d2e";
+        c.fillStyle = isDay ? "#475569" : "#171d2e";
         c.fillRect(0, 202, 440, 318);
         // Curb + gutter shadow
-        c.fillStyle = "#64748b";
+        c.fillStyle = isDay ? "#94a3b8" : "#64748b";
         c.fillRect(0, 192, 440, 10);
-        c.fillStyle = "rgba(0,0,0,0.28)";
+        c.fillStyle = isDay ? "rgba(15, 23, 42, 0.14)" : "rgba(0,0,0,0.28)";
         c.fillRect(0, 202, 440, 12);
         c.strokeStyle = INK;
         c.lineWidth = 2.6;
         c.beginPath(); c.moveTo(0, 202); c.lineTo(440, 202); c.stroke();
 
         // Zebra Crosswalk on Right + Dashed Center Line
-        c.fillStyle = "rgba(226, 232, 240, 0.72)";
+        c.fillStyle = isDay ? "rgba(255, 255, 255, 0.9)" : "rgba(226, 232, 240, 0.72)";
         for (let cy = 222; cy <= 462; cy += 48) {
           c.fillRect(360, cy, 48, 22);
         }
-        c.fillStyle = "#e2e8f0";
+        c.fillStyle = isDay ? "#ffffff" : "#e2e8f0";
         for (let lx = 24; lx < 340; lx += 54) {
           c.fillRect(lx, 344, 30, 6);
         }
 
         // Manhole cover on road
-        c.fillStyle = "#334155";
+        c.fillStyle = isDay ? "#64748b" : "#334155";
         c.strokeStyle = INK;
         c.lineWidth = 2;
         c.beginPath(); c.arc(106, 286, 16, 0, Math.PI * 2); c.fill(); c.stroke();
-        c.strokeStyle = "#475569";
+        c.strokeStyle = isDay ? "#94a3b8" : "#475569";
         c.lineWidth = 1.5;
         c.beginPath(); c.arc(106, 286, 10, 0, Math.PI * 2); c.stroke();
 
-        // Cracked Asphalt Impact Crater under Fishbone D
-        c.save();
-        c.fillStyle = "rgba(9, 9, 15, 0.55)";
-        c.beginPath(); c.ellipse(244, 384, 52, 20, 0, 0, Math.PI * 2); c.fill();
-        c.strokeStyle = "#09090b";
-        c.lineWidth = 2.2;
-        for (let a = 0; a < 6; a++) {
-          const ang = a * (Math.PI / 3) + 0.3;
-          c.beginPath();
-          c.moveTo(244 + Math.cos(ang) * 16, 384 + Math.sin(ang) * 6);
-          c.lineTo(244 + Math.cos(ang) * 48, 384 + Math.sin(ang) * 18);
-          c.stroke();
+        // Cracked Asphalt Impact Crater under Fishbone D (Prologue night only)
+        if (!isDay) {
+          c.save();
+          c.fillStyle = "rgba(9, 9, 15, 0.55)";
+          c.beginPath(); c.ellipse(244, 384, 52, 20, 0, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = "#09090b";
+          c.lineWidth = 2.2;
+          for (let a = 0; a < 6; a++) {
+            const ang = a * (Math.PI / 3) + 0.3;
+            c.beginPath();
+            c.moveTo(244 + Math.cos(ang) * 16, 384 + Math.sin(ang) * 6);
+            c.lineTo(244 + Math.cos(ang) * 48, 384 + Math.sin(ang) * 18);
+            c.stroke();
+          }
+          c.restore();
         }
-        c.restore();
 
         // 2. Detailed Kurosaki Clinic Exterior Facade (Top)
-        c.fillStyle = "#262d42";
+        c.fillStyle = isDay ? "#f1f5f9" : "#262d42";
         c.fillRect(0, 0, 440, 120);
         // Roof eaves / awning
-        c.fillStyle = "#1e293b";
+        c.fillStyle = isDay ? "#0284c7" : "#1e293b";
         c.strokeStyle = INK;
         c.lineWidth = 2.6;
         c.fillRect(92, 0, 256, 22);
         c.strokeRect(92, 0, 256, 22);
 
-        // Warm lit clinic windows left & right
+        // Clinic windows left & right (Warm night glow vs bright daytime glass)
         for (const wx of [108, 296]) {
-          c.fillStyle = "#fde68a";
+          c.fillStyle = isDay ? "#bae6fd" : "#fde68a";
           c.strokeStyle = INK;
           c.lineWidth = 2.4;
           c.beginPath(); c.roundRect(wx, 72, 36, 30, 4); c.fill(); c.stroke();
@@ -1083,17 +1092,19 @@
         c.textAlign = "center";
         c.fillText("KUROSAKI CLINIC", 232, 48);
 
-        // Clinic Sliding Glass Doors (Right panel cracked/broken from Hollow!)
-        c.fillStyle = "#38bdf8";
+        // Clinic Sliding Glass Doors (Repaired intact glass in Day vs Broken in Prologue Night)
+        c.fillStyle = isDay ? "#7dd3fc" : "#38bdf8";
         c.strokeStyle = INK;
         c.lineWidth = 2.6;
         c.beginPath(); c.roundRect(182, 74, 76, 46, 5); c.fill(); c.stroke();
-        c.fillStyle = "#0f172a";
-        c.beginPath();
-        c.moveTo(222, 76); c.lineTo(256, 76); c.lineTo(256, 118); c.lineTo(228, 118);
-        c.lineTo(234, 98); c.lineTo(222, 88);
-        c.closePath();
-        c.fill();
+        if (!isDay) {
+          c.fillStyle = "#0f172a";
+          c.beginPath();
+          c.moveTo(222, 76); c.lineTo(256, 76); c.lineTo(256, 118); c.lineTo(228, 118);
+          c.lineTo(234, 98); c.lineTo(222, 88);
+          c.closePath();
+          c.fill();
+        }
         c.beginPath(); c.moveTo(220, 74); c.lineTo(220, 120); c.stroke();
 
         // Potted Bushes flanking entrance
@@ -1122,7 +1133,7 @@
         c.fillStyle = "#0f172a";
         c.fillRect(399, 146, 22, 8);
 
-        // 4. Glowing Streetlamp on Left + Light Cone
+        // 4. Streetlamp on Left (Lit cone at night, off in daytime)
         c.fillStyle = "#0f172a";
         c.strokeStyle = INK;
         c.lineWidth = 2.6;
@@ -1130,13 +1141,15 @@
         c.strokeRect(44, 44, 10, 138);
         c.fillRect(44, 44, 30, 8);
         c.strokeRect(44, 44, 30, 8);
-        c.fillStyle = "#fef08a";
+        c.fillStyle = isDay ? "#cbd5e1" : "#fef08a";
         c.beginPath(); c.arc(68, 54, 10, 0, Math.PI * 2); c.fill(); c.stroke();
-        const sg = c.createRadialGradient(68, 54, 8, 68, 140, 135 + Math.sin(t * 2.5) * 6);
-        sg.addColorStop(0, "rgba(254, 240, 138, 0.36)");
-        sg.addColorStop(1, "rgba(254, 240, 138, 0)");
-        c.fillStyle = sg;
-        c.beginPath(); c.arc(68, 120, 135, 0, Math.PI * 2); c.fill();
+        if (!isDay) {
+          const sg = c.createRadialGradient(68, 54, 8, 68, 140, 135 + Math.sin(t * 2.5) * 6);
+          sg.addColorStop(0, "rgba(254, 240, 138, 0.36)");
+          sg.addColorStop(1, "rgba(254, 240, 138, 0)");
+          c.fillStyle = sg;
+          c.beginPath(); c.arc(68, 120, 135, 0, Math.PI * 2); c.fill();
+        }
 
         // 5. Utility Pole + Transformer + Overhead Wires
         c.fillStyle = "#1e293b";

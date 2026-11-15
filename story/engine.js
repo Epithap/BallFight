@@ -48,7 +48,8 @@
     activeInspectable = null;
     S.UI.syncHud();
     const map = currentMap();
-    if (map && map.name) S.UI.showToast(map.name);
+    const mapName = map && ((map.getName && map.getName()) || map.name);
+    if (mapName) S.UI.showToast(mapName);
   }
 
   function currentMap() {

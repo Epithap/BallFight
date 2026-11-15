@@ -151,7 +151,7 @@
     if (qDesc) qDesc.textContent = q.desc;
     if (zoneEl && S.Maps) {
       const map = S.Maps[st.zone];
-      if (map) zoneEl.textContent = map.name;
+      if (map) zoneEl.textContent = (map.getName && map.getName()) || map.name;
     }
 
     const roleSpan = zoneEl && zoneEl.nextElementSibling;
