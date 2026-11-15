@@ -381,11 +381,16 @@
   function spawnOrbitingMaxBlue({ owner }) {
     const startAng = Math.atan2(owner.vy || 0, owner.vx || 1);
     const totalAngle = Math.PI * 4; // 2 full rotations
-    const duration = 1.45;
-    const angSpeed = totalAngle / duration;
+    const orbitDur = 1.35;
+    const angSpeed = totalAngle / orbitDur;
     const rStart = owner.radius + 36;
-    const rEnd = 225;
+    const rEnd = 215;
+    const eightDur = 0.72;
+    const savedSpeed = Math.hypot(owner.vx || 0, owner.vy || 0) || owner.baseSpeed || 360;
+
     return {
+      isFreezeCinematic: true,
+      phase: "orbit",
       angle: startAng,
       traveled: 0,
       orbitR: rStart,
@@ -394,6 +399,9 @@
       hitCd: 0,
       pulseCd: 0,
       pulses: [],
+      caughtTarget: null,
+      eightTimer: 0,
+      eightExploded: false,
       ultCharged: false,
       dead: false,
       update(dt, gg) {
@@ -401,82 +409,123 @@
           this.dead = true;
           return;
         }
-        const step = angSpeed * dt;
-        this.angle += step;
-        this.traveled += step;
-        const p = Math.min(1, this.traveled / totalAngle);
-        this.orbitR = rStart + (rEnd - rStart) * p;
-        this.x = owner.x + Math.cos(this.angle) * this.orbitR;
-        this.y = owner.y + Math.sin(this.angle) * this.orbitR;
-        this.hitCd = Math.max(0, this.hitCd - dt);
-        this.pulseCd = Math.max(0, this.pulseCd - dt);
+        if (this.phase === "orbit") {
+          const step = angSpeed * dt;
+          this.angle += step;
+          this.traveled += step;
+          const p = Math.min(1, this.traveled / totalAngle);
+          this.orbitR = rStart + (rEnd - rStart) * p;
+          this.x = owner.x + Math.cos(this.angle) * this.orbitR;
+          this.y = owner.y + Math.sin(this.angle) * this.orbitR;
+          this.hitCd = Math.max(0, this.hitCd - dt);
+          this.pulseCd = Math.max(0, this.pulseCd - dt);
 
-        for (let i = this.pulses.length - 1; i >= 0; i--) {
-          this.pulses[i].life -= dt;
-          if (this.pulses[i].life <= 0) this.pulses.splice(i, 1);
-        }
-
-        for (const tt of gg.balls) {
-          if (tt === owner || !tt.alive) continue;
-          const dx = this.x - tt.x;
-          const dy = this.y - tt.y;
-          const dist = Math.hypot(dx, dy) || 1;
-          if (dist < 185) {
-            const pull = 215 * dt;
-            tt.x += (dx / dist) * pull;
-            tt.y += (dy / dist) * pull;
-            if (this.pulseCd <= 0) {
-              this.pulseCd = 0.22;
-              this.pulses.push({ x: tt.x, y: tt.y, life: 0.26, maxLife: 0.26 });
-            }
+          for (let i = this.pulses.length - 1; i >= 0; i--) {
+            this.pulses[i].life -= dt;
+            if (this.pulses[i].life <= 0) this.pulses.splice(i, 1);
           }
-          if (dist <= tt.radius + 34 && this.hitCd <= 0) {
-            this.hitCd = 0.18;
-            const dealt = gg.applyDamage(tt, 3);
-            tt.flashTimer = 0.08;
-            gg.spawnSparks(tt.x, tt.y, "#00b4ff", COLORS.white);
-            gg.spawnDamageText(tt.x, tt.y - tt.radius - 10, dealt, "#38bdf8", false, "PULL!");
-            gg.sound.playBallHit();
-            if (!this.ultCharged) {
-              this.ultCharged = true;
-              gg.chargeUlt(owner);
-            }
-          }
-        }
 
-        if (this.traveled >= totalAngle) {
-          this.dead = true;
           for (const tt of gg.balls) {
             if (tt === owner || !tt.alive) continue;
-            if (Math.hypot(tt.x - this.x, tt.y - this.y) <= 135) {
-              const fin = gg.applyDamage(tt, 6);
-              tt.flashTimer = 0.14;
-              gg.spawnDamageText(tt.x, tt.y - tt.radius - 14, fin, "#00b4ff", true, "MAX BLUE!");
+            const dx = this.x - tt.x;
+            const dy = this.y - tt.y;
+            const dist = Math.hypot(dx, dy) || 1;
+            if (dist < 190) {
+              // Pull enemy along with the spinning Blue orb!
+              const pull = 250 * dt;
+              const pad = (BF.CONSTANTS && BF.CONSTANTS.ARENA_PAD) || 26;
+              tt.x = Math.max(pad + tt.radius, Math.min(WORLD_SIZE - pad - tt.radius, tt.x + (dx / dist) * pull));
+              tt.y = Math.max(pad + tt.radius, Math.min(WORLD_SIZE - pad - tt.radius, tt.y + (dy / dist) * pull));
+              this.caughtTarget = tt;
+              if (this.pulseCd <= 0) {
+                this.pulseCd = 0.20;
+                this.pulses.push({ x: tt.x, y: tt.y, life: 0.25, maxLife: 0.25 });
+              }
+            }
+            if (dist <= tt.radius + 36 && this.hitCd <= 0) {
+              this.hitCd = 0.18;
+              const dealt = gg.applyDamage(tt, 3);
+              tt.flashTimer = 0.08;
+              gg.spawnSparks(tt.x, tt.y, "#00b4ff", COLORS.white);
+              gg.spawnDamageText(tt.x, tt.y - tt.radius - 10, dealt, "#38bdf8", false, "PULL!");
+              gg.sound.playBallHit();
               if (!this.ultCharged) {
                 this.ultCharged = true;
                 gg.chargeUlt(owner);
               }
             }
           }
-          gg.entities.push(rt.spawnShockRing(this.x, this.y, "#38bdf8", 165, 0.40));
-          gg.entities.push(rt.spawnShockRing(this.x, this.y, "#e0f2fe", 115, 0.28));
-          rt.addShake(0.32, 9);
-          gg.sound.playCritHit();
+
+          if (this.traveled >= totalAngle) {
+            const target = (this.caughtTarget && this.caughtTarget.alive)
+              ? this.caughtTarget
+              : gg.balls.find((tt) => tt !== owner && tt.alive && Math.hypot(tt.x - this.x, tt.y - this.y) <= 220);
+            if (target) {
+              this.caughtTarget = target;
+              this.phase = "eight_blue";
+              this.eightTimer = 0;
+              gg.hitStop = Math.max(gg.hitStop, eightDur);
+              owner.vx = 0;
+              owner.vy = 0;
+              target.vx = 0;
+              target.vy = 0;
+              gg.sound.playTimeStop();
+            } else {
+              this.dead = true;
+              gg.entities.push(rt.spawnShockRing(this.x, this.y, "#38bdf8", 145, 0.36));
+              gg.sound.playCritHit();
+            }
+          }
+        } else if (this.phase === "eight_blue") {
+          this.eightTimer += dt;
+          const t = this.caughtTarget;
+          if (!t || !t.alive) {
+            const ra = gg.rng() * Math.PI * 2;
+            owner.vx = Math.cos(ra) * savedSpeed;
+            owner.vy = Math.sin(ra) * savedSpeed;
+            this.dead = true;
+            return;
+          }
+          if (!this.eightExploded) {
+            owner.vx = 0;
+            owner.vy = 0;
+            t.vx = 0;
+            t.vy = 0;
+            if (this.eightTimer >= 0.48) {
+              this.eightExploded = true;
+              const fin = gg.applyDamage(t, Math.round(10 + gg.rng() * 3));
+              t.flashTimer = 0.22;
+              t.squash = 0.65;
+              const kAng = Math.atan2(t.y - owner.y, t.x - owner.x) || 0;
+              t.vx = Math.cos(kAng) * 720;
+              t.vy = Math.sin(kAng) * 720;
+              // Restore Gojo's movement so both keep moving after the explosion!
+              const oa = kAng + Math.PI * 0.65;
+              owner.vx = Math.cos(oa) * savedSpeed;
+              owner.vy = Math.sin(oa) * savedSpeed;
+
+              gg.entities.push(rt.spawnShockRing(t.x, t.y, "#0ea5e9", 185, 0.42));
+              gg.entities.push(rt.spawnShockRing(t.x, t.y, "#e0f2fe", 130, 0.30));
+              gg.spawnSparks(t.x, t.y, "#00b4ff", COLORS.white);
+              gg.spawnDamageText(t.x, t.y - t.radius - 16, fin, "#38bdf8", true, "MAX BLUE!");
+              rt.addShake(0.40, 12);
+              gg.sound.playCritHit();
+              if (!this.ultCharged) {
+                this.ultCharged = true;
+                gg.chargeUlt(owner);
+              }
+            }
+          }
+          if (this.eightTimer >= eightDur) {
+            this.dead = true;
+          }
         }
       },
       render(c) {
+        if (this.phase !== "orbit") return;
         c.save();
-        const spin = this.traveled * 2.2;
-        // Gravity tether connecting Gojo to the orbiting Max Blue singularity
-        c.strokeStyle = "rgba(56, 189, 248, 0.36)";
-        c.lineWidth = 3;
-        c.beginPath();
-        c.moveTo(owner.x, owner.y);
-        c.lineTo(this.x, this.y);
-        c.stroke();
-
         // Expanding spiral trail arc around Gojo
-        c.strokeStyle = "rgba(14, 165, 233, 0.50)";
+        c.strokeStyle = "rgba(56, 189, 248, 0.48)";
         c.lineWidth = 9;
         c.lineCap = "round";
         c.beginPath();
@@ -493,28 +542,46 @@
           c.stroke();
         }
 
-        // Cool Black-Hole Singularity Blue Orb + Rotating Accretion Rings
+        // Original bright glowing Blue orb (no black hole)
         c.translate(this.x, this.y);
-        c.fillStyle = "rgba(0, 180, 255, 0.26)";
-        c.beginPath(); c.arc(0, 0, 48, 0, Math.PI * 2); c.fill();
-        c.fillStyle = "rgba(56, 189, 248, 0.45)";
-        c.beginPath(); c.arc(0, 0, 32, 0, Math.PI * 2); c.fill();
-
-        // Rotating accretion ellipses
-        c.strokeStyle = "rgba(224, 242, 254, 0.85)";
-        c.lineWidth = 2.4;
-        c.beginPath(); c.ellipse(0, 0, 42, 14, spin, 0, Math.PI * 2); c.stroke();
-        c.strokeStyle = "rgba(56, 189, 248, 0.80)";
-        c.beginPath(); c.ellipse(0, 0, 42, 14, -spin * 0.8, 0, Math.PI * 2); c.stroke();
-
-        // Abyssal singularity core + bright event horizon
+        c.fillStyle = "rgba(0, 180, 255, 0.28)";
+        c.beginPath(); c.arc(0, 0, 44, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "rgba(56, 189, 248, 0.55)";
+        c.beginPath(); c.arc(0, 0, 29, 0, Math.PI * 2); c.fill();
         c.fillStyle = "#0ea5e9";
-        c.beginPath(); c.arc(0, 0, 22, 0, Math.PI * 2); c.fill();
-        c.fillStyle = "#020617";
-        c.beginPath(); c.arc(0, 0, 12, 0, Math.PI * 2); c.fill();
-        c.strokeStyle = "#e0f2fe";
-        c.lineWidth = 2.5;
-        c.stroke();
+        c.beginPath(); c.arc(0, 0, 19, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "#e0f2fe";
+        c.beginPath(); c.arc(0, 0, 9, 0, Math.PI * 2); c.fill();
+        c.restore();
+      },
+      renderOverlay(c) {
+        if (this.phase !== "eight_blue" || !this.caughtTarget) return;
+        const t = this.caughtTarget;
+        c.save();
+        if (!this.eightExploded) {
+          const p = Math.min(1, this.eightTimer / 0.48);
+          const rad = 110 * (1 - p * 0.86);
+          const spin = p * Math.PI * 1.6;
+          c.fillStyle = `rgba(4, 12, 28, ${(0.45 * p).toFixed(2)})`;
+          c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+          // 8 Blue orbs converging around the enemy!
+          for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2 + spin;
+            const bx = t.x + Math.cos(a) * rad;
+            const by = t.y + Math.sin(a) * rad;
+            c.fillStyle = "rgba(0, 180, 255, 0.36)";
+            c.beginPath(); c.arc(bx, by, 22, 0, Math.PI * 2); c.fill();
+            c.fillStyle = "#0ea5e9";
+            c.beginPath(); c.arc(bx, by, 13, 0, Math.PI * 2); c.fill();
+            c.fillStyle = "#e0f2fe";
+            c.beginPath(); c.arc(bx, by, 6, 0, Math.PI * 2); c.fill();
+          }
+        } else {
+          const ip = Math.min(1, (this.eightTimer - 0.48) / (eightDur - 0.48));
+          const fade = 1 - ip;
+          c.fillStyle = `rgba(224, 242, 254, ${(0.52 * fade).toFixed(2)})`;
+          c.beginPath(); c.arc(t.x, t.y, 30 + ip * 155, 0, Math.PI * 2); c.fill();
+        }
         c.restore();
       },
     };
