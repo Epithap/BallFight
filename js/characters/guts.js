@@ -57,16 +57,19 @@
               const dealt = g.applyDamage(target, damage);
               target.flashTimer = 0.14;
               target.squash = 0.95;
-              target._gutsBleedTimer = 1.8;
-              target._gutsBleedTick = 0.6;
+              target._gutsBleedTimer = berserk ? 2.4 : 1.9;
+              target._gutsBleedTick = 0.55;
               const kAng = Math.atan2(dy, dx);
               target.vx = Math.cos(kAng) * knockback;
               target.vy = Math.sin(kAng) * knockback;
               g.spawnSparks(target.x, target.y, berserk ? COLORS.red : COLORS.silver, COLORS.ink);
+              if (berserk) {
+                g.entities.push(rt.spawnShockRing(target.x, target.y, "#ef4444", 110, 0.28));
+              }
               g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, berserk ? COLORS.red : COLORS.silver, true, berserk ? "BERSERK CLEAVE!" : "CLEAVE! +BLEED");
               if (!berserk) g.chargeUlt(owner);
-              rt.setHitStop(berserk ? 0.06 : 0.04);
-              rt.addShake(berserk ? 0.18 : 0.14, berserk ? 4.5 : 3.5);
+              rt.setHitStop(berserk ? 0.08 : 0.05);
+              rt.addShake(berserk ? 0.22 : 0.16, berserk ? 6.0 : 4.0);
               g.sound.playCritHit();
             }
           }
@@ -331,7 +334,7 @@
               owner: b,
               angle: ang,
               arcSpan: Math.PI * 2,
-              reach: 152,
+              reach: 166,
               duration: 0.2,
               damage: Math.round(12 + gg.rng() * 3),
               knockback: 260,
@@ -342,16 +345,17 @@
                 const t2 = gg2.balls.find((x) => x !== b && x.alive);
                 const ang2 = t2 ? Math.atan2(t2.y - b.y, t2.x - b.x) : ang;
                 const spd2 = Math.max(Math.hypot(b.vx, b.vy), b.baseSpeed);
-                b.vx = Math.cos(ang2) * spd2 * 1.24;
-                b.vy = Math.sin(ang2) * spd2 * 1.24;
+                b.vx = Math.cos(ang2) * spd2 * 1.28;
+                b.vy = Math.sin(ang2) * spd2 * 1.28;
+                gg2.entities.push(rt.spawnShockRing(b.x, b.y, "#dc2626", 145, 0.34));
                 gg2.entities.push(spawnGreatswordSwing({
                   owner: b,
                   angle: ang2,
                   arcSpan: Math.PI * 2,
-                  reach: 158,
+                  reach: 174,
                   duration: 0.22,
                   damage: Math.round(14 + gg.rng() * 3),
-                  knockback: 460,
+                  knockback: 490,
                   berserk: true,
                   direction: -1,
                 }));

@@ -390,15 +390,16 @@
     const dealt = g.applyDamage(enemy, raw);
     enemy.flashTimer = 0.16;
     enemy.squash = 0.9;
-    g.addEffect(enemy, "stun", 0.4);
+    g.addEffect(enemy, "stun", 0.65);
 
-    g.entities.push(spawnLightningBoltVisual(enemy.x, 12, enemy.x, enemy.y, "#38bdf8", 0.36, 13));
-    g.entities.push(spawnStaticField(b, enemy.x, enemy.y, 58, 2.5));
-    g.entities.push(rt.spawnShockRing(enemy.x, enemy.y, "#e0f2fe", 110, 0.38));
+    g.entities.push(spawnLightningBoltVisual(enemy.x, 12, enemy.x, enemy.y, "#38bdf8", 0.4, 14));
+    g.entities.push(spawnLightningBoltVisual(enemy.x - 18, 12, enemy.x + 6, enemy.y, "#e0f2fe", 0.34, 8));
+    g.entities.push(spawnStaticField(b, enemy.x, enemy.y, 64, 2.8));
+    g.entities.push(rt.spawnShockRing(enemy.x, enemy.y, "#e0f2fe", 145, 0.42));
     g.spawnSparks(enemy.x, enemy.y, "#38bdf8", "#ffffff");
     g.spawnDamageText(enemy.x, enemy.y - enemy.radius - 16, dealt, "#38bdf8", true, "NARUKAMI SKY PILLAR!");
     rt.setHitStop(0.06);
-    rt.addShake(0.22, 5.5);
+    rt.addShake(0.24, 6.0);
   };
 
   function triggerWhirlwindCounter(ball, target, g) {
@@ -406,9 +407,11 @@
     const raw = Math.round(8 + rt.rng() * 2);
     const dealt = g.applyDamage(target, raw);
     target.flashTimer = 0.12;
-    g.entities.push(spawnLightningBoltVisual(ball.x, ball.y, target.x, target.y, "#38bdf8", 0.22, 8));
+    g.addEffect(target, "stun", 0.28);
+    g.entities.push(spawnLightningBoltVisual(ball.x, ball.y, target.x, target.y, "#38bdf8", 0.24, 9));
+    g.entities.push(rt.spawnShockRing(target.x, target.y, "#38bdf8", 68, 0.24));
     g.spawnSparks(target.x, target.y, "#38bdf8", "#ffffff");
-    g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#38bdf8", false, "WHIRLWIND COUNTER!");
+    g.spawnDamageText(target.x, target.y - target.radius - 14, dealt, "#38bdf8", false, "WHIRLWIND COUNTER! +STUN");
     g.sound.playBallHit();
   }
 
@@ -536,10 +539,22 @@
         enemy._staticMarkTimer = Math.max(0, enemy._staticMarkTimer - dt);
       }
 
-      // Godspeed active mechanics (Denko Sekka Zig-Zag + Shippujinrai Projectile Auto-Dodge)
+      // Godspeed active mechanics (Lightning Trail + Denko Sekka Zig-Zag + Shippujinrai Auto-Dodge)
       if (ball.ultTimer > 0 && dt) {
         ball._whirlwindCd = Math.max(0, (ball._whirlwindCd || 0) - dt);
         ball._denkoTimer = (ball._denkoTimer || 0) - dt;
+        ball._trailCd = (ball._trailCd || 0) - dt;
+
+        // 0. Godspeed Lightning Trail: continuous crackling electric afterimages behind Killua
+        if (ball._trailCd <= 0) {
+          ball._trailCd = 0.08;
+          g.entities.push(spawnElectricAfterimage(ball.x, ball.y, ball.radius * 0.85, 0.22));
+          if (rt.rng() < 0.65) {
+            const jx = ball.x + (rt.rng() - 0.5) * 34;
+            const jy = ball.y + (rt.rng() - 0.5) * 34;
+            g.entities.push(spawnLightningBoltVisual(ball.x, ball.y, jx, jy, "#7dd3fc", 0.16, 4.5));
+          }
+        }
 
         // 1. Shippujinrai: Auto-Dodge incoming enemy projectiles within 52px
         if (ball._whirlwindCd <= 0) {
@@ -549,7 +564,7 @@
             const d = Math.hypot(ent.x - ball.x, ent.y - ball.y);
             if (d <= ball.radius + (ent.radius || 12) + 36) {
               ent._dodgedByKillua = true;
-              ball._whirlwindCd = 1.6;
+              ball._whirlwindCd = 1.15;
               g.entities.push(spawnElectricAfterimage(ball.x, ball.y, ball.radius, 0.35));
 
               const pAng = Math.atan2(ent.vy, ent.vx);
@@ -573,7 +588,8 @@
 
         // 2. Denko Sekka: Periodic Zig-Zag lightning dash toward enemy
         if (ball._denkoTimer <= 0 && enemy) {
-          ball._denkoTimer = 0.85;
+          ball._denkoTimer = 0.55;
+          g.entities.push(spawnElectricAfterimage(ball.x, ball.y, ball.radius * 0.92, 0.28));
           const toEnemy = Math.atan2(enemy.y - ball.y, enemy.x - ball.x);
           ball._denkoFlip = -(ball._denkoFlip || 1);
           const zigAng = toEnemy + ball._denkoFlip * 0.65;
@@ -619,7 +635,7 @@
       const target = g.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
 
-      ball._whirlwindCd = 1.6;
+      ball._whirlwindCd = 1.15;
       triggerWhirlwindCounter(ball, target, g);
       return false;
     },

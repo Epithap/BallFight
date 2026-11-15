@@ -885,10 +885,98 @@
     };
   }
 
+  function spawnTimeStopDome(owner, duration, isDio) {
+    const primary = isDio ? "#facc15" : "#a855f7";
+    const secondary = isDio ? "#22c55e" : "#00f0ff";
+    const label = isDio ? "ZA WARUDO! TOKI WO TOMARE!" : "STAR PLATINUM: THE WORLD!";
+    const ox = owner ? owner.x : WORLD_SIZE * 0.5;
+    const oy = owner ? owner.y : WORLD_SIZE * 0.5;
+    rt().entities.push(spawnBanner(label, primary));
+    rt().entities.push(spawnShockRing(ox, oy, primary, WORLD_SIZE * 0.9, 0.55));
+    rt().entities.push(spawnShockRing(ox, oy, secondary, WORLD_SIZE * 0.65, 0.4));
+    return {
+      isTimeStopVisual: true,
+      life: duration,
+      maxLife: duration,
+      dead: false,
+      update(dt) {
+        this.life -= dt;
+        if (this.life <= 0 || rt().timeStopTimer <= 0) {
+          this.dead = true;
+        }
+      },
+      render(c) {
+        const elapsed = this.maxLife - Math.max(0, this.life);
+        const expandP = Math.min(1, elapsed / 0.35);
+        const fade = Math.min(1, this.life / 0.35);
+        const domeR = WORLD_SIZE * 0.82 * (1 - Math.pow(1 - expandP, 3));
+        const cx = WORLD_SIZE * 0.5;
+        const cy = WORLD_SIZE * 0.5;
+
+        c.save();
+        // Inverted-time tint & vignette across arena
+        c.globalAlpha = 0.22 * fade;
+        c.fillStyle = isDio ? "#1e1b0a" : "#140b2e";
+        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+        // Expanding negative-space Time Stop ripple ring
+        if (expandP < 1) {
+          c.globalAlpha = (1 - expandP) * 0.85;
+          c.strokeStyle = primary;
+          c.lineWidth = 8 * (1 - expandP) + 2;
+          c.beginPath();
+          c.arc(ox, oy, domeR, 0, Math.PI * 2);
+          c.stroke();
+        }
+
+        // Giant translucent Arcane Clock Face at center
+        c.translate(cx, cy);
+        c.globalAlpha = 0.24 * fade;
+        c.strokeStyle = primary;
+        c.lineWidth = 3;
+        c.beginPath();
+        c.arc(0, 0, 148, 0, Math.PI * 2);
+        c.stroke();
+        c.beginPath();
+        c.arc(0, 0, 128, 0, Math.PI * 2);
+        c.stroke();
+
+        // 12 Clock tick marks
+        for (let i = 0; i < 12; i++) {
+          const a = (i / 12) * Math.PI * 2 - Math.PI * 0.5;
+          c.beginPath();
+          c.moveTo(Math.cos(a) * 128, Math.sin(a) * 128);
+          c.lineTo(Math.cos(a) * 146, Math.sin(a) * 146);
+          c.stroke();
+        }
+
+        // Clock hands ticking rapidly at start then freezing
+        const tickEase = Math.min(1, elapsed / 0.55);
+        const handAng = -Math.PI * 0.5 + tickEase * Math.PI * 2;
+        c.strokeStyle = secondary;
+        c.lineWidth = 4;
+        c.lineCap = "round";
+        c.beginPath();
+        c.moveTo(0, 0);
+        c.lineTo(Math.cos(handAng) * 110, Math.sin(handAng) * 110);
+        c.stroke();
+        c.strokeStyle = primary;
+        c.lineWidth = 5.5;
+        c.beginPath();
+        c.moveTo(0, 0);
+        c.lineTo(Math.cos(handAng * 0.25) * 72, Math.sin(handAng * 0.25) * 72);
+        c.stroke();
+        c.restore();
+      },
+    };
+  }
+  BF.spawnTimeStopDome = spawnTimeStopDome;
+
   function triggerTimeResume() {
     rt().timeStopTimer = 0;
     rt().sound.playTimeResume();
     rt().entities.push(spawnBanner("TIME RESUMES!", COLORS.gold));
+    rt().entities.push(spawnShockRing(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, COLORS.gold, 210, 0.45));
     rt().shakeTime = 0.22; rt().shakeIntensity = 4.5;
 
     for (const ent of rt().entities) {

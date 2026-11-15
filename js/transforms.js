@@ -408,6 +408,7 @@
           rt().timeStopOwner = b;
           b.knifeWavesLeft = 4;
           b.knifeWaveTimer = 0.35;
+          if (BF.spawnTimeStopDome) rt().entities.push(BF.spawnTimeStopDome(b, 5.0, true));
           rt().sound.playTimeStop();
           rt().shakeTime = 0.4; rt().shakeIntensity = 8;
         },
@@ -420,6 +421,7 @@
           rt().timeStopTimer = 4.0;
           rt().timeStopOwner = b;
           if (b.skills[0]) b.skills[0]._cd = 0;
+          if (BF.spawnTimeStopDome) rt().entities.push(BF.spawnTimeStopDome(b, 4.0, false));
           // Time-Step Blink onto the arena-interior side of the frozen enemy so Jotaro never wedges them against a wall!
           const enemy = rt().balls.find((x) => x !== b && x.alive);
           if (enemy) {
@@ -461,7 +463,12 @@
               rt().spawnDamageText(enemy.x, enemy.y - enemy.radius - 14, burst, COLORS.red, true, "BERSERKER ERUPTION!!");
             }
           }
-          rt().entities.push(rt().spawnShockRing(b.x, b.y, COLORS.red, 165, 0.45));
+          rt().entities.push(rt().spawnShockRing(b.x, b.y, COLORS.red, 175, 0.45));
+          rt().entities.push(rt().spawnShockRing(b.x, b.y, "#09090b", 125, 0.32));
+          rt().spawnSparks(b.x, b.y, "#dc2626", "#09090b");
+          rt().spawnDamageText(b.x, b.y - b.radius - 18, 0, "#ef4444", true, "BEAST OF DARKNESS!");
+          rt().shakeTime = Math.max(rt().shakeTime, 0.32);
+          rt().shakeIntensity = Math.max(rt().shakeIntensity, 8);
         },
       });
     } else if (ball.ult === "hollow_purple") {

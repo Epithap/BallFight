@@ -1424,6 +1424,45 @@
         st.target.squash = 0.65;
         const sc = st.standColor || COLORS.gold;
         const isOra = st.cry === "ORA";
+        const fistAng = st.angle + (rng() - 0.5) * 0.65;
+        const fistLen = 28 + rng() * 18;
+        entities.push({
+          x: st.target.x - Math.cos(fistAng) * fistLen,
+          y: st.target.y - Math.sin(fistAng) * fistLen,
+          tx: st.target.x + Math.cos(fistAng) * 10,
+          ty: st.target.y + Math.sin(fistAng) * 10,
+          ang: fistAng,
+          life: 0.16,
+          maxLife: 0.16,
+          dead: false,
+          update(dt2) {
+            this.life -= dt2;
+            if (this.life <= 0) this.dead = true;
+          },
+          render(c) {
+            const a = Math.max(0, this.life / this.maxLife);
+            c.save();
+            c.globalAlpha = a * 0.9;
+            c.strokeStyle = isOra ? "#00f0ff" : "#facc15";
+            c.lineWidth = st.heavy ? 5.5 : 4;
+            c.lineCap = "round";
+            c.beginPath();
+            c.moveTo(this.x, this.y);
+            c.lineTo(this.tx, this.ty);
+            c.stroke();
+            c.fillStyle = sc;
+            c.strokeStyle = COLORS.ink;
+            c.lineWidth = 2;
+            c.beginPath();
+            c.arc(this.tx, this.ty, st.heavy ? 8.5 : 6.5, 0, Math.PI * 2);
+            c.fill();
+            c.stroke();
+            c.restore();
+          },
+        });
+        if (st.punchesLeft === 0) {
+          entities.push(spawnShockRing(st.target.x, st.target.y, isOra ? "#00f0ff" : "#facc15", st.heavy ? 120 : 82, 0.3));
+        }
         spawnSparks(st.target.x, st.target.y, sc, st.heavy ? COLORS.red : COLORS.green);
         spawnDamageText(
           st.target.x + (rng() - 0.5) * 26,
