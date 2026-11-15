@@ -530,34 +530,103 @@
   F.ichigo = (ball, r, c, s) => {
     if (ball.evoTier === 2) {
       const isMugetsu = Boolean(ball.mugetsuMode && ball.ultTimer > 0);
+      if (isMugetsu) {
+        // Lore-accurate Mugetsu: sharp, heavy-lidded, cold crimson eyes tucked under a flat upper lid
+        const b = blinkAmt(ball) * 0.45;
+        const eyeH = Math.max(0.02, 1 - b);
+        for (const side of [-1, 1]) {
+          const cx = side * r * 0.30;
+          const cy = -r * 0.08;
+          const w = r * 0.21;
+          const h = r * 0.095 * eyeH;
+          c.save();
+          c.translate(cx, cy);
+          // Sharp slanted anime eye path (flat angled top lid, soft curved bottom)
+          c.beginPath();
+          c.moveTo(-side * w * 0.95, -h * 0.15);
+          c.quadraticCurveTo(0, -h * 0.95, side * w * 1.05, -h * 0.92);
+          c.quadraticCurveTo(side * w * 0.65, h * 0.95, -side * w * 0.15, h * 1.05);
+          c.quadraticCurveTo(-side * w * 0.72, h * 0.85, -side * w * 0.95, -h * 0.15);
+          c.closePath();
+
+          // Clean white sclera
+          c.fillStyle = "#f8fafc";
+          c.fill();
+
+          c.save();
+          c.clip();
+          // Crimson iris tucked under the upper eyelid (top ~30% covered = cold stoic gaze)
+          const ix = (s.ex || 0) * 0.65;
+          const iy = -h * 0.18 + (s.ey || 0) * 0.55;
+          const ir = r * 0.088;
+          c.fillStyle = "#991b1b";
+          c.beginPath();
+          c.arc(ix, iy, ir, 0, TAU);
+          c.fill();
+          c.fillStyle = "#dc2626";
+          c.beginPath();
+          c.arc(ix, iy, ir * 0.76, 0, TAU);
+          c.fill();
+          // Sharp dark pupil + tiny pinpoint glint
+          c.fillStyle = "#09090b";
+          c.beginPath();
+          c.arc(ix, iy, ir * 0.42, 0, TAU);
+          c.fill();
+          c.fillStyle = "#fecaca";
+          c.beginPath();
+          c.arc(ix - ir * 0.32, iy - ir * 0.18, ir * 0.18, 0, TAU);
+          c.fill();
+          // Subtle upper-lid shadow
+          c.fillStyle = "rgba(9, 9, 11, 0.22)";
+          c.fillRect(-w * 1.2, -h * 1.2, w * 2.4, h * 0.65);
+          c.restore();
+
+          // Delicate thin lower lid (no chunky oval border)
+          c.strokeStyle = "rgba(30, 27, 46, 0.65)";
+          c.lineWidth = 1.4;
+          c.lineCap = "round";
+          c.beginPath();
+          c.moveTo(-side * w * 0.85, h * 0.12);
+          c.quadraticCurveTo(0, h * 1.12, side * w * 0.88, h * 0.22);
+          c.stroke();
+
+          // Sharp, flat, thick upper lash line extending cleanly outward
+          c.strokeStyle = "#09090b";
+          c.lineWidth = 2.8;
+          c.beginPath();
+          c.moveTo(-side * w * 1.02, -h * 0.08);
+          c.quadraticCurveTo(0, -h * 0.96, side * w * 1.15, -h * 0.98);
+          c.stroke();
+
+          // Sleek low cold brow
+          c.lineWidth = 2.0;
+          c.beginPath();
+          c.moveTo(-side * w * 0.88, -h * 1.18);
+          c.lineTo(side * w * 0.98, -h * 1.88);
+          c.stroke();
+
+          c.restore();
+        }
+        return;
+      }
+
+      // Dangai: standard round BallFight eyes + calm chill brow + flat mouth
       for (const side of [-1, 1]) {
         eye(c, r, side, {
-          rx: isMugetsu ? 0.18 : 0.24,
-          ry: isMugetsu ? 0.14 : 0.23,
-          slant: isMugetsu ? 0.16 : 0.06,
-          iris: isMugetsu ? 0.105 : 0.145,
-          color: isMugetsu ? "#dc2626" : "#9a6324",
-          ring: isMugetsu ? "#f87171" : "#d97706",
-          innerRing: isMugetsu ? "#fecaca" : undefined,
+          rx: 0.24,
+          ry: 0.23,
+          slant: 0.06,
+          iris: 0.145,
+          color: "#9a6324",
+          ring: "#d97706",
           lidArc: true,
           blink: blinkAmt(ball) * 0.5,
           ex: s.ex,
           ey: s.ey,
         });
-        // Mugetsu: sleek sharp brow over narrow eye; Dangai: calm chill brow over standard round eye
-        brow(
-          c,
-          side,
-          r,
-          isMugetsu ? 0.28 : 0.36,
-          isMugetsu ? 0.08 : 0.03,
-          isMugetsu ? 3.0 : 2.8,
-          isMugetsu ? 0.28 : 0.34
-        );
+        brow(c, side, r, 0.36, 0.03, 2.8, 0.34);
       }
-      if (!isMugetsu) {
-        mouth(c, r, s.cast ? "grit" : "flat");
-      }
+      mouth(c, r, s.cast ? "grit" : "flat");
       return;
     }
 
