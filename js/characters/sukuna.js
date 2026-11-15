@@ -1552,16 +1552,51 @@
     // 4. Clean Ball-Style Face: 4 White Eye-Wings + Clenched Toothy Grin (No Mangap, No Eyes)
     c.fillStyle = "#ffffff";
     c.strokeStyle = COLORS.ink;
-    c.lineWidth = 2.2;
-    c.beginPath(); c.roundRect(-8, 1.5, 16, 6, 3); c.fill(); c.stroke();
+    c.lineWidth = 2.1;
+    c.beginPath(); c.roundRect(-7.5, -2.5, 15, 5.5, 2.5); c.fill(); c.stroke();
     c.strokeStyle = COLORS.ink;
-    c.lineWidth = 1.4;
+    c.lineWidth = 1.3;
     c.beginPath();
-    c.moveTo(-8, 4.5); c.lineTo(8, 4.5);
-    for (const tx of [-4, 0, 4]) {
-      c.moveTo(tx, 1.5); c.lineTo(tx, 7.5);
+    c.moveTo(-7.5, 0.2); c.lineTo(7.5, 0.2);
+    for (const tx of [-3.8, 0, 3.8]) {
+      c.moveTo(tx, -2.5); c.lineTo(tx, 3);
     }
     c.stroke();
+
+    // Chest Ritual Chain / Sigil (4 hollow rings + 5 hanging dark tassels along curved chain)
+    c.save();
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 1.6;
+    c.beginPath();
+    c.moveTo(-11, 6.2);
+    c.quadraticCurveTo(0, 10.5, 11, 6.2);
+    c.stroke();
+    // 4 rings with white centers & hanging tassels
+    const ringPts = [[-10.5, 6.4], [-5.2, 8.2], [5.2, 8.2], [10.5, 6.4]];
+    for (const [rx, ry] of ringPts) {
+      c.fillStyle = COLORS.ink;
+      c.beginPath();
+      c.moveTo(rx - 0.8, ry + 1.2);
+      c.lineTo(rx + 0.8, ry + 1.2);
+      c.lineTo(rx + 1.5, ry + 4.2);
+      c.lineTo(rx - 1.5, ry + 4.2);
+      c.closePath();
+      c.fill();
+      c.fillStyle = "#ffffff";
+      c.strokeStyle = COLORS.ink;
+      c.lineWidth = 1.7;
+      c.beginPath(); c.arc(rx, ry, 1.9, 0, Math.PI * 2); c.fill(); c.stroke();
+    }
+    // Center hanging tassel
+    c.fillStyle = COLORS.ink;
+    c.beginPath();
+    c.moveTo(-1.1, 8.5);
+    c.lineTo(1.1, 8.5);
+    c.lineTo(1.8, 12.6);
+    c.lineTo(-1.8, 12.6);
+    c.closePath();
+    c.fill();
+    c.restore();
 
     // 4 Sweeping White Eye-Wings (wider sweep)
     const drawWing = (sx, sy, tipX, tipY, cx, cy) => {
