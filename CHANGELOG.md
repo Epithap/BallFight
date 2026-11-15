@@ -4,6 +4,23 @@ Dokumen ini ditulis supaya AI agent (Antigravity) dan developer langsung paham s
 
 ---
 
+## Version 1.3.2 — Story Saga BETA (Bleach Ep. 1 Overworld, Cutscenes & 1v1 Boss Battle)
+
+### Highlights v1.3.2
+- **Story Saga Mode [BETA] (`story/`, `index.html`)**:
+  - **Overworld 2D Top-Down (`story/engine.js`, `story/bleach/maps.js`)**: Eksplorasi **Kamar Ichigo**, **Klinik Kurosaki** (Karin, Yuzu, Isshin), dan **Jalanan Karakura Malam** menggunakan joystick virtual / `WASD` + interaksi `F`, lengkap dengan *Minimap*, *Quest Tracker*, dan *VN Dual-Portrait Dialogue* (`story/ui.js`, `story/quests.js`).
+  - **Anime Cutscenes (`story/bleach/cutscenes.js`, `story/bleach/npcs.js`)**:
+    - Adegan **Rukia Kuchiki** masuk lewat jendela kamar Ichigo.
+    - Pertarungan sinematik **Rukia vs Fishbone D Hollow** (desain full-body lore-accurate, bukan bola) hingga Rukia kewalahan dan mentransfer kekuatan Shinigami kepada Ichigo.
+  - **1v1 Action-RPG Boss Battle (`story/bleach/battle.js`)**:
+    - Bertarung sebagai **Substitute Shinigami Ichigo (100 HP)** melawan **Fishbone D (800 HP)** dengan 5 tombol aksi: **ATK (3-Hit Combo, `2/3/5` DMG)**, **SKILL `Reiatsu Cleave` (`15` DMG)**, **DODGE `Shunpo` (Perfect Dodge)**, **BLOCK / `Perfect Parry` (`12` DMG + Stagger + Deflect Orb)**, dan **ULTI `Soul Cleaver!!` (`40` DMG, charge pelan `+1/+3/+5%`)**.
+    - **Boss AI & 5 Pola Serangan**: *Claw Rend* (combo 2x saat Enraged), *Predator Dash* (`line`), *Bone-Shatter Slam*, *Hollow Cero Volley* (bisa di-deflect!), dan *Crimson X-Eruption* saat **Enraged (<50% HP)**.
+- **Mobile Aspect-Ratio & 60 FPS Optimization (`story/story.css`, `story/bleach/battle.js`, `story/bleach/npcs.js`)**:
+  - Mengunci rasio `.story-phone-frame` (`460:720`) termasuk di `@media (max-width: 500px)` agar tampilan Story di HP tidak tertarik memanjang (*lonjong*).
+  - Menghapus `shadowBlur` & `ctx.filter` serta meringankan *afterimage* Dodge agar animasi serang & dodge tetap mulus 60 FPS di HP.
+
+---
+
 ## Version 1.3.1 — Dual Gacha Revamp, Daily Missions, Balance & Modular Stability
 
 ### Highlights v1.3.1
