@@ -299,22 +299,11 @@
       btnPrologue.textContent = unlocked ? "REPLAY PROLOGUE" : "START PROLOGUE";
     }
 
-    const owCard = document.getElementById("story-openworld-card");
-    const owSub = document.getElementById("story-openworld-sub");
-    const owRibbon = document.getElementById("story-openworld-ribbon");
     const btnOw = document.getElementById("btn-enter-open-world");
-    if (owCard) owCard.classList.toggle("locked", !unlocked);
-    if (owSub) {
-      owSub.textContent = unlocked
-        ? "OPEN WORLD • SUBSTITUTE SHINIGAMI"
-        : "OPEN WORLD • CLEAR PROLOGUE TO UNLOCK";
-    }
-    if (owRibbon) {
-      owRibbon.innerHTML = unlocked ? "UNLOCKED" : '<svg><use href="#i-lock"/></svg>LOCKED';
-    }
     if (btnOw) {
       btnOw.disabled = !unlocked;
-      btnOw.textContent = unlocked ? "ENTER KARAKURA WORLD" : "CLEAR PROLOGUE FIRST";
+      btnOw.style.opacity = unlocked ? "1" : "0.55";
+      btnOw.textContent = unlocked ? "ENTER WORLD" : "🔒 ENTER WORLD (CLEAR PROLOGUE)";
     }
   }
 
