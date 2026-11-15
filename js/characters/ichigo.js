@@ -280,6 +280,107 @@
       const target = game.balls.find((b) => b !== ball && b.alive);
       if (!target) return false;
 
+      // 2nd Evo (Dangai Ichigo / Mugetsu Mode)
+      if (ball.evoTier === 2) {
+        if (ball.mugetsuMode) {
+          // Mugetsu Roaming Form: Rapid Jet-Black Crescent Slashes
+          const ang = Math.atan2(target.y - ball.y, target.x - ball.x);
+          rt.beginCast(ball, {
+            kind: "slash",
+            duration: 0.16,
+            color: "#a855f7",
+            maxR: 28,
+            fire(b, g) {
+              const t = g.balls.find((x) => x !== b && x.alive);
+              if (!t) return;
+              const a = Math.atan2(t.y - b.y, t.x - b.x);
+              const m = rt.castMuzzle(b, a, 16);
+              g.entities.push(rt.spawnShockRing(m.x, m.y, "#09090b", 95, 0.28));
+              g.entities.push(rt.spawnShockRing(m.x, m.y, "#a855f7", 70, 0.22));
+              g.entities.push(rt.spawnProjectile({
+                owner: b, target: t, x: m.x, y: m.y,
+                speed: 680, radius: 30, damage: 20,
+                color: "#09090b", label: "MUGETSU SLASH!",
+                shape: "black_getsuga",
+                onImpact(tt, gg, proj) {
+                  gg.entities.push(spawnGetsugaImpactBurst(proj.x, proj.y, 88, true));
+                  gg.entities.push(rt.spawnShockRing(proj.x, proj.y, "#a855f7", 105, 0.3));
+                  const kAng = Math.atan2(tt.y - b.y, tt.x - b.x);
+                  tt.vx += Math.cos(kAng) * 310;
+                  tt.vy += Math.sin(kAng) * 310;
+                },
+              }));
+            },
+          });
+          return true;
+        }
+
+        const move2 = ball.ichigoNextMove || "getsuga";
+        ball.ichigoNextMove = move2 === "getsuga" ? "shunpo" : "getsuga";
+        if (move2 === "shunpo") {
+          rt.beginCast(ball, {
+            kind: "powerup",
+            duration: 0.16,
+            color: "#e2e8f0",
+            fire(b, g) {
+              const t = g.balls.find((x) => x !== b && x.alive);
+              if (!t) return;
+              g.entities.push(spawnShunpoAfterimage(b.x, b.y, b.radius, true));
+              g.entities.push(rt.spawnShockRing(b.x, b.y, "#e2e8f0", 85, 0.24));
+              const ang = Math.atan2(t.y - b.y, t.x - b.x);
+              const pad = b.radius + 14;
+              const bx = Math.max(pad, Math.min(WORLD_SIZE - pad, t.x + Math.cos(ang) * (t.radius + b.radius + 16)));
+              const by = Math.max(pad, Math.min(WORLD_SIZE - pad, t.y + Math.sin(ang) * (t.radius + b.radius + 16)));
+              b.x = bx;
+              b.y = by;
+              const spd = Math.max(Math.hypot(b.vx, b.vy), b.baseSpeed);
+              b.vx = -Math.cos(ang) * spd;
+              b.vy = -Math.sin(ang) * spd;
+              const dealt = g.applyDamage(t, 14);
+              t.flashTimer = 0.14;
+              g.addEffect(t, "stun", 0.25);
+              g.entities.push(spawnZangetsuSlashEffect(t.x, t.y, ang, 86, true));
+              g.entities.push(rt.spawnShockRing(t.x, t.y, "#09090b", 96, 0.28));
+              g.spawnSparks(t.x, t.y, "#e2e8f0", "#09090b");
+              g.spawnDamageText(t.x, t.y - t.radius - 14, dealt, "#e2e8f0", true, "CHAIN SHUNPO!");
+              g.sound.playCritHit();
+            },
+          });
+          return true;
+        }
+
+        // Mountain-Cleaving Air Pressure Slash (pure black-and-white shockwave, no colored laser)
+        rt.beginCast(ball, {
+          kind: "slash",
+          duration: 0.24,
+          color: "#e2e8f0",
+          maxR: 28,
+          fire(b, g) {
+            const t = g.balls.find((x) => x !== b && x.alive);
+            if (!t) return;
+            const ang = Math.atan2(t.y - b.y, t.x - b.x);
+            const m = rt.castMuzzle(b, ang, 16);
+            g.entities.push(rt.spawnShockRing(m.x, m.y, "#e2e8f0", 110, 0.3));
+            g.entities.push(rt.spawnShockRing(m.x, m.y, "#09090b", 80, 0.24));
+            g.entities.push(rt.spawnProjectile({
+              owner: b, target: t, x: m.x, y: m.y,
+              speed: 650, radius: 32, damage: 19,
+              color: "#e2e8f0", label: "MOUNTAIN CLEAVE!",
+              shape: "crescent",
+              onImpact(tt, gg, proj) {
+                gg.entities.push(spawnGetsugaImpactBurst(proj.x, proj.y, 86, true));
+                gg.entities.push(rt.spawnShockRing(proj.x, proj.y, "#e2e8f0", 125, 0.34));
+                const kAng = Math.atan2(tt.y - b.y, tt.x - b.x);
+                tt.vx = Math.cos(kAng) * 440;
+                tt.vy = Math.sin(kAng) * 440;
+                gg.chargeUlt(b);
+              },
+            }));
+          },
+        });
+        return true;
+      }
+
       // Vasto Lorde Permanent Form (Evolved HP <= 200): Sonído High-Speed Claw & Blade Dash
       if (ball.vastoLordeMode) {
         rt.beginCast(ball, {
@@ -401,6 +502,64 @@
   };
 
   BF.WEAPON_DRAWERS.tensa_zangetsu = (ball, c) => {
+    if (ball.mugetsuMode) {
+      // MUGETSU: Pure Jet-Black Reiatsu Blade crackling with violet-crimson mist
+      c.save();
+      c.fillStyle = "rgba(168, 85, 247, 0.38)";
+      c.beginPath();
+      c.moveTo(-7, 10);
+      c.lineTo(-4, -44);
+      c.lineTo(7, -34);
+      c.lineTo(6, 10);
+      c.closePath();
+      c.fill();
+
+      c.fillStyle = "#050308";
+      c.strokeStyle = "#a855f7";
+      c.lineWidth = 2.6;
+      c.beginPath();
+      c.moveTo(-3.5, 8);
+      c.lineTo(-3, -40);
+      c.lineTo(4, -31);
+      c.lineTo(3.5, 8);
+      c.closePath();
+      c.fill();
+      c.stroke();
+      c.restore();
+      return;
+    }
+
+    if (ball.evoTier === 2) {
+      // DANGAI ICHIGO: Fused Tensa Zangetsu with longer black blade & iron chain links
+      c.save();
+      c.fillStyle = "#09090b";
+      c.strokeStyle = "#e2e8f0";
+      c.lineWidth = 2.4;
+      c.beginPath();
+      c.moveTo(-3, 7);
+      c.lineTo(-3, -36);
+      c.lineTo(3.5, -28);
+      c.lineTo(3.5, 7);
+      c.closePath();
+      c.fill();
+      c.stroke();
+
+      c.fillStyle = "#09090b";
+      c.fillRect(-9, 6, 18, 4.5);
+      c.fillStyle = "#334155";
+      c.fillRect(-3, 10, 6, 12);
+      // Black chain links trailing from hilt
+      c.strokeStyle = "#09090b";
+      c.lineWidth = 2.4;
+      for (let i = 0; i < 3; i++) {
+        c.beginPath();
+        c.ellipse(0, 25 + i * 5, 3, 2, 0, 0, Math.PI * 2);
+        c.stroke();
+      }
+      c.restore();
+      return;
+    }
+
     const isShikai = !ball.evolved && !(ball.ultTimer > 0) && !ball.innerDemonMode && !ball.vastoLordeMode;
     if (isShikai) {
       // SHIKAI ZANGETSU: Oversized giant cleaver blade with silver cutting edge, black spine & white cloth bandages
@@ -489,6 +648,140 @@
   BF.COSTUME_DRAWERS.ichigo = (ball, r, c) => {
     const hurt = ball.flashTimer > 0;
     const t = performance.now() * 0.006;
+
+    // 2ND EVO: DANGAI ICHIGO & MUGETSU FORM
+    if (ball.evoTier === 2) {
+      const isMugetsu = Boolean(ball.mugetsuMode && ball.ultTimer > 0);
+      c.save();
+      c.lineJoin = "round";
+      c.lineCap = "round";
+
+      if (isMugetsu) {
+        // Pitch-Black & Violet-Crimson Reiatsu Smoke Aura
+        const pulse = Math.sin(t * 2.8) * 3;
+        c.fillStyle = "rgba(88, 28, 135, 0.34)";
+        c.beginPath();
+        c.arc(0, -r * 0.05, r * 1.48 + pulse, 0, Math.PI * 2);
+        c.fill();
+
+        c.fillStyle = "#050208";
+        c.strokeStyle = "#a855f7";
+        c.lineWidth = 2.5;
+        c.beginPath();
+        for (let i = 0; i < 24; i++) {
+          const a = (i / 24) * Math.PI * 2 - Math.PI * 0.5;
+          const wob = Math.sin(t * 3.5 + i * 1.2) * 3;
+          const rad = i % 2 === 0 ? r * 1.32 + wob : r * 1.04;
+          const px = Math.cos(a) * rad;
+          const py = Math.sin(a) * rad;
+          if (i === 0) c.moveTo(px, py);
+          else c.lineTo(px, py);
+        }
+        c.closePath();
+        c.fill();
+        c.stroke();
+
+        // Cascading Jet-Black Long Mugetsu Hair flowing behind body
+        c.fillStyle = "#050308";
+        c.strokeStyle = COLORS.ink;
+        c.lineWidth = 2.6;
+        c.beginPath();
+        c.moveTo(-r * 0.92, -r * 0.35);
+        c.lineTo(-r * 1.5, r * 0.15);
+        c.lineTo(-r * 1.25, r * 0.55);
+        c.lineTo(-r * 1.48, r * 0.96);
+        c.lineTo(-r * 0.72, r * 0.78);
+        c.lineTo(r * 0.72, r * 0.78);
+        c.lineTo(r * 1.48, r * 0.96);
+        c.lineTo(r * 1.25, r * 0.55);
+        c.lineTo(r * 1.5, r * 0.15);
+        c.lineTo(r * 0.92, -r * 0.35);
+        c.closePath();
+        c.fill();
+        c.stroke();
+      }
+
+      rt.drawSkinFace(ball, r, c);
+
+      // Outfit: Torn Shihakusho (Dangai) or Dark-Grey Mugetsu Bandages
+      c.save();
+      c.beginPath();
+      c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
+      c.clip();
+      if (isMugetsu) {
+        c.fillStyle = "#334155";
+        c.fillRect(-r, r * 0.16, r * 2, r);
+        c.strokeStyle = "#0f172a";
+        c.lineWidth = 2.2;
+        for (let bi = 0; bi < 4; bi++) {
+          c.beginPath();
+          c.moveTo(-r, r * (0.24 + bi * 0.18));
+          c.lineTo(r, r * (0.34 + bi * 0.18));
+          c.stroke();
+        }
+      } else {
+        // Dangai Torn Dark Shihakusho + Black Chain Links on Right Arm
+        c.fillStyle = "#09090b";
+        c.fillRect(-r, r * 0.44, r * 2, r * 0.7);
+        c.strokeStyle = "#f8fafc";
+        c.lineWidth = 3;
+        c.beginPath();
+        c.moveTo(-r * 0.36, r * 0.46);
+        c.lineTo(0, r * 0.74);
+        c.lineTo(r * 0.36, r * 0.46);
+        c.stroke();
+        // Black iron chain coiled across right shoulder/arm
+        c.strokeStyle = "#475569";
+        c.lineWidth = 3.2;
+        c.beginPath();
+        c.moveTo(r * 0.25, r * 0.48);
+        c.lineTo(r * 0.85, r * 0.85);
+        c.stroke();
+      }
+      c.restore();
+
+      // Hair: Jet-Black Spiky Long Hair (Mugetsu) vs Longer Spiky Orange Hair (Dangai)
+      c.fillStyle = isMugetsu ? "#050308" : "#ea580c";
+      c.strokeStyle = isMugetsu ? "#a855f7" : COLORS.ink;
+      c.lineWidth = 2.6;
+      c.beginPath();
+      c.moveTo(-r * 0.94, 0);
+      c.lineTo(-r * 1.16, -r * 0.42);
+      c.lineTo(-r * 0.82, -r * 0.56);
+      c.lineTo(-r * 0.95, -r * 0.98);
+      c.lineTo(-r * 0.44, -r * 0.82);
+      c.lineTo(-r * 0.16, -r * 1.18);
+      c.lineTo(r * 0.16, -r * 0.86);
+      c.lineTo(r * 0.52, -r * 1.12);
+      c.lineTo(r * 0.78, -r * 0.74);
+      c.lineTo(r * 1.15, -r * 0.48);
+      c.lineTo(r * 0.94, 0);
+      c.lineTo(r * 0.65, -r * 0.26);
+      c.lineTo(r * 0.25, -r * 0.14);
+      c.lineTo(0, -r * 0.32);
+      c.lineTo(-r * 0.32, -r * 0.12);
+      c.lineTo(-r * 0.66, -r * 0.26);
+      c.closePath();
+      c.fill();
+      c.stroke();
+
+      // Eyes: Glowing Crimson Slit Eyes (Mugetsu) vs Calm Amber-Gold Eyes (Dangai)
+      if (!hurt) {
+        c.fillStyle = isMugetsu ? "#ef4444" : "#f59e0b";
+        c.beginPath();
+        c.arc(-r * 0.28, -r * 0.04, r * 0.11, 0, Math.PI * 2);
+        c.arc(r * 0.28, -r * 0.04, r * 0.11, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = isMugetsu ? "#fecaca" : "#09090b";
+        c.beginPath();
+        c.arc(-r * 0.28, -r * 0.04, r * 0.045, 0, Math.PI * 2);
+        c.arc(r * 0.28, -r * 0.04, r * 0.045, 0, Math.PI * 2);
+        c.fill();
+      }
+      c.restore();
+      return;
+    }
+
     const evolved = Boolean(ball.evolved);
     const hollow = ball.ultTimer > 0;
     const vasto = Boolean(ball.vastoLordeMode);
@@ -1476,6 +1769,240 @@
     }
   };
 
+  function ensureMugetsuAppLayer() {
+    if (typeof document === "undefined") return;
+    const appEl = document.querySelector(".app");
+    if (appEl && appEl.style.position !== "relative") {
+      appEl.style.position = "relative";
+      appEl.style.zIndex = "1";
+    }
+  }
+
+  function hideMugetsuOuterBg() {
+    if (typeof document === "undefined") return;
+    const bgCanvas = document.getElementById("ichigo-mugetsu-outer-canvas");
+    if (bgCanvas) bgCanvas.style.display = "none";
+  }
+
+  function syncMugetsuOuterBg(alpha) {
+    if (typeof document === "undefined" || !document.body || !document.createElement) return;
+    const id = "ichigo-mugetsu-outer-canvas";
+    let bgCanvas = document.getElementById(id);
+    const screenBattle = document.getElementById("screen-battle");
+    const battleVisible = !screenBattle || !screenBattle.classList.contains("hidden");
+    const shouldShow = alpha > 0.01 && battleVisible;
+
+    if (!shouldShow) {
+      if (bgCanvas) bgCanvas.style.display = "none";
+      return;
+    }
+
+    ensureMugetsuAppLayer();
+    if (!bgCanvas) {
+      bgCanvas = document.createElement("canvas");
+      bgCanvas.id = id;
+      bgCanvas.style.cssText =
+        "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:0;";
+      document.body.insertBefore(bgCanvas, document.body.firstChild);
+    }
+
+    const w = window.innerWidth || 1280;
+    const h = window.innerHeight || 720;
+    if (bgCanvas.width !== w) bgCanvas.width = w;
+    if (bgCanvas.height !== h) bgCanvas.height = h;
+    bgCanvas.style.display = "block";
+    bgCanvas._lastDrawTs = performance.now();
+
+    if (!bgCanvas._watchdogActive && typeof requestAnimationFrame === "function") {
+      bgCanvas._watchdogActive = true;
+      const tickWatchdog = () => {
+        const sb = document.getElementById("screen-battle");
+        const active = !sb || !sb.classList.contains("hidden");
+        const stale = performance.now() - (bgCanvas._lastDrawTs || 0) > 260;
+        if (!active || stale) {
+          bgCanvas.style.display = "none";
+          bgCanvas._watchdogActive = false;
+          return;
+        }
+        requestAnimationFrame(tickWatchdog);
+      };
+      requestAnimationFrame(tickWatchdog);
+    }
+
+    const sc = bgCanvas.getContext("2d");
+    if (!sc) return;
+    const now = performance.now() * 0.001;
+
+    sc.save();
+    sc.clearRect(0, 0, w, h);
+    sc.globalAlpha = Math.min(1, alpha);
+
+    // Pitch-Black Mugetsu Void Sky
+    const voidSky = sc.createLinearGradient(0, 0, 0, h);
+    voidSky.addColorStop(0, "#020104");
+    voidSky.addColorStop(0.5, "#090212");
+    voidSky.addColorStop(1, "#030106");
+    sc.fillStyle = voidSky;
+    sc.fillRect(0, 0, w, h);
+
+    // Rising Black-Violet Reiatsu Wisps
+    for (let i = 0; i < 16; i++) {
+      const wx = ((i * 151 + Math.sin(now * 2 + i) * 35) % (w + 60)) - 30;
+      const wy = h - ((i * 93 + now * (48 + (i % 4) * 16)) % (h + 40));
+      sc.fillStyle = i % 3 === 0 ? "rgba(168, 85, 247, 0.42)" : "rgba(15, 10, 24, 0.85)";
+      sc.beginPath();
+      sc.arc(wx, wy, 12 + (i % 3) * 8, 0, Math.PI * 2);
+      sc.fill();
+    }
+    sc.restore();
+  }
+
+  function drawMugetsuDarkWorldOverlay(c, game, owner) {
+    const ultLeft = owner ? Math.max(0, owner.ultTimer || 0) : 0;
+    const alpha = Math.min(1, ultLeft / 0.35);
+    syncMugetsuOuterBg(alpha);
+    if (alpha <= 0.01) return;
+
+    const now = typeof performance !== "undefined" ? performance.now() * 0.001 : 0;
+    c.save();
+    c.globalAlpha = alpha;
+
+    // Total Pitch-Black Void across the arena
+    c.fillStyle = "rgba(3, 1, 7, 0.94)";
+    c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+    // Subtle dark violet horizon glow
+    const glow = c.createRadialGradient(
+      WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, 20,
+      WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, WORLD_SIZE * 0.72
+    );
+    glow.addColorStop(0, "rgba(88, 28, 135, 0.26)");
+    glow.addColorStop(1, "rgba(3, 1, 7, 0)");
+    c.fillStyle = glow;
+    c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+    // Rising dark-violet reiatsu smoke streaks
+    for (let i = 0; i < 14; i++) {
+      const rx = ((i * 67 + Math.sin(now * 2.2 + i) * 18) % (WORLD_SIZE - 24)) + 12;
+      const ry = WORLD_SIZE - ((i * 49 + now * (42 + (i % 3) * 18)) % (WORLD_SIZE - 12));
+      c.fillStyle = i % 2 === 0 ? "rgba(168, 85, 247, 0.3)" : "rgba(24, 24, 27, 0.7)";
+      c.beginPath();
+      c.arc(rx, ry, 5 + (i % 3) * 3, 0, Math.PI * 2);
+      c.fill();
+    }
+
+    c.strokeStyle = "#a855f7";
+    c.lineWidth = 4;
+    c.strokeRect(4, 4, WORLD_SIZE - 8, WORLD_SIZE - 8);
+    c.restore();
+  }
+
+  function spawnMugetsuFinisherSlash(owner, g) {
+    const t = g.balls.find((b) => b !== owner && b.alive);
+    const sx = t ? t.x : WORLD_SIZE * 0.5;
+    let struck = false;
+    return {
+      life: 0.95,
+      maxLife: 0.95,
+      dead: false,
+      update(dt, gg) {
+        this.life -= dt;
+        const p = 1 - Math.max(0, this.life / this.maxLife);
+        if (p >= 0.22 && !struck) {
+          struck = true;
+          gg.entities.push(rt.spawnBanner("MUGETSU!!", "#a855f7"));
+          gg.entities.push(rt.spawnShockRing(sx, WORLD_SIZE * 0.5, "#09090b", 260, 0.52));
+          gg.entities.push(rt.spawnShockRing(sx, WORLD_SIZE * 0.5, "#a855f7", 210, 0.42));
+          for (const foe of gg.balls) {
+            if (foe === owner || !foe.alive) continue;
+            const dealt = gg.applyDamage(foe, 34, { pierce: true });
+            foe.flashTimer = 0.28;
+            foe.squash = 1.0;
+            gg.spawnSparks(foe.x, foe.y, "#09090b", "#a855f7");
+            gg.spawnDamageText(foe.x, foe.y - foe.radius - 18, dealt, "#a855f7", true, "FINAL GETSUGA: MUGETSU!!");
+          }
+          rt.setHitStop(0.12);
+          rt.addShake(0.55, 12);
+          gg.sound.playCritHit();
+        }
+        if (this.life <= 0) {
+          owner.mugetsuMode = false;
+          owner.ultTimer = 0;
+          this.dead = true;
+        }
+      },
+      render(c) {
+        const p = 1 - Math.max(0, this.life / this.maxLife);
+        const fade = p < 0.7 ? 1 : Math.max(0, (1 - p) / 0.3);
+        const width = p < 0.22 ? 12 + (p / 0.22) * 32 : 92 * fade + 16;
+
+        c.save();
+        c.globalAlpha = fade;
+        // Outer violet-crimson sky-splitting aura
+        c.fillStyle = "rgba(168, 85, 247, 0.45)";
+        c.fillRect(sx - width * 0.72, 0, width * 1.44, WORLD_SIZE);
+
+        // Colossal Pitch-Black Vertical Mugetsu Slash splitting the entire arena
+        c.fillStyle = "#030106";
+        c.fillRect(sx - width * 0.5, 0, width, WORLD_SIZE);
+
+        // Razor-sharp white-violet core line
+        c.strokeStyle = "#f5d0fe";
+        c.lineWidth = Math.max(2, width * 0.09);
+        c.beginPath();
+        c.moveTo(sx, 0);
+        c.lineTo(sx, WORLD_SIZE);
+        c.stroke();
+        c.restore();
+      },
+    };
+  }
+
+  function triggerMugetsuTransform(ball) {
+    if (!ball || !ball.alive) return;
+    const duration = 5.5;
+    ball.mugetsuMode = true;
+    ball.ultTimer = duration;
+    rt.addEffect(ball, "haste", duration, { factor: 1.38 });
+    rt.addEffect(ball, "shield", duration, { reduction: 0.25 });
+    if (ball.skills[0]) ball.skills[0]._cd = 0.15;
+    rt.entities.push(rt.spawnShockRing(ball.x, ball.y, "#09090b", 180, 0.48));
+    rt.entities.push(rt.spawnShockRing(ball.x, ball.y, "#a855f7", 140, 0.38));
+    rt.spawnSparks(ball.x, ball.y, "#09090b", "#a855f7");
+    rt.addShake(0.38, 9);
+
+    let trailCd = 0;
+    let finisherFired = false;
+    rt.entities.push({
+      life: duration,
+      dead: false,
+      update(dt, g) {
+        this.life -= dt;
+        if (!ball.alive) {
+          ball.mugetsuMode = false;
+          this.dead = true;
+          return;
+        }
+        trailCd -= dt;
+        if (trailCd <= 0) {
+          trailCd = 0.08;
+          g.entities.push(spawnShunpoAfterimage(ball.x, ball.y, ball.radius, true));
+        }
+        if (this.life <= 0.95 && !finisherFired) {
+          finisherFired = true;
+          g.entities.push(spawnMugetsuFinisherSlash(ball, g));
+        }
+        if (this.life <= 0) {
+          this.dead = true;
+        }
+      },
+      render() {},
+    });
+  }
+
+  BF.triggerMugetsuTransform = triggerMugetsuTransform;
+  BF.drawMugetsuDarkWorldOverlay = drawMugetsuDarkWorldOverlay;
+  BF.hideMugetsuOuterBg = hideMugetsuOuterBg;
   BF.spawnZangetsuSlashEffect = spawnZangetsuSlashEffect;
   BF.triggerGranReyCeroExplosion = triggerGranReyCeroExplosion;
 })();

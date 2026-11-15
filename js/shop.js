@@ -12,6 +12,8 @@
     unlockedFighters: new Set(DEFAULT_UNLOCKED_FIGHTERS),
     evolvedFighters: new Set(),
     equippedEvolutions: {},
+    evolvedTier2Fighters: new Set(),
+    equippedEvoTier: {},
     unlockedSkins: new Set(),
     equippedSkins: {},
   };
@@ -131,6 +133,25 @@
     },
   };
 
+  const EVOLUTION_TIER2_SPECS = {
+    ichigo: {
+      charId: "ichigo",
+      evolvedName: "TRANSCENDENT REAPER (DANGAI)",
+      evolvedRole: "DANGAI • FINAL GETSUGA TENSHO",
+      evolvedLabel: "2ND EVO (DANGAI)",
+      cost: 4000,
+      currency: "gems",
+      requirementText: "4,000 GEMS",
+      desc: "2nd Evolution (Requires Evo 1): Ichigo emerges from the Dangai with transcendent physical pressure (Slow-Immune), Chain-Wrapped Tensa Zangetsu, wide Mountain-Cleaving Air Slashes, and awakens FINAL GETSUGA TENSHO: MUGETSU!",
+      evolvedSkillName: "MOUNTAIN-CLEAVING SLASH & CHAIN SHUNPO",
+      evolvedSkillDesc: "Slow-Immune Transcendent Pressure! Alternates wide black-white shockwave cleaves & Chain-Bind Shunpo backstabs.",
+      evolvedUltName: "FINAL GETSUGA TENSHO: MUGETSU",
+      evolvedUltDesc: "Transforms into Mugetsu (5.5s roaming form inside a Pitch-Black World with rapid jet-black crescent slashes), then cleaves the entire arena in half with MUGETSU!",
+      bonusHp: 55,
+      bonusSpeed: 22,
+    },
+  };
+
   function loadWallet() {
     try {
       if (typeof localStorage === "undefined") return;
@@ -147,6 +168,12 @@
       }
       if (parsed.equippedEvolutions && typeof parsed.equippedEvolutions === "object") {
         playerWallet.equippedEvolutions = { ...parsed.equippedEvolutions };
+      }
+      if (Array.isArray(parsed.evolvedTier2Fighters)) {
+        playerWallet.evolvedTier2Fighters = new Set(parsed.evolvedTier2Fighters);
+      }
+      if (parsed.equippedEvoTier && typeof parsed.equippedEvoTier === "object") {
+        playerWallet.equippedEvoTier = { ...parsed.equippedEvoTier };
       }
       if (Array.isArray(parsed.unlockedSkins)) {
         playerWallet.unlockedSkins = new Set(parsed.unlockedSkins);
@@ -166,6 +193,8 @@
         unlockedFighters: Array.from(playerWallet.unlockedFighters),
         evolvedFighters: Array.from(playerWallet.evolvedFighters),
         equippedEvolutions: playerWallet.equippedEvolutions,
+        evolvedTier2Fighters: Array.from(playerWallet.evolvedTier2Fighters),
+        equippedEvoTier: playerWallet.equippedEvoTier,
         unlockedSkins: Array.from(playerWallet.unlockedSkins),
         equippedSkins: playerWallet.equippedSkins,
       }));
@@ -180,15 +209,64 @@
     return playerWallet.evolvedFighters.has(charId);
   }
 
+  function isFighterTier2Evolved(charId) {
+    return playerWallet.evolvedTier2Fighters.has(charId);
+  }
+
+  function getEquippedEvoTier(charId) {
+    const t = playerWallet.equippedEvoTier[charId];
+    if (t === 2 && isFighterTier2Evolved(charId)) return 2;
+    if (t === 1 && isFighterEvolved(charId)) return 1;
+    if (t === 0) return 0;
+    return Boolean(isFighterEvolved(charId) && playerWallet.equippedEvolutions[charId] !== false) ? 1 : 0;
+  }
+
+  function setEquippedEvoTier(charId, tier) {
+    const clean = Number(tier) || 0;
+    if (clean === 2) {
+      if (!isFighterTier2Evolved(charId)) return false;
+      playerWallet.equippedEvoTier[charId] = 2;
+      playerWallet.equippedEvolutions[charId] = true;
+    } else if (clean === 1) {
+      if (!isFighterEvolved(charId)) return false;
+      playerWallet.equippedEvoTier[charId] = 1;
+      playerWallet.equippedEvolutions[charId] = true;
+    } else {
+      playerWallet.equippedEvoTier[charId] = 0;
+      playerWallet.equippedEvolutions[charId] = false;
+    }
+    saveWallet();
+    return true;
+  }
+
   function isEvolutionEquipped(charId) {
-    return Boolean(isFighterEvolved(charId) && playerWallet.equippedEvolutions[charId] !== false);
+    return getEquippedEvoTier(charId) >= 1;
   }
 
   function setEvolutionEquipped(charId, enabled) {
     if (!isFighterEvolved(charId)) return false;
-    playerWallet.equippedEvolutions[charId] = Boolean(enabled);
+    if (!enabled) return setEquippedEvoTier(charId, 0);
+    const cur = getEquippedEvoTier(charId);
+    return setEquippedEvoTier(charId, cur === 2 ? 2 : 1);
+  }
+
+  function evolveFighterTier2(charId) {
+    const spec = EVOLUTION_TIER2_SPECS[charId];
+    if (!spec) return { ok: false, reason: "NO_TIER2_EVO" };
+    if (!isFighterEvolved(charId)) return { ok: false, reason: "REQUIRES_EVO1" };
+    if (isFighterTier2Evolved(charId)) return { ok: true, already: true };
+    if (spec.currency === "gems") {
+      if (playerWallet.gems < spec.cost) return { ok: false, reason: "INSUFFICIENT_GEMS", needed: spec.cost };
+      playerWallet.gems -= spec.cost;
+    } else {
+      if (playerWallet.coins < spec.cost) return { ok: false, reason: "INSUFFICIENT_COINS", needed: spec.cost };
+      playerWallet.coins -= spec.cost;
+    }
+    playerWallet.evolvedTier2Fighters.add(charId);
+    playerWallet.equippedEvoTier[charId] = 2;
+    playerWallet.equippedEvolutions[charId] = true;
     saveWallet();
-    return true;
+    return { ok: true };
   }
 
   function evolveFighter(charId) {
@@ -644,10 +722,15 @@
   BF.saveWallet = saveWallet;
   BF.isFighterUnlocked = isFighterUnlocked;
   BF.EVOLUTION_SPECS = EVOLUTION_SPECS;
+  BF.EVOLUTION_TIER2_SPECS = EVOLUTION_TIER2_SPECS;
   BF.isFighterEvolved = isFighterEvolved;
+  BF.isFighterTier2Evolved = isFighterTier2Evolved;
+  BF.getEquippedEvoTier = getEquippedEvoTier;
+  BF.setEquippedEvoTier = setEquippedEvoTier;
   BF.isEvolutionEquipped = isEvolutionEquipped;
   BF.setEvolutionEquipped = setEvolutionEquipped;
   BF.evolveFighter = evolveFighter;
+  BF.evolveFighterTier2 = evolveFighterTier2;
   BF.SKIN_CATALOG = SKIN_CATALOG;
   BF.isSkinUnlocked = isSkinUnlocked;
   BF.isSkinEquipped = isSkinEquipped;

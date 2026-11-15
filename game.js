@@ -28,10 +28,15 @@
     saveWallet,
     isFighterUnlocked,
     EVOLUTION_SPECS,
+    EVOLUTION_TIER2_SPECS,
     isFighterEvolved,
+    isFighterTier2Evolved,
+    getEquippedEvoTier,
+    setEquippedEvoTier,
     isEvolutionEquipped,
     setEvolutionEquipped,
     evolveFighter,
+    evolveFighterTier2,
     SKIN_CATALOG,
     isSkinUnlocked,
     isSkinEquipped,
@@ -57,44 +62,59 @@
 
   function checkStandClash() { return BF.Clashes.checkStandClash(); }
 
-  // Per-slot Evolution Override so P1 (slot 0) and P2 (slot 1) can independently pick Starter (Base) vs Evolved!
+  // Per-slot Evolution Override so P1 (slot 0) and P2 (slot 1) can independently pick Starter (0), Evo 1 (1), or Evo 2 (2)!
   const slotEvoOverrides = [{}, {}];
 
-  function isSlotEvoEquipped(slotIdx, charId) {
-    if (!isFighterEvolved || !isFighterEvolved(charId)) return false;
+  function getSlotEvoTier(slotIdx, charId) {
+    if (!isFighterEvolved || !isFighterEvolved(charId)) return 0;
     const slotMap = slotEvoOverrides[slotIdx];
     if (slotMap && slotMap[charId] !== undefined) {
-      return Boolean(slotMap[charId]);
+      const val = slotMap[charId];
+      if (val === 2 && isFighterTier2Evolved && isFighterTier2Evolved(charId)) return 2;
+      return val ? 1 : 0;
     }
-    return Boolean(isEvolutionEquipped && isEvolutionEquipped(charId));
+    return getEquippedEvoTier ? getEquippedEvoTier(charId) : (isEvolutionEquipped && isEvolutionEquipped(charId) ? 1 : 0);
+  }
+
+  function setSlotEvoTier(slotIdx, charId, tier) {
+    if (!isFighterEvolved || !isFighterEvolved(charId)) return false;
+    const clean = Number(tier) || 0;
+    if (clean === 2 && (!isFighterTier2Evolved || !isFighterTier2Evolved(charId))) return false;
+    const otherSlot = slotIdx === 0 ? 1 : 0;
+    if (slotEvoOverrides[otherSlot][charId] === undefined) {
+      slotEvoOverrides[otherSlot][charId] = getSlotEvoTier(otherSlot, charId);
+    }
+    slotEvoOverrides[slotIdx][charId] = clean;
+    if (setEquippedEvoTier) setEquippedEvoTier(charId, clean);
+    else if (setEvolutionEquipped) setEvolutionEquipped(charId, clean >= 1);
+    return true;
+  }
+
+  function isSlotEvoEquipped(slotIdx, charId) {
+    return getSlotEvoTier(slotIdx, charId) >= 1;
   }
 
   function setSlotEvoEquipped(slotIdx, charId, enabled) {
-    if (!isFighterEvolved || !isFighterEvolved(charId)) return false;
-    // Lock in the other slot's current state before changing this slot so the other slot never flips!
-    const otherSlot = slotIdx === 0 ? 1 : 0;
-    if (slotEvoOverrides[otherSlot][charId] === undefined) {
-      slotEvoOverrides[otherSlot][charId] = isSlotEvoEquipped(otherSlot, charId);
-    }
-    slotEvoOverrides[slotIdx][charId] = Boolean(enabled);
-    if (setEvolutionEquipped) setEvolutionEquipped(charId, Boolean(enabled));
-    return true;
+    return setSlotEvoTier(slotIdx, charId, enabled ? 1 : 0);
   }
 
   function getEffectiveCharConfig(charId, slotIdx = null) {
     const base = CHARACTER_ROSTER[charId] || CHARACTER_ROSTER.goku;
-    const spec = EVOLUTION_SPECS && EVOLUTION_SPECS[base.id];
-    const useEvo = Boolean(
-      spec && (slotIdx === 0 || slotIdx === 1
-        ? isSlotEvoEquipped(slotIdx, base.id)
-        : (isEvolutionEquipped && isEvolutionEquipped(base.id)))
-    );
+    const spec1 = EVOLUTION_SPECS && EVOLUTION_SPECS[base.id];
+    const spec2 = EVOLUTION_TIER2_SPECS && EVOLUTION_TIER2_SPECS[base.id];
+    const evoTier = spec1
+      ? (slotIdx === 0 || slotIdx === 1
+          ? getSlotEvoTier(slotIdx, base.id)
+          : (getEquippedEvoTier ? getEquippedEvoTier(base.id) : (isEvolutionEquipped && isEvolutionEquipped(base.id) ? 1 : 0)))
+      : 0;
     const eqSkin = getEquippedSkin ? getEquippedSkin(base.id) : null;
     const eqSkins = getEquippedSkinsForChar ? getEquippedSkinsForChar(base.id) : (eqSkin ? [eqSkin] : []);
-    if (!useEvo) return { ...base, evolved: false, skin: eqSkin, skins: eqSkins };
+    if (evoTier <= 0) return { ...base, evolved: false, evoTier: 0, skin: eqSkin, skins: eqSkins };
+    const spec = (evoTier === 2 && spec2) ? spec2 : spec1;
     return {
       ...base,
       evolved: true,
+      evoTier,
       skin: eqSkin,
       skins: eqSkins,
       name: spec.evolvedName || base.name,
@@ -160,6 +180,9 @@
       this.kyuubiSlashHit = false;
       this.vastoLordeMode = false;
       this.innerDemonMode = false;
+      this.evoTier = Number(config.evoTier !== undefined ? config.evoTier : (config.evolved ? 1 : 0));
+      this.mugetsuMode = false;
+      this.mugetsuUsed = false;
       this.shunpoDashTimer = 0;
       this.shunpoDashHit = false;
       this.ichigoNextMove = "getsuga";
@@ -220,8 +243,10 @@
     getSpeedMultiplier() {
       if (this.getEffect("stun")) return 0;
       let mult = 1;
+      const isDangai = this.costume === "ichigo" && this.evoTier === 2;
       for (const eff of this.effects) {
         if (eff.type === "slow") {
+          if (isDangai) continue;
           mult *= eff.data?.factor ?? 0.5;
         } else if (eff.type === "haste") {
           mult *= eff.data?.factor ?? 1.35;
@@ -2604,6 +2629,13 @@
       BF.hideKilluaGodspeedOuterBg();
     }
 
+    const ichigoMugetsuOwner = balls.find((b) => b.alive && b.costume === "ichigo" && b.mugetsuMode && b.ultTimer > 0);
+    if (ichigoMugetsuOwner && BF.drawMugetsuDarkWorldOverlay) {
+      BF.drawMugetsuDarkWorldOverlay(ctx, game, ichigoMugetsuOwner);
+    } else if (BF.hideMugetsuOuterBg) {
+      BF.hideMugetsuOuterBg();
+    }
+
     // Particles
     ctx.strokeStyle = COLORS.ink;
     ctx.lineWidth = 1.5;
@@ -3296,16 +3328,18 @@
         if (evolved) {
           const row = document.createElement("div");
           row.className = "evo-switch-row";
-          const equipped = isSlotEvoEquipped(activeSlot, activeCfg.id);
+          const curTier = getSlotEvoTier(activeSlot, activeCfg.id);
+          const tier2Spec = EVOLUTION_TIER2_SPECS && EVOLUTION_TIER2_SPECS[activeCfg.id];
+          const hasTier2 = Boolean(tier2Spec && isFighterTier2Evolved && isFighterTier2Evolved(activeCfg.id));
 
           const btnStarter = document.createElement("button");
           btnStarter.type = "button";
-          btnStarter.className = `evo-switch-btn${!equipped ? " active" : ""}`;
+          btnStarter.className = `evo-switch-btn${curTier === 0 ? " active" : ""}`;
           btnStarter.textContent = `P${activeSlot + 1}: ${evoSpec.starterLabel || "STARTER"}`;
           btnStarter.addEventListener("click", () => {
             sound.unlock();
             sound.playBallHit();
-            setSlotEvoEquipped(activeSlot, activeCfg.id, false);
+            setSlotEvoTier(activeSlot, activeCfg.id, 0);
             BALL_CONFIGS[activeSlot] = getEffectiveCharConfig(selectedRosterIds[activeSlot], activeSlot);
             setupUnifiedSelectors();
             updateUnifiedSetupUI();
@@ -3314,12 +3348,12 @@
 
           const btnEvo = document.createElement("button");
           btnEvo.type = "button";
-          btnEvo.className = `evo-switch-btn evo-mode${equipped ? " active" : ""}`;
+          btnEvo.className = `evo-switch-btn evo-mode${curTier === 1 ? " active" : ""}`;
           btnEvo.textContent = `✨ P${activeSlot + 1}: ${evoSpec.evolvedLabel || "EVOLVED"}`;
           btnEvo.addEventListener("click", () => {
             sound.unlock();
             sound.playCritHit();
-            setSlotEvoEquipped(activeSlot, activeCfg.id, true);
+            setSlotEvoTier(activeSlot, activeCfg.id, 1);
             BALL_CONFIGS[activeSlot] = getEffectiveCharConfig(selectedRosterIds[activeSlot], activeSlot);
             setupUnifiedSelectors();
             updateUnifiedSetupUI();
@@ -3328,6 +3362,53 @@
 
           row.appendChild(btnStarter);
           row.appendChild(btnEvo);
+
+          if (tier2Spec) {
+            if (hasTier2) {
+              const btnEvo2 = document.createElement("button");
+              btnEvo2.type = "button";
+              btnEvo2.className = `evo-switch-btn evo-mode${curTier === 2 ? " active" : ""}`;
+              btnEvo2.textContent = `⚡ P${activeSlot + 1}: ${tier2Spec.evolvedLabel || "2ND EVO"}`;
+              btnEvo2.addEventListener("click", () => {
+                sound.unlock();
+                sound.playCritHit();
+                setSlotEvoTier(activeSlot, activeCfg.id, 2);
+                BALL_CONFIGS[activeSlot] = getEffectiveCharConfig(selectedRosterIds[activeSlot], activeSlot);
+                setupUnifiedSelectors();
+                updateUnifiedSetupUI();
+                syncFighterUI();
+              });
+              row.appendChild(btnEvo2);
+            } else {
+              const isGems2 = tier2Spec.currency === "gems";
+              const have2 = isGems2 ? playerWallet.gems : playerWallet.coins;
+              const can2 = have2 >= tier2Spec.cost;
+              const btnBuy2 = document.createElement("button");
+              btnBuy2.type = "button";
+              btnBuy2.className = "btn-evolve-gold";
+              btnBuy2.textContent = can2
+                ? `⚡ 2ND EVO: ${tier2Spec.evolvedLabel} (💎 ${tier2Spec.cost.toLocaleString()} GEMS)`
+                : `🔒 2ND EVO: ${tier2Spec.evolvedLabel} (💎 ${tier2Spec.cost.toLocaleString()} GEMS • HAVE ${have2.toLocaleString()})`;
+              btnBuy2.addEventListener("click", () => {
+                sound.unlock();
+                if (have2 < tier2Spec.cost) {
+                  sound.playWallBounce();
+                  return;
+                }
+                const res2 = evolveFighterTier2(activeCfg.id);
+                if (res2.ok) {
+                  sound.playCritHit();
+                  setSlotEvoTier(activeSlot, activeCfg.id, 2);
+                  BALL_CONFIGS[activeSlot] = getEffectiveCharConfig(selectedRosterIds[activeSlot], activeSlot);
+                  setupUnifiedSelectors();
+                  updateUnifiedSetupUI();
+                  updateShopUI();
+                  syncFighterUI();
+                }
+              });
+              row.appendChild(btnBuy2);
+            }
+          }
           setupEvoBar.appendChild(row);
         } else {
           const isGems = evoSpec.currency === "gems";
@@ -4046,6 +4127,7 @@
       color: cfg.color,
       costume: cfg.costume,
       evolved: Boolean(cfg.evolved !== undefined ? cfg.evolved : (isEvolutionEquipped && isEvolutionEquipped(cfg.id))),
+      evoTier: cfg.evoTier !== undefined ? cfg.evoTier : (getEquippedEvoTier ? getEquippedEvoTier(cfg.id) : (cfg.evolved ? 1 : 0)),
       skin: cfg.skin !== undefined ? cfg.skin : (getEquippedSkin ? getEquippedSkin(cfg.id) : null),
       skins: Array.isArray(cfg.skins) ? cfg.skins : (getEquippedSkinsForChar ? getEquippedSkinsForChar(cfg.id) : []),
       weapon: null,

@@ -219,7 +219,9 @@
       gear_4: ["GEAR 4!", COLORS.red],
       kaioken: ["KAIOKEN!", COLORS.orange],
       rasenshuriken: ball.kyuubiMode ? ["BIJUUDAMA!", "#dc2626"] : ["RASENSHURIKEN!", COLORS.blue],
-      hollow_mask: ball.vastoLordeMode
+      hollow_mask: ball.evoTier === 2
+        ? ["FINAL GETSUGA TENSHO: MUGETSU!", "#a855f7"]
+        : ball.vastoLordeMode
         ? ["GRAN REY CERO!", "#dc2626"]
         : (ball.evolved ? ["HOLLOW MASK!", COLORS.red] : ["BANKAI: TENSA ZANGETSU!", "#dc2626"]),
       time_stop: ["ZA WARUDO!", COLORS.gold],
@@ -351,7 +353,11 @@
         });
       }
     } else if (ball.ult === "hollow_mask") {
-      if (ball.vastoLordeMode) {
+      if (ball.evoTier === 2) {
+        if (BF.triggerMugetsuTransform) {
+          BF.triggerMugetsuTransform(ball);
+        }
+      } else if (ball.vastoLordeMode) {
         if (!rt().balls.find((x) => x !== ball && x.alive)) return;
         rt().beginCast(ball, {
           kind: "gran_rey_cero", duration: 0.98, color: "#dc2626", maxR: 35,
