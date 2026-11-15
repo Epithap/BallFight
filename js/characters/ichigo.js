@@ -503,27 +503,36 @@
 
   BF.WEAPON_DRAWERS.tensa_zangetsu = (ball, c) => {
     if (ball.mugetsuMode) {
-      // MUGETSU: Pure Jet-Black Reiatsu Blade crackling with violet-crimson mist
+      // MUGETSU: Pure Jet-Black Ink-Flame Reiatsu Blade
       c.save();
-      c.fillStyle = "rgba(168, 85, 247, 0.38)";
+      const fPulse = Math.sin(performance.now() * 0.014) * 1.8;
+      c.fillStyle = "rgba(9, 9, 11, 0.45)";
       c.beginPath();
       c.moveTo(-7, 10);
-      c.lineTo(-4, -44);
-      c.lineTo(7, -34);
-      c.lineTo(6, 10);
+      c.quadraticCurveTo(-8 - fPulse, -22, -3, -48 - fPulse);
+      c.lineTo(8 + fPulse, -34);
+      c.quadraticCurveTo(7, -12, 6, 10);
       c.closePath();
       c.fill();
 
-      c.fillStyle = "#050308";
-      c.strokeStyle = "#a855f7";
-      c.lineWidth = 2.6;
+      c.fillStyle = "#050507";
+      c.strokeStyle = "#27272a";
+      c.lineWidth = 2.0;
       c.beginPath();
       c.moveTo(-3.5, 8);
-      c.lineTo(-3, -40);
-      c.lineTo(4, -31);
+      c.lineTo(-3.2, -42);
+      c.lineTo(4.2, -32);
       c.lineTo(3.5, 8);
       c.closePath();
       c.fill();
+      c.stroke();
+
+      // Subtle crimson-ink edge gleam
+      c.strokeStyle = "rgba(220, 38, 38, 0.45)";
+      c.lineWidth = 1.2;
+      c.beginPath();
+      c.moveTo(2.4, 4);
+      c.lineTo(2.8, -31);
       c.stroke();
       c.restore();
       return;
@@ -657,33 +666,49 @@
       c.lineCap = "round";
 
       if (isMugetsu) {
-        // Dark Swirling Black Reiatsu Aura
-        const pulse = Math.sin(t * 2.4) * 2.5;
-        c.fillStyle = "rgba(9, 9, 11, 0.42)";
+        // Dramatic Swirling Black Ink / Reiatsu Tendrils Aura (inspired by Final Getsuga Tensho)
+        const pulse = Math.sin(t * 2.2) * 2.5;
+        const sway = Math.sin(t * 1.6) * 3.0;
+        c.fillStyle = "rgba(9, 9, 11, 0.28)";
         c.beginPath();
-        c.arc(0, 0, r * 1.44 + pulse, 0, Math.PI * 2);
+        c.arc(0, 0, r * 1.52 + pulse, 0, Math.PI * 2);
         c.fill();
 
-        c.fillStyle = "rgba(88, 28, 135, 0.16)";
+        // Sweeping Black Ink Tendrils curving around body
+        c.strokeStyle = "#050507";
+        c.lineCap = "round";
+        c.lineWidth = 5.5;
         c.beginPath();
-        c.arc(0, 0, r * 1.26 + pulse * 0.6, 0, Math.PI * 2);
-        c.fill();
+        c.moveTo(-r * 1.15, r * 0.85);
+        c.quadraticCurveTo(-r * 1.72, -r * 0.15 + sway, -r * 0.92, -r * 1.28);
+        c.stroke();
 
-        // Flowing Jet-Black Long Hair behind shoulders
-        c.fillStyle = "#060609";
+        c.lineWidth = 4.2;
+        c.beginPath();
+        c.moveTo(r * 0.55, r * 0.98);
+        c.quadraticCurveTo(r * 1.75, r * 0.45 - sway, r * 1.38, -r * 0.88);
+        c.stroke();
+
+        c.lineWidth = 2.8;
+        c.beginPath();
+        c.moveTo(-r * 0.65, -r * 0.95);
+        c.quadraticCurveTo(r * 0.15, -r * 1.62 + sway * 0.5, r * 1.25, -r * 1.08);
+        c.stroke();
+
+        // Sweeping Long Jet-Black Mugetsu Hair (billowing right & framing shoulders)
+        c.fillStyle = "#070709";
         c.strokeStyle = "#18181b";
         c.lineWidth = 2.0;
         c.beginPath();
-        c.moveTo(-r * 0.96, -r * 0.32);
-        c.quadraticCurveTo(-r * 1.46, r * 0.12, -r * 1.36, r * 0.68);
-        c.lineTo(-r * 1.04, r * 0.56);
-        c.quadraticCurveTo(-r * 1.16, r * 0.88, -r * 0.86, r * 1.00);
-        c.lineTo(-r * 0.56, r * 0.78);
-        c.lineTo(r * 0.56, r * 0.78);
-        c.lineTo(r * 0.86, r * 1.00);
-        c.quadraticCurveTo(r * 1.16, r * 0.88, r * 1.04, r * 0.56);
-        c.lineTo(r * 1.36, r * 0.68);
-        c.quadraticCurveTo(r * 1.46, r * 0.12, r * 0.96, -r * 0.32);
+        c.moveTo(-r * 0.95, -r * 0.28);
+        c.quadraticCurveTo(-r * 1.32, r * 0.22, -r * 1.12, r * 0.86);
+        c.lineTo(-r * 0.84, r * 0.64);
+        c.lineTo(-r * 0.68, r * 0.92);
+        c.lineTo(r * 0.48, r * 0.84);
+        // Dramatic long wind-swept hair plume to the right
+        c.quadraticCurveTo(r * 1.28, r * 1.04 + sway * 0.4, r * 1.74, r * 0.78 + sway * 0.5);
+        c.quadraticCurveTo(r * 1.48, r * 0.42, r * 1.66, r * 0.18 - sway * 0.3);
+        c.quadraticCurveTo(r * 1.32, -r * 0.05, r * 0.95, -r * 0.32);
         c.closePath();
         c.fill();
         c.stroke();
@@ -713,25 +738,55 @@
       c.arc(0, 0, r - 1.5, 0, Math.PI * 2);
       c.clip();
       if (isMugetsu) {
-        // Mugetsu Grey Bandage Wrap cleanly below the round eyes
-        c.fillStyle = "#475569";
-        c.fillRect(-r, r * 0.18, r * 2, r);
-        c.fillStyle = "#334155";
-        c.fillRect(-r, r * 0.56, r * 2, r * 0.5);
-        c.strokeStyle = "#1e293b";
-        c.lineWidth = 2.0;
+        // Cool Steel-Grey Mugetsu Bandage Wrap cleanly below the round eyes
+        c.fillStyle = "#8596ab";
+        c.fillRect(-r, r * 0.16, r * 2, r);
+        c.fillStyle = "#64748b";
+        c.fillRect(-r, r * 0.54, r * 2, r * 0.5);
+
+        // Exposed right-shoulder skin peek with black Mugetsu ink markings
+        c.fillStyle = "#fed7aa";
+        c.beginPath();
+        c.moveTo(r * 0.34, r * 0.58);
+        c.quadraticCurveTo(r * 0.72, r * 0.52, r, r * 0.74);
+        c.lineTo(r, r);
+        c.lineTo(r * 0.34, r);
+        c.closePath();
+        c.fill();
+        c.strokeStyle = "#09090b";
+        c.lineWidth = 2.4;
+        c.beginPath();
+        c.moveTo(r * 0.44, r * 0.66);
+        c.lineTo(r * 0.88, r * 0.78);
+        c.moveTo(r * 0.50, r * 0.82);
+        c.lineTo(r * 0.92, r * 0.94);
+        c.stroke();
+
+        // Layered diagonal bandage folds
+        c.strokeStyle = "#334155";
+        c.lineWidth = 1.9;
         for (let bi = 0; bi < 4; bi++) {
           c.beginPath();
-          c.moveTo(-r, r * (0.24 + bi * 0.17));
-          c.lineTo(r, r * (0.33 + bi * 0.17));
+          c.moveTo(-r, r * (0.22 + bi * 0.17));
+          c.lineTo(r * 0.72, r * (0.31 + bi * 0.17));
           c.stroke();
         }
-        c.strokeStyle = "#0f172a";
-        c.lineWidth = 2.2;
+        // Top bandage edge across nose bridge
+        c.strokeStyle = "#1e293b";
+        c.lineWidth = 2.4;
         c.beginPath();
-        c.moveTo(-r, r * 0.18);
-        c.quadraticCurveTo(0, r * 0.12, r, r * 0.18);
+        c.moveTo(-r, r * 0.16);
+        c.quadraticCurveTo(0, r * 0.10, r, r * 0.16);
         c.stroke();
+
+        // Rising black Mugetsu ink-flame along the left side
+        c.fillStyle = "#050507";
+        c.beginPath();
+        c.moveTo(-r, r * 0.20);
+        c.quadraticCurveTo(-r * 0.52, r * 0.48, -r * 0.44, r);
+        c.lineTo(-r, r);
+        c.closePath();
+        c.fill();
       } else {
         // Dangai Torn Dark Shihakusho + White V-Collar + Right-Arm Chain
         c.fillStyle = "#09090b";
@@ -760,31 +815,63 @@
       }
       c.restore();
 
-      // Hair: Sleek Jet-Black Hair (Mugetsu) vs Longer Spiky Orange Hair (Dangai)
+      // Hair: Sleek Layered Jet-Black Mugetsu Hair vs Longer Spiky Orange Hair (Dangai)
       c.fillStyle = isMugetsu ? "#07070b" : "#ea580c";
       c.strokeStyle = isMugetsu ? "#18181b" : COLORS.ink;
       c.lineWidth = 2.5;
       c.beginPath();
-      c.moveTo(-r * 0.96, r * 0.02);
-      c.lineTo(-r * 1.14, -r * 0.42);
-      c.lineTo(-r * 0.84, -r * 0.56);
-      c.lineTo(-r * 0.94, -r * 0.96);
-      c.lineTo(-r * 0.44, -r * 0.82);
-      c.lineTo(-r * 0.14, -r * 1.18);
-      c.lineTo(r * 0.18, -r * 0.86);
-      c.lineTo(r * 0.54, -r * 1.12);
-      c.lineTo(r * 0.80, -r * 0.74);
-      c.lineTo(r * 1.14, -r * 0.46);
-      c.lineTo(r * 0.96, r * 0.02);
-      c.lineTo(r * 0.68, -r * 0.24);
-      c.lineTo(r * 0.32, -r * 0.16);
-      c.lineTo(r * 0.04, -r * 0.34);
-      c.lineTo(-r * 0.20, -r * 0.14);
-      c.lineTo(-r * 0.46, -r * 0.28);
-      c.lineTo(-r * 0.72, -r * 0.18);
-      c.closePath();
-      c.fill();
-      c.stroke();
+      if (isMugetsu) {
+        c.moveTo(-r * 1.02, r * 0.24);
+        c.lineTo(-r * 1.18, -r * 0.34);
+        c.lineTo(-r * 0.88, -r * 0.52);
+        c.lineTo(-r * 0.96, -r * 0.92);
+        c.lineTo(-r * 0.46, -r * 0.80);
+        c.lineTo(-r * 0.10, -r * 1.16);
+        c.lineTo(r * 0.22, -r * 0.84);
+        c.lineTo(r * 0.60, -r * 1.06);
+        c.lineTo(r * 0.86, -r * 0.70);
+        c.lineTo(r * 1.18, -r * 0.38);
+        c.lineTo(r * 1.02, r * 0.24);
+        // Sleek asymmetric bangs framing the eyes
+        c.lineTo(r * 0.72, -r * 0.18);
+        c.lineTo(r * 0.36, -r * 0.14);
+        c.lineTo(r * 0.08, -r * 0.34);
+        c.lineTo(-r * 0.04, -r * 0.06);
+        c.lineTo(-r * 0.32, -r * 0.26);
+        c.lineTo(-r * 0.72, -r * 0.16);
+        c.closePath();
+        c.fill();
+        c.stroke();
+
+        // Subtle dark-slate hair highlight sheen
+        c.strokeStyle = "rgba(148, 163, 184, 0.28)";
+        c.lineWidth = 2.2;
+        c.beginPath();
+        c.moveTo(-r * 0.45, -r * 0.62);
+        c.quadraticCurveTo(0, -r * 0.78, r * 0.45, -r * 0.58);
+        c.stroke();
+      } else {
+        c.moveTo(-r * 0.96, r * 0.02);
+        c.lineTo(-r * 1.14, -r * 0.42);
+        c.lineTo(-r * 0.84, -r * 0.56);
+        c.lineTo(-r * 0.94, -r * 0.96);
+        c.lineTo(-r * 0.44, -r * 0.82);
+        c.lineTo(-r * 0.14, -r * 1.18);
+        c.lineTo(r * 0.18, -r * 0.86);
+        c.lineTo(r * 0.54, -r * 1.12);
+        c.lineTo(r * 0.80, -r * 0.74);
+        c.lineTo(r * 1.14, -r * 0.46);
+        c.lineTo(r * 0.96, r * 0.02);
+        c.lineTo(r * 0.68, -r * 0.24);
+        c.lineTo(r * 0.32, -r * 0.16);
+        c.lineTo(r * 0.04, -r * 0.34);
+        c.lineTo(-r * 0.20, -r * 0.14);
+        c.lineTo(-r * 0.46, -r * 0.28);
+        c.lineTo(-r * 0.72, -r * 0.18);
+        c.closePath();
+        c.fill();
+        c.stroke();
+      }
 
       c.restore();
       return;
