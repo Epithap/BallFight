@@ -168,9 +168,9 @@
 
 .story-phone-frame {
   position: relative;
-  width: 100%;
-  max-width: 460px;
-  height: min(100%, 820px);
+  width: min(100%, calc((100dvh - 20px) * 460 / 720), 460px);
+  aspect-ratio: 460 / 720;
+  max-height: 100%;
   background: #161124;
   border: 5px solid #2b1b3d;
   border-radius: 26px;
