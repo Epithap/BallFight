@@ -325,18 +325,62 @@
     const bnav = document.querySelector(".bnav");
     if (bnav) bnav.classList.add("hidden");
 
-    S.Quests.setHasPowers(true);
     if (st.phase === "ep1_cleared") {
       S.Quests.setPhase("arc1_start");
     }
-    const targetZone =
-      st.zone && st.zone !== "ichigo_bedroom" && st.zone !== "kurosaki_clinic"
-        ? st.zone
-        : "karakura_street";
+
+    if (!S.Quests.getFlag("arc1_intro_seen")) {
+      S.Quests.setHasPowers(false);
+      S.Quests.setZone("ichigo_bedroom");
+      syncHud();
+      S.Engine.start({ resumeOpenWorld: true, x: 176, y: 184 });
+      S.Engine.setDialogueOpen(true);
+
+      S.BleachCutscenes.startArc1Intro(() => {
+        S.Quests.setFlag("arc1_intro_seen", true);
+        S.Engine.setDialogueOpen(true);
+        const morningLines = [
+          {
+            mood: "shocked",
+            text: "Sunlight... and I'm back in my human body. Wait—did last night's Hollow fight really happen, or was I dreaming?",
+          },
+          {
+            mood: "serious",
+            text: "No, the clinic downstairs got smashed! Better head through my bedroom door and check Karakura High School.",
+          },
+        ];
+        let idx = 0;
+        function stepMorning() {
+          const item = morningLines[idx];
+          showVNDialogue({
+            side: "left",
+            speakerId: "ichigo_human",
+            mood: item.mood,
+            name: "ICHIGO KUROSAKI",
+            text: item.text,
+            nextLabel: idx < morningLines.length - 1 ? "NEXT ▶" : "START ARC 1 ▶",
+            onNext: () => {
+              if (idx < morningLines.length - 1) {
+                idx++;
+                stepMorning();
+              } else {
+                hideVNDialogue();
+                S.Engine.setDialogueOpen(false);
+                showToast("THE NEXT MORNING • ICHIGO'S BEDROOM (HUMAN MODE)");
+              }
+            },
+          });
+        }
+        stepMorning();
+      });
+      return;
+    }
+
+    const targetZone = st.zone || "karakura_street";
     S.Quests.setZone(targetZone);
     syncHud();
-    S.Engine.start({ resumeOpenWorld: true, x: 220, y: 240 });
-    showToast("WELCOME TO KARAKURA TOWN OPEN WORLD!");
+    S.Engine.start({ resumeOpenWorld: true, x: st.x || 220, y: st.y || 240 });
+    showToast("WELCOME BACK TO KARAKURA TOWN OPEN WORLD!");
   }
 
   function launchBleachEpisode1() {

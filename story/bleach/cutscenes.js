@@ -41,6 +41,41 @@
     },
   ];
 
+  const ARC1_INTRO_LINES = [
+    {
+      side: "left",
+      speakerId: "ichigo_human",
+      mood: "sleepy",
+      name: "ICHIGO KUROSAKI",
+      text: "Mmmh... Morning already? That sunlight is blinding...",
+      scene: "morning_sky",
+    },
+    {
+      side: "left",
+      speakerId: "ichigo_human",
+      mood: "shocked",
+      name: "ICHIGO KUROSAKI",
+      text: "Wait a second—last night! A girl in black robes, a giant Hollow, a massive sword... was all of that just a crazy dream?!",
+      scene: "bedroom_wake",
+    },
+    {
+      side: "left",
+      speakerId: "ichigo_human",
+      mood: "suspicious",
+      name: "ICHIGO KUROSAKI",
+      text: "I'm back in my normal human body... No black Shihakusho, no Zanpakuto. Still, I can feel faint spiritual pressure lingering in the air.",
+      scene: "bedroom_wake",
+    },
+    {
+      side: "left",
+      speakerId: "ichigo_human",
+      mood: "serious",
+      name: "ICHIGO KUROSAKI",
+      text: "No—the clinic downstairs really got smashed! I'd better check downstairs and head to Karakura High School.",
+      scene: "school_bound",
+    },
+  ];
+
   const WINDOW_INTRUSION_LINES = [
     {
       side: "left",
@@ -739,6 +774,128 @@
     c.restore();
   }
 
+  function renderArc1IntroScene(cv) {
+    const c = cv.getContext("2d");
+    const w = LOGICAL_W;
+    const h = LOGICAL_H;
+    const line = currentLines[stepIdx] || ARC1_INTRO_LINES[0];
+    const scene = line.scene || "morning_sky";
+
+    c.save();
+    c.scale(DPR, DPR);
+
+    if (scene === "morning_sky") {
+      // 1. Bright Morning Sky Over Karakura Town
+      const sky = c.createLinearGradient(0, 0, 0, h * 0.65);
+      sky.addColorStop(0, "#0284c7");
+      sky.addColorStop(0.55, "#38bdf8");
+      sky.addColorStop(1, "#fef08a");
+      c.fillStyle = sky;
+      c.fillRect(0, 0, w, h);
+
+      // Rising Morning Sun + Glow
+      const sunPulse = 46 + Math.sin(t * 2.2) * 3;
+      const sunGlow = c.createRadialGradient(w * 0.72, 128, 12, w * 0.72, 128, 130);
+      sunGlow.addColorStop(0, "rgba(254, 240, 138, 0.95)");
+      sunGlow.addColorStop(0.45, "rgba(253, 224, 71, 0.38)");
+      sunGlow.addColorStop(1, "rgba(253, 224, 71, 0)");
+      c.fillStyle = sunGlow;
+      c.beginPath(); c.arc(w * 0.72, 128, 130, 0, Math.PI * 2); c.fill();
+
+      c.fillStyle = "#fef9c3";
+      c.beginPath(); c.arc(w * 0.72, 128, sunPulse, 0, Math.PI * 2); c.fill();
+
+      // Fluffy Morning Clouds
+      c.fillStyle = "rgba(255, 255, 255, 0.85)";
+      for (let i = 0; i < 3; i++) {
+        const cx = ((70 + i * 145 + t * 8) % (w + 120)) - 60;
+        const cy = 76 + (i % 2) * 42;
+        c.beginPath();
+        c.arc(cx, cy, 20, 0, Math.PI * 2);
+        c.arc(cx + 22, cy - 6, 24, 0, Math.PI * 2);
+        c.arc(cx + 46, cy + 2, 18, 0, Math.PI * 2);
+        c.fill();
+      }
+
+      // Karakura Town Rooftops Silhouette
+      c.fillStyle = "#334155";
+      c.fillRect(0, h * 0.44, w, h * 0.56);
+      c.fillStyle = "#1e293b";
+      c.fillRect(16, h * 0.34, 88, h * 0.22);
+      c.fillRect(118, h * 0.38, 108, h * 0.18);
+      c.fillRect(242, h * 0.31, 96, h * 0.25);
+      c.fillRect(350, h * 0.36, 90, h * 0.20);
+    } else {
+      // 2. Sunlit Ichigo's Bedroom (The Next Morning)
+      c.fillStyle = "#f5efe0";
+      c.fillRect(0, 0, w, h);
+
+      // Hardwood Floor
+      c.fillStyle = "#d9a66f";
+      c.fillRect(0, h * 0.44, w, h * 0.56);
+      c.strokeStyle = "rgba(120, 53, 15, 0.25)";
+      c.lineWidth = 2;
+      for (let y = h * 0.44; y < h; y += 26) {
+        c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke();
+      }
+
+      // Morning Window with Blue Sky & Sunbeams
+      const wx = w * 0.26;
+      const wy = 42;
+      const ww = w * 0.48;
+      const wh = 136;
+      const winSky = c.createLinearGradient(wx, wy, wx, wy + wh);
+      winSky.addColorStop(0, "#0ea5e9");
+      winSky.addColorStop(1, "#bae6fd");
+      c.fillStyle = winSky;
+      c.strokeStyle = INK;
+      c.lineWidth = 4;
+      c.beginPath(); c.roundRect(wx, wy, ww, wh, 10); c.fill(); c.stroke();
+
+      c.fillStyle = "#fde047";
+      c.beginPath(); c.arc(wx + ww - 38, wy + 34, 16, 0, Math.PI * 2); c.fill();
+      c.strokeStyle = "#ffffff";
+      c.lineWidth = 3;
+      c.beginPath(); c.moveTo(wx + ww * 0.5, wy); c.lineTo(wx + ww * 0.5, wy + wh); c.stroke();
+      c.beginPath(); c.moveTo(wx, wy + wh * 0.52); c.lineTo(wx + ww, wy + wh * 0.52); c.stroke();
+
+      // Warm Golden Morning Sunbeam Spill
+      c.save();
+      c.fillStyle = "rgba(254, 240, 138, 0.28)";
+      c.beginPath();
+      c.moveTo(wx + 8, wy + wh);
+      c.lineTo(wx + ww - 8, wy + wh);
+      c.lineTo(wx + ww + 74, h * 0.86);
+      c.lineTo(wx - 74, h * 0.86);
+      c.closePath();
+      c.fill();
+      c.restore();
+
+      // Human Ichigo in His Bedroom
+      if (S.BleachChars) {
+        S.BleachChars.drawHumanIchigo(c, w * 0.5, h * 0.52, 26, t, scene === "school_bound" ? 1 : -1, {
+          mood: line.mood || "shocked",
+          talking: true,
+        });
+      }
+    }
+
+    // Crisp Scene Pill
+    c.save();
+    c.fillStyle = "rgba(43, 27, 61, 0.90)";
+    c.strokeStyle = "#f59e0b";
+    c.lineWidth = 2.5;
+    c.beginPath(); c.roundRect(14, 14, 244, 28, 999); c.fill(); c.stroke();
+    c.fillStyle = "#fef3c7";
+    c.font = "900 12px 'Lilita One', Impact, sans-serif";
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    c.fillText("ARC 1 • THE NEXT MORNING", 136, 28.5);
+    c.restore();
+
+    c.restore();
+  }
+
   function loop() {
     if (!active) return;
     t += 0.016;
@@ -747,6 +904,7 @@
     if (cv) {
       if (currentMode === "window") renderWindowScene(cv);
       else if (currentMode === "battle") renderRukiaBattleScene(cv);
+      else if (currentMode === "arc1_intro") renderArc1IntroScene(cv);
       else renderPoleScene(cv);
     }
     rafId = requestAnimationFrame(loop);
@@ -771,6 +929,8 @@
             ? "CONFRONT ▶"
             : currentMode === "battle"
             ? "AWAKEN ▶"
+            : currentMode === "arc1_intro"
+            ? "WAKE UP ▶"
             : "ENTER ROOM ▶",
         onNext: () => {
           if (stepIdx < currentLines.length - 1) {
@@ -815,6 +975,10 @@
     startScene("battle", RUKIA_BATTLE_LINES, onDone);
   }
 
+  function startArc1Intro(onDone) {
+    startScene("arc1_intro", ARC1_INTRO_LINES, onDone);
+  }
+
   function stop(triggerCb = false) {
     active = false;
     cancelAnimationFrame(rafId);
@@ -832,6 +996,7 @@
     start,
     startWindowIntrusion,
     startRukiaVsHollowBattle,
+    startArc1Intro,
     stop,
   };
 })();

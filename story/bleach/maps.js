@@ -269,15 +269,23 @@
         c.beginPath(); c.moveTo(88, 34); c.lineTo(88, 23); c.stroke();
         c.beginPath(); c.moveTo(88, 34); c.lineTo(96, 34); c.stroke();
 
-        // Night Window
-        c.fillStyle = "#151936";
+        // Window (Night in Prologue -> Morning in Arc 1 Open World)
+        const isMorning = S.Quests && S.Quests.isOpenWorldUnlocked();
+        c.fillStyle = isMorning ? "#38bdf8" : "#151936";
         c.lineWidth = 3;
         c.beginPath(); c.roundRect(178, 10, 96, 52, 6); c.fill(); c.stroke();
-        c.fillStyle = "#fef9c3";
-        c.beginPath(); c.arc(248, 25, 9, 0, Math.PI * 2); c.fill();
-        c.fillStyle = "#ffffff";
-        c.beginPath(); c.arc(198, 22, 1.5, 0, Math.PI * 2); c.fill();
-        c.beginPath(); c.arc(218, 38, 1.5, 0, Math.PI * 2); c.fill();
+        if (isMorning) {
+          c.fillStyle = "#fde047";
+          c.beginPath(); c.arc(248, 24, 9, 0, Math.PI * 2); c.fill();
+          c.fillStyle = "rgba(255, 255, 255, 0.85)";
+          c.beginPath(); c.arc(198, 28, 7, 0, Math.PI * 2); c.arc(208, 26, 8, 0, Math.PI * 2); c.fill();
+        } else {
+          c.fillStyle = "#fef9c3";
+          c.beginPath(); c.arc(248, 25, 9, 0, Math.PI * 2); c.fill();
+          c.fillStyle = "#ffffff";
+          c.beginPath(); c.arc(198, 22, 1.5, 0, Math.PI * 2); c.fill();
+          c.beginPath(); c.arc(218, 38, 1.5, 0, Math.PI * 2); c.fill();
+        }
         c.strokeStyle = "#e2e8f0";
         c.lineWidth = 2;
         c.beginPath(); c.moveTo(226, 10); c.lineTo(226, 62); c.stroke();
@@ -288,9 +296,9 @@
         c.beginPath(); c.roundRect(170, 8, 14, 56, 4); c.fill(); c.stroke();
         c.beginPath(); c.roundRect(268, 8, 14, 56, 4); c.fill(); c.stroke();
 
-        // Moonlight Spill + Dust Motes
+        // Moonlight / Morning Sunlight Spill + Dust Motes
         c.save();
-        c.fillStyle = "rgba(254, 249, 195, 0.16)";
+        c.fillStyle = isMorning ? "rgba(254, 240, 138, 0.24)" : "rgba(254, 249, 195, 0.16)";
         c.beginPath();
         c.moveTo(184, 72);
         c.lineTo(268, 72);
@@ -476,32 +484,46 @@
           box: { x: 173, y: 247, w: 42, h: 42 },
           shortLabel: "TALK TO KARIN",
           label: "TALK TO KARIN (F)",
-          getDialogue: () => [
-            {
-              side: "right",
-              speakerId: "karin",
-              name: "KARIN KUROSAKI",
-              mood: "angry",
-              partner: { speakerId: "ichigo_human", mood: "shocked" },
-              text: "Ichi-nii!! A huge monster with a creepy white skull mask just smashed right through the front door!",
-            },
-            {
-              side: "left",
-              speakerId: "ichigo_human",
-              name: "ICHIGO KUROSAKI",
-              mood: "shocked",
-              partner: { speakerId: "karin", mood: "serious" },
-              text: "Are you and Yuzu hurt?! Wait—where did that monster go?!",
-            },
-            {
-              side: "right",
-              speakerId: "karin",
-              name: "KARIN KUROSAKI",
-              mood: "serious",
-              partner: { speakerId: "ichigo_human", mood: "battle" },
-              text: "It went back outside onto the street after Dad tried to tackle it! Don't go out there alone, Ichi-nii!",
-            },
-          ],
+          getDialogue: (st) => {
+            if (S.Quests && S.Quests.isOpenWorldUnlocked()) {
+              return [
+                {
+                  side: "right",
+                  speakerId: "karin",
+                  name: "KARIN KUROSAKI",
+                  mood: "neutral",
+                  partner: { speakerId: st.hasPowers ? "ichigo_shinigami" : "ichigo_human", mood: "neutral" },
+                  text: "Morning, Ichi-nii. Somehow the clinic walls are already patched up... You're going to be late for Karakura High!",
+                },
+              ];
+            }
+            return [
+              {
+                side: "right",
+                speakerId: "karin",
+                name: "KARIN KUROSAKI",
+                mood: "angry",
+                partner: { speakerId: "ichigo_human", mood: "shocked" },
+                text: "Ichi-nii!! A huge monster with a creepy white skull mask just smashed right through the front door!",
+              },
+              {
+                side: "left",
+                speakerId: "ichigo_human",
+                name: "ICHIGO KUROSAKI",
+                mood: "shocked",
+                partner: { speakerId: "karin", mood: "serious" },
+                text: "Are you and Yuzu hurt?! Wait—where did that monster go?!",
+              },
+              {
+                side: "right",
+                speakerId: "karin",
+                name: "KARIN KUROSAKI",
+                mood: "serious",
+                partner: { speakerId: "ichigo_human", mood: "battle" },
+                text: "It went back outside onto the street after Dad tried to tackle it! Don't go out there alone, Ichi-nii!",
+              },
+            ];
+          },
           onFinish: () => {
             S.Quests.markClinicTalked();
             S.UI.syncHud();
@@ -590,7 +612,11 @@
           box: { x: 176, y: 448, w: 88, h: 24 },
           shortLabel: "KARAKURA STREET",
           label: "STEP OUTSIDE (F)",
-          portalWhen: (st) => st.clinicTalked || st.phase === "street_hollow" || st.phase === "phase3_complete",
+          portalWhen: (st) =>
+            st.clinicTalked ||
+            st.phase === "street_hollow" ||
+            st.phase === "phase3_complete" ||
+            (S.Quests && S.Quests.isOpenWorldUnlocked()),
           portal: { targetZone: "karakura_street", spawnX: 220, spawnY: 162 },
           speakerId: "ichigo_human",
           name: "ICHIGO KUROSAKI",
@@ -1183,7 +1209,7 @@
                   speakerId: "rukia_gigai",
                   name: "RUKIA KUCHIKI",
                   mood: "serious",
-                  partner: { speakerId: "ichigo_shinigami", mood: "shocked" },
+                  partner: { speakerId: st.hasPowers ? "ichigo_shinigami" : "ichigo_human", mood: "shocked" },
                   text: "You actually transferred me into your class?! Never mind—my Gigai can't restore my powers yet, so YOU are the Substitute Shinigami!",
                 },
                 {
@@ -1192,7 +1218,7 @@
                   name: "RUKIA KUCHIKI",
                   mood: "battle",
                   partner: { speakerId: "ichigo_shinigami", mood: "serious" },
-                  text: "First problem: a rogue Mod-Soul pill escaped into that lion plushie over there! Catch him before he wrecks the school!",
+                  text: "Take this Substitute Badge and transform! A rogue Mod-Soul pill escaped into that lion plushie over there—catch him!",
                 },
               ];
             }
@@ -1210,9 +1236,10 @@
           onFinish: () => {
             const st = S.Quests.getState();
             if (st.phase === "arc1_start" || st.phase === "arc1_q1_school") {
+              S.Quests.setHasPowers(true);
               S.Quests.setPhase("arc1_q1_kon");
               S.UI.syncHud();
-              S.UI.showToast("QUEST 1B: CATCH KON IN THE COURTYARD!");
+              S.UI.showToast("SHINIGAMI MODE! CATCH KON IN THE COURTYARD!");
             }
           },
         },
