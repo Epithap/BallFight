@@ -16,6 +16,71 @@
   }
 
   // Helper to spawn a solid-outlined projectile entity aimed at the opponent
+  function drawGetsugaCrescent(c, r, spin, style) {
+    const outerR = r * 1.68;
+    const tipA = Math.PI * 0.58;
+    const tipX = Math.cos(-tipA) * outerR;
+    const tipY = Math.sin(-tipA) * outerR;
+    const innerCtrlX = r * 1.24; // Deep concave curve -> sleek sharp crescent moon
+    const wave = Math.sin(spin * 3.2);
+
+    c.save();
+    c.lineCap = "round";
+    c.lineJoin = "round";
+
+    // 1. Trailing Reiatsu Energy Ribbons streaming off the back of the crescent
+    const offsets = [-0.88, -0.44, 0, 0.44, 0.88];
+    for (let i = 0; i < offsets.length; i++) {
+      const f = offsets[i];
+      const startY = f * outerR * 0.82;
+      const startX = Math.cos(f * tipA) * outerR * 0.62;
+      const tailLen = r * (1.25 + (i % 2 === 0 ? 0.55 : 0.25)) + wave * r * 0.14;
+      const wispY = startY + Math.sin(spin * 2.8 + i * 1.7) * r * 0.22;
+
+      c.strokeStyle = style.outerAura;
+      c.lineWidth = i === 2 ? 7.5 : 5.2;
+      c.beginPath();
+      c.moveTo(startX, startY);
+      c.quadraticCurveTo(startX - tailLen * 0.5, wispY, startX - tailLen, startY * 0.92 + wispY * 0.2);
+      c.stroke();
+
+      c.strokeStyle = style.ribbonColor;
+      c.lineWidth = i === 2 ? 3.2 : 2.1;
+      c.beginPath();
+      c.moveTo(startX, startY);
+      c.quadraticCurveTo(startX - tailLen * 0.5, wispY, startX - tailLen * 0.88, startY * 0.92 + wispY * 0.16);
+      c.stroke();
+    }
+
+    // 2. Outer Pulsing Crescent Aura Halo
+    c.fillStyle = style.outerAura;
+    c.beginPath();
+    c.arc(0, 0, outerR * 1.15, -tipA * 1.04, tipA * 1.04);
+    c.quadraticCurveTo(r * 0.92, 0, Math.cos(-tipA * 1.04) * outerR * 1.15, Math.sin(-tipA * 1.04) * outerR * 1.15);
+    c.closePath();
+    c.fill();
+
+    // 3. Main Razor-Sharp Crescent Moon Blade
+    c.fillStyle = style.coreFill;
+    c.strokeStyle = style.edgeStroke;
+    c.lineWidth = 3.4;
+    c.beginPath();
+    c.arc(0, 0, outerR, -tipA, tipA);
+    c.quadraticCurveTo(innerCtrlX, 0, tipX, tipY);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    // 4. Bright Leading Razor Edge Gleam
+    c.strokeStyle = style.innerGleam;
+    c.lineWidth = 2.0;
+    c.beginPath();
+    c.arc(0, 0, outerR * 0.91, -tipA * 0.78, tipA * 0.78);
+    c.stroke();
+
+    c.restore();
+  }
+
   function spawnProjectile({ owner, target, x, y, speed, radius, damage, color, label, shape, slashTilt = 0, pierceInfinity = false, ignoresShield = false, onImpact, onOutOfBounds }) {
     const dx = target.x - x;
     const dy = target.y - y;
@@ -109,63 +174,43 @@
         c.fillStyle = color;
 
         if (shape === "crescent") {
-          // Getsuga Tensho crimson-black crescent slash
-          c.beginPath();
-          c.arc(0, 0, this.radius * 1.45, -Math.PI * 0.48, Math.PI * 0.48);
-          c.quadraticCurveTo(
-            this.radius * 0.3,
-            0,
-            Math.cos(-Math.PI * 0.48) * this.radius * 1.45,
-            Math.sin(-Math.PI * 0.48) * this.radius * 1.45
-          );
-          c.closePath();
-          c.fill();
-          c.lineWidth = 4;
-          c.stroke();
-          // Inner bright edge
-          c.strokeStyle = COLORS.white;
-          c.lineWidth = 2;
-          c.beginPath();
-          c.arc(0, 0, this.radius * 1.18, -Math.PI * 0.35, Math.PI * 0.35);
-          c.stroke();
+          const isWindCleave = color === "#f8fafc" || color === "#e2e8f0";
+          drawGetsugaCrescent(c, this.radius, this.spin, isWindCleave
+            ? {
+                outerAura: "rgba(148, 163, 184, 0.36)",
+                coreFill: "#f8fafc",
+                edgeStroke: "#334155",
+                innerGleam: "#ffffff",
+                ribbonColor: "#cbd5e1",
+              }
+            : {
+                outerAura: "rgba(56, 189, 248, 0.38)",
+                coreFill: color || "#0ea5e9",
+                edgeStroke: "#e0f2fe",
+                innerGleam: "#ffffff",
+                ribbonColor: "#38bdf8",
+              });
         } else if (shape === "rasenshuriken") {
           if (BF.drawRasenshurikenDisc) {
             BF.drawRasenshurikenDisc(c, this.radius, this.spin, 1);
           }
         } else if (this.shape === "black_getsuga") {
-          // Black Getsuga Tensho: pitch-black Bankai crescent with crimson-red spiritual pressure edge
-          c.fillStyle = "rgba(220, 38, 38, 0.34)";
-          c.beginPath();
-          c.arc(0, 0, this.radius * 1.62, -Math.PI * 0.52, Math.PI * 0.52);
-          c.quadraticCurveTo(
-            this.radius * 0.18,
-            0,
-            Math.cos(-Math.PI * 0.52) * this.radius * 1.62,
-            Math.sin(-Math.PI * 0.52) * this.radius * 1.62
-          );
-          c.closePath();
-          c.fill();
-
-          c.fillStyle = "#090205";
-          c.strokeStyle = "#ef4444";
-          c.lineWidth = 4;
-          c.beginPath();
-          c.arc(0, 0, this.radius * 1.48, -Math.PI * 0.5, Math.PI * 0.5);
-          c.quadraticCurveTo(
-            this.radius * 0.28,
-            0,
-            Math.cos(-Math.PI * 0.5) * this.radius * 1.48,
-            Math.sin(-Math.PI * 0.5) * this.radius * 1.48
-          );
-          c.closePath();
-          c.fill();
-          c.stroke();
-
-          c.strokeStyle = "#fecaca";
-          c.lineWidth = 2.2;
-          c.beginPath();
-          c.arc(0, 0, this.radius * 1.22, -Math.PI * 0.36, Math.PI * 0.36);
-          c.stroke();
+          const isMugetsuSlash = label === "MUGETSU SLASH!";
+          drawGetsugaCrescent(c, this.radius, this.spin, isMugetsuSlash
+            ? {
+                outerAura: "rgba(88, 28, 135, 0.44)",
+                coreFill: "#050507",
+                edgeStroke: "#a855f7",
+                innerGleam: "#f3e8ff",
+                ribbonColor: "#18181b",
+              }
+            : {
+                outerAura: "rgba(220, 38, 38, 0.42)",
+                coreFill: "#090205",
+                edgeStroke: "#ef4444",
+                innerGleam: "#fecaca",
+                ribbonColor: "#dc2626",
+              });
         } else if (this.shape === "gran_rey_cero") {
           // Gran Rey Cero: crimson-black spatial distortion sphere
           const pulse = 1 + 0.09 * Math.sin(this.spin * 2.4);
