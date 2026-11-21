@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -11,23 +12,80 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="story/story.css?v=2">
 </head>
+
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
-      <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.4"/><circle cx="12" cy="12" r="5.2" fill="none" stroke="#2b1b3d" stroke-width="1.8"/><path d="M8 7.5l2-1.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></symbol>
-      <symbol id="i-gem" viewBox="0 0 24 24"><path d="M6 4h12l4 6-10 11L2 10z" fill="#3da5ff" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round"/><path d="M2 10h20M9 4l-2 6 5 11 5-11-2-6" fill="none" stroke="#2b1b3d" stroke-width="1.6" stroke-linejoin="round"/></symbol>
-      <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2l2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6z" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round"/></symbol>
-      <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5l13 7.5-13 7.5z" fill="#3ddc84" stroke="#2b1b3d" stroke-width="2.4" stroke-linejoin="round"/></symbol>
-      <symbol id="i-ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="#ff5a5f" stroke="#2b1b3d" stroke-width="2.4"/><circle cx="8.8" cy="11" r="2.4" fill="#fff" stroke="#2b1b3d" stroke-width="1.4"/><circle cx="15.2" cy="11" r="2.4" fill="#fff" stroke="#2b1b3d" stroke-width="1.4"/><circle cx="9.3" cy="11.3" r="1" fill="#2b1b3d"/><circle cx="15.7" cy="11.3" r="1" fill="#2b1b3d"/><path d="M8.5 16q3.5 2.6 7 0" fill="none" stroke="#2b1b3d" stroke-width="1.8" stroke-linecap="round"/></symbol>
-      <symbol id="i-user" viewBox="0 0 24 24"><path d="M3.5 22c0-5.2 3.6-8.5 8.5-8.5s8.5 3.3 8.5 8.5z" fill="#3da5ff" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round"/><circle cx="12" cy="8" r="4.4" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.2"/></symbol>
-      <symbol id="i-bag" viewBox="0 0 24 24"><path d="M9 8V6.5a3 3 0 0 1 6 0V8" fill="none" stroke="#2b1b3d" stroke-width="2.2" stroke-linecap="round"/><path d="M4.5 8h15l1.4 13h-17.8z" fill="#ff5a5f" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round"/><circle cx="9" cy="12.5" r="1.1" fill="#fff"/><circle cx="15" cy="12.5" r="1.1" fill="#fff"/></symbol>
-      <symbol id="i-lock" viewBox="0 0 24 24"><path d="M7.5 10.5V8a4.5 4.5 0 0 1 9 0v2.5" fill="none" stroke="#2b1b3d" stroke-width="2.4" stroke-linecap="round"/><rect x="4.5" y="10.5" width="15" height="11" rx="3" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.4"/><circle cx="12" cy="16" r="1.6" fill="#2b1b3d"/></symbol>
-      <symbol id="i-crown" viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round"/><circle cx="12" cy="5" r="1.4" fill="#ff5a5f" stroke="#2b1b3d" stroke-width="1.2"/></symbol>
-      <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="#2b1b3d" stroke-width="3.6" stroke-linecap="round"/></symbol>
-      <symbol id="i-medal" viewBox="0 0 24 24"><path d="M7 2h4l1 6H6zM17 2h-4l-1 6h6z" fill="#ff5a5f" stroke="#2b1b3d" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="15" r="7" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.4"/><path d="M12 11.5l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z" fill="#2b1b3d"/></symbol>
-      <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-4 2-7 2 1 3 2 4-5z" fill="#ff7b29" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 12c1 2 3 3 3 5a3 3 0 0 1-6 0c0-2 2-3 3-5z" fill="#ffc93c" stroke="#2b1b3d" stroke-width="1.6" stroke-linejoin="round"/></symbol>
-      <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13.5 2L5 13.5h5.5L9.5 22 19 9.5h-5.8z" fill="#3da5ff" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round"/></symbol>
+      <symbol id="i-coin" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9.5" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.4" />
+        <circle cx="12" cy="12" r="5.2" fill="none" stroke="#2b1b3d" stroke-width="1.8" />
+        <path d="M8 7.5l2-1.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-gem" viewBox="0 0 24 24">
+        <path d="M6 4h12l4 6-10 11L2 10z" fill="#3da5ff" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round" />
+        <path d="M2 10h20M9 4l-2 6 5 11 5-11-2-6" fill="none" stroke="#2b1b3d" stroke-width="1.6"
+          stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24">
+        <path d="M12 2l2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6z" fill="#ffc93c" stroke="#2b1b3d"
+          stroke-width="2.2" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-play" viewBox="0 0 24 24">
+        <path d="M7 4.5l13 7.5-13 7.5z" fill="#3ddc84" stroke="#2b1b3d" stroke-width="2.4" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-ball" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9.5" fill="#ff5a5f" stroke="#2b1b3d" stroke-width="2.4" />
+        <circle cx="8.8" cy="11" r="2.4" fill="#fff" stroke="#2b1b3d" stroke-width="1.4" />
+        <circle cx="15.2" cy="11" r="2.4" fill="#fff" stroke="#2b1b3d" stroke-width="1.4" />
+        <circle cx="9.3" cy="11.3" r="1" fill="#2b1b3d" />
+        <circle cx="15.7" cy="11.3" r="1" fill="#2b1b3d" />
+        <path d="M8.5 16q3.5 2.6 7 0" fill="none" stroke="#2b1b3d" stroke-width="1.8" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-user" viewBox="0 0 24 24">
+        <path d="M3.5 22c0-5.2 3.6-8.5 8.5-8.5s8.5 3.3 8.5 8.5z" fill="#3da5ff" stroke="#2b1b3d" stroke-width="2.2"
+          stroke-linejoin="round" />
+        <circle cx="12" cy="8" r="4.4" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.2" />
+      </symbol>
+      <symbol id="i-bag" viewBox="0 0 24 24">
+        <path d="M9 8V6.5a3 3 0 0 1 6 0V8" fill="none" stroke="#2b1b3d" stroke-width="2.2" stroke-linecap="round" />
+        <path d="M4.5 8h15l1.4 13h-17.8z" fill="#ff5a5f" stroke="#2b1b3d" stroke-width="2.2" stroke-linejoin="round" />
+        <circle cx="9" cy="12.5" r="1.1" fill="#fff" />
+        <circle cx="15" cy="12.5" r="1.1" fill="#fff" />
+      </symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24">
+        <path d="M7.5 10.5V8a4.5 4.5 0 0 1 9 0v2.5" fill="none" stroke="#2b1b3d" stroke-width="2.4"
+          stroke-linecap="round" />
+        <rect x="4.5" y="10.5" width="15" height="11" rx="3" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.4" />
+        <circle cx="12" cy="16" r="1.6" fill="#2b1b3d" />
+      </symbol>
+      <symbol id="i-crown" viewBox="0 0 24 24">
+        <path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.2"
+          stroke-linejoin="round" />
+        <circle cx="12" cy="5" r="1.4" fill="#ff5a5f" stroke="#2b1b3d" stroke-width="1.2" />
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24">
+        <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"
+          stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-x" viewBox="0 0 24 24">
+        <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="#2b1b3d" stroke-width="3.6" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-medal" viewBox="0 0 24 24">
+        <path d="M7 2h4l1 6H6zM17 2h-4l-1 6h6z" fill="#ff5a5f" stroke="#2b1b3d" stroke-width="2"
+          stroke-linejoin="round" />
+        <circle cx="12" cy="15" r="7" fill="#ffc93c" stroke="#2b1b3d" stroke-width="2.4" />
+        <path d="M12 11.5l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z" fill="#2b1b3d" />
+      </symbol>
+      <symbol id="i-flame" viewBox="0 0 24 24">
+        <path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-4 2-7 2 1 3 2 4-5z" fill="#ff7b29" stroke="#2b1b3d"
+          stroke-width="2.2" stroke-linejoin="round" />
+        <path d="M12 12c1 2 3 3 3 5a3 3 0 0 1-6 0c0-2 2-3 3-5z" fill="#ffc93c" stroke="#2b1b3d" stroke-width="1.6"
+          stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24">
+        <path d="M13.5 2L5 13.5h5.5L9.5 22 19 9.5h-5.8z" fill="#3da5ff" stroke="#2b1b3d" stroke-width="2.2"
+          stroke-linejoin="round" />
+      </symbol>
     </defs>
   </svg>
   <main class="app">
@@ -36,23 +94,40 @@
       <h1 class="logo"><span class="logo-a">BALL</span><span class="logo-b">FIGHT</span></h1>
       <div class="header-right">
         <div class="wallet">
-          <div class="wallet-chip"><svg><use href="#i-coin"/></svg><span id="home-coins-display">0</span></div>
-          <div class="wallet-chip"><svg><use href="#i-gem"/></svg><span id="home-gems-display">0</span></div>
+          <div class="wallet-chip"><svg>
+              <use href="#i-coin" />
+            </svg><span id="home-coins-display">0</span></div>
+          <div class="wallet-chip"><svg>
+              <use href="#i-gem" />
+            </svg><span id="home-gems-display">0</span></div>
         </div>
-        <button id="btn-daily-missions" class="news-btn mission-btn" type="button" aria-label="Daily Missions" title="Daily Missions">
-          <svg><use href="#i-medal"/></svg><span id="mission-dot" class="news-dot hidden"></span>
+        <button id="btn-daily-missions" class="news-btn mission-btn" type="button" aria-label="Daily Missions"
+          title="Daily Missions">
+          <svg>
+            <use href="#i-medal" />
+          </svg><span id="mission-dot" class="news-dot hidden"></span>
         </button>
         <button id="btn-whats-new" class="news-btn" type="button" aria-label="What's new in v1.3.3">
-          <svg><use href="#i-spark"/></svg><span class="news-dot"></span>
+          <svg>
+            <use href="#i-spark" />
+          </svg><span class="news-dot"></span>
         </button>
       </div>
     </header>
 
     <nav class="cartoon-nav" id="main-nav">
-      <button class="nav-btn active" data-target="screen-play" type="button"><svg><use href="#i-play"/></svg>PLAY</button>
-      <button class="nav-btn" data-target="screen-chars" type="button"><svg><use href="#i-ball"/></svg>FIGHTERS</button>
-      <button class="nav-btn" data-target="screen-profile" type="button"><svg><use href="#i-user"/></svg>PROFILE</button>
-      <button class="nav-btn" data-target="screen-shop" type="button"><svg><use href="#i-bag"/></svg>SHOP</button>
+      <button class="nav-btn active" data-target="screen-play" type="button"><svg>
+          <use href="#i-play" />
+        </svg>PLAY</button>
+      <button class="nav-btn" data-target="screen-chars" type="button"><svg>
+          <use href="#i-ball" />
+        </svg>FIGHTERS</button>
+      <button class="nav-btn" data-target="screen-profile" type="button"><svg>
+          <use href="#i-user" />
+        </svg>PROFILE</button>
+      <button class="nav-btn" data-target="screen-shop" type="button"><svg>
+          <use href="#i-bag" />
+        </svg>SHOP</button>
     </nav>
 
     <div class="screens-container">
@@ -65,13 +140,19 @@
           <div class="matchup">
             <div class="contender">
               <span class="seat seat-1">P1</span>
-              <div class="avatar-wrap"><canvas id="home-p1-canvas" class="home-ball-avatar" width="168" height="168"></canvas></div>
+              <div class="avatar-wrap"><canvas id="home-p1-canvas" class="home-ball-avatar" width="168"
+                  height="168"></canvas></div>
               <span id="home-p1-name" class="plate">STRONGEST ALIEN</span>
             </div>
-            <svg class="vs-burst" viewBox="0 0 64 64" aria-hidden="true"><polygon points="32.0,2.0 37.7,10.7 47.0,6.0 47.6,16.4 58.0,17.0 53.3,26.3 62.0,32.0 53.3,37.7 58.0,47.0 47.6,47.6 47.0,58.0 37.7,53.3 32.0,62.0 26.3,53.3 17.0,58.0 16.4,47.6 6.0,47.0 10.7,37.7 2.0,32.0 10.7,26.3 6.0,17.0 16.4,16.4 17.0,6.0 26.3,10.7"/><text x="32" y="40" text-anchor="middle">VS</text></svg>
+            <svg class="vs-burst" viewBox="0 0 64 64" aria-hidden="true">
+              <polygon
+                points="32.0,2.0 37.7,10.7 47.0,6.0 47.6,16.4 58.0,17.0 53.3,26.3 62.0,32.0 53.3,37.7 58.0,47.0 47.6,47.6 47.0,58.0 37.7,53.3 32.0,62.0 26.3,53.3 17.0,58.0 16.4,47.6 6.0,47.0 10.7,37.7 2.0,32.0 10.7,26.3 6.0,17.0 16.4,16.4 17.0,6.0 26.3,10.7" />
+              <text x="32" y="40" text-anchor="middle">VS</text>
+            </svg>
             <div class="contender">
               <span class="seat seat-2">P2</span>
-              <div class="avatar-wrap avatar-wrap-b"><canvas id="home-p2-canvas" class="home-ball-avatar" width="168" height="168"></canvas></div>
+              <div class="avatar-wrap avatar-wrap-b"><canvas id="home-p2-canvas" class="home-ball-avatar" width="168"
+                  height="168"></canvas></div>
               <span id="home-p2-name" class="plate">CHILD OF PROPHECY</span>
             </div>
           </div>
@@ -85,17 +166,27 @@
         <div class="saga">
           <div class="saga-head">
             <div class="stamp stamp-gray">MULTIVERSE TOURNAMENT</div>
-            <span class="ribbon"><svg><use href="#i-lock"/></svg>COMING SOON</span>
+            <span class="ribbon"><svg>
+                <use href="#i-lock" />
+              </svg>COMING SOON</span>
           </div>
           <p class="card-desc">Climb the multiverse tournament ladder and beat a legendary boss at the top.</p>
           <div class="route" aria-hidden="true">
-            <span class="node cleared"><svg><use href="#i-check"/></svg></span>
+            <span class="node cleared"><svg>
+                <use href="#i-check" />
+              </svg></span>
             <span class="route-line"></span>
-            <span class="node locked"><svg><use href="#i-lock"/></svg></span>
+            <span class="node locked"><svg>
+                <use href="#i-lock" />
+              </svg></span>
             <span class="route-line"></span>
-            <span class="node locked"><svg><use href="#i-lock"/></svg></span>
+            <span class="node locked"><svg>
+                <use href="#i-lock" />
+              </svg></span>
             <span class="route-line"></span>
-            <span class="node boss"><svg><use href="#i-crown"/></svg></span>
+            <span class="node boss"><svg>
+                <use href="#i-crown" />
+              </svg></span>
           </div>
         </div>
 
@@ -105,7 +196,8 @@
             <div class="stamp stamp-yellow">STORY SAGA</div>
             <span class="story-badge-new">BETA</span>
           </div>
-          <p class="card-desc">Step into iconic anime storylines from Episode 1 — explore the world, live the story, and awaken legendary powers.</p>
+          <p class="card-desc">Step into iconic anime storylines from Episode 1 — explore the world, live the story, and
+            awaken legendary powers.</p>
           <div class="story-saga-preview">
             <button id="btn-open-story-saga" class="btn btn-green btn-wide" type="button">PLAY SAGA</button>
           </div>
@@ -128,9 +220,11 @@
                 </div>
                 <canvas id="story-bleach-mascot" class="saga-banner-mascot" width="84" height="84"></canvas>
               </div>
-              <p class="card-desc">Fifteen-year-old Ichigo Kurosaki's journey from Karakura Town to Soul Society and beyond. Clear the Prologue first to unlock the connected Bleach Open World!</p>
+              <p class="card-desc">Fifteen-year-old Ichigo Kurosaki's journey from Karakura Town to Soul Society and
+                beyond. Clear the Prologue first to unlock the connected Bleach Open World!</p>
               <button id="btn-play-bleach-saga" class="btn btn-green btn-wide" type="button">START PROLOGUE</button>
-              <button id="btn-enter-open-world" class="btn btn-yellow btn-wide" type="button" disabled>🔒 ENTER WORLD (COMING SOON)</button>
+              <button id="btn-enter-open-world" class="btn btn-yellow btn-wide" type="button" disabled>🔒 ENTER WORLD
+                (COMING SOON)</button>
             </div>
 
             <div class="saga-chapter-card locked">
@@ -139,7 +233,9 @@
                   <div class="saga-banner-title">NARUTO SAGA</div>
                   <div class="saga-banner-sub">COMING IN NEXT UPDATE</div>
                 </div>
-                <span class="ribbon"><svg><use href="#i-lock"/></svg>SOON</span>
+                <span class="ribbon"><svg>
+                    <use href="#i-lock" />
+                  </svg>SOON</span>
               </div>
             </div>
           </div>
@@ -238,7 +334,8 @@
             <div class="story-result-card">
               <div id="story-result-badge" class="stamp stamp-yellow">VICTORY!</div>
               <h3 id="story-result-title" class="story-result-title">HOLLOW PURIFIED!</h3>
-              <p id="story-result-desc" class="story-result-desc">You defeated Fishbone D and protected Karakura Town!</p>
+              <p id="story-result-desc" class="story-result-desc">You defeated Fishbone D and protected Karakura Town!
+              </p>
               <div class="story-result-actions">
                 <button id="story-btn-retry" class="btn btn-green hidden" type="button">RETRY BATTLE</button>
                 <button id="story-btn-result-ok" class="btn btn-green" type="button">BACK TO SAGA</button>
@@ -340,7 +437,9 @@
           <div class="fighter">
             <span id="name-1" class="name name-red">STRONGEST ALIEN</span>
             <div class="hp">
-              <div class="hp-track"><div id="hp-bar-1" class="hp-fill hp-red" style="width:100%"></div></div>
+              <div class="hp-track">
+                <div id="hp-bar-1" class="hp-fill hp-red" style="width:100%"></div>
+              </div>
               <span id="hp-text-1" class="hp-text">560 / 560</span>
             </div>
             <div class="fighter-sub">
@@ -356,7 +455,8 @@
             <div id="ult-hud-1" class="ult-row">
               <span class="ult-tag">ULT</span>
               <div class="ult-pips">
-                <span class="ult-pip"></span><span class="ult-pip"></span><span class="ult-pip"></span><span class="ult-pip"></span><span class="ult-pip"></span>
+                <span class="ult-pip"></span><span class="ult-pip"></span><span class="ult-pip"></span><span
+                  class="ult-pip"></span><span class="ult-pip"></span>
               </div>
             </div>
           </div>
@@ -366,7 +466,9 @@
           <div class="fighter fighter-right">
             <span id="name-2" class="name name-blue">CHILD OF PROPHECY</span>
             <div class="hp">
-              <div class="hp-track"><div id="hp-bar-2" class="hp-fill hp-blue" style="width:100%"></div></div>
+              <div class="hp-track">
+                <div id="hp-bar-2" class="hp-fill hp-blue" style="width:100%"></div>
+              </div>
               <span id="hp-text-2" class="hp-text">525 / 525</span>
             </div>
             <div class="fighter-sub fighter-sub-right">
@@ -381,7 +483,8 @@
             </div>
             <div id="ult-hud-2" class="ult-row ult-row-right">
               <div class="ult-pips">
-                <span class="ult-pip"></span><span class="ult-pip"></span><span class="ult-pip"></span><span class="ult-pip"></span><span class="ult-pip"></span>
+                <span class="ult-pip"></span><span class="ult-pip"></span><span class="ult-pip"></span><span
+                  class="ult-pip"></span><span class="ult-pip"></span>
               </div>
               <span class="ult-tag">ULT</span>
             </div>
@@ -462,18 +565,26 @@
             <div class="lic-info">
               <h2 id="profile-name-display" class="lic-name">EPITHAP</h2>
               <span id="profile-rank" class="rank-chip">ROOKIE</span>
-              <div class="exp-bar"><div id="profile-exp-fill" class="exp-fill" style="width:0%"></div></div>
+              <div class="exp-bar">
+                <div id="profile-exp-fill" class="exp-fill" style="width:0%"></div>
+              </div>
               <span id="profile-exp-text" class="exp-text">EXP 0 / 500</span>
             </div>
           </div>
           <div class="stat-grid">
-            <div class="stat-box"><span class="quad-num" id="prof-matches">0</span><span class="quad-lbl">BRAWLS</span></div>
-            <div class="stat-box"><span class="quad-num" id="prof-wins">0</span><span class="quad-lbl">VICTORIES</span></div>
-            <div class="stat-box"><span class="quad-num" id="prof-wr">0%</span><span class="quad-lbl">WIN RATE</span></div>
-            <div class="stat-box"><span class="quad-num quad-small" id="prof-fav">-</span><span class="quad-lbl">MOST USED</span></div>
+            <div class="stat-box"><span class="quad-num" id="prof-matches">0</span><span class="quad-lbl">BRAWLS</span>
+            </div>
+            <div class="stat-box"><span class="quad-num" id="prof-wins">0</span><span class="quad-lbl">VICTORIES</span>
+            </div>
+            <div class="stat-box"><span class="quad-num" id="prof-wr">0%</span><span class="quad-lbl">WIN RATE</span>
+            </div>
+            <div class="stat-box"><span class="quad-num quad-small" id="prof-fav">-</span><span class="quad-lbl">MOST
+                USED</span></div>
           </div>
           <div class="trophy-block">
-            <div class="col-head"><h4>TROPHIES</h4><span id="trophy-count" class="count-chip">0 / 0</span></div>
+            <div class="col-head">
+              <h4>TROPHIES</h4><span id="trophy-count" class="count-chip">0 / 0</span>
+            </div>
             <div id="trophy-row" class="trophy-grid"></div>
           </div>
         </div>
@@ -483,8 +594,12 @@
       <section id="screen-shop" class="screen screen-shop hidden">
         <div class="panel">
           <div class="shop-wallet-bar">
-            <div class="wallet-chip"><svg><use href="#i-coin"/></svg><span id="shop-coins-display">0</span></div>
-            <div class="wallet-chip"><svg><use href="#i-gem"/></svg><span id="shop-gems-display">0</span></div>
+            <div class="wallet-chip"><svg>
+                <use href="#i-coin" />
+              </svg><span id="shop-coins-display">0</span></div>
+            <div class="wallet-chip"><svg>
+                <use href="#i-gem" />
+              </svg><span id="shop-gems-display">0</span></div>
           </div>
 
           <div class="merchant-box" id="merchant-box-interactive">
@@ -493,7 +608,8 @@
             </div>
             <div class="merchant-bubble">
               <span class="merchant-name-tag">TURBO GRANNY</span>
-              <p id="merchant-speech-text" class="merchant-speech">"Oi brat! New fighters come out of my machine now. Pull and pray!"</p>
+              <p id="merchant-speech-text" class="merchant-speech">"Oi brat! New fighters come out of my machine now.
+                Pull and pray!"</p>
             </div>
           </div>
 
@@ -530,13 +646,20 @@
                   </div>
                   <div class="pity">
                     <span class="pity-label">PITY</span>
-                    <div class="pity-track"><div id="gacha-std-pity-fill" class="pity-fill std-fill" style="width:0%"></div></div>
+                    <div class="pity-track">
+                      <div id="gacha-std-pity-fill" class="pity-fill std-fill" style="width:0%"></div>
+                    </div>
                     <span id="gacha-std-pity-text" class="pity-text">0 / 60</span>
                   </div>
                   <p class="rates">CHAR 0.5% (NARUTO / LUFFY / ICHIGO) • COINS &amp; GEMS 99.5% • PITY 60 GUARANTEED</p>
                   <div class="pull-row pull-row-2">
-                    <button id="btn-std-pull-1" class="btn btn-pull" type="button"><span>PULL x1</span><b><svg><use href="#i-coin"/></svg>300</b></button>
-                    <button id="btn-std-pull-10" class="btn btn-green btn-pull" type="button"><span>PULL x10</span><b><svg><use href="#i-coin"/></svg>3,000</b></button>
+                    <button id="btn-std-pull-1" class="btn btn-pull" type="button"><span>PULL x1</span><b><svg>
+                          <use href="#i-coin" />
+                        </svg>300</b></button>
+                    <button id="btn-std-pull-10" class="btn btn-green btn-pull" type="button"><span>PULL
+                        x10</span><b><svg>
+                          <use href="#i-coin" />
+                        </svg>3,000</b></button>
                   </div>
                 </div>
 
@@ -554,7 +677,8 @@
                     <div class="rateup-overlay-ui">
                       <div class="rateup-top-tags">
                         <span class="rateup-boost-chip">CHAR 0.5%</span>
-                        <button id="btn-schedule-toggle" class="schedule-toggle-btn" type="button">📅 NEXT BANNER</button>
+                        <button id="btn-schedule-toggle" class="schedule-toggle-btn" type="button">📅 NEXT
+                          BANNER</button>
                       </div>
                       <div class="rateup-bottom-plate">
                         <h3 id="banner-rateup-name" class="rateup-name">HONORED SORCERER</h3>
@@ -565,13 +689,21 @@
                   <div id="gacha-schedule-drawer" class="gacha-schedule-drawer hidden"></div>
                   <div class="pity">
                     <span class="pity-label">PITY</span>
-                    <div class="pity-track"><div id="gacha-rateup-pity-fill" class="pity-fill" style="width:0%"></div></div>
+                    <div class="pity-track">
+                      <div id="gacha-rateup-pity-fill" class="pity-fill" style="width:0%"></div>
+                    </div>
                     <span id="gacha-rateup-pity-text" class="pity-text">0 / 60</span>
                   </div>
                   <p class="rates">CHAR 0.5% (50/50 FEATURED OR TRIO) • RATE-OFF = NEXT GUARANTEED • PITY 60 SHARED</p>
                   <div class="pull-row pull-row-2">
-                    <button id="btn-ru-pull-1" class="btn btn-pull btn-gem-pull" type="button"><span>PULL x1</span><b><svg><use href="#i-gem"/></svg>30</b></button>
-                    <button id="btn-ru-pull-10" class="btn btn-purple btn-pull btn-gem-pull" type="button"><span>PULL x10</span><b><svg><use href="#i-gem"/></svg>300</b></button>
+                    <button id="btn-ru-pull-1" class="btn btn-pull btn-gem-pull" type="button"><span>PULL
+                        x1</span><b><svg>
+                          <use href="#i-gem" />
+                        </svg>30</b></button>
+                    <button id="btn-ru-pull-10" class="btn btn-purple btn-pull btn-gem-pull" type="button"><span>PULL
+                        x10</span><b><svg>
+                          <use href="#i-gem" />
+                        </svg>300</b></button>
                   </div>
                 </div>
               </div>
@@ -595,7 +727,9 @@
           </div>
 
           <div class="collection">
-            <div class="col-head"><h4>COLLECTION</h4><span id="collection-count" class="count-chip">0 / 0</span></div>
+            <div class="col-head">
+              <h4>COLLECTION</h4><span id="collection-count" class="count-chip">0 / 0</span>
+            </div>
             <div class="col-grid" id="shop-items-grid"></div>
           </div>
         </div>
@@ -607,14 +741,17 @@
   <!-- ================= FIGHTER SHEET MODAL ================= -->
   <div id="roster-modal" class="modal-backdrop hidden">
     <div class="cartoon-card modal-detail-card sheet">
-      <button id="btn-modal-close" class="modal-close-btn" type="button" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+      <button id="btn-modal-close" class="modal-close-btn" type="button" aria-label="Close"><svg>
+          <use href="#i-x" />
+        </svg></button>
       <div class="sheet-top">
         <span id="detail-series" class="series-chip">SERIES</span>
         <span id="detail-rarity" class="rar-chip">STARTER</span>
       </div>
 
       <div id="detail-hero-box" class="detail-hero-box">
-        <div class="hero-stage"><canvas id="detail-canvas" class="detail-canvas" width="240" height="240"></canvas></div>
+        <div class="hero-stage"><canvas id="detail-canvas" class="detail-canvas" width="240" height="240"></canvas>
+        </div>
         <h2 id="detail-name" class="detail-hero-name">STRONGEST ALIEN</h2>
         <p id="detail-title" class="detail-hero-title"></p>
       </div>
@@ -630,26 +767,45 @@
       <div id="detail-skin-box" class="power-bubble skin-bubble hidden"></div>
 
       <div class="stat-meters-block">
-        <div class="stat-row"><span class="stat-name">HP</span><div class="stat-meter-track"><div id="detail-hp-fill" class="stat-meter-fill fill-hp"></div></div><span id="detail-hp-val" class="stat-val"></span></div>
-        <div class="stat-row"><span class="stat-name">SPEED</span><div class="stat-meter-track"><div id="detail-spd-fill" class="stat-meter-fill fill-spd"></div></div><span id="detail-spd-val" class="stat-val"></span></div>
-        <div class="stat-row"><span class="stat-name">POWER</span><div class="stat-meter-track"><div id="detail-atk-fill" class="stat-meter-fill fill-atk"></div></div><span id="detail-atk-val" class="stat-val"></span></div>
-        <div class="stat-row"><span class="stat-name">MASS</span><div class="stat-meter-track"><div id="detail-mass-fill" class="stat-meter-fill fill-mass"></div></div><span id="detail-mass-val" class="stat-val"></span></div>
+        <div class="stat-row"><span class="stat-name">HP</span>
+          <div class="stat-meter-track">
+            <div id="detail-hp-fill" class="stat-meter-fill fill-hp"></div>
+          </div><span id="detail-hp-val" class="stat-val"></span>
+        </div>
+        <div class="stat-row"><span class="stat-name">SPEED</span>
+          <div class="stat-meter-track">
+            <div id="detail-spd-fill" class="stat-meter-fill fill-spd"></div>
+          </div><span id="detail-spd-val" class="stat-val"></span>
+        </div>
+        <div class="stat-row"><span class="stat-name">POWER</span>
+          <div class="stat-meter-track">
+            <div id="detail-atk-fill" class="stat-meter-fill fill-atk"></div>
+          </div><span id="detail-atk-val" class="stat-val"></span>
+        </div>
+        <div class="stat-row"><span class="stat-name">MASS</span>
+          <div class="stat-meter-track">
+            <div id="detail-mass-fill" class="stat-meter-fill fill-mass"></div>
+          </div><span id="detail-mass-val" class="stat-val"></span>
+        </div>
       </div>
 
       <div class="power-bubble skill-bubble">
-        <div class="power-header"><span class="power-badge badge-blue">SIGNATURE SKILL</span><span id="detail-skill-cd" class="power-cd"></span></div>
+        <div class="power-header"><span class="power-badge badge-blue">SIGNATURE SKILL</span><span id="detail-skill-cd"
+            class="power-cd"></span></div>
         <h3 id="detail-skill-name" class="power-title"></h3>
         <p id="detail-skill-desc" class="power-desc"></p>
       </div>
 
       <div class="power-bubble ult-bubble">
-        <div class="power-header"><span class="power-badge badge-red">ULTIMATE (5 HITS)</span><span class="power-cd">TRANSFORMATION</span></div>
+        <div class="power-header"><span class="power-badge badge-red">ULTIMATE (5 HITS)</span><span
+            class="power-cd">TRANSFORMATION</span></div>
         <h3 id="detail-ult-name" class="power-title"></h3>
         <p id="detail-ult-desc" class="power-desc"></p>
       </div>
 
       <div id="detail-empowered-box" class="power-bubble empowered-bubble hidden">
-        <div class="power-header"><span class="power-badge badge-purple">EMPOWERED SKILL (ULT)</span><span id="detail-emp-cd" class="power-cd"></span></div>
+        <div class="power-header"><span class="power-badge badge-purple">EMPOWERED SKILL (ULT)</span><span
+            id="detail-emp-cd" class="power-cd"></span></div>
         <h3 id="detail-emp-name" class="power-title"></h3>
         <p id="detail-emp-desc" class="power-desc"></p>
       </div>
@@ -663,13 +819,16 @@
   <!-- ================= EDIT PROFILE MODAL ================= -->
   <div id="profile-edit-modal" class="modal-backdrop hidden">
     <div class="cartoon-card modal-detail-card admin-modal-card">
-      <button id="btn-profile-edit-close" class="modal-close-btn" type="button" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+      <button id="btn-profile-edit-close" class="modal-close-btn" type="button" aria-label="Close"><svg>
+          <use href="#i-x" />
+        </svg></button>
       <div class="stamp stamp-yellow">CUSTOMIZE LICENSE</div>
       <h2 class="changelog-heading">EDIT PROFILE</h2>
 
       <div class="admin-section">
         <p class="block-label">DISPLAY NAME</p>
-        <input id="profile-name-input" class="admin-input" type="text" maxlength="16" placeholder="Enter your name..." />
+        <input id="profile-name-input" class="admin-input" type="text" maxlength="16"
+          placeholder="Enter your name..." />
       </div>
 
       <div class="admin-section">
@@ -691,14 +850,20 @@
   <!-- ================= SECRET ADMIN CONTROL PANEL ================= -->
   <div id="admin-modal" class="modal-backdrop hidden">
     <div class="cartoon-card modal-detail-card admin-modal-card">
-      <button id="btn-admin-close" class="modal-close-btn" type="button" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+      <button id="btn-admin-close" class="modal-close-btn" type="button" aria-label="Close"><svg>
+          <use href="#i-x" />
+        </svg></button>
       <div class="stamp stamp-yellow">SECRET ADMIN</div>
       <h2 class="changelog-heading">ADMIN CONTROL PANEL</h2>
       <p class="changelog-sub">Unlocked by clicking Profile 10x! Adjust Gold &amp; Gems freely.</p>
 
       <div class="shop-wallet-bar admin-wallet-bar">
-        <div class="wallet-chip"><svg><use href="#i-coin"/></svg><span id="admin-coins-display">0</span></div>
-        <div class="wallet-chip"><svg><use href="#i-gem"/></svg><span id="admin-gems-display">0</span></div>
+        <div class="wallet-chip"><svg>
+            <use href="#i-coin" />
+          </svg><span id="admin-coins-display">0</span></div>
+        <div class="wallet-chip"><svg>
+            <use href="#i-gem" />
+          </svg><span id="admin-gems-display">0</span></div>
       </div>
 
       <div class="admin-section">
@@ -740,7 +905,9 @@
   <!-- ================= DAILY MISSIONS MODAL ================= -->
   <div id="missions-modal" class="modal-backdrop hidden">
     <div class="cartoon-card modal-detail-card missions-modal-card">
-      <button id="btn-missions-close" class="modal-close-btn" type="button" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+      <button id="btn-missions-close" class="modal-close-btn" type="button" aria-label="Close"><svg>
+          <use href="#i-x" />
+        </svg></button>
       <div class="missions-modal-header">
         <span class="stamp stamp-gold">DAILY MISSIONS</span>
         <span id="missions-date-label" class="missions-date-label">DAILY RESET</span>
@@ -755,7 +922,9 @@
   <!-- ================= v1.3.3 UPDATE NOTES MODAL ================= -->
   <div id="changelog-modal" class="modal-backdrop hidden">
     <div class="cartoon-card modal-detail-card changelog-modal-card">
-      <button id="btn-changelog-close" class="modal-close-btn" type="button" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+      <button id="btn-changelog-close" class="modal-close-btn" type="button" aria-label="Close"><svg>
+          <use href="#i-x" />
+        </svg></button>
       <div class="stamp stamp-yellow">UPDATE v1.3.3</div>
 
       <h2 class="changelog-heading">WHAT'S NEW • UPDATE v1.3.3</h2>
@@ -769,10 +938,16 @@
           </div>
           <h3 class="power-title">EVO GOJO: SHINJUKU SHOWDOWN</h3>
           <p class="power-desc">
-            • <strong>Desain Shinjuku (+40 HP, +15 Speed)</strong>: Baju ketat hitam ala Toji, celana putih, penutup mata dilepas, serta <strong>Six Eyes menyala &amp; kobaran aura biru-cyan</strong>.<br>
-            • <strong>Orbiting Max Blue (2 Putaran + 8-Orb Finale)</strong>: Bola Blue besar berputar spiral 2 kali mengelilingi Gojo; musuh yang terkena tarikan <strong>terkunci di pusat Blue</strong> lalu dikurung &amp; diledakkan oleh <strong>8 bola Blue di tengah</strong>!<br>
-            • <strong>Max Red → Black Flash Freeze</strong>: Reversal Red mendorong musuh balik ke Gojo lalu memicu <strong>animasi freeze Black Flash</strong> dengan petir hitam-merah!<br>
-            • <strong>Ulti Baru — Hollow Nuke</strong>: Gojo melayang ke atas/luar arena, memunculkan <strong>Red &amp; Blue</strong> yang menyatu menjadi ledakan <strong>Hollow Nuke</strong> ungu-putih raksasa di seluruh arena!
+            • <strong>Desain Shinjuku (+40 HP, +15 Speed)</strong>: Baju ketat hitam ala Toji, celana putih, penutup
+            mata dilepas, serta <strong>Six Eyes menyala &amp; kobaran aura biru-cyan</strong>.<br>
+            • <strong>Orbiting Max Blue (2 Putaran + 8-Orb Finale)</strong>: Bola Blue besar berputar spiral 2 kali
+            mengelilingi Gojo; musuh yang terkena tarikan <strong>terkunci di pusat Blue</strong> lalu dikurung &amp;
+            diledakkan oleh <strong>8 bola Blue di tengah</strong>!<br>
+            • <strong>Max Red → Black Flash Freeze</strong>: Reversal Red mendorong musuh balik ke Gojo lalu memicu
+            <strong>animasi freeze Black Flash</strong> dengan petir hitam-merah!<br>
+            • <strong>Ulti Baru — Hollow Nuke</strong>: Gojo melayang ke atas/luar arena, memunculkan <strong>Red &amp;
+              Blue</strong> yang menyatu menjadi ledakan <strong>Hollow Nuke</strong> ungu-putih raksasa di seluruh
+            arena!
           </p>
         </div>
 
@@ -783,9 +958,15 @@
           </div>
           <h3 class="power-title">HEIAN SUKUNA, MAHORAGA &amp; INCOMPLETE SHRINE</h3>
           <p class="power-desc">
-            • <strong>Heian Era Dual Weapons (Hiten &amp; Kamutoke)</strong>: Saat HP &le; 200, Sukuna berubah permanen memegang trisula <strong>Hiten</strong> (semburan api lebar) &amp; <strong>Kamutoke</strong> (petir langit multi-area).<br>
-            • <strong>Auto-Domain 10s Incomplete Malevolent Shrine</strong>: Begitu berubah ke Heian Era, layar langsung <strong>freeze strobe gelap-terang</strong> memanggil <strong>Incomplete Malevolent Shrine</strong> (bertanduk, 8 mata, tulang rusuk) selama 10 detik penuh (tanpa charge Ult di mode Heian).<br>
-            • <strong>Meguna &amp; Mahoraga Polish</strong>: <em>Max Nue</em> menyambar luas &amp; meledak tanpa freeze, <em>Max Elephant</em> banjir area, dan <strong>Mahoraga</strong> memiliki animasi freeze charge sebelum melepaskan <strong>World-Cutting Slash</strong>!
+            • <strong>Heian Era Dual Weapons (Hiten &amp; Kamutoke)</strong>: Saat HP &le; 200, Sukuna berubah permanen
+            memegang trisula <strong>Hiten</strong> (semburan api lebar) &amp; <strong>Kamutoke</strong> (petir langit
+            multi-area).<br>
+            • <strong>Auto-Domain 10s Incomplete Malevolent Shrine</strong>: Begitu berubah ke Heian Era, layar langsung
+            <strong>freeze strobe gelap-terang</strong> memanggil <strong>Incomplete Malevolent Shrine</strong>
+            (bertanduk, 8 mata, tulang rusuk) selama 10 detik penuh (tanpa charge Ult di mode Heian).<br>
+            • <strong>Meguna &amp; Mahoraga Polish</strong>: <em>Max Nue</em> menyambar luas &amp; meledak tanpa freeze,
+            <em>Max Elephant</em> banjir area, dan <strong>Mahoraga</strong> memiliki animasi freeze charge sebelum
+            melepaskan <strong>World-Cutting Slash</strong>!
           </p>
         </div>
 
@@ -796,8 +977,11 @@
           </div>
           <h3 class="power-title">MOBILE PERFORMANCE &amp; VISUAL FIXES</h3>
           <p class="power-desc">
-            • <strong>Mobile 60 FPS Shrine</strong>: Pre-bake struktur <em>Incomplete Malevolent Shrine</em> ke offscreen canvas &amp; hapus alokasi gradien tiap frame agar tetap lancar di HP.<br>
-            • <strong>Bug &amp; Visual Fixes</strong>: Fix lingkaran nyasar di mulut <code>dGrin</code> (<code>faces.js</code>), posisi kerah Shinjuku Gojo, serta pemulihan kecepatan Gojo setelah animasi <em>Black Flash</em> &amp; <em>8-Orb Blue</em>.
+            • <strong>Mobile 60 FPS Shrine</strong>: Pre-bake struktur <em>Incomplete Malevolent Shrine</em> ke
+            offscreen canvas &amp; hapus alokasi gradien tiap frame agar tetap lancar di HP.<br>
+            • <strong>Bug &amp; Visual Fixes</strong>: Fix lingkaran nyasar di mulut <code>dGrin</code>
+            (<code>faces.js</code>), posisi kerah Shinjuku Gojo, serta pemulihan kecepatan Gojo setelah animasi
+            <em>Black Flash</em> &amp; <em>8-Orb Blue</em>.
           </p>
         </div>
       </div>
@@ -821,7 +1005,7 @@
   <script src="js/characters/goku.js"></script>
   <script src="js/characters/naruto.js"></script>
   <script src="js/characters/luffy.js"></script>
-  <script src="js/characters/ichigo.js?v=20261115c"></script>
+  <script src="js/characters/ichigo.js?v=20261121a"></script>
   <script src="js/characters/dio.js"></script>
   <script src="js/characters/jotaro.js"></script>
   <script src="js/characters/guts.js"></script>
@@ -842,4 +1026,5 @@
   <script src="story/engine.js"></script>
   <script src="story/ui.js"></script>
 </body>
+
 </html>

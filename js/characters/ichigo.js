@@ -1977,38 +1977,115 @@
     c.save();
     c.globalAlpha = alpha;
 
-    // Total Pitch-Black Void across the arena
-    c.fillStyle = "rgba(3, 1, 7, 0.94)";
+    // Anime-accurate Mugetsu Void: stark pitch-black abyss with cold ash-white horizon mist
+    c.fillStyle = "rgba(4, 4, 7, 0.90)";
     c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
-    // Subtle dark violet horizon glow
     const glow = c.createRadialGradient(
-      WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, 20,
+      WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, 24,
       WORLD_SIZE * 0.5, WORLD_SIZE * 0.5, WORLD_SIZE * 0.72
     );
-    glow.addColorStop(0, "rgba(88, 28, 135, 0.26)");
-    glow.addColorStop(1, "rgba(3, 1, 7, 0)");
+    glow.addColorStop(0, "rgba(148, 163, 184, 0.14)");
+    glow.addColorStop(0.55, "rgba(15, 23, 42, 0.22)");
+    glow.addColorStop(1, "rgba(2, 2, 4, 0)");
     c.fillStyle = glow;
     c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
-    // Rising dark-violet reiatsu smoke streaks
-    for (let i = 0; i < 14; i++) {
-      const rx = ((i * 67 + Math.sin(now * 2.2 + i) * 18) % (WORLD_SIZE - 24)) + 12;
-      const ry = WORLD_SIZE - ((i * 49 + now * (42 + (i % 3) * 18)) % (WORLD_SIZE - 12));
-      c.fillStyle = i % 2 === 0 ? "rgba(168, 85, 247, 0.3)" : "rgba(24, 24, 27, 0.7)";
+    // Tall billowing jet-black ink-flame tendrils rising vertically (like anime 03:21)
+    for (let i = 0; i < 10; i++) {
+      const baseX = (i + 0.5) * (WORLD_SIZE / 10);
+      const sway = Math.sin(now * 2.8 + i * 1.3) * 14;
+      const h = 110 + (i % 3) * 55 + Math.sin(now * 3.4 + i) * 22;
+      const w = 14 + (i % 3) * 5;
+      c.fillStyle = i % 2 === 0 ? "rgba(2, 2, 4, 0.72)" : "rgba(24, 24, 27, 0.55)";
       c.beginPath();
-      c.arc(rx, ry, 5 + (i % 3) * 3, 0, Math.PI * 2);
+      c.moveTo(baseX - w, WORLD_SIZE);
+      c.quadraticCurveTo(baseX - w * 0.4 + sway, WORLD_SIZE - h * 0.55, baseX + sway * 1.1, WORLD_SIZE - h);
+      c.quadraticCurveTo(baseX + w * 0.4 + sway * 0.6, WORLD_SIZE - h * 0.45, baseX + w, WORLD_SIZE);
+      c.closePath();
       c.fill();
     }
 
-    c.strokeStyle = "#a855f7";
-    c.lineWidth = 4;
+    // Subtle drifting monochrome ink-ash flecks
+    for (let i = 0; i < 12; i++) {
+      const rx = ((i * 73 + Math.sin(now * 2.1 + i) * 20) % (WORLD_SIZE - 24)) + 12;
+      const ry = WORLD_SIZE - ((i * 53 + now * (48 + (i % 3) * 20)) % (WORLD_SIZE - 12));
+      c.fillStyle = i % 3 === 0 ? "rgba(226, 232, 240, 0.28)" : "rgba(9, 9, 11, 0.75)";
+      c.beginPath();
+      c.arc(rx, ry, 3 + (i % 3) * 1.8, 0, Math.PI * 2);
+      c.fill();
+    }
+
+    c.strokeStyle = "rgba(226, 232, 240, 0.35)";
+    c.lineWidth = 3;
     c.strokeRect(4, 4, WORLD_SIZE - 8, WORLD_SIZE - 8);
     c.restore();
   }
 
+  function spawnMugetsuTransformPillar(owner) {
+    // Anime 03:07-03:09: Electric blue-black lightning pillar erupting on Mugetsu transformation
+    const bolts = [];
+    for (let i = 0; i < 6; i++) {
+      const xOff = (i - 2.5) * 26;
+      const pts = [];
+      for (let s = 0; s <= 6; s++) {
+        pts.push({
+          dx: xOff + Math.sin(i * 3.1 + s * 2.4) * 16,
+          dy: -s * 48,
+        });
+      }
+      bolts.push(pts);
+    }
+    return {
+      life: 0.52,
+      maxLife: 0.52,
+      dead: false,
+      update(dt) {
+        this.life -= dt;
+        if (this.life <= 0) this.dead = true;
+      },
+      render() {},
+      renderOverlay(c) {
+        const p = 1 - Math.max(0, this.life / this.maxLife);
+        const alpha = p < 0.2 ? p / 0.2 : Math.max(0, (1 - p) / 0.8);
+        const cx = owner.x;
+        const cy = owner.y;
+        const pillarW = (62 + p * 44) * (1 - p * 0.25);
+
+        c.save();
+        c.globalAlpha = alpha;
+
+        // Outer electric-cyan aura pillar
+        c.fillStyle = "rgba(56, 189, 248, 0.28)";
+        c.fillRect(cx - pillarW * 0.85, 0, pillarW * 1.7, WORLD_SIZE);
+
+        // Pitch-black core column
+        c.fillStyle = "rgba(3, 3, 6, 0.82)";
+        c.fillRect(cx - pillarW * 0.48, 0, pillarW * 0.96, WORLD_SIZE);
+
+        // Jagged blue-white lightning arcs shooting skyward around Ichigo
+        c.lineCap = "round";
+        c.lineJoin = "round";
+        for (let i = 0; i < bolts.length; i++) {
+          const pts = bolts[i];
+          c.strokeStyle = i % 2 === 0 ? "#38bdf8" : "#e0f2fe";
+          c.lineWidth = i % 2 === 0 ? 4.2 : 2.2;
+          c.beginPath();
+          for (let j = 0; j < pts.length; j++) {
+            const px = cx + pts[j].dx * (0.75 + p * 0.5);
+            const py = cy + owner.radius + pts[j].dy * (0.65 + p * 0.85);
+            if (j === 0) c.moveTo(px, py);
+            else c.lineTo(px, py);
+          }
+          c.stroke();
+        }
+        c.restore();
+      },
+    };
+  }
+
   function spawnMugetsuFinisherSlash(owner, g) {
-    const duration = 1.85;
+    const duration = 2.65;
     rt.setHitStop(duration);
 
     const target = g.balls.find((b) => b !== owner && b.alive) || null;
@@ -2016,6 +2093,37 @@
     const ty = target ? target.y : WORLD_SIZE * 0.5;
     const ang = Math.atan2(ty - owner.y, tx - owner.x);
     let struck = false;
+
+    // Precomputed deterministic ink tendrils, sky-curtain strokes, & aftermath bandage shards
+    const tendrils = [];
+    for (let i = 0; i < 12; i++) {
+      tendrils.push({
+        x: ((i + 0.5) / 12) * WORLD_SIZE,
+        w: 16 + (i % 4) * 9,
+        h: 150 + ((i * 57) % 190),
+        phase: i * 1.37,
+      });
+    }
+    const skyStrokes = [];
+    for (let i = 0; i < 22; i++) {
+      skyStrokes.push({
+        x: (i / 21) * WORLD_SIZE,
+        w: 18 + (i % 5) * 10,
+        len: 0.45 + ((i * 29) % 55) / 100,
+        delay: ((i * 17) % 10) * 0.018,
+      });
+    }
+    const shards = [];
+    for (let i = 0; i < 14; i++) {
+      const a = (i / 14) * Math.PI * 2 + 0.2;
+      shards.push({
+        a,
+        spd: 45 + (i % 5) * 26,
+        sz: 5 + (i % 3) * 3,
+        rot: i * 0.9,
+        isBandage: i % 2 === 0,
+      });
+    }
 
     return {
       isFreezeCinematic: true,
@@ -2026,20 +2134,20 @@
         this.timer += dt;
         const p = Math.min(1, this.timer / this.duration);
 
-        if (p >= 0.48 && !struck) {
+        if (p >= 0.50 && !struck) {
           struck = true;
-          gg.entities.push(rt.spawnBanner("MUGETSU!!", "#a855f7"));
-          gg.entities.push(rt.spawnShockRing(tx, ty, "#09090b", 280, 0.52));
-          gg.entities.push(rt.spawnShockRing(tx, ty, "#a855f7", 220, 0.42));
+          gg.entities.push(rt.spawnBanner("MUGETSU.", "#f8fafc"));
+          gg.entities.push(rt.spawnShockRing(tx, ty, "#020204", 310, 0.58));
+          gg.entities.push(rt.spawnShockRing(tx, ty, "#f8fafc", 230, 0.45));
           for (const foe of gg.balls) {
             if (foe === owner || !foe.alive) continue;
             const dealt = gg.applyDamage(foe, 150, { pierce: true });
-            foe.flashTimer = 0.35;
+            foe.flashTimer = 0.40;
             foe.squash = 1.0;
-            gg.spawnSparks(foe.x, foe.y, "#09090b", "#a855f7");
-            gg.spawnDamageText(foe.x, foe.y - foe.radius - 18, dealt, "#a855f7", true, "MUGETSU!! -150");
+            gg.spawnSparks(foe.x, foe.y, "#09090b", "#f8fafc");
+            gg.spawnDamageText(foe.x, foe.y - foe.radius - 18, dealt, "#f8fafc", true, "MUGETSU. -150");
           }
-          rt.addShake(0.65, 14);
+          rt.addShake(0.75, 16);
           gg.sound.playCritHit();
         }
 
@@ -2052,190 +2160,387 @@
       render() {},
       renderOverlay(c) {
         const p = Math.min(1, this.timer / this.duration);
-        const fadeOut = p < 0.78 ? 1 : Math.max(0, (1 - p) / 0.22);
+        const fadeOut = p < 0.80 ? 1 : Math.max(0, (1 - p) / 0.20);
+        const barH = 38 * (p < 0.08 ? p / 0.08 : fadeOut);
 
         c.save();
 
-        // 1. Freeze Cutscene Pitch-Black Void Dimmer
-        const dimAlpha = p < 0.12 ? (p / 0.12) * 0.72 : 0.72 * fadeOut;
-        c.fillStyle = `rgba(3, 1, 8, ${dimAlpha.toFixed(3)})`;
-        c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+        // === BEAT 1 & 2 (0.00 -> 0.48): Rising Black Ink-Flames, Auto-Lock, Raised Hand, Anime Cut-In ===
+        if (p < 0.50) {
+          const dimAlpha = p < 0.10 ? (p / 0.10) * 0.78 : 0.78;
+          c.fillStyle = `rgba(3, 3, 6, ${dimAlpha.toFixed(3)})`;
+          c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
-        // 2. Auto-Lock Targeting Line & Reticle on Enemy
-        if (target && p < 0.78) {
-          const lockP = Math.min(1, p / 0.25);
-          const lockScale = 1.65 - 0.65 * lockP;
-          const lockRot = (1 - lockP) * 0.9 + this.timer * 1.4;
-          const rLock = (target.radius + 16) * lockScale;
-
-          c.save();
-          c.globalAlpha = (p < 0.48 ? 0.92 : Math.max(0, 1 - (p - 0.48) / 0.3)) * fadeOut;
-
-          // Subtle auto-lock trajectory guide
-          c.strokeStyle = "rgba(168, 85, 247, 0.45)";
-          c.lineWidth = 2;
-          c.setLineDash([8, 8]);
-          c.beginPath();
-          c.moveTo(owner.x, owner.y);
-          c.lineTo(tx, ty);
-          c.stroke();
-          c.setLineDash([]);
-
-          // Lock-on brackets around target
-          c.translate(tx, ty);
-          c.rotate(lockRot);
-          c.strokeStyle = p >= 0.3 ? "#ef4444" : "#c084fc";
-          c.lineWidth = 3;
-          for (let q = 0; q < 4; q++) {
-            c.rotate(Math.PI * 0.5);
+          // Tall rising pitch-black ink-flame tendrils (anime 03:22 / 03:25)
+          const tendrilRise = Math.min(1, p / 0.28);
+          for (let i = 0; i < tendrils.length; i++) {
+            const td = tendrils[i];
+            const sway = Math.sin(this.timer * 5.2 + td.phase) * 14;
+            const th = td.h * tendrilRise;
+            c.fillStyle = i % 2 === 0 ? "rgba(2, 2, 4, 0.88)" : "rgba(18, 18, 22, 0.72)";
             c.beginPath();
-            c.moveTo(rLock - 10, -rLock);
-            c.lineTo(rLock, -rLock);
-            c.lineTo(rLock, -rLock + 10);
-            c.stroke();
+            c.moveTo(td.x - td.w, WORLD_SIZE);
+            c.quadraticCurveTo(td.x - td.w * 0.35 + sway, WORLD_SIZE - th * 0.55, td.x + sway * 1.15, WORLD_SIZE - th);
+            c.quadraticCurveTo(td.x + td.w * 0.35 + sway * 0.5, WORLD_SIZE - th * 0.45, td.x + td.w, WORLD_SIZE);
+            c.closePath();
+            c.fill();
           }
-          c.restore();
-        }
 
-        // 3. Scene: Ichigo Raising Hand High -> Swinging Down the Black Mugetsu Blade
-        if (p < 0.72) {
-          const raiseP = Math.min(1, p / 0.28);
-          const swingP = p < 0.40 ? 0 : Math.min(1, (p - 0.40) / 0.10);
+          // Auto-Lock Trajectory & Reticle on Enemy
+          if (target) {
+            const lockP = Math.min(1, p / 0.22);
+            const lockScale = 1.75 - 0.75 * lockP;
+            const lockRot = (1 - lockP) * 1.1 + this.timer * 1.6;
+            const rLock = (target.radius + 16) * lockScale;
+
+            c.save();
+            c.globalAlpha = 0.92;
+            c.strokeStyle = p >= 0.28 ? "rgba(220, 38, 38, 0.65)" : "rgba(226, 232, 240, 0.45)";
+            c.lineWidth = 2;
+            c.setLineDash([8, 8]);
+            c.beginPath();
+            c.moveTo(owner.x, owner.y);
+            c.lineTo(tx, ty);
+            c.stroke();
+            c.setLineDash([]);
+
+            c.translate(tx, ty);
+            c.rotate(lockRot);
+            c.strokeStyle = p >= 0.28 ? "#dc2626" : "#f8fafc";
+            c.lineWidth = 3;
+            for (let q = 0; q < 4; q++) {
+              c.rotate(Math.PI * 0.5);
+              c.beginPath();
+              c.moveTo(rLock - 10, -rLock);
+              c.lineTo(rLock, -rLock);
+              c.lineTo(rLock, -rLock + 10);
+              c.stroke();
+            }
+            c.restore();
+          }
+
+          // Scene: Ichigo Raising Hand Overhead -> Condensing Jet-Black Blade -> Swinging Down
+          const raiseP = Math.min(1, p / 0.24);
+          const swingP = p < 0.42 ? 0 : Math.min(1, (p - 0.42) / 0.08);
           const upAng = -Math.PI * 0.5;
-          // Shortest angular swing from straight up (-PI/2) to target angle
           let diff = ang - upAng;
           while (diff > Math.PI) diff -= Math.PI * 2;
           while (diff < -Math.PI) diff += Math.PI * 2;
           const armAng = upAng + diff * swingP;
 
-          // Converging black-violet reiatsu pillar behind Ichigo during raise
-          if (p < 0.50) {
-            const pillarW = (owner.radius * 2.2) * (0.6 + 0.4 * Math.sin(this.timer * 14));
-            c.fillStyle = "rgba(168, 85, 247, 0.22)";
-            c.fillRect(owner.x - pillarW * 0.65, 0, pillarW * 1.3, owner.y + owner.radius);
-            c.fillStyle = "rgba(5, 5, 8, 0.65)";
-            c.fillRect(owner.x - pillarW * 0.4, 0, pillarW * 0.8, owner.y + owner.radius);
-          }
+          // Swirling jet-black reiatsu pillar behind Ichigo
+          const pillarW = (owner.radius * 2.4) * (0.7 + 0.3 * Math.sin(this.timer * 16));
+          c.fillStyle = "rgba(226, 232, 240, 0.14)";
+          c.fillRect(owner.x - pillarW * 0.68, 0, pillarW * 1.36, owner.y + owner.radius);
+          c.fillStyle = "rgba(2, 2, 4, 0.82)";
+          c.fillRect(owner.x - pillarW * 0.46, 0, pillarW * 0.92, owner.y + owner.radius);
 
           c.save();
           c.translate(owner.x, owner.y);
           c.rotate(armAng);
 
-          const armLen = owner.radius * 1.15 * (0.4 + 0.6 * raiseP);
-          // Raised bandaged arm
+          const armLen = owner.radius * 1.25 * (0.45 + 0.55 * raiseP);
+          // Raised steel-grey bandaged arm
           c.fillStyle = "#475569";
-          c.strokeStyle = "#09090b";
+          c.strokeStyle = "#020204";
           c.lineWidth = 3;
           c.beginPath();
-          c.roundRect(owner.radius * 0.35, -6, armLen, 12, 5);
+          c.roundRect(owner.radius * 0.32, -6.5, armLen, 13, 5);
           c.fill();
           c.stroke();
 
-          // Bandage wrap stripes on arm
-          c.strokeStyle = "#94a3b8";
+          c.strokeStyle = "#cbd5e1";
           c.lineWidth = 1.6;
-          for (let b = 0.25; b <= 0.8; b += 0.25) {
-            const bx = owner.radius * 0.35 + armLen * b;
+          for (let b = 0.22; b <= 0.82; b += 0.24) {
+            const bx = owner.radius * 0.32 + armLen * b;
             c.beginPath();
-            c.moveTo(bx, -5);
-            c.lineTo(bx + 3, 5);
+            c.moveTo(bx, -5.5);
+            c.lineTo(bx + 3, 5.5);
             c.stroke();
           }
 
-          // Towering jet-black Mugetsu blade extending from raised hand
-          const bladeLen = (110 + 40 * raiseP) * (p < 0.48 ? 1 : Math.max(0, 1 - (p - 0.48) / 0.24));
-          if (bladeLen > 4) {
-            const handX = owner.radius * 0.35 + armLen;
-            // Violet outer flame aura
-            c.fillStyle = "rgba(168, 85, 247, 0.55)";
-            c.beginPath();
-            c.moveTo(handX - 6, -13);
-            c.lineTo(handX + bladeLen + 18, 0);
-            c.lineTo(handX - 6, 13);
-            c.closePath();
-            c.fill();
+          // Condensed pure jet-black jagged Mugetsu blade shooting out of raised hand (03:25)
+          const bladeLen = 125 + 65 * raiseP;
+          const handX = owner.radius * 0.32 + armLen;
+          const wobble = Math.sin(this.timer * 24) * 3;
+          // Ash-white/crimson rim gleam
+          c.fillStyle = "rgba(248, 250, 252, 0.32)";
+          c.beginPath();
+          c.moveTo(handX - 6, -15);
+          c.lineTo(handX + bladeLen * 0.45, -11 + wobble);
+          c.lineTo(handX + bladeLen + 22, 0);
+          c.lineTo(handX + bladeLen * 0.45, 11 - wobble);
+          c.lineTo(handX - 6, 15);
+          c.closePath();
+          c.fill();
 
-            // Pure black Mugetsu blade core
-            c.fillStyle = "#050507";
-            c.strokeStyle = "#e9d5ff";
-            c.lineWidth = 1.5;
-            c.beginPath();
-            c.moveTo(handX - 4, -8);
-            c.lineTo(handX + bladeLen, 0);
-            c.lineTo(handX - 4, 8);
-            c.closePath();
-            c.fill();
-            c.stroke();
-          }
+          // Pure pitch-black jagged ink-flame blade core
+          c.fillStyle = "#020204";
+          c.strokeStyle = "#e2e8f0";
+          c.lineWidth = 1.5;
+          c.beginPath();
+          c.moveTo(handX - 4, -9);
+          c.lineTo(handX + bladeLen * 0.5, -7 - wobble * 0.5);
+          c.lineTo(handX + bladeLen, 0);
+          c.lineTo(handX + bladeLen * 0.5, 7 + wobble * 0.5);
+          c.lineTo(handX - 4, 9);
+          c.closePath();
+          c.fill();
+          c.stroke();
           c.restore();
+
+          // Beat 1 subtitle
+          if (p < 0.30) {
+            c.save();
+            c.textAlign = "center";
+            c.textBaseline = "middle";
+            c.lineJoin = "round";
+            c.font = "900 20px 'Fredoka', 'Nunito', sans-serif";
+            c.lineWidth = 6;
+            c.strokeStyle = "#020204";
+            c.strokeText("FINAL GETSUGA TENSHO...", WORLD_SIZE * 0.5, barH + 26);
+            c.fillStyle = "#f8fafc";
+            c.fillText("FINAL GETSUGA TENSHO...", WORLD_SIZE * 0.5, barH + 26);
+            c.restore();
+          }
+
+          // Beat 2 (0.28 -> 0.48): Anime Close-Up Widescreen Cut-In Band ("MUGETSU.")
+          if (p >= 0.28 && p < 0.48) {
+            const cutP = (p - 0.28) / 0.20;
+            const slideIn = cutP < 0.20 ? cutP / 0.20 : 1;
+            const bandY = WORLD_SIZE * 0.24;
+            const bandH = 82 * slideIn;
+
+            c.save();
+            c.beginPath();
+            c.rect(0, bandY - bandH * 0.5, WORLD_SIZE, bandH);
+            c.clip();
+
+            // Pitch-black cut-in strip with stark white border lines
+            c.fillStyle = "#040407";
+            c.fillRect(0, bandY - bandH * 0.5, WORLD_SIZE, bandH);
+
+            // Slanted monochrome speedlines
+            c.strokeStyle = "rgba(248, 250, 252, 0.16)";
+            c.lineWidth = 2;
+            for (let s = 0; s < 10; s++) {
+              const sy = bandY - bandH * 0.45 + (s / 9) * bandH * 0.9;
+              c.beginPath();
+              c.moveTo(0, sy);
+              c.lineTo(WORLD_SIZE, sy - 6);
+              c.stroke();
+            }
+
+            // Stylized Mugetsu Close-Up Portrait on left side of cut-in strip
+            const fx = WORLD_SIZE * 0.24;
+            const fy = bandY;
+            // Face skin strip peek between hair & bandages
+            c.fillStyle = "#fbd3b0";
+            c.fillRect(fx - 46, fy - 18, 92, 22);
+            // Steel-grey Mugetsu bandage wrap covering lower face
+            c.fillStyle = "#64748b";
+            c.fillRect(fx - 52, fy + 2, 104, 38);
+            c.strokeStyle = "#334155";
+            c.lineWidth = 2;
+            for (let by = fy + 9; by <= fy + 32; by += 8) {
+              c.beginPath();
+              c.moveTo(fx - 52, by);
+              c.lineTo(fx + 52, by + 3);
+              c.stroke();
+            }
+            // Piercing cold crimson eye (anime 03:34 close-up)
+            c.fillStyle = "#f8fafc";
+            c.beginPath();
+            c.moveTo(fx - 18, fy - 5);
+            c.quadraticCurveTo(fx + 2, fy - 16, fx + 24, fy - 12);
+            c.quadraticCurveTo(fx + 16, fy + 3, fx - 4, fy + 3);
+            c.closePath();
+            c.fill();
+            c.fillStyle = "#dc2626";
+            c.beginPath();
+            c.arc(fx + 4, fy - 5, 7.5, 0, Math.PI * 2);
+            c.fill();
+            c.fillStyle = "#09090b";
+            c.beginPath();
+            c.arc(fx + 4, fy - 5, 3.2, 0, Math.PI * 2);
+            c.fill();
+            c.fillStyle = "#ffffff";
+            c.beginPath();
+            c.arc(fx + 1.5, fy - 7, 1.5, 0, Math.PI * 2);
+            c.fill();
+            // Thick sharp upper lash
+            c.strokeStyle = "#020204";
+            c.lineWidth = 3.5;
+            c.beginPath();
+            c.moveTo(fx - 20, fy - 5);
+            c.quadraticCurveTo(fx + 2, fy - 17, fx + 27, fy - 13);
+            c.stroke();
+            // Sweeping jagged jet-black bangs framing the eye
+            c.fillStyle = "#050508";
+            c.beginPath();
+            c.moveTo(fx - 64, fy - 42);
+            c.lineTo(fx + 64, fy - 42);
+            c.lineTo(fx + 54, fy + 6);
+            c.lineTo(fx + 28, fy - 16);
+            c.lineTo(fx + 12, fy - 14);
+            c.lineTo(fx - 12, fy - 24);
+            c.lineTo(fx - 26, fy + 8);
+            c.lineTo(fx - 64, fy + 16);
+            c.closePath();
+            c.fill();
+
+            // Bold chilling "MUGETSU." typography on right side of cut-in
+            c.textAlign = "left";
+            c.textBaseline = "middle";
+            c.lineJoin = "round";
+            c.font = "900 34px 'Fredoka', 'Nunito', sans-serif";
+            c.lineWidth = 6;
+            c.strokeStyle = "#dc2626";
+            c.strokeText("MUGETSU.", WORLD_SIZE * 0.44, bandY + 2);
+            c.fillStyle = "#ffffff";
+            c.fillText("MUGETSU.", WORLD_SIZE * 0.44, bandY + 2);
+            c.restore();
+
+            // Crisp top/bottom cut-in borders
+            c.strokeStyle = "#f8fafc";
+            c.lineWidth = 2.5;
+            c.beginPath();
+            c.moveTo(0, bandY - bandH * 0.5);
+            c.lineTo(WORLD_SIZE, bandY - bandH * 0.5);
+            c.moveTo(0, bandY + bandH * 0.5);
+            c.lineTo(WORLD_SIZE, bandY + bandH * 0.5);
+            c.stroke();
+          }
         }
 
-        // 4. Cutscene Text Banner ("FINAL GETSUGA TENSHO" -> "MUGETSU.")
-        if (p < 0.55) {
+        // === BEAT 3 & 4 (0.48 -> 1.00): Monochrome B&W World, Sky-Splitting Darkness Wall & Aftermath ===
+        if (p >= 0.48) {
+          const slashP = (p - 0.48) / 0.52;
+          const monoAlpha = slashP < 0.62 ? 1 : Math.max(0, (1 - slashP) / 0.38);
+
+          // 1. High-contrast Anime Monochrome Backdrop (03:28-03:30: stark white/ash sky!)
+          c.fillStyle = `rgba(241, 245, 249, ${(0.82 * monoAlpha).toFixed(3)})`;
+          c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+          // 2. Descending Wall of Pitch-Black Ink Brushstrokes Covering the Sky (anime 03:28 & 03:31)
+          const curtainProg = Math.min(1, slashP / 0.22);
           c.save();
-          c.textAlign = "center";
-          c.textBaseline = "middle";
-          c.lineJoin = "round";
-          const label = p < 0.36 ? "FINAL GETSUGA TENSHO..." : "MUGETSU!!";
-          c.font = `900 ${p < 0.36 ? 22 : 34}px 'Fredoka', 'Nunito', sans-serif`;
-          c.lineWidth = 7;
-          c.strokeStyle = "#030106";
-          c.strokeText(label, WORLD_SIZE * 0.5, 58);
-          c.fillStyle = p < 0.36 ? "#e9d5ff" : "#a855f7";
-          c.fillText(label, WORLD_SIZE * 0.5, 58);
-          c.restore();
-        }
-
-        // 5. Colossal Auto-Locked Long Slash (Tebasan Panjang) Cutting Across the Entire Arena
-        if (p >= 0.45) {
-          const slashP = (p - 0.45) / 0.55;
-          const slashAlpha = slashP < 0.65 ? 1 : Math.max(0, (1 - slashP) / 0.35);
-          const flash = slashP < 0.14 ? (1 - slashP / 0.14) : 0;
-          const beamW = slashP < 0.15
-            ? 24 + (slashP / 0.15) * 86
-            : 110 * slashAlpha + 10;
-          const beamLen = WORLD_SIZE * 2.2;
-
-          if (flash > 0) {
-            c.fillStyle = `rgba(245, 208, 254, ${(flash * 0.35).toFixed(3)})`;
-            c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+          c.globalAlpha = monoAlpha * 0.94;
+          c.fillStyle = "#030305";
+          for (let i = 0; i < skyStrokes.length; i++) {
+            const st = skyStrokes[i];
+            const sp = Math.max(0, Math.min(1, (curtainProg - st.delay) / 0.55));
+            if (sp <= 0) continue;
+            const sh = WORLD_SIZE * st.len * sp;
+            c.beginPath();
+            c.moveTo(st.x - st.w * 0.65, 0);
+            c.lineTo(st.x + st.w * 0.65, 0);
+            c.lineTo(st.x + st.w * 0.25, sh * 0.82);
+            c.lineTo(st.x, sh);
+            c.lineTo(st.x - st.w * 0.25, sh * 0.82);
+            c.closePath();
+            c.fill();
           }
+          c.restore();
+
+          // 3. Colossal Auto-Locked Long Slash (Tebasan Panjang) Splitting the Entire Arena
+          const beamAlpha = slashP < 0.68 ? 1 : Math.max(0, (1 - slashP) / 0.32);
+          const beamW = slashP < 0.14
+            ? 28 + (slashP / 0.14) * 108
+            : 136 * beamAlpha + 12;
+          const beamLen = WORLD_SIZE * 2.4;
 
           c.save();
           c.translate(owner.x, owner.y);
           c.rotate(ang);
-          c.globalAlpha = slashAlpha;
+          c.globalAlpha = beamAlpha;
 
-          // Outer violet-crimson sky-splitting aura
-          c.fillStyle = "rgba(168, 85, 247, 0.52)";
-          c.fillRect(-beamLen * 0.25, -beamW * 0.75, beamLen, beamW * 1.5);
+          // Outer stark white-silver shock aura
+          c.fillStyle = "rgba(255, 255, 255, 0.42)";
+          c.fillRect(-beamLen * 0.28, -beamW * 0.72, beamLen, beamW * 1.44);
 
-          // Pitch-black void slash body
-          c.fillStyle = "#030106";
-          c.fillRect(-beamLen * 0.25, -beamW * 0.5, beamLen, beamW);
-
-          // Razor-sharp white-violet core line
-          c.strokeStyle = "#fdf4ff";
-          c.lineWidth = Math.max(2.5, beamW * 0.11);
+          // Jagged serrated pitch-black void slash wall
+          c.fillStyle = "#020204";
           c.beginPath();
-          c.moveTo(-beamLen * 0.25, 0);
-          c.lineTo(beamLen * 0.75, 0);
+          const xStart = -beamLen * 0.28;
+          const xEnd = beamLen * 0.72;
+          const steps = 16;
+          c.moveTo(xStart, -beamW * 0.52);
+          for (let s = 1; s < steps; s++) {
+            const sx = xStart + ((xEnd - xStart) * s) / steps;
+            const jag = (s % 2 === 0 ? 1 : -1) * (beamW * 0.12);
+            c.lineTo(sx, -beamW * 0.52 + jag);
+          }
+          c.lineTo(xEnd, -beamW * 0.52);
+          c.lineTo(xEnd, beamW * 0.52);
+          for (let s = steps - 1; s >= 1; s--) {
+            const sx = xStart + ((xEnd - xStart) * s) / steps;
+            const jag = (s % 2 === 0 ? -1 : 1) * (beamW * 0.12);
+            c.lineTo(sx, beamW * 0.52 + jag);
+          }
+          c.lineTo(xStart, beamW * 0.52);
+          c.closePath();
+          c.fill();
+
+          // Blinding pure-white razor core line cleaving the screen in two
+          c.strokeStyle = "#ffffff";
+          c.lineWidth = Math.max(3, beamW * 0.12);
+          c.beginPath();
+          c.moveTo(xStart, 0);
+          c.lineTo(xEnd, 0);
           c.stroke();
           c.restore();
 
-          // Direct impact burst ring at locked target coordinates
-          if (slashP < 0.55) {
-            const ringP = slashP / 0.55;
-            const ringR = (target ? target.radius : 28) + ringP * 145;
+          // 4. Impact Flash + Monochrome Shockwave Rings & Slash Cracks at Locked Target
+          if (slashP < 0.14) {
+            const flashA = (1 - slashP / 0.14) * 0.72;
+            c.fillStyle = `rgba(255, 255, 255, ${flashA.toFixed(3)})`;
+            c.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+          }
+          if (slashP < 0.58) {
+            const ringP = slashP / 0.58;
+            const ringR = (target ? target.radius : 28) + ringP * 175;
             c.save();
-            c.globalAlpha = (1 - ringP) * 0.9;
-            c.strokeStyle = "#c084fc";
-            c.lineWidth = 6 * (1 - ringP) + 1.5;
+            c.globalAlpha = (1 - ringP) * 0.95;
+            c.strokeStyle = "#ffffff";
+            c.lineWidth = 8 * (1 - ringP) + 2;
             c.beginPath();
             c.arc(tx, ty, ringR, 0, Math.PI * 2);
             c.stroke();
+            c.strokeStyle = "#020204";
+            c.lineWidth = 4 * (1 - ringP) + 1;
+            c.beginPath();
+            c.arc(tx, ty, ringR * 0.72, 0, Math.PI * 2);
+            c.stroke();
             c.restore();
           }
+
+          // 5. Beat 4 Aftermath (03:34): Shattering Bandage & Ink-Ash Shards Drifting Off Ichigo
+          if (slashP >= 0.45) {
+            const aftP = (slashP - 0.45) / 0.55;
+            c.save();
+            c.globalAlpha = Math.max(0, 1 - aftP);
+            for (let i = 0; i < shards.length; i++) {
+              const sh = shards[i];
+              const dist = owner.radius * 0.6 + sh.spd * aftP;
+              const sx = owner.x + Math.cos(sh.a) * dist;
+              const sy = owner.y + Math.sin(sh.a) * dist - aftP * 26;
+              c.save();
+              c.translate(sx, sy);
+              c.rotate(sh.rot + aftP * 4);
+              c.fillStyle = sh.isBandage ? "#94a3b8" : "#09090b";
+              c.fillRect(-sh.sz * 0.6, -sh.sz * 0.25, sh.sz * 1.2, sh.sz * 0.5);
+              c.restore();
+            }
+            c.restore();
+          }
+        }
+
+        // Cinematic Anime Letterbox Bars (Top & Bottom)
+        if (barH > 0.5) {
+          c.fillStyle = "#020204";
+          c.fillRect(0, 0, WORLD_SIZE, barH);
+          c.fillRect(0, WORLD_SIZE - barH, WORLD_SIZE, barH);
         }
 
         c.restore();
@@ -2262,10 +2567,11 @@
       applyEff(ball, "shield", duration, { reduction: 0.25 });
     }
     if (ball.skills[0]) ball.skills[0]._cd = 0.15;
-    rt.entities.push(rt.spawnShockRing(ball.x, ball.y, "#09090b", 180, 0.48));
-    rt.entities.push(rt.spawnShockRing(ball.x, ball.y, "#a855f7", 140, 0.38));
-    rt.spawnSparks(ball.x, ball.y, "#09090b", "#a855f7");
-    rt.addShake(0.38, 9);
+    rt.entities.push(spawnMugetsuTransformPillar(ball));
+    rt.entities.push(rt.spawnShockRing(ball.x, ball.y, "#09090b", 195, 0.50));
+    rt.entities.push(rt.spawnShockRing(ball.x, ball.y, "#38bdf8", 150, 0.40));
+    rt.spawnSparks(ball.x, ball.y, "#09090b", "#38bdf8");
+    rt.addShake(0.45, 11);
 
     let trailCd = 0;
     let finisherFired = false;
