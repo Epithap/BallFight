@@ -2348,32 +2348,56 @@
               c.lineTo(fx + 52, by + 3);
               c.stroke();
             }
-            // Piercing cold crimson eye (anime 03:34 close-up)
-            c.fillStyle = "#f8fafc";
+            // Classic round BallFight Mugetsu eye with intense crimson iris & sharp upper lash
+            const eyeCx = fx + 4;
+            const eyeCy = fy - 7;
+            // Subtle crimson lower-lash accent
+            c.strokeStyle = "#991b1b";
+            c.lineWidth = 2.4;
             c.beginPath();
-            c.moveTo(fx - 18, fy - 5);
-            c.quadraticCurveTo(fx + 2, fy - 16, fx + 24, fy - 12);
-            c.quadraticCurveTo(fx + 16, fy + 3, fx - 4, fy + 3);
-            c.closePath();
+            c.ellipse(eyeCx, eyeCy + 2.5, 14.5, 12.5, 0, Math.PI * 0.14, Math.PI * 0.86);
+            c.stroke();
+
+            // Round white sclera with crisp ink outline
+            c.fillStyle = "#f8fafc";
+            c.strokeStyle = "#020204";
+            c.lineWidth = 3;
+            c.beginPath();
+            c.ellipse(eyeCx, eyeCy, 14, 13, 0, 0, Math.PI * 2);
             c.fill();
+            c.stroke();
+
+            // Crimson iris + dark inner ring + deep pupil + crisp highlight
             c.fillStyle = "#dc2626";
             c.beginPath();
-            c.arc(fx + 4, fy - 5, 7.5, 0, Math.PI * 2);
+            c.arc(eyeCx, eyeCy, 8.6, 0, Math.PI * 2);
             c.fill();
+            c.strokeStyle = "#7f1d1d";
+            c.lineWidth = 1.6;
+            c.beginPath();
+            c.arc(eyeCx, eyeCy, 6.2, 0, Math.PI * 2);
+            c.stroke();
             c.fillStyle = "#09090b";
             c.beginPath();
-            c.arc(fx + 4, fy - 5, 3.2, 0, Math.PI * 2);
+            c.arc(eyeCx, eyeCy, 4.2, 0, Math.PI * 2);
             c.fill();
             c.fillStyle = "#ffffff";
             c.beginPath();
-            c.arc(fx + 1.5, fy - 7, 1.5, 0, Math.PI * 2);
+            c.arc(eyeCx - 3, eyeCy - 3.2, 2.2, 0, Math.PI * 2);
             c.fill();
-            // Thick sharp upper lash
+
+            // Thick sharp upper lash + cold angled brow
             c.strokeStyle = "#020204";
-            c.lineWidth = 3.5;
+            c.lineWidth = 3.8;
+            c.lineCap = "round";
             c.beginPath();
-            c.moveTo(fx - 20, fy - 5);
-            c.quadraticCurveTo(fx + 2, fy - 17, fx + 27, fy - 13);
+            c.moveTo(eyeCx - 15, eyeCy - 8);
+            c.quadraticCurveTo(eyeCx, eyeCy - 15, eyeCx + 16, eyeCy - 10);
+            c.stroke();
+            c.lineWidth = 3.2;
+            c.beginPath();
+            c.moveTo(eyeCx - 14, eyeCy - 17);
+            c.lineTo(eyeCx + 16, eyeCy - 21);
             c.stroke();
             // Sweeping jagged jet-black bangs framing the eye
             c.fillStyle = "#050508";
