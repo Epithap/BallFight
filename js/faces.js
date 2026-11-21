@@ -531,81 +531,36 @@
     if (ball.evoTier === 2) {
       const isMugetsu = Boolean(ball.mugetsuMode && ball.ultTimer > 0);
       if (isMugetsu) {
-        // Lore-accurate Mugetsu: sharp, heavy-lidded, cold crimson eyes tucked under a flat upper lid
-        const b = blinkAmt(ball) * 0.45;
-        const eyeH = Math.max(0.02, 1 - b);
+        // Mugetsu: classic round BallFight eyes with intense crimson iris, subtle cold upper-lid shadow & sharp brows
         for (const side of [-1, 1]) {
-          const cx = side * r * 0.30;
-          const cy = -r * 0.09;
-          const w = r * 0.22;
-          const h = r * 0.145 * eyeH;
+          eye(c, r, side, {
+            rx: 0.23,
+            ry: 0.22,
+            dy: -0.02,
+            slant: 0.16,
+            iris: 0.145,
+            color: "#dc2626",
+            innerRing: "#7f1d1d",
+            ring: "#991b1b",
+            lidArc: true,
+            blink: blinkAmt(ball) * 0.45,
+            ex: s.ex,
+            ey: s.ey,
+          });
+          // Subtle stoic upper-eyelid shade on top of the round eye for a cold Mugetsu glare
           c.save();
-          c.translate(cx, cy);
-          // Sharp slanted anime eye path (flat angled top lid, soft curved bottom)
-          c.beginPath();
-          c.moveTo(-side * w * 0.95, -h * 0.15);
-          c.quadraticCurveTo(0, -h * 0.95, side * w * 1.05, -h * 0.92);
-          c.quadraticCurveTo(side * w * 0.65, h * 0.95, -side * w * 0.15, h * 1.05);
-          c.quadraticCurveTo(-side * w * 0.72, h * 0.85, -side * w * 0.95, -h * 0.15);
-          c.closePath();
-
-          // Clean white sclera
-          c.fillStyle = "#f8fafc";
-          c.fill();
-
-          c.save();
-          c.clip();
-          // Crimson iris tucked under the upper eyelid (sharp, cold stoic gaze without looking squinty)
-          const ix = (s.ex || 0) * 0.65;
-          const iy = -h * 0.08 + (s.ey || 0) * 0.55;
-          const ir = r * 0.115;
-          c.fillStyle = "#991b1b";
-          c.beginPath();
-          c.arc(ix, iy, ir, 0, TAU);
-          c.fill();
-          c.fillStyle = "#dc2626";
-          c.beginPath();
-          c.arc(ix, iy, ir * 0.76, 0, TAU);
-          c.fill();
-          // Sharp dark pupil + tiny pinpoint glint
-          c.fillStyle = "#09090b";
-          c.beginPath();
-          c.arc(ix, iy, ir * 0.42, 0, TAU);
-          c.fill();
-          c.fillStyle = "#fecaca";
-          c.beginPath();
-          c.arc(ix - ir * 0.32, iy - ir * 0.18, ir * 0.18, 0, TAU);
-          c.fill();
-          // Subtle upper-lid shadow
-          c.fillStyle = "rgba(9, 9, 11, 0.22)";
-          c.fillRect(-w * 1.2, -h * 1.2, w * 2.4, h * 0.65);
-          c.restore();
-
-          // Delicate thin lower lid (no chunky oval border)
-          c.strokeStyle = "rgba(30, 27, 46, 0.65)";
-          c.lineWidth = 1.4;
+          c.translate(side * r * 0.30, -r * 0.10);
+          c.rotate(-side * 0.16 * 0.35);
+          c.strokeStyle = "#09090b";
+          c.lineWidth = 3.2;
           c.lineCap = "round";
           c.beginPath();
-          c.moveTo(-side * w * 0.85, h * 0.12);
-          c.quadraticCurveTo(0, h * 1.12, side * w * 0.88, h * 0.22);
+          c.moveTo(-side * r * 0.23, -r * 0.15);
+          c.quadraticCurveTo(0, -r * 0.24, side * r * 0.25, -r * 0.18);
           c.stroke();
-
-          // Sharp, flat, thick upper lash line extending cleanly outward
-          c.strokeStyle = "#09090b";
-          c.lineWidth = 2.8;
-          c.beginPath();
-          c.moveTo(-side * w * 1.02, -h * 0.08);
-          c.quadraticCurveTo(0, -h * 0.96, side * w * 1.15, -h * 0.98);
-          c.stroke();
-
-          // Sleek low cold brow
-          c.lineWidth = 2.0;
-          c.beginPath();
-          c.moveTo(-side * w * 0.88, -h * 1.12);
-          c.lineTo(side * w * 0.98, -h * 1.65);
-          c.stroke();
-
           c.restore();
+
+          brow(c, side, r, 0.37, 0.10, 3.2, 0.36, "#09090b");
         }
         return;
       }
